@@ -6,6 +6,10 @@
 #   marks the end of a paragraph
 #
 
-def req_PP
+module Troff
+
+  def req_PP ( args )
+    puts "PP: (new) -- #{args.inspect}"
+  end
 
 end

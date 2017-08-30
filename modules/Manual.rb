@@ -20,12 +20,12 @@ class Manual
 	#end temporary hardcode
 
 		@blocks = Array.new
-		@lines = Source.new( file )
+		@source = Source.new( file )
 	
-		require "dom/#{@lines.type.downcase}"
-		self.extend Kernel.const_get(@lines.type.to_sym)
+		require "dom/#{@source.magic.downcase}"
+		self.extend Kernel.const_get(@source.magic.to_sym)
 		
-		load_platform_overrides
+		source_init
 		
 	end
   

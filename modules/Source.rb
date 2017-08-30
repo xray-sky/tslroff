@@ -10,7 +10,7 @@ require "modules/Magic.rb"
 
 class Source
 	
-  attr_reader :lines
+  attr_reader :lines, :magic
   
 	def initialize( file )
 
@@ -34,9 +34,17 @@ class Source
 			puts $!
 			exit(1)
 		end
+		
+		@magic = case @lines[0]
+			when %r{^<.+?>}    then "HTML"	# html, probably
+			when %r{^[\.\'].}  then "Troff"	# troff source, probably '
+			else                    "Nroff"	# plain text with or without carriage control
+		end
+
     
   end
 
+=begin
 	def type
 		case @lines[0]
 			when %r{^<.+?>}    then "HTML"	# html, probably
@@ -44,5 +52,6 @@ class Source
 			else                    "Nroff"	# plain text with or without carriage control
 		end
 	end
+=end
 
 end

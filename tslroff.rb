@@ -42,6 +42,13 @@ end
 
 src.parse
 
+src.blocks.each do |b|
+ puts case b.style
+  when :comment then "<!--#{b.text} -->"
+  when :normal  then "<p>#{b.text}</p>" unless b.text.strip.empty?
+ end 
+end
+
 =begin
 
 roff = Troff.new("gl2","w2.5")

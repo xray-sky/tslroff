@@ -23,6 +23,7 @@ module Troff
 	end
 	
   def parse
+    begin
 	@source.lines.each do |l|
 
       if l.match(/^['\.](.[a-zA-Z"])(.*)/)
@@ -31,9 +32,16 @@ module Troff
            self.send("req_#{req}", $2)
          end
       else
-        puts "FOO: #{l}"
+        #puts "FOO: #{l}"
+        @current_block.append(l)
       end
 	end
+  rescue ImmutableStyleError
+    @blocks << @current_block
+    @current_block = StyledObject.new
+    retry
+  end
+  @blocks << @current_block
   end
 	
   def quote_req ( reqstr )

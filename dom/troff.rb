@@ -24,24 +24,30 @@ module Troff
 	
   def parse
     begin
-	@source.lines.each do |l|
+      @source.lines.each do |l|
 
-      if l.match(/^['\.](.[a-zA-Z"])(.*)/)
-        req = self.quote_req($1)
-         if self.respond_to?("req_#{req}")
-           self.send("req_#{req}", $2)
-         end
-      else
-        #puts "FOO: #{l}"
-        @current_block.append(l)
+        if l.match(/^(['\.])(.[a-zA-Z"]?)(.*)/)
+          req = self.quote_req($2)
+          if self.respond_to?("req_#{req}")
+            self.send("req_#{req}", $3)
+          else
+             @current_block.append(StyledObject.new($3,:unsupported,{:tag => ($1+$2)}))
+          end
+        else
+          #puts "FOO: #{l}"
+          @current_block.append(l)
+        end
+      
       end
-	end
-  rescue ImmutableStyleError
+
+    rescue ImmutableStyleError
+      @blocks << @current_block
+      @current_block = StyledObject.new
+      retry
+    end
+
     @blocks << @current_block
-    @current_block = StyledObject.new
-    retry
-  end
-  @blocks << @current_block
+
   end
 	
   def quote_req ( reqstr )

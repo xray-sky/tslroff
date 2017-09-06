@@ -7,6 +7,7 @@
 #
 
 require "modules/Source.rb"
+require "modules/TaggedText.rb"
 
 class Manual
 
@@ -15,10 +16,10 @@ class Manual
 	
   def initialize ( file )
 
-  #temporary hardcode for early prototyping
-  @platform = "SunOS"
-  @version = "4_1_4"
-  #end temporary hardcode
+      #temporary hardcode for early prototyping
+        @platform = "SunOS"
+        @version = "4_1_4"
+      #end temporary hardcode
 
     @blocks = Array.new
     @source = Source.new( file )
@@ -37,9 +38,10 @@ class StyledObject
 
   attr_reader :text, :style
   
-  def initialize ( text = "" , style = :normal )
-    @text = text
-    @style = style 
+  def initialize ( text = "" , style = :normal, params = {} )
+    @text = [text]
+    @style = style
+    @params = params
   end
   
   def append ( text )

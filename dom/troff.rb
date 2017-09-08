@@ -30,8 +30,8 @@ module Troff
         #if l.match(/^(['\.])(.[a-zA-Z"]?)(.*)/)
         if l.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
           req = quote_req($2)
-          args = Shellwords.split($3)
           if self.respond_to?("req_#{req}")
+            args = Shellwords.split($3)
             self.send("req_#{req}", args)
           else
              @current_block.append(TaggedText.new(args,{:unsupported => ($1+$2)}))

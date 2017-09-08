@@ -4,6 +4,7 @@
 # ---------------
 #
 
+require 'shellwords'
 
 module Troff
 
@@ -26,16 +27,19 @@ module Troff
     begin
       @source.lines.each do |l|
 
-        if l.match(/^(['\.])(.[a-zA-Z"]?)(.*)/)
-          req = self.quote_req($2)
+        #if l.match(/^(['\.])(.[a-zA-Z"]?)(.*)/)
+        if l.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
+          req = quote_req($2)
+          args = Shellwords.split($3)
           if self.respond_to?("req_#{req}")
-            self.send("req_#{req}", $3)
+            self.send("req_#{req}", args)
           else
-             @current_block.append(TaggedText.new($3,{:unsupported => ($1+$2)}))
+             @current_block.append(TaggedText.new(args,{:unsupported => ($1+$2)}))
           end
+          @current_block.append(" ") unless $1 == "'"
         else
           #puts "FOO: #{l}"
-          @current_block.append(l)
+          @current_block.append("#{l} ")
         end
       
       end
@@ -49,7 +53,9 @@ module Troff
     @blocks << @current_block
 
   end
-	
+
+  private
+  
   def quote_req ( reqstr )
     case reqstr
       when '\"' then "BsQuot"

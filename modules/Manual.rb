@@ -7,6 +7,7 @@
 #
 
 require "modules/Source.rb"
+require "modules/StyledObject.rb"
 require "modules/TaggedText.rb"
 
 class Manual
@@ -32,37 +33,4 @@ class Manual
 	
   end
 
-end
-
-class StyledObject
-
-  attr_reader :text, :style
-  
-  def initialize ( text = "" , style = :p, params = {} )
-    @text = TaggedText.new(text)
-    @style = style
-    @params = params
-  end
-  
-  def << ( text )
-    @text << text
-  end
-
-  def append ( text )
-    @text << text
-  end
-
-  def style! ( style )
-    unless @style == style
-      if text.empty?
-        @style = style
-      else
-        raise ImmutableStyleError 
-      end
-    end
-  end
-
-end
-
-class ImmutableStyleError < Exception
 end

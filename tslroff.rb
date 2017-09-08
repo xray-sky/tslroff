@@ -45,7 +45,8 @@ src.parse
 src.blocks.each do |b|
  puts case b.style
   when :comment then "<!--#{b.text} -->"
-  when :normal  then "<p>#{b.text}</p>" unless b.text.strip.empty?
+  when :th then "<h1>#{b.text}</h1>"
+  when :p  then "<p>#{b.text.to_html}</p>" unless b.text.empty?
  end 
 end
 

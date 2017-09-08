@@ -31,7 +31,7 @@ module Troff
           if self.respond_to?("req_#{req}")
             self.send("req_#{req}", $3)
           else
-             @current_block.append(StyledObject.new($3,:unsupported,{:tag => ($1+$2)}))
+             @current_block.append(TaggedText.new($3,{:unsupported => ($1+$2)}))
           end
         else
           #puts "FOO: #{l}"

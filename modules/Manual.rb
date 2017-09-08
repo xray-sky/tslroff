@@ -38,12 +38,16 @@ class StyledObject
 
   attr_reader :text, :style
   
-  def initialize ( text = "" , style = :normal, params = {} )
-    @text = [text]
+  def initialize ( text = "" , style = :p, params = {} )
+    @text = TaggedText.new(text)
     @style = style
     @params = params
   end
   
+  def << ( text )
+    @text << text
+  end
+
   def append ( text )
     @text << text
   end

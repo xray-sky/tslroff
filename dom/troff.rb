@@ -16,16 +16,18 @@ module Troff
           end
         end
 
-		require "platform/#{self.platform.downcase}.rb"
-		self.extend Kernel.const_get(self.platform.to_sym)
+    require "platform/#{self.platform.downcase}.rb"
+    self.extend Kernel.const_get(self.platform.to_sym)
 
-		load_version_overrides
+    load_version_overrides
 
-	end
+    @esc_chars = init_sc
+
+  end
 	
   def parse
-    begin
-      @source.lines.each do |l|
+    @source.lines.each do |l|
+      begin
 
         #if l.match(/^(['\.])(.[a-zA-Z"]?)(.*)/)
         if l.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
@@ -42,12 +44,12 @@ module Troff
           @current_block.append("#{l} ")
         end
       
+      rescue ImmutableStyleError
+        @blocks << @current_block
+        @current_block = StyledObject.new
+        retry
       end
 
-    rescue ImmutableStyleError
-      @blocks << @current_block
-      @current_block = StyledObject.new
-      retry
     end
 
     @blocks << @current_block

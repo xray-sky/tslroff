@@ -30,7 +30,7 @@ class TaggedText
 
   def to_s
     @text.map do |t|
-      t.respond_to?(:tagged?) ? t.to_html : t
+      t.respond_to?(:to_html) ? t.to_html : t
     end.join
   end
   
@@ -49,7 +49,7 @@ class TaggedText
 
   def untag
     @text.map do |t|
-      t.respond_to?(:tagged?) ? t.untag : t
+      t.respond_to?(:untag) ? t.untag : t
     end.join
   end
 

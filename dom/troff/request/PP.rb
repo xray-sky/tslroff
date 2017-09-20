@@ -13,16 +13,7 @@ module Troff
   end
 
   def req_PP ( args )
-    #puts "PP: (new) -- #{args.inspect}"
-    #@blocks << @current_block
-    #@current_block = StyledObject.new
-    begin
-      @current_block.style!(:p)
-    rescue ImmutableStyleError
-      @blocks << @current_block
-      @current_block = StyledObject.new
-      retry
-    end
+    @current_block.style!(:p)
   end
 
 end

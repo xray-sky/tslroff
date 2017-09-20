@@ -9,16 +9,10 @@
 module Troff
 
   def req_TH ( args )
-    begin
-      @current_block.style!(:th)
-      @current_block << args.join(" ")
-      @blocks << @current_block
-      @current_block = StyledObject.new
-    rescue ImmutableStyleError
-      @blocks << @current_block
-      @current_block = StyledObject.new
-      retry
-    end
+    @current_block.style!(:th)
+    @current_block << args.join(" ")
+    @blocks << @current_block
+    @current_block = StyledObject.new
   end
 
 end

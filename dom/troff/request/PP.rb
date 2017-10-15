@@ -13,7 +13,8 @@ module Troff
   end
 
   def req_PP ( args )
-    @current_block.style!(:p)
+    @blocks << @current_block
+    @current_block = Block.new
   end
 
 end

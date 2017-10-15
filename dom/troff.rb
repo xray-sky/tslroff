@@ -36,18 +36,26 @@ module Troff
             args = Shellwords.split($3)
             self.send("req_#{req}", args)
           else
-             @current_block.append(TaggedText.new(args,{:unsupported => ($1+$2)}))
+             @current_block << Text.new(:text => args.inspect, :style => Style.new(:unsupported => req))
+             @current_block << Text.new
           end
-          @current_block.append(" ") unless $1 == "'"
+          @current_block << " " unless $1 == "'"
         else
           #puts "FOO: #{l}"
-          @current_block.append("#{l} ")
+          @current_block << "#{l} "
         end
       
-      rescue ImmutableStyleError
-        @blocks << @current_block
-        @current_block = StyledObject.new
-        retry
+      rescue ImmutableObjectError => e
+        case e.control
+          when :Block
+            @blocks << @current_block
+            @current_block = Block.new
+            retry
+          when :Text
+            @current_block << Text.new(@current_block.text.last)
+            retry
+        end
+        puts "whoa! got #{e.control.inspect}"
       end
 
     end

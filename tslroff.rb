@@ -1,3 +1,4 @@
+#! /usr/bin/env ruby
 #! /usr/bin/ruby
 #
 # tslroff.rb
@@ -32,6 +33,8 @@ cwd = Dir.getwd
 (ipath,ifile) = ARGV[0].scan( %r|^(.+)/(.+)$| )[0]
 #Dir.chdir(ipath)
 
+$defaultfontsize = 12
+
 begin
   src = Manual.new( ARGV[0] )
 rescue FileIsLinkError
@@ -43,11 +46,7 @@ end
 src.parse
 
 src.blocks.each do |b|
- puts case b.style
-  when :comment then "<!--#{b.text} -->"
-  when :th then "<h1>#{b.text}</h1>"
-  when :p  then "<p>#{b.text.to_html}</p>" unless b.text.empty?
- end 
+  puts b.to_html
 end
 
 =begin

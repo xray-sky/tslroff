@@ -9,14 +9,14 @@
 module Troff
 
   def req_BsQuot ( args )
-    begin
-      @current_block.style!(:comment)
-      @current_block << args.join(" ") << "\n"
-    rescue ImmutableStyleError
-      @blocks << @current_block
-      @current_block = StyledObject.new
-      retry
-    end
+    #begin
+      @current_block.type = :comment
+      @current_block << args.join(" ") + "\n"
+    #rescue ImmutableStyleError
+    #  @blocks << @current_block
+    #  @current_block = StyledObject.new
+    #  retry
+    #end
     #@blocks << @current_block
     #@blocks << StyledObject.new(args, :comment)
     #@current_block = StyledObject.new

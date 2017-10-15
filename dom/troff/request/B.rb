@@ -23,15 +23,18 @@ module Troff
   end
   
   def req_B ( args )
-    @current_block.append(TaggedText.new(args.join(" "), {:b => true}))
+    @current_block << Text.new(:text => args.join(" "), :font => Font.new(:face => :bold))
+    @current_block << Text.new
   end
 
   def req_I ( args )
-    @current_block.append(TaggedText.new(args.join(" "), {:i => true}))
+    @current_block << Text.new(:text => args.join(" "), :font => Font.new(:face => :italic))
+    @current_block << Text.new
   end
 
   def req_R ( args )
-    @current_block.append(TaggedText.new(args.join(" ")))
+    @current_block << Text.new(:text => args.join(" "), :font => Font.new(:face => :regular))
+    @current_block << Text.new
   end
 
 end

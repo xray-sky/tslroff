@@ -7,8 +7,8 @@
 #
 
 require "modules/Source.rb"
-require "modules/StyledObject.rb"
-require "modules/TaggedText.rb"
+require "modules/Block.rb"
+require "modules/Text.rb"
 
 class Manual
 
@@ -24,7 +24,7 @@ class Manual
 
     @blocks = Array.new
     @source = Source.new( file )
-    @current_block = StyledObject.new
+    @current_block = Block.new
 
     require "dom/#{@source.magic.downcase}"
     self.extend Kernel.const_get(@source.magic.to_sym)

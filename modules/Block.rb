@@ -49,6 +49,7 @@ class Block
       when :comment then "<!--#{t} -->"
       when :sh then "<h2>#{t}</h2>"
       when :th then "<h1>#{t}</h1>"
+      when :tp then "<dl><dt>#{self.style.tag}</dt><dd>#{t}</dd></dl>"	# this needs more work to leave <dl> open
       when :p  then "<p>#{t}</p>" unless self.text.empty?
       else          "<p style=\"color:gray;\">BLOCK(#{self.type})<br>#{t}</p>"
     end

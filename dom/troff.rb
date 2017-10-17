@@ -26,6 +26,7 @@ module Troff
   end
 	
   def parse
+    @held = [ nil, 0 ]
     @source.lines.each do |l|
         #if l.match(/^(['\.])(.[a-zA-Z"]?)(.*)/)
         if l.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
@@ -39,7 +40,12 @@ module Troff
           end
           @current_block << " " unless $1 == "'"
         else
-          @current_block << "#{l} "
+          if @held[1] > 0
+            self.send("held_#{@held[0]}".to_sym, l)
+            @held[1] -= 1
+          else
+            @current_block << "#{l} "
+          end
         end
       
     end

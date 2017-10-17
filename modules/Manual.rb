@@ -14,7 +14,7 @@ class Manual
 
   attr_accessor :blocks
   attr_reader   :platform, :version
-	
+
   def initialize ( file )
 
       #temporary hardcode for early prototyping
@@ -31,6 +31,23 @@ class Manual
 	
     source_init
 	
+  end
+  
+  def apply ( &block )
+    begin
+      yield
+    rescue ImmutableObjectError => e
+      case e.control
+        when :Block
+          @blocks << @current_block
+          @current_block = Block.new(:style => @current_block.style.dup)
+          retry
+        when :Text
+          @current_block << Text.new(:font => @current_block.text.last.font.dup, :style => @current_block.text.last.style.dup)
+          retry
+      end
+      puts "whoa! got #{e.control.inspect}"
+    end
   end
 
 end

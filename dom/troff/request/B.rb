@@ -10,6 +10,17 @@
 module Troff
 
   [ "B", "I", "R" ].each do |a|
+    define_method "req_#{a}".to_sym do |args|
+      self.apply { 
+        @current_block.text.last.font.face = case a
+          when "B" then :bold
+          when "I" then :italic
+          when "R" then :regular
+        end
+        @current_block.text.last << args.join(" ")
+      }
+      self.apply { @current_block.text.last.font.face = :regular } unless a == "R"
+    end
     [ "B", "I", "R" ].each do |b|
       unless a == b
         define_method "req_#{a+b}".to_sym do |args|
@@ -21,20 +32,27 @@ module Troff
       end
     end
   end
-  
+
+=begin
   def req_B ( args )
-    @current_block << Text.new(:text => args.join(" "), :font => Font.new(:face => :bold))
-    @current_block << Text.new
+    self.apply {
+      @current_block.text.last.font.face = :bold
+      @current_block.text.last << args.join(" ") 
+    }
   end
 
   def req_I ( args )
-    @current_block << Text.new(:text => args.join(" "), :font => Font.new(:face => :italic))
-    @current_block << Text.new
+    self.apply {
+      @current_block.text.last.font.face = :italic
+      @current_block.text.last << args.join(" ") 
+    }
   end
 
   def req_R ( args )
-    @current_block << Text.new(:text => args.join(" "), :font => Font.new(:face => :regular))
-    @current_block << Text.new
+    self.apply {
+      @current_block.text.last.font.face = :regular
+      @current_block.text.last << args.join(" ") 
+    }
   end
-
+=end
 end

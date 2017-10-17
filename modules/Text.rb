@@ -23,7 +23,6 @@ class Text
     self.text  = (arg[:text]  or String.new)
     self.font  = (arg[:font]  or Font.new(:control => @control))
     self.style = (arg[:style] or Style.new(:control => @control))
-    #@control.freeze
   end
 
   def << ( t )
@@ -60,11 +59,11 @@ class Text
         case t
           when :shift       then "<span style=\"baseline-shift:#{v};\">"
           when :unsupported then "<span style=\"color:red;\">Unsupported tag: #{v} =&gt; "
-          else                   "<!! #{t} || #{v} !!>"
+          else                   "<span style=\"color:white;background:red;\">WTF? #{t}: #{v} =&gt; "
         end
       end
     end
-    (tags + [@text.to_s] + (tags.reverse.map do |t| t.sub(/^</,"</").sub(/\s.*/,">") ; end ) ).join
+    (tags + [self.text] + (tags.reverse.map do |t| t.sub(/^</,"</").sub(/\s.*/,">") ; end ) ).join
   end
 
   alias_method :concat, :<<

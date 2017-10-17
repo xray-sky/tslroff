@@ -35,6 +35,17 @@ module Immutable
     self.instance_variable_remove(attr)
   end
 
+  def dup
+    self.class.new(Hash[((self.keys + [ :control ]).collect { |k| 
+      begin
+        [ k, self[k].dup ]
+      rescue TypeError
+        [ k, self[k] ]
+      end
+      })]
+    )
+  end
+
   def each ( &block )
     return enum_for(__callee__) unless block_given?
     self.keys.each do |k|

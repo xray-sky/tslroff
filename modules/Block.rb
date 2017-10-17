@@ -20,7 +20,6 @@ class Block
     self.style = (arg[:style] or Style.new(:control => @control))
     self.text  = (arg[:text]  or Text.new)
     self.type  = (arg[:type]  or :p)
-    #@control.freeze
   end
 
   def << ( t )
@@ -48,8 +47,10 @@ class Block
     t=self.text.map { |t| t.to_html }.join(" ")
     case self.type
       when :comment then "<!--#{t} -->"
+      when :sh then "<h2>#{t}</h2>"
       when :th then "<h1>#{t}</h1>"
       when :p  then "<p>#{t}</p>" unless self.text.empty?
+      else          "<p style=\"color:gray;\">BLOCK(#{self.type})<br>#{t}</p>"
     end
   end
 

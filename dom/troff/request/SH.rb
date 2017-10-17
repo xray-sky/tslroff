@@ -1,16 +1,16 @@
-# TH.rb
+# SH.rb
 # -------------
 #   troff
 # -------------
 #
-#   Marks a "three-part header" 
+#   Marks a normal section header
 #
 
 module Troff
 
-  def req_TH ( args )
+  def req_SH ( args )
     self.apply {
-      @current_block.type = :th
+      @current_block.type = :sh
       @current_block << args.join(" ")
       @blocks << @current_block
       @current_block = Block.new 

@@ -11,7 +11,7 @@ class ImmutableObjectError < Exception
 
   def initialize ( control, *message )
     @control = control
-    super("Control object: #{control} ==> #{message}")
+    super("Control object #{control} ==> #{message}")
   end
 
 end

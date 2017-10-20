@@ -27,14 +27,3 @@ class Font
   alias_method :size=,   :immutable_setter
 
 end
-
-
-  #%w( family face size ).each do |attr|
-  #  define_method("#{attr}=") do |value|
-  #    if self.frozen?
-  #      raise ImmutableObjectError(self.class.name) unless instance_variable_get("@"+attr.to_s) == value
-  #    end
-  #    instance_variable_set("@"+attr.to_s, value)
-  #  end  
-  #end
-

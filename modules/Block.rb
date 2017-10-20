@@ -17,9 +17,9 @@ class Block
 
   def initialize ( arg = Hash.new )
     @control   = :Block
+    self.type  = (arg[:type]  or :p)
     self.style = (arg[:style] or Style.new(:control => @control))
     self.text  = (arg[:text]  or Text.new)
-    self.type  = (arg[:type]  or :p)
   end
 
   def << ( t )
@@ -44,12 +44,13 @@ class Block
   end
 
   def to_html
-    t=self.text.map { |t| t.to_html }.join(" ")
+    t=self.text.map(&:to_html).join(" ")
     case self.type
+      when :bare then t
       when :comment then "<!--#{t} -->"
       when :sh then "<h2>#{t}</h2>"
       when :th then "<h1>#{t}</h1>"
-      when :tp then "<dl><dt>#{self.style.tag}</dt><dd>#{t}</dd></dl>"	# this needs more work to leave <dl> open
+      when :tp then "<dl><dt>#{self.style.tag.to_html}</dt><dd>#{t}</dd></dl>"	# this needs more work to leave <dl> open
       when :p  then "<p>#{t}</p>" unless self.text.empty?
       else          "<p style=\"color:gray;\">BLOCK(#{self.type})<br>#{t}</p>"
     end

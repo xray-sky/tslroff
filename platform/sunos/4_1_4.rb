@@ -9,10 +9,10 @@
 
 module SunOS_4_1_4
 
-	def parse
-		super
-		self.apply { @current_block.text << Text.new(:text => "super.", :style => Style.new(:grated => true)) }
-	end
+  #def parse ( lines = @source.lines )
+  #  super
+  #  self.apply { @current_block.text << Text.new(:text => "super.", :style => Style.new(:grated => true)) }
+  #end
 	
 end
 

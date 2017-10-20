@@ -43,11 +43,13 @@ rescue FileIsLinkError
   exit(0)
 end
 
-src.parse
+#src.parse(["woggle", ".B foo bar"])
+#src.parse
+src.to_html
 
-src.blocks.each do |b|
-  puts b.to_html
-end
+#src.blocks.each do |b|
+#  puts b.to_html
+#end
 
 =begin
 

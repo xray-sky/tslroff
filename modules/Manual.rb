@@ -13,7 +13,7 @@ require "modules/Text.rb"
 class Manual
 
   attr_accessor :blocks
-  attr_reader   :platform, :version
+  attr_reader   :platform, :version, :lines
 
   def initialize ( file )
 
@@ -24,6 +24,7 @@ class Manual
 
     @blocks = Array.new
     @source = Source.new( file )
+    @lines  = @source.lines.each
     @current_block = Block.new
 
     require "dom/#{@source.magic.downcase}"

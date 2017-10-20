@@ -20,9 +20,9 @@ class Text
 
   def initialize ( arg = Hash.new )
     @control   = :Text
-    self.text  = (arg[:text]  or String.new)
     self.font  = (arg[:font]  or Font.new(:control => @control))
     self.style = (arg[:style] or Style.new(:control => @control))
+    self.text  = (arg[:text]  or String.new)
   end
 
   def << ( t )

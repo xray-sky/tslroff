@@ -9,8 +9,12 @@
 
 module Troff
 
+  def esc_lParen ( s )
+    s.sub(/^(..)/, @state[:special_chars][$1])
+  end
+
   def init_sc
-    {
+    h = {
       "bu"	=> "&bull;",
       "co"	=> "&copy;",
       "rg"	=> "&reg;",
@@ -325,6 +329,10 @@ module Troff
       "HE"	=> "&hearts;",
       "DI"	=> "&diams;"
     }
+    h.default_proc = proc do |hash, key|
+      "<span style=\"color:blue\">#{key}</span>"
+    end
+    h
   end
 
 end

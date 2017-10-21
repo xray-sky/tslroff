@@ -9,32 +9,28 @@
 
 module Troff
 
-  [ "B", "I", "R" ].each do |a|
-
+  %w[B I R].each do |a|
     define_method "req_#{a}".to_sym do |args|
       args.any? or args = @lines.next
-      self.apply { 
+      apply do
         @current_block.text.last.font.face = case a
-          when "B" then :bold
-          when "I" then :italic
-          when "R" then :regular
-        end
-        unescape(args.join(" "))
-      }
-      self.apply { @current_block.text.last.font.face = :regular } unless a == "R"
+                                             when 'B' then :bold
+                                             when 'I' then :italic
+                                             when 'R' then :regular
+                                             end
+        unescape(args.join(' '))
+      end
+      apply { @current_block.text.last.font.face = :regular } unless a == 'R'
     end
+  end
 
-    [ "B", "I", "R" ].each do |b|
-
-      define_method "req_#{a+b}".to_sym do |args|
-        styles = [ a, b ]
-        args.each_with_index do |arg, i|
-          self.send("req_#{styles[i%2]}".to_sym, [arg])
-        end
-      end unless a == b
-
+  %w[B I R].permutation(2).each do |a, b|
+    define_method "req_#{a + b}".to_sym do |args|
+      styles = [a, b]
+      args.each_with_index do |arg, i|
+        send("req_#{styles[i % 2]}".to_sym, [arg])
+      end
     end
-
   end
 
 end

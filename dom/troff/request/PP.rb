@@ -8,13 +8,11 @@
 
 module Troff
 
-  def req_P ( args )
-    req_PP args
-  end
-
-  def req_PP ( args )
+  def req_PP(*)
     @blocks << @current_block
     @current_block = Block.new
   end
+
+  alias req_P req_PP
 
 end

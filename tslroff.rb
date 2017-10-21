@@ -22,29 +22,25 @@
 #
 
 $LOAD_PATH << File.dirname(__FILE__)
-require "modules/Manual.rb"
+require 'modules/Manual.rb'
 
 
 # TODO parse arguments properly
-raise ArgumentError, "need an input file!" if ARGV[0].nil?
+raise ArgumentError, 'need an input file!' if ARGV[0].nil?
 
 
 cwd = Dir.getwd
-(ipath,ifile) = ARGV[0].scan( %r|^(.+)/(.+)$| )[0]
+(ipath,ifile) = ARGV[0].scan(%r|^(.+)/(.+)$|)[0]
 #Dir.chdir(ipath)
 
-$defaultfontsize = 12
-
 begin
-  src = Manual.new( ARGV[0] )
+  src = Manual.new(ARGV[0])
 rescue FileIsLinkError
   target = $!.to_s
   File.symlink("#{target}.html", "#{ifile}.html")
   exit(0)
 end
 
-#src.parse(["woggle", ".B foo bar"])
-#src.parse
 src.to_html
 
 #src.blocks.each do |b|

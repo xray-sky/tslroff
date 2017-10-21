@@ -5,9 +5,9 @@
 # Block class
 #
 
-require "modules/Immutable.rb"
-require "modules/Style.rb"
-require "modules/Text.rb"
+require 'modules/Immutable.rb'
+require 'modules/Style.rb'
+require 'modules/Text.rb'
 
 class Block
   include Immutable
@@ -15,49 +15,48 @@ class Block
   attr_reader   :text, :type
   attr_accessor :style
 
-  def initialize ( arg = Hash.new )
+  def initialize(arg = Hash.new)
     @control   = :Block
     self.type  = (arg[:type]  or :p)
-    self.style = (arg[:style] or Style.new(:control => @control))
+    self.style = (arg[:style] or Style.new(control: @control))
     self.text  = (arg[:text]  or Text.new)
   end
 
-  def << ( t )
+  def <<(t)
     case t.class.name
-      when "String" then @text.last << t
-      when "Text"   then @text << t
+    when 'String' then @text.last << t
+    when 'Text'   then @text << t
     end
-    self.freeze if t.length > 0
+    freeze unless t.empty?
   end
 
   def freeze
-    self.frozen? or self.style.freeze
+    frozen? or style.freeze
   end
 
   def frozen?
-    self.style.frozen?
+    style.frozen?
   end
 
-  def text= ( t )
+  def text=(t)
     @text = [t]
-    self.freeze if t.length > 0
+    freeze unless t.empty?
   end
 
   def to_html
-    t=self.text.map(&:to_html).join(" ")
-    case self.type
-      when :bare then t
-      when :comment then "<!--#{t} -->"
-      when :sh then "<h2>#{t}</h2>"
-      when :th then "<h1>#{t}</h1>"
-      when :tp then "<dl><dt>#{self.style.tag.to_html}</dt><dd>#{t}</dd></dl>"	# this needs more work to leave <dl> open
-      when :p  then "<p>#{t}</p>" unless self.text.empty?
-      else          "<p style=\"color:gray;\">BLOCK(#{self.type})<br>#{t}</p>"
+    t = text.map(&:to_html).join(' ')
+    case type
+    when :bare    then t
+    when :comment then "<!--#{t} -->"
+    when :sh      then "<h2>#{t}</h2>"
+    when :th      then "<h1>#{t}</h1>"
+    when :tp      then "<dl><dt>#{style.tag.to_html}</dt><dd>#{t}</dd></dl>"	# this needs more work to leave <dl> open
+    when :p       then "<p>#{t}</p>" unless text.empty?
+    else          "<p style=\"color:gray;\">BLOCK(#{type})<br>#{t}</p>"
     end
   end
 
-  alias_method :concat, :<<
-  alias_method :type=,  :immutable_setter
+  alias concat <<
+  alias type= immutable_setter
 
 end
-

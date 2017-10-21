@@ -5,7 +5,7 @@
 # Font class
 #
 
-require "modules/Immutable.rb"
+require 'modules/Immutable.rb'
 
 class Font
   include Immutable
@@ -14,16 +14,15 @@ class Font
 
   attr_reader   :family, :face, :size
 
-  def initialize ( arg = Hash.new )
+  def initialize(arg = Hash.new)
     self.family = (arg[:family] or :default)
     self.face   = (arg[:face]   or :regular)
     self.size   = (arg[:size]   or @@defaultsize)
     @control    =  arg[:control]
-    #@control.freeze
   end
 
-  alias_method :family=, :immutable_setter
-  alias_method :face=,   :immutable_setter
-  alias_method :size=,   :immutable_setter
+  alias family= immutable_setter
+  alias face=   immutable_setter
+  alias size=   immutable_setter
 
 end

@@ -97,9 +97,9 @@ module Troff
               when '%' then parts[2].sub(/^%/, '&shy;')                      # discretionary hyphen
               when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>') # 1/6 em      narrow space char
               when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>') # 1/12em half-narrow space char
-              when /([(ef])/ 
-                send("esc_#{Troff.quote_method(Regexp.last_match(1))}", parts[2])
-              else "<span style=\"color:blue;\">#{parts[2]}</span>"          # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
+              else
+                esc_method = "esc_#{Troff.quote_method(Regexp.last_match(1))}"
+                respond_to?(esc_method) ? send(esc_method, parts[2]) : "<span class=\"u\">#{parts[2]}</span>" # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
               end
       else
         str = parts[2]

@@ -193,7 +193,7 @@ body {
 }
 
 .man .synopsis {
-    word-spacing: 0.4em;
+    word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
 }
     
 .man .nrs {     /* troff 1/6em narrow space */

@@ -50,6 +50,7 @@ class Block
     when :comment then "<!--#{t} -->"
     when :th      then "<div class=\"title\"><h1>#{t}</h1></div><div class=\"body\"><div class=\"man\">"
     when :sh      then "<h2>#{t}</h2>"
+    when :ss      then "<h3>#{t}</h3>"
     when :tp      then "<dl><dt>#{style.tag.to_html}</dt><dd>#{t}</dd></dl>"
     when :p       
       return if t.strip.empty?

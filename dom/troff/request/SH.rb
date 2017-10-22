@@ -12,9 +12,9 @@ module Troff
     apply do
       @current_block.type = :sh
       @current_block << args.join(' ')
-      @blocks << @current_block
-      @current_block = Block.new(style: Style.new(section: args.join(' ')))
     end
+    @blocks << @current_block
+    @current_block = Block.new(style: Style.new(section: args.join(' ')))
   end
 
 end

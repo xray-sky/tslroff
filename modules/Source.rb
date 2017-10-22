@@ -18,7 +18,7 @@ class Source
       case File.magic(file)
       when 'tar'
         raise ArgumentError, "Input file is tape archive: #{file}"
-        # TODO
+        # TODO:
         #
         # this might be useful later for dealing productively with tar files.
         # https://gist.github.com/sinisterchipmunk/1335041
@@ -36,9 +36,9 @@ class Source
     end
 
     @magic = case @lines[0]
-             when %r{^<.+?>}    then 'HTML'	# html, probably
-             when %r{^[\.\'].}  then 'Troff'	# troff source, probably
-             else                    'Nroff'	# plain text with or without carriage control
+             when %r{^<.+?>}    then 'HTML'   # html, probably
+             when %r{^[\.\'].}  then 'Troff'  # troff source, probably
+             else                    'Nroff'  # plain text with or without carriage control
              end
 
   end

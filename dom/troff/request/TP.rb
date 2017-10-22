@@ -12,7 +12,7 @@
 
 module Troff
 
-  def req_TP(args)	# TODO incomplete; needs to accept width args
+  def req_TP(args)	# TODO: incomplete; needs to accept width args
     @blocks << @current_block
     @current_block = Block.new(type: :tp)
 

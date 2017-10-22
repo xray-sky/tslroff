@@ -13,6 +13,7 @@ module Troff
     @current_block = Block.new
   end
 
-  alias req_P req_PP
+  alias req_P  req_PP
+  alias req_LP req_PP
 
 end

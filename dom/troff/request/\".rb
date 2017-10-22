@@ -17,4 +17,3 @@ module Troff
   end
 
 end
-

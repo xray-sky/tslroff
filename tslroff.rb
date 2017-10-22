@@ -1,5 +1,4 @@
 #! /usr/bin/env ruby
-#! /usr/bin/ruby
 #
 # tslroff.rb
 #
@@ -18,14 +17,12 @@
 # eventually, support rewriting HTML for site-specific standards. 
 # (AIX, BeOS, etc.)
 #
-# ridiculous attempt to try a ruby implementation.
-#
 
 $LOAD_PATH << File.dirname(__FILE__)
 require 'modules/Manual.rb'
 
 
-# TODO parse arguments properly
+# TODO: parse arguments properly
 raise ArgumentError, 'need an input file!' if ARGV[0].nil?
 
 
@@ -41,7 +38,7 @@ rescue FileIsLinkError
   exit(0)
 end
 
-src.to_html
+puts src.to_html
 
 #src.blocks.each do |b|
 #  puts b.to_html

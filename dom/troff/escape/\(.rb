@@ -4,7 +4,7 @@
 # -------------
 #
 #   basic definitions of the \( (special character) escape
-#	most of these are groff-only (man groff_chars) -- should they be separated?
+#	most of these are groff-only (man groff_chars) -- TODO: should they be separated?
 #
 
 module Troff
@@ -279,7 +279,7 @@ module Troff
       'a~'	=> '&#771;',	# tilde, U0303 (U007E)
       'ho'	=> '&#809;',	# ogonek, U0328 (U02DB)
       # these are explicitly spacing variants
-      'ti'	=> '~',			# TODO nroff treats ~ as small for diacritic, possibly the 'normal' appearance of ~ should be replaced by &tilde; and leave this def as-is
+      'ti'	=> '~',			# TODO: nroff treats ~ as small for diacritic, possibly the 'normal' appearance of ~ should be replaced by &tilde; and leave this def as-is
       'ha'	=> '^',
       # quotes
       'Bq'	=> '&bdquo;',

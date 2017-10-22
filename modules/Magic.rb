@@ -11,6 +11,12 @@
 # zlib can't deal with old school UNIX compression. just gzip.
 #require "zlib"
 
+class FileIsLinkError < RuntimeError
+  # TODO:
+  # do something productive with a symlink
+  # i.e. generate equivalent output link
+end
+
 class File
   def self.magic(file)
 
@@ -28,11 +34,6 @@ class File
     end
 
   end
-end
-
-class FileIsLinkError < Exception
-  # do something productive with a symlink
-  # i.e. generate equivalent output link
 end
 
 

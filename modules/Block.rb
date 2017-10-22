@@ -43,14 +43,14 @@ class Block
     freeze unless t.empty?
   end
 
-  def to_html
-    t = text.map(&:to_html).join(' ')
+  def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
+    t = text.map(&:to_html).join
     case type
     when :bare    then t
     when :comment then "<!--#{t} -->"
     when :sh      then "<h2>#{t}</h2>"
     when :th      then "<h1>#{t}</h1>"
-    when :tp      then "<dl><dt>#{style.tag.to_html}</dt><dd>#{t}</dd></dl>"	# this needs more work to leave <dl> open
+    when :tp      then "<dl><dt>#{style.tag.to_html}</dt><dd>#{t}</dd></dl>"
     when :p       then "<p>#{t}</p>" unless text.empty?
     else          "<p style=\"color:gray;\">BLOCK(#{type})<br>#{t}</p>"
     end

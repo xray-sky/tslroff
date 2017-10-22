@@ -4,7 +4,7 @@
 # -------------
 #
 #   Marks a "three-part header" 
-# TODO this is totally wrong
+# TODO: this is totally wrong
 #
 
 module Troff

@@ -20,7 +20,8 @@ module Troff
     @state                 = Hash.new
     @state[:escape_char]   = '\\'
     @state[:special_chars] = init_sc
-    @state[:font_positions] = %w(_ R I B)
+    @state[:font_pos]      = %w(_ R I B)
+    @state[:numeric_reg]   = Array.new
 
     load_version_overrides
 
@@ -32,26 +33,23 @@ module Troff
       parse(l.rstrip)
     rescue StopIteration
       @blocks << @current_block
-      blocks.each do |b|
-        puts b.to_html
-      end
-      finished = true
-    end until finished  
+      return @blocks.collect(&:to_html).join
+    end while true
   end
 
   def parse(l)
     if l.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
       (x, cmd, req, args) = Regexp.last_match.to_a
       begin
-        self.send("req_#{quote_method(req)}", argsplit(args))
+        send("req_#{Troff.quote_method(req)}", argsplit(args))
       rescue NoMethodError => e
         @current_block << Text.new(text: l, style: Style.new(:unsupported => req))
         @current_block << Text.new
       end
-      #@current_block << ' ' unless cmd == "'"
     else
       unescape(l)
     end
+    @current_block << ' ' unless cmd == "'"
   end
 
   def argsplit(s)
@@ -70,36 +68,41 @@ module Troff
 
   private
   
-  def quote_method(reqstr)
+  def self.quote_method(reqstr)
     case reqstr
-    when '('  then 'lParen'
     when '\"' then 'BsQuot'
     else           reqstr
     end
   end
 
   def unescape(str)
+    str.gsub!(/[<>]/) do |c|
+      case c
+      when '<' then '&lt;'
+      when '>' then '&gt;'
+      end
+    end
     begin
-      ec = @state[:escape_char]
-      parts = str.partition(ec)
+      esc   = @state[:escape_char]
+      parts = str.partition(esc)
       @current_block << parts[0] unless parts[0].empty?
 
-      if parts[1] == ec
+      if parts[1] == esc
         str = case parts[2][0]
-              when ec  then parts[2]
-              when '_' then parts[2]                                         # underrule, equivalent to \(ul
-              when '-' then parts[2].sub(/^-/, '&minus;')                    # "minus sign in current font"
-              when ' ' then parts[2].sub(/^ /, '&nbsp;')                     # "unpaddable space-sized character"
-              when '%' then parts[2].sub(/^%/, '&shy;')                      # discretionary hyphen
-              when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>') # 1/6 em      narrow space char
-              when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>') # 1/12em half-narrow space char
+              when esc then parts[2]
+              when '_' then parts[2]                                             # underrule, equivalent to \(ul
+              when '-' then parts[2].sub(/^-/, '&minus;')                        # "minus sign in current font"
+              when ' ' then parts[2].sub(/^ /, '&nbsp;')                         # "unpaddable space-sized character"
+              when '%' then parts[2].sub(/^%/, '&shy;')                          # discretionary hyphen
+              when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>')     # 1/6 em      narrow space char
+              when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>')     # 1/12em half-narrow space char
               when '(' then parts[2].sub(/^\((..)/, esc_lParen(Regexp.last_match[1]))
-              when 'e' then @current_block << ec 
-                            parts[2].sub(/^e/, '')                           # current escape character
-              when 'f' then parts[2].match(/^f#{Regexp.quote(ec)}?(\S)/)     # handle \f\P wart in ftp.1c [GL2-W2.5]
+              when 'e' then @current_block << esc 
+                            parts[2].sub(/^e/, '')                               # current escape character
+              when 'f' then parts[2].match(/^f#{Regexp.quote(esc)}?([1-9BIPR])/) # handle \f\P wart in ftp.1c [GL2-W2.5]
                             (esc_seq, font_req) = Regexp.last_match.to_a
                             case font_req
-                            when /\d/ then apply { @current_block.text.last.font.face = @state[:font_position][font_req] }
+                            when /\d/ then apply { @current_block.text.last.font.face = @state[:font_pos][font_req] }
                             when 'R'  then apply { @current_block.text.last.font.face = :regular }
                             when 'B'  then apply { @current_block.text.last.font.face = :bold }
                             when 'I'  then apply { @current_block.text.last.font.face = :italic }

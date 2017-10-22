@@ -39,7 +39,34 @@ rescue FileIsLinkError
   exit(0)
 end
 
+puts <<EOML
+<head>
+  <link rel="stylesheet" type="text/css" href="tslroff.css"></link>
+</head>
+<body>
+ <div id="right">
+  <div id="content">
+EOML
+
 puts src.to_html
+
+puts <<EOML
+    </div>
+   </div>
+   <div class="bottom_deco">
+    <table><tr><td class="left"></td><td></td><td class="right"></td></tr></table>
+   </div>
+  </div>
+ </div>
+ <div id="footer">
+  <p>Typewritten Software &bull; 
+  <a href="mailto:bear@typewritten.org">bear@typewritten.org</a> &bull; Edmonds, WA 98026</p>
+ </div>
+</div>
+
+ </div>
+</body>
+EOML
 
 # this ain't workin' so hot
 # output's incomplete 

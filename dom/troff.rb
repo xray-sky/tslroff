@@ -70,6 +70,7 @@ module Troff
   
   def self.quote_method(reqstr)
     case reqstr
+    when '('  then 'lparen'
     when '\"' then 'BsQuot'
     else           reqstr
     end
@@ -96,10 +97,9 @@ module Troff
               when '%' then parts[2].sub(/^%/, '&shy;')                      # discretionary hyphen
               when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>') # 1/6 em      narrow space char
               when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>') # 1/12em half-narrow space char
-              when '(' then esc_lparen(parts[2])
-              when 'e' then esc_e(parts[2])
-              when 'f' then esc_f(parts[2])
-              else     "<span style=\"color:blue;\">#{parts[2]}</span>"      # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
+              when /([(ef])/ 
+                send("esc_#{Troff.quote_method(Regexp.last_match(1))}", parts[2])
+              else "<span style=\"color:blue;\">#{parts[2]}</span>"          # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
               end
       else
         str = parts[2]

@@ -13,7 +13,7 @@ require 'modules/Style.rb'
 class Text
   include Immutable
   extend Forwardable
-  def_delegators :@text, :length, :empty?
+  def_delegators :@text, :length, :empty?, :to_s
 
   attr_reader   :text
   attr_accessor :font, :style

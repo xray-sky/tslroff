@@ -48,10 +48,15 @@ class Block
     case type
     when :bare    then t
     when :comment then "<!--#{t} -->"
+    when :th      then "<div class=\"title\"><h1>#{t}</h1></div><div class=\"body\"><div class=\"man\">"
     when :sh      then "<h2>#{t}</h2>"
-    when :th      then "<h1>#{t}</h1>"
     when :tp      then "<dl><dt>#{style.tag.to_html}</dt><dd>#{t}</dd></dl>"
-    when :p       then "<p>#{t}</p>" unless text.empty?
+    when :p       
+      return if t.strip.empty?
+      case style.section
+      when 'SYNOPSIS' then "<p class=\"synopsis\">#{t}</p>"
+      else                 "<p>#{t}</p>"
+      end
     else          "<p style=\"color:gray;\">BLOCK(#{type})<br>#{t}</p>"
     end
   end

@@ -1,4 +1,4 @@
-# sc.rb
+# (.rb
 # -------------
 #   troff
 # -------------
@@ -9,8 +9,8 @@
 
 module Troff
 
-  def esc_lParen(s)
-    s.sub(/^(..)/, @state[:special_chars][Regexp.last_match[1]])
+  def esc_lparen(s)
+    s.sub(/^\((..)/, @state[:special_chars][Regexp.last_match[1]])
   end
 
   def init_sc

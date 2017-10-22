@@ -20,6 +20,7 @@
 
 $LOAD_PATH << File.dirname(__FILE__)
 require 'modules/Manual.rb'
+#require 'nokogiri'
 
 
 # TODO: parse arguments properly
@@ -39,6 +40,10 @@ rescue FileIsLinkError
 end
 
 puts src.to_html
+
+# this ain't workin' so hot
+# output's incomplete 
+#puts Nokogiri::XML(src.to_html, &:noblanks).to_xhtml(indent: 4)
 
 #src.blocks.each do |b|
 #  puts b.to_html

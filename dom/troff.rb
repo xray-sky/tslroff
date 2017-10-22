@@ -59,7 +59,7 @@ module Troff
       if s.sub!(/^\"(.+?(#{esc}\")*)(\"|$)/, '') # an open quote may be closed by EOL
         args << Regexp.last_match(1)             # TODO: are single-quoted args allowed??
       else
-        s.sub!(/^(.+?(#{esc}\s)*\s*)(\s|$)/, '')
+        s.sub!(/^\s*(.+?(#{esc}\s)*\s*)(\s|$)/, '')
         args << Regexp.last_match(1)
       end
     end
@@ -90,29 +90,15 @@ module Troff
       if parts[1] == esc
         str = case parts[2][0]
               when esc then parts[2]
-              when '_' then parts[2]                                             # underrule, equivalent to \(ul
-              when '-' then parts[2].sub(/^-/, '&minus;')                        # "minus sign in current font"
-              when ' ' then parts[2].sub(/^ /, '&nbsp;')                         # "unpaddable space-sized character"
-              when '%' then parts[2].sub(/^%/, '&shy;')                          # discretionary hyphen
-              when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>')     # 1/6 em      narrow space char
-              when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>')     # 1/12em half-narrow space char
-              when '(' then parts[2].sub(/^\((..)/, esc_lParen(Regexp.last_match[1]))
-              when 'e' then @current_block << esc 
-                            parts[2].sub(/^e/, '')                               # current escape character
-              when 'f' then parts[2].match(/^f#{Regexp.quote(esc)}?([1-9BIPR])/) # handle \f\P wart in ftp.1c [GL2-W2.5]
-                            (esc_seq, font_req) = Regexp.last_match.to_a
-                            case font_req
-                            when /\d/ then apply { @current_block.text.last.font.face = @state[:font_pos][font_req] }
-                            when 'R'  then apply { @current_block.text.last.font.face = :regular }
-                            when 'B'  then apply { @current_block.text.last.font.face = :bold }
-                            when 'I'  then apply { @current_block.text.last.font.face = :italic }
-                            when 'P'  then f = @current_block.text[-2].font.face
-                                           @current_block << Text.new(font: @current_block.text.last.font.dup, 
-                                                                      style: @current_block.text.last.style.dup)
-                                           @current_block.text.last.font.face = f
-                            else          "<span style=\"color:blue\">unselected font #{Regexp.last_match(1)}</span>"
-                            end
-                            parts[2].sub(/#{esc_seq}/, '')
+              when '_' then parts[2]                                         # underrule, equivalent to \(ul
+              when '-' then parts[2].sub(/^-/, '&minus;')                    # "minus sign in current font"
+              when ' ' then parts[2].sub(/^ /, '&nbsp;')                     # "unpaddable space-sized character"
+              when '%' then parts[2].sub(/^%/, '&shy;')                      # discretionary hyphen
+              when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>') # 1/6 em      narrow space char
+              when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>') # 1/12em half-narrow space char
+              when '(' then esc_lparen(parts[2])
+              when 'e' then esc_e(parts[2])
+              when 'f' then esc_f(parts[2])
               else     "<span style=\"color:blue;\">#{parts[2]}</span>"      # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
               end
       else

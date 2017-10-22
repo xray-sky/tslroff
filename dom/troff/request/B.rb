@@ -11,7 +11,7 @@ module Troff
 
   %w[B I R].each do |a|
     define_method "req_#{a}".to_sym do |args|
-      args.any? or args = @lines.next
+      args.any? or args = [@lines.next]
       apply do
         @current_block.text.last.font.face = case a
                                              when 'B' then :bold

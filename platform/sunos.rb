@@ -19,6 +19,19 @@ module SunOS
   #  super
   #end
 
+  # TODO: these aren't sunos named strings, just samples for testing
+  def init_ns
+    {
+      'S'  => "\\s#{Font.defaultsize}",
+      'R'  => '&reg;',
+      'Tm' => '&trade;',
+      'lq' => '&ldquo;',
+      'rq' => '&rdquo;',
+      ']D' => 'Silicon Graphics',
+      ']W' => 'xTIMEx'                    # TODO: this file's modification time
+    }
+  end
+
 end
 
 

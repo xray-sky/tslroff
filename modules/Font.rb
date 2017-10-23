@@ -12,13 +12,17 @@ class Font
 
   @@defaultsize = 12
 
-  attr_reader   :family, :face, :size
+  attr_reader :family, :face, :size
 
   def initialize(arg = Hash.new)
     self.family = (arg[:family] or :default)
     self.face   = (arg[:face]   or :regular)
     self.size   = (arg[:size]   or @@defaultsize)
     @control    =  arg[:control]
+  end
+
+  def self.defaultsize
+    @@defaultsize
   end
 
   alias family= immutable_setter

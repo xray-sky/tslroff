@@ -10,11 +10,16 @@
 module Troff
 
   def esc_lparen(s)
-    s.sub(/^\((..)/, @state[:special_chars][Regexp.last_match[1]])
+    if s.match(/^\((..)/)
+      (esc_seq, schar) = Regexp.last_match.to_a 
+      s.sub(/#{Regexp.quote(esc_seq)}/, @state[:special_chars][schar])
+    else
+      "<span style=\"color:green;\">named char #{s[0..1]}</span>#{s[2..-1]}"
+    end
   end
 
   def init_sc
-    h = {
+    {
       'bu'	=> '&bull;',
       'co'	=> '&copy;',
       'rg'	=> '&reg;',
@@ -207,7 +212,7 @@ module Troff
       'vZ'	=> '&Zcaron;',
       'vz'	=> '&zcaron;',
       ',C'	=> '&Ccedil;',
-      ',c'	=> '&ccdeil;',
+      ',c'	=> '&ccedil;',
       'oA'	=> '&Aring;',
       'oa'	=> '&aring;',
       '*A'	=> '&Alpha;',
@@ -329,10 +334,11 @@ module Troff
       'HE'	=> '&hearts;',
       'DI'	=> '&diams;'
     }
-    h.default_proc = proc do |_hash, key|
-      "<span style=\"color:green\">#{key}</span>"
-    end
-    h
+    # this doesn't work, I never get #{key}
+    #h.default_proc = proc do |_hash, key|
+    #  "<span style=\"color:green;\">#{key}</span>"
+    #end
+    #h
   end
 
 end

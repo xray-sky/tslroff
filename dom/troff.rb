@@ -20,7 +20,8 @@ module Troff
     @state                 = Hash.new
     @state[:escape_char]   = '\\'
     @state[:special_chars] = init_sc
-    @state[:font_pos]      = %w(_ R I B)
+    @state[:named_strings] = init_ns
+    @state[:font_pos]      = [nil, :regular, :italic, :bold]
     @state[:numeric_reg]   = Array.new
 
     load_version_overrides
@@ -70,6 +71,7 @@ module Troff
   
   def self.quote_method(reqstr)
     case reqstr
+    when '*'  then 'star'
     when '('  then 'lparen'
     when '\"' then 'BsQuot'
     else           reqstr
@@ -98,8 +100,8 @@ module Troff
               when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>') # 1/6 em      narrow space char
               when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>') # 1/12em half-narrow space char
               else
-                esc_method = "esc_#{Troff.quote_method(Regexp.last_match(1))}"
-                respond_to?(esc_method) ? send(esc_method, parts[2]) : "<span class=\"u\">#{parts[2]}</span>" # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
+                esc_method = "esc_#{Troff.quote_method(parts[2][0])}"
+                respond_to?(esc_method) ? send(esc_method, parts[2]) : "<span class=\"u\">#{parts[2][0]}</span>#{parts[2][1..-1]}" # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
               end
       else
         str = parts[2]

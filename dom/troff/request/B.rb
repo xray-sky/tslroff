@@ -34,3 +34,7 @@ module Troff
   end
 
 end
+
+# TODO:
+# this (and .SM) have got to be made safe for e.g.
+# sh.1 [GL2-W2.5] -> .B has conditional following

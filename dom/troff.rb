@@ -94,13 +94,17 @@ module Troff
 
       if parts[1] == esc
         str = case parts[2][0]
-              when esc then parts[2]
+              when esc then parts[2]  # TODO: is this actually right?? does changing it prevent \*S from working??
               when '_' then parts[2]                                         # underrule, equivalent to \(ul
               when '-' then parts[2].sub(/^-/, '&minus;')                    # "minus sign in current font"
               when ' ' then parts[2].sub(/^ /, '&nbsp;')                     # "unpaddable space-sized character"
+              when '0' then parts[2].sub(/^0/, '&ensp;')                     # "digit-width space" - possibly "en space"?
               when '%' then parts[2].sub(/^%/, '&shy;')                      # discretionary hyphen
               when '|' then parts[2].sub(/^\|/, '<span class="nrs"></span>') # 1/6 em      narrow space char
               when '^' then parts[2].sub(/^\^/, '<span class="hns"></span>') # 1/12em half-narrow space char
+              when '&' then parts[2].sub(/^\&/, '&zwj;')                     # "non-printing, zero-width character" - possibly "zero-width joiner"
+              when "'" then parts[2].sub(/^\'/, '&acute;')                   # "typographically equivalent to \(aa" §23.
+              when '`' then parts[2].sub(/^\`/, '&#96;')                     # "typographically equivalent to \(ga" §23.
               else
                 esc_method = "esc_#{Troff.quote_method(parts[2][0])}"
                 respond_to?(esc_method) ? send(esc_method, parts[2]) : "<span class=\"u\">#{parts[2][0]}</span>#{parts[2][1..-1]}" # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns

@@ -18,11 +18,12 @@ module Troff
     self.extend Kernel.const_get(self.platform.to_sym)
 
     @state                 = Hash.new
+    @state[:fill]          = true
     @state[:escape_char]   = '\\'
     @state[:special_chars] = init_sc
     @state[:named_strings] = init_ns
-    @state[:font_pos]      = [nil, :regular, :italic, :bold]
     @state[:numeric_reg]   = Array.new
+    @state[:font_pos]      = [nil, :regular, :italic, :bold]
 
     load_version_overrides
 
@@ -51,6 +52,7 @@ module Troff
       unescape(l)
     end
     @current_block << ' ' unless cmd == "'"
+    req_br(nil) unless @state[:fill]
   end
 
   def argsplit(s)

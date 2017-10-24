@@ -47,18 +47,18 @@ class Block
     t = text.map(&:to_html).join
     case type
     when :bare    then t
-    when :comment then "<!--#{t} -->"
-    when :th      then "<div class=\"title\"><h1>#{t}</h1></div><div class=\"body\"><div class=\"man\">"
-    when :sh      then "<h2>#{t}</h2>"
-    when :ss      then "<h3>#{t}</h3>"
-    when :tp      then "<dl><dt>#{style.tag.to_html}</dt><dd>#{t}</dd></dl>" # TODO: this crashes if 'tag' is unset.
+    when :comment then "<!--#{t} -->\n"
+    when :th      then "<div class=\"title\"><h1>#{t}</h1></div><div class=\"body\"><div class=\"man\">\n"
+    when :sh      then "<h2>#{t}</h2>\n"
+    when :ss      then "<h3>#{t}</h3>\n"
+    when :tp      then "<dl>\n <dt>#{style.tag.to_html}</dt>\n  <dd>#{t}</dd>\n</dl>\n" # TODO: this crashes if 'tag' is unset.
     when :p       
       return if t.strip.empty?
       case style.section
-      when 'SYNOPSIS' then "<p class=\"synopsis\">#{t}</p>"
-      else                 "<p>#{t}</p>"
+      when 'SYNOPSIS' then "<p class=\"synopsis\">\n#{t}\n</p>\n"
+      else                 "<p>\n#{t}\n</p>\n"
       end
-    else          "<p style=\"color:gray;\">BLOCK(#{type})<br>#{t}</p>"
+    else          "<p style=\"color:gray;\">BLOCK(#{type})<br>#{t}</p>\n"
     end
   end
 

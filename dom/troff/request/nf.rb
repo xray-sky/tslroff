@@ -7,9 +7,7 @@
 #
 
 module Troff
-
   def req_nf(_args)
     @state[:fill] = false
   end
-
 end

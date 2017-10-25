@@ -4,17 +4,16 @@
 # -------------
 #
 #   basic definitions of the \( (special character) escape
-#	most of these are groff-only (man groff_chars) -- TODO: should they be separated?
+#	most of these are groff-only (man groff_chars) -- REVIEW: should they be separated?
 #
 
 module Troff
-
   def esc_lparen(s)
     if s.match(/^\((..)/)
       (esc_seq, schar) = Regexp.last_match.to_a 
       s.sub(/#{Regexp.quote(esc_seq)}/, @state[:special_chars][schar])
     else
-      "<span style=\"color:green;\">named char #{s[0..1]}</span>#{s[2..-1]}"
+      %(<span style="color:green;">named char #{s[0..1]}</span>#{s[2..-1]})
     end
   end
 
@@ -284,7 +283,7 @@ module Troff
       'a~'	=> '&#771;',	# tilde, U0303 (U007E)
       'ho'	=> '&#809;',	# ogonek, U0328 (U02DB)
       # these are explicitly spacing variants
-      'ti'	=> '~',			# TODO: nroff treats ~ as small for diacritic, possibly the 'normal' appearance of ~ should be replaced by &tilde; and leave this def as-is
+      'ti'	=> '~',			# REVIEW: nroff treats ~ as small for diacritic, possibly the 'normal' appearance of ~ should be replaced by &tilde; and leave this def as-is
       'ha'	=> '^',
       # quotes
       'Bq'	=> '&bdquo;',
@@ -311,7 +310,7 @@ module Troff
       'rC'	=> '}',
       'la'	=> '&lang;',
       'ra'	=> '&rang;',
-      #		'bv'	=> '&#9134;',	# approximate vertical extension, used in GL2-W2.5 fcntl(5)
+      # 'bv'	=> '&#9134;',	# approximate vertical extension, used in GL2-W2.5 fcntl(5)
       'bv'	=> '|',			# unfortunately this is used extensively in GL2-W2.5 to give a vertical bar, and #9134 doesn't exist in the 'normal' font.
       'lt'	=> '&#9127;',	# brace left top
       'lk'	=> '&#9128;',	# brace left mid
@@ -340,5 +339,4 @@ module Troff
     #end
     #h
   end
-
 end

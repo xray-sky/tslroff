@@ -6,14 +6,12 @@
 #
 
 class ImmutableObjectError < RuntimeError
-
   attr_reader :control
 
   def initialize(control, *message)
     @control = control
     super("Control object #{control} ==> #{message}")
   end
-
 end
 
 module Immutable
@@ -84,5 +82,4 @@ module Immutable
       self.v
     end.compact
   end
-
 end

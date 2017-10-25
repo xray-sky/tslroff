@@ -6,14 +6,12 @@
 # Just a container to hold input lines & determine where to hand off
 #
 
-require 'modules/Magic.rb'
+require 'modules/magic.rb'
 
 class Source
-
   attr_reader :lines, :magic
   
   def initialize(file)
-
     begin
       case File.magic(file)
       when 'tar'
@@ -36,13 +34,11 @@ class Source
     end
 
     @magic = case @lines[0]
-             when %r{^<.+?>}    then 'HTML'   # html, probably
-             when %r{^[\.\'].}  then 'Troff'  # troff source, probably
-             else                    'Nroff'  # plain text with or without carriage control
+             when /^<.+?>/   then 'HTML'   # html, probably
+             when /^[\.\']./ then 'Troff'  # troff source, probably
+             else                 'Nroff'  # plain text with or without carriage control
              end
-
   end
-
 end
 
 =begin

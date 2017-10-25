@@ -6,18 +6,16 @@
 # Just a delegatation to platform-specific methods
 #
 
-require 'modules/Source.rb'
-require 'modules/Block.rb'
-require 'modules/Text.rb'
+require 'modules/source.rb'
+require 'modules/block.rb'
+require 'modules/text.rb'
 
 class Manual
-
   attr_accessor :blocks
   attr_reader   :platform, :version, :lines
 
   def initialize(file)
-
-    # temporary hardcode for early prototyping
+    # TODO: temporary hardcode for early prototyping
     @platform = 'SunOS'
     @version  = '4_1_4'
     # end temporary hardcode
@@ -31,7 +29,6 @@ class Manual
     extend Kernel.const_get(@source.magic.to_sym)
 
     source_init
-
   end
 
   def apply(&block)
@@ -49,5 +46,4 @@ class Manual
       end
     end
   end
-
 end

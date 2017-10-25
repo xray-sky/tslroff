@@ -7,7 +7,6 @@
 #
 
 module Troff
-
   def req_BsQuot(args)
     apply do
       @current_block.type = :comment
@@ -15,5 +14,4 @@ module Troff
     end
     apply { @current_block.type = :p }
   end
-
 end

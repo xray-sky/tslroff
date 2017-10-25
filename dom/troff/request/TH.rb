@@ -8,7 +8,6 @@
 #
 
 module Troff
-
   def req_TH(args)
     apply do
       @current_block.type = :th
@@ -17,5 +16,4 @@ module Troff
       @current_block = Block.new 
     end
   end
-
 end

@@ -5,9 +5,7 @@
 #
 
 module Troff
-
   def source_init
-
     %w[request escape].each do |t|
       Dir.glob("#{File.dirname(__FILE__)}/troff/#{t}/*.rb").each do |i|
         require i
@@ -26,17 +24,18 @@ module Troff
     @state[:font_pos]      = [nil, :regular, :italic, :bold]
 
     load_version_overrides
-
   end
 
   def to_html
-    begin
-      l = @lines.next
-      parse(l.rstrip)
-    rescue StopIteration
-      @blocks << @current_block
-      return @blocks.collect(&:to_html).join
-    end while true
+    loop do
+      begin
+        l = @lines.next
+        parse(l.rstrip)
+      rescue StopIteration
+        @blocks << @current_block
+        return @blocks.collect(&:to_html).join
+      end
+    end
   end
 
   def parse(l)
@@ -45,7 +44,9 @@ module Troff
       begin
         send("req_#{Troff.quote_method(req)}", argsplit(args))
       rescue NoMethodError => e
-        @current_block << Text.new(text: l, style: Style.new(:unsupported => req))
+        @current_block << Text.new
+        @current_block.text.last.style.unsupported = req
+        @current_block << l
         @current_block << Text.new
       end
     else
@@ -60,7 +61,7 @@ module Troff
     args = Array.new
     until s.empty?
       if s.sub!(/^\"(.+?(#{esc}\")*)(\"|$)/, '') # an open quote may be closed by EOL
-        args << Regexp.last_match(1)             # TODO: are single-quoted args allowed??
+        args << Regexp.last_match(1)             # REVIEW: are single-quoted args allowed??
       else
         s.sub!(/^\s*(.+?(#{esc}\s)*\s*)(\s|$)/, '')
         args << Regexp.last_match(1)
@@ -94,7 +95,7 @@ module Troff
 
       if parts[1] == esc
         str = case parts[2][0]
-              when esc then parts[2]  # TODO: is this actually right?? does changing it prevent \*S from working??
+              when esc then parts[2]  # REVIEW: is this actually right?? does changing it prevent \*S from working??
               when '_' then parts[2]                                         # underrule, equivalent to \(ul
               when '-' then parts[2].sub(/^-/, '&minus;')                    # "minus sign in current font"
               when ' ' then parts[2].sub(/^ /, '&nbsp;')                     # "unpaddable space-sized character"
@@ -107,14 +108,13 @@ module Troff
               when '`' then parts[2].sub(/^\`/, '&#96;')                     # "typographically equivalent to \(ga" §23.
               else
                 esc_method = "esc_#{Troff.quote_method(parts[2][0])}"
-                respond_to?(esc_method) ? send(esc_method, parts[2]) : "<span class=\"u\">#{parts[2][0]}</span>#{parts[2][1..-1]}" # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
+                # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
+                respond_to?(esc_method) ? send(esc_method, parts[2]) : %(<span class="u">#{parts[2][0]}</span>#{parts[2][1..-1]})
               end
       else
         str = parts[2]
       end
 
     end until str.empty?
-
   end
-
 end

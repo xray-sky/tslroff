@@ -7,7 +7,6 @@
 #
 
 module Troff
-
   def req_SH(args)
     apply do
       @current_block.type = :sh
@@ -16,5 +15,4 @@ module Troff
     @blocks << @current_block
     @current_block = Block.new(style: Style.new(section: args.join(' ')))
   end
-
 end

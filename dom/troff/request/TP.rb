@@ -11,10 +11,10 @@
 #
 
 module Troff
-
   def req_TP(args)	# TODO: incomplete; needs to accept width args
     @blocks << @current_block
-    @current_block = Block.new(type: :tp, style: @current_block.style.dup)  # TODO: see PP.rb for style carryover note
+    # TODO: see PP.rb for style carryover note
+    @current_block = Block.new(type: :tp, style: @current_block.style.dup)
 
     # the tag may be styled
     hold_block = @current_block
@@ -23,5 +23,4 @@ module Troff
     parse(@lines.next)
     @current_block = hold_block
   end
-
 end

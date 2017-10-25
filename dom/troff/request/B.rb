@@ -6,9 +6,11 @@
 #   applies basic type styles (B, I)
 #	plus alternating type styles (BR, IR, BI, IB, etc.)
 #
+# TODO: this (and .SM) have got to be made safe for e.g.
+# sh.1 [GL2-W2.5] -> .B has conditional following
+#
 
 module Troff
-
   %w[B I R].each do |a|
     define_method "req_#{a}".to_sym do |args|
       args.any? or args = [@lines.next]
@@ -32,9 +34,4 @@ module Troff
       end
     end
   end
-
 end
-
-# TODO:
-# this (and .SM) have got to be made safe for e.g.
-# sh.1 [GL2-W2.5] -> .B has conditional following

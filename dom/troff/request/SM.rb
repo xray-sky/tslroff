@@ -7,7 +7,6 @@
 #
 
 module Troff
-
   def req_SM(args)
     apply do
       @current_block.text.last.font.size = Font.defaultsize - 1
@@ -15,5 +14,4 @@ module Troff
     end
     apply { @current_block.text.last.font.size = Font.defaultsize }
   end
-
 end

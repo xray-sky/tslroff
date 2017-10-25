@@ -5,7 +5,7 @@
 # Font class
 #
 
-require 'modules/Immutable.rb'
+require 'modules/immutable.rb'
 
 class Font
   include Immutable
@@ -28,5 +28,4 @@ class Font
   alias family= immutable_setter
   alias face=   immutable_setter
   alias size=   immutable_setter
-
 end

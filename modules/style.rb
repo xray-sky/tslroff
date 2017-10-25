@@ -5,7 +5,7 @@
 # Style class
 #
 
-require 'modules/Immutable.rb'
+require 'modules/immutable.rb'
 
 class Style
   include Immutable
@@ -22,5 +22,4 @@ class Style
     val  = args.join
     attr.sub!(/=$/, '') ? self[attr.to_sym] = val : self[attr.to_sym]
   end
-
 end

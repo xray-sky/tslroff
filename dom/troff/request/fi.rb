@@ -7,9 +7,7 @@
 #
 
 module Troff
-
   def req_fi(_args)
     @state[:fill] = true
   end
-
 end

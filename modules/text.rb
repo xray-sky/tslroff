@@ -6,9 +6,9 @@
 #
 
 require 'forwardable'
-require 'modules/Immutable.rb'
-require 'modules/Font.rb'
-require 'modules/Style.rb'
+require 'modules/immutable.rb'
+require 'modules/font.rb'
+require 'modules/style.rb'
 
 class Text
   include Immutable
@@ -53,13 +53,13 @@ class Text
             when :italic  then '<em>'
             when :regular then ''
             end
-    tags << "<span style=\"font-size:#{font.size}pt;\">" unless font.size == Font.defaultsize
+    tags << %(<span style="font-size:#{font.size}pt;">) unless font.size == Font.defaultsize
     if @style.keys.any?
       tags += style.collect do |t, v|
         case t
-        when :shift       then "<span style=\"baseline-shift:#{v};\">"
+        when :shift       then %(<span style="baseline-shift:#{v};">)
         when :unsupported then '<span style="color:red;">Unsupported request =&gt; '
-        else                   "<span style=\"color:white;background:red;\">WTF? #{t}: #{v} =&gt; "
+        else                   %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
         end
       end
     end
@@ -67,5 +67,4 @@ class Text
   end
 
   alias concat <<
-
 end

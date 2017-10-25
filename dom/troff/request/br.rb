@@ -7,9 +7,8 @@
 #
 
 module Troff
-
   def req_br(_args)
-    @current_block << '<br />'   # TODO: does this need to be more sophisticated??
+    # REVIEW: does this need to be more sophisticated??
+    @current_block << '<br />'
   end
-
 end

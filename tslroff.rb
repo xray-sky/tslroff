@@ -17,6 +17,8 @@
 # eventually, support rewriting HTML for site-specific standards. 
 # (AIX, BeOS, etc.)
 #
+# remember, remember https://github.com/bbatsov/ruby-style-guide
+#
 
 $LOAD_PATH << File.dirname(__FILE__)
 require 'modules/manual.rb'
@@ -39,18 +41,14 @@ rescue FileIsLinkError
   exit(0)
 end
 
-puts <<EOML
+puts <<DOC
 <head>
   <link rel="stylesheet" type="text/css" href="tslroff.css"></link>
 </head>
 <body>
  <div id="right">
   <div id="content">
-EOML
-
-puts src.to_html
-
-puts <<EOML
+#{src.to_html}
     </div>
    </div>
    <div class="bottom_deco">
@@ -66,7 +64,7 @@ puts <<EOML
 
  </div>
 </body>
-EOML
+DOC
 
 # this ain't workin' so hot
 # output's incomplete 

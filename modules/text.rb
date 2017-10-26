@@ -53,7 +53,7 @@ class Text
             when :italic  then '<em>'
             when :regular then ''
             end
-    tags << %(<span style="font-size:#{font.size}pt;">) unless font.size == Font.defaultsize
+    tags << %(<span style="font-size:#{font.size}pt;">) unless font.size.to_i == Font.defaultsize
     if @style.keys.any?
       tags += style.collect do |t, v|
         case t

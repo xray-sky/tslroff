@@ -44,6 +44,7 @@ module Troff
       begin
         send("req_#{Troff.quote_method(req)}", argsplit(args))
       rescue NoMethodError => e
+        # TODO: "Control lines with unrecognized names are ingored." §1.1
         @current_block << Text.new
         @current_block.text.last.style.unsupported = req
         @current_block << l

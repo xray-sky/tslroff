@@ -9,6 +9,7 @@
 #   (title)
 #   text...
 #
+# TODO: what does ".TP &" mean? (see: machid.1 [GL2-W2.5])
 
 module Troff
   def req_TP(args)	# TODO: incomplete; needs to accept width args

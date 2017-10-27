@@ -26,9 +26,11 @@ class Block
     case t.class.name
     when 'String' then @text.last << t
     when 'Text'   then @text << t
-    when 'Block'
+    when 'Block'  # this is primarily meant for handling named strings, which may include typesetter escapes
       raise RuntimeError "appending non-bare block #{t.inspect}" unless t.type == :bare
       @text += t.text
+      # don't leave the last text object open, or else you'll start writing into the named string definition.
+      @text << Text.new(font: text.last.font.dup, style: text.last.style.dup)
     end
     freeze unless t.empty?
   end

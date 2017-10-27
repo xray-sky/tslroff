@@ -26,8 +26,15 @@ class Block
     case t.class.name
     when 'String' then @text.last << t
     when 'Text'   then @text << t
+    when 'Block'
+      raise RuntimeError "appending non-bare block #{t.inspect}" unless t.type == :bare
+      @text += t.text
     end
     freeze unless t.empty?
+  end
+
+  def empty?
+    text.collect(&:to_s).join.empty?  # REVIEW: does this even make sense?
   end
 
   def freeze
@@ -44,7 +51,7 @@ class Block
   end
 
   def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
-    t = text.map(&:to_html).join
+    t = text.collect(&:to_html).join
     case type
     when :bare    then t
     when :comment then %(<!--#{t} -->\n)

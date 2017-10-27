@@ -9,6 +9,8 @@
 module Troff
   def esc_f(s)
     esc = Regexp.quote(@state[:escape_char])   # handle \f\P wart in ftp.1c [GL2-W2.5]
+    warn "\f #{s.inspect}"
+    warn @current_block.inspect
     if s.match(/^f#{esc}?([1-9BIPR])/)
       (esc_seq, font_req) = Regexp.last_match.to_a
       case font_req

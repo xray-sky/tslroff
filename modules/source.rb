@@ -9,9 +9,10 @@
 require 'modules/magic.rb'
 
 class Source
-  attr_reader :lines, :magic
+  attr_reader :lines, :magic, :filename
   
   def initialize(file)
+    @filename = file
     begin
       case File.magic(file)
       when 'tar'

@@ -14,10 +14,15 @@ module SunOS
     self.extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
   end
 
-  #def parse ( lines = @source.lines )
-  #  puts "well?"
-  #  super
-  #end
+  def parse(l)
+    # TODO: this is just a test of the modular bug rewrite capability.
+    #       it is working; this is an FSF (linux) bug though.
+    case File.basename(@source.filename)
+    when "man.1"
+      l.sub!(/^'html'/, "\\\\&'html'")
+    end
+    super
+  end
 
   # TODO: these aren't sunos named strings, just samples for testing
   def init_ns
@@ -28,7 +33,7 @@ module SunOS
       'lq' => '&ldquo;',
       'rq' => '&rdquo;',
       ']D' => 'Silicon Graphics',
-      ']W' => 'xTIMEx'                    # TODO: this file's modification time
+      ']W' => File.mtime(@source.filename) # REVIEW: probably this is incorrectly formatted for matching whatever it ought to look like
     }
   end
 

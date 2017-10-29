@@ -36,7 +36,7 @@ class Block
   end
 
   def empty?
-    text.collect(&:to_s).join.empty?  # REVIEW: does this even make sense?
+    text.collect(&:to_s).join.strip.empty?  # REVIEW: does this even make sense?
   end
 
   def freeze
@@ -53,7 +53,8 @@ class Block
   end
 
   def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
-    t = text.collect(&:to_html).join
+    return if empty?
+    t = type == :comment ? text.collect(&:to_s).join : text.collect(&:to_html).join
     case type
     when :bare    then t
     when :comment then %(<!--#{t} -->\n)

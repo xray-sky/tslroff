@@ -13,8 +13,16 @@ module Troff
     if s.match(/^s([-+123]?\d)/) 
       (esc_seq, size_req) = Regexp.last_match.to_a
       size = case size_req
-             when '0'        then @current_block.text[-2].font.size
              when /^\d{1,2}/ then size_req
+             when '0'
+               # if the block is newly opened and we encounter a line like \s-2something\s0, 
+               # there won't be a @current_block.text[-2] and we'll end up referencing garbage
+               f = if @current_block.text.count > 1
+                 @current_block.text[-2].font.size
+               else
+                 # REVIEW: is reality more sophisticated than this?
+                 Font.defaultsize
+               end
              when /^([-+])(\d)/
                @current_block.text.last.font.size.send(Regexp.last_match(1),
                                                        Regexp.last_match(2).to_i)
@@ -24,7 +32,8 @@ module Troff
       @current_block.text.last.font.size = size
       s.sub(/#{Regexp.quote(esc_seq)}/, '')
     else
-      %(<span style="color:blue">unselected font size #{s[0..1]}</span>#{s[2..-1]})
+      warn "unselected font size #{s[0..1]} from #{s[2..-1]}"
+      s[2..-1]
     end
   end
 end

@@ -63,7 +63,37 @@ class Text
         end
       end
     end
-    (tags + [text] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
+
+    # Multiple inter-word space characters found in the input are retained. §4.1
+    ent = text
+    while ent.match(/  /)
+      ent.sub!(/  /, '&nbsp; ')
+    end 
+
+    # troff treats ` and ' like typesetter's quotes (§2.1)
+    # make sure < and > are printable while we're at it
+    ent.gsub!(/(?:<|>|`+|'+)/) do |c|
+      case c
+      when '``' then '&ldquo;'
+      when "''" then '&rdquo;'
+      when '`'  then '&lsquo;'
+      when "'"  then '&rsquo;'
+      when '<'  then '&lt;'
+      when '>'  then '&gt;'
+      end
+    end
+
+    # translate some troff fill/adjust fluff
+    ent.gsub!(/(?:&troff_\S+?;)/) do |e|
+      case e
+      when '&troff_br;'  then '<br />'
+      when '&troff_nrs;' then %(<span class="nrs"></span>)
+      when '&troff_hns;' then %(<span class="hns"></span>)
+      end
+    end
+
+    # mark it up the rest of the way
+    (tags + [ent] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
   end
 
   alias concat <<

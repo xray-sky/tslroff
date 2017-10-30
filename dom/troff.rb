@@ -16,6 +16,7 @@ module Troff
     self.extend Kernel.const_get(self.platform.to_sym)
 
     @state                = Hash.new
+    @state[:translate]    = Hash.new
     @state[:escape_char]  = '\\'
     @state[:register]     = init_nr
     @state[:special_char] = init_sc
@@ -64,10 +65,10 @@ module Troff
 
       unescape(l)
       space_adj
-      # REVIEW: this break might also need to happen during macro processing
-      req_br(nil) unless fill? || broke? || cmd == "'"
     end
 
+    # REVIEW: this break might also need to happen during macro processing
+    req_br(nil) unless fill? || broke? || cmd == "'"
   end
 
   def argsplit(s)
@@ -155,6 +156,7 @@ module Troff
   end
 
   def unescape(str)
+    @state[:translate].any? and str.gsub!(/[#{Regexp.quote(@state[:translate].keys.join)}]/) { |c| @state[:translate][c] }
     begin
       esc   = @state[:escape_char]
       parts = str.partition(esc)

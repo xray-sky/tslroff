@@ -9,9 +9,9 @@
 
 module Troff
   def esc_lparen(s)
-    if s.match(/^\((..)/) && @state[:special_chars][Regexp.last_match(1)]
+    if s.match(/^\((..)/) && @state[:special_char][Regexp.last_match(1)]
       s.sub(/#{Regexp.quote(Regexp.last_match(0))}/,
-            @state[:special_chars][Regexp.last_match(1)])
+            @state[:special_char][Regexp.last_match(1)])
     else
       warn "unselected special char #{s[0..1]} from #{s[2..-1]}"
       s[2..-1]

@@ -84,11 +84,11 @@ class Text
     end
 
     # translate some troff fill/adjust fluff
-    ent.gsub!(/(?:&troff_\S+?;)/) do |e|
+    ent.gsub!(/(?:&roffctl_\S+?;)/) do |e|
       case e
-      when '&troff_br;'  then '<br />'
-      when '&troff_nrs;' then %(<span class="nrs"></span>)
-      when '&troff_hns;' then %(<span class="hns"></span>)
+      when '&roffctl_br;'  then '<br />'
+      when '&roffctl_nrs;' then '<span class="nrs"></span>'
+      when '&roffctl_hns;' then '<span class="hns"></span>'
       end
     end
 

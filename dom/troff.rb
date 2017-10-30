@@ -15,13 +15,12 @@ module Troff
     require "platform/#{self.platform.downcase}.rb"
     self.extend Kernel.const_get(self.platform.to_sym)
 
-    @state                 = Hash.new
-    @state[:fill]          = true
-    @state[:escape_char]   = '\\'
-    @state[:special_chars] = init_sc
-    @state[:named_strings] = init_ns
-    @state[:numeric_reg]   = Array.new
-    @state[:font_pos]      = [nil, :regular, :italic, :bold]
+    @state                = Hash.new
+    @state[:escape_char]  = '\\'
+    @state[:register]     = init_nr
+    @state[:special_char] = init_sc
+    @state[:named_string] = init_ns
+    @state[:font_pos]     = [nil, :regular, :italic, :bold]
 
     load_version_overrides
   end
@@ -46,32 +45,29 @@ module Troff
       (x, cmd, req, args) = Regexp.last_match.to_a
       begin
         send("req_#{Troff.quote_method(req)}", argsplit(args))
+        # troff considers a macro line to be an input text line
+        space_adj if Troff.macro?(req)
       rescue NoMethodError => e
         # Control lines with unrecognized names are ingored. §1.1
         warn "Unrecognized request: #{l}"
       end
     else
-      @current_block << case l
-                        # A blank text line causes a break and outputs a blank line 
-                        # exactly like '.sp 1' §5.3
-                        when /^$/   then '&troff_br;&troff_br;'
-                        # initial spaces also cause a break. §4.1
-                        # -- but don't break again unnecessarily.
-                        when /^\s+/ then @current_block.text.last.text.match(/&troff_br;\s+$/) ? '' : '&troff_br;'
-                        else             ''
-                        end
+      case l
+      # A blank text line causes a break and outputs a blank line
+      # exactly like '.sp 1' §5.3
+      when /^$/  then broke? ? req_br(nil) : req_br(nil);req_br(nil)
+      # initial spaces also cause a break. §4.1
+      # -- but don't break again unnecessarily.
+      # -- REVIEW: I think tabs don't count for this
+      when /^ +/ then broke? ? '' : req_br(nil)
+      end
 
       unescape(l)
+      space_adj
+      # REVIEW: this break might also need to happen during macro processing
+      req_br(nil) unless fill? || broke? || cmd == "'"
     end
 
-    # An input text line ending with ., ?, !, .), ?), or !) is taken to be the end
-    # of a sentence, and an additional space character is automatically provided during
-    # filling.  §4.1
-    @current_block.text.last.text.match(/(?:\!|\.|\?)\)?$/) and @current_block << ' '
-
-    @current_block << ' '
-
-    req_br(nil) unless @state[:fill] || cmd == "'"
   end
 
   def argsplit(s)
@@ -89,6 +85,35 @@ module Troff
   end
 
   private
+
+  def break_adj
+    # TODO: this
+  end
+
+  def space_adj
+    return if @current_block.empty?
+    # An input text line ending with ., ?, !, .), ?), or !) is taken to be the end
+    # of a sentence, and an additional space character is automatically provided during
+    # filling.  §4.1
+    sentence_end? and @current_block << ' '
+    @current_block << ' '
+  end
+
+  def self.macro?(req)
+    req.length.between?(1,2) and req.upcase == req
+  end
+
+  def sentence_end?
+    @current_block.text.last.text.match(/(?:\!|\.|\?)\)?$/)
+  end
+
+  def broke?
+    @current_block.text.last.text.match(/&roffctl_br;\s+$/)
+  end
+
+  def fill?
+    @state[:register]['.u'].zero? ? false : true
+  end
   
   def self.quote_method(reqstr)
     case reqstr
@@ -97,6 +122,36 @@ module Troff
     when '\"' then 'BsQuot'
     else           reqstr
     end
+  end
+
+  def cm_unescape(str)
+    copy = String.new
+    begin
+      esc   = @state[:escape_char]
+      parts = str.partition(esc)
+      copy << parts[0] unless parts[0].empty?
+
+      if parts[1] == esc
+        str = case parts[2][0]
+              # TODO: \$, \t, \a, \", concealed new-line
+              when esc then parts[2]  # REVIEW: is this actually right??
+              when '.' then parts[2]
+              when /[*n]/
+                esc_method = "esc_#{Troff.quote_method(parts[2][0])}"
+                if respond_to?(esc_method)
+                  send(esc_method, parts[2])
+                else
+                  warn "unescaped char in copy mode #{parts[2][0]} (#{parts[2][1..-1]})"
+                  parts[2]
+                end
+              else copy << esc ; parts[2]
+              end
+      else
+        str = parts[2]
+      end
+
+    end until str.empty?
+    copy
   end
 
   def unescape(str)
@@ -108,20 +163,24 @@ module Troff
       if parts[1] == esc
         str = case parts[2][0]
               when esc then parts[2]  # REVIEW: is this actually right?? does changing it prevent \*S from working??
-              when '_' then parts[2]                           # underrule, equivalent to \(ul
-              when '-' then parts[2].sub(/^-/,  '&minus;')     # "minus sign in current font"
-              when ' ' then parts[2].sub(/^ /,  '&nbsp;')      # "unpaddable space-sized character"
-              when '0' then parts[2].sub(/^0/,  '&ensp;')      # "digit-width space" - possibly "en space"?
-              when '%' then parts[2].sub(/^%/,  '&shy;')       # discretionary hyphen
-              when '&' then parts[2].sub(/^\&/, '&zwj;')       # "non-printing, zero-width character" - possibly "zero-width joiner"
-              when "'" then parts[2].sub(/^\'/, '&acute;')     # "typographically equivalent to \(aa" §23.
-              when '`' then parts[2].sub(/^\`/, '&#96;')       # "typographically equivalent to \(ga" §23.
-              when '|' then parts[2].sub(/^\|/, '&troff_nrs;') # 1/6 em      narrow space char
-              when '^' then parts[2].sub(/^\^/, '&troff_hns;') # 1/12em half-narrow space char
+              when '_' then parts[2]                             # underrule, equivalent to \(ul
+              when '-' then parts[2].sub(/^-/,  '&minus;')       # "minus sign in current font"
+              when ' ' then parts[2].sub(/^ /,  '&nbsp;')        # "unpaddable space-sized character"
+              when '0' then parts[2].sub(/^0/,  '&ensp;')        # "digit-width space" - possibly "en space"?
+              when '%' then parts[2].sub(/^%/,  '&shy;')         # discretionary hyphen
+              when '&' then parts[2].sub(/^\&/, '&zwj;')         # "non-printing, zero-width character" - possibly "zero-width joiner"
+              when "'" then parts[2].sub(/^\'/, '&acute;')       # "typographically equivalent to \(aa" §23.
+              when '`' then parts[2].sub(/^\`/, '&#96;')         # "typographically equivalent to \(ga" §23.
+              when '|' then parts[2].sub(/^\|/, '&roffctl_nrs;') # 1/6 em      narrow space char
+              when '^' then parts[2].sub(/^\^/, '&roffctl_hns;') # 1/12em half-narrow space char
               else
                 esc_method = "esc_#{Troff.quote_method(parts[2][0])}"
-                # TODO: temporary for debugging; ordinarily it should just return escaped char for unknowns
-                respond_to?(esc_method) ? send(esc_method, parts[2]) : %(<span class="u">#{parts[2][0]}</span>#{parts[2][1..-1]})
+                if respond_to?(esc_method)
+                  send(esc_method, parts[2])
+                else
+                  warn "unescaped char #{parts[2][0]} (#{parts[2][1..-1]})"
+                  parts[2]
+                end
               end
       else
         str = parts[2]

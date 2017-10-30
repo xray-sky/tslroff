@@ -3,30 +3,35 @@
 #   troff
 # -------------
 #
-#   define a named string
+#   §7.5
+#
+# Request       Initial   If no     Notes   Explanation
+#  form          value    argument
+#
+# .ds xx string  ignored  -         -       Define a string 'xx' containing 'string'.
+#                                           Any initial double-quote in 'string' is
+#                                           stripped off to permit initial blanks.
+#
+#
+# TODO: §7.2 Copy mode input interpretation
+#            During the definition and extension of strings and macros, the input is
+#            read in copy mode. The input is copied without interpretation except that
+#            * the contents of number registers, indicated by '\n', are substituted.
+#            * Strings, indicated by '\*x' and '\*(xx', are read into the text.
+#            * Arguments indicated by '\$' are replaced by the appropriate values at
+#              the current macro level.
+#            * Concealed new-lines indicated by '\(new-line)' are eliminated.
+#            * Comments indicated by '\"' are eliminated.
+#            * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
+#            * \\ is interpreted as \.
+#            * \. is interpreted as ".".
+#            These interpretations can be suppressed by prepending a \. For example,
+#            since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
+#            as a number register indicator when the macro or string is reread.
 #
 
 module Troff
   def req_ds(args)
-    # TODO: a string might re-define itself using its existing contents
-    #       see: spline.1g [SunOS 2.0]
-    #       I worry about needing to partially unescape the arglist because of \f
-    #       or doubly-parsing \(fm or something
-    #       but clearly \* and \n need to be interpreted immediately
-    #       and there's the fun whatever of a construct like \f\n(98 or \s\n(99
-    # TODO: what about '.ds 11 "y\(fm\(fm' -- what's that double-quote about?
-    ns = args.shift
-    @state[:named_strings][ns] = Block.new(type: :bare)#, text: Text.new(font: @current_block.text.last.font.dup))
-    # set the current font and freeze it
-    # otherwise with a string like "\f2text\fP" 
-    # \fP will not be able to restore the previous font
-    hold_block = @current_block
-    @current_block = @state[:named_strings][ns]
-    #@current_block.text.last.font = hold_block.text.last.font.dup
-    #@current_block.text.last.font.freeze
-    # now things are "normal"
-    unescape(args.join(' '))
-    @current_block = hold_block
-    #warn "defined #{ns} ==> #{@state[:named_strings][ns].inspect}"
+    @state[:named_string][args.shift] = cm_unescape(args.join(' ').sub(/^"/, ''))
   end
 end

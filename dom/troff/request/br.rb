@@ -18,6 +18,6 @@
 module Troff
   def req_br(_args)
     # REVIEW: does this need to be more sophisticated??
-    @current_block << '&troff_br;'
+    @current_block << '&roffctl_br;'
   end
 end

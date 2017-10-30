@@ -8,7 +8,7 @@
 
 module Troff
   def esc_star(s)
-    if s.match(/^\*(\(..|.)/) && @state[:named_string][Regexp.last_match(1)]
+    if s.match(/^\*(?:\((..)|(.))/) && @state[:named_string][Regexp.last_match(1)]
       s.sub(/#{Regexp.quote(Regexp.last_match(0))}/,
             @state[:named_string][Regexp.last_match(1)])
     else

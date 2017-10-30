@@ -14,6 +14,6 @@ module Troff
     end
     @blocks << @current_block
     # TODO: see PP.rb for style carryover note
-    @current_block = Block.new(type: :tp, style: @current_block.style.dup)
+    @current_block = Block.new(type: :p, style: @current_block.style.dup)
   end
 end

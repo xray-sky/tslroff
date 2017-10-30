@@ -13,7 +13,6 @@ module Troff
     if s.match(/^s([-+123]?\d)/) 
       (esc_seq, size_req) = Regexp.last_match.to_a
       @state[:register]['.s'] = case size_req
-                                when /^\d{1,2}/ then size_req
                                 when '0'
                                 # if the block is newly opened and we encounter a line 
                                 # like \s-2something\s0, there won't be a .text[-2]
@@ -24,6 +23,8 @@ module Troff
                                       # REVIEW: is reality more sophisticated than this?
                                       Font.defaultsize
                                     end
+                                # some other non-zero numeric request
+                                when /^\d{1,2}/ then size_req
                                 when /^([-+])(\d)/
                                   @current_block.text.last.font.size.send(
                                     Regexp.last_match(1),Regexp.last_match(2).to_i)

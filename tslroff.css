@@ -9,10 +9,9 @@
 }
 */
 
-/* needs more research. http://nicewebtype.com/notes/2009/10/30/how-to-use-css-font-face/
-/* also, these CMU fonts are ten kinds of jacked up. vertical alignment is weird, can't select bold...
+/* needs more research. http://nicewebtype.com/notes/2009/10/30/how-to-use-css-font-face/ */
 @font-face {
-    font-family: "CMU Typewriter Text";
+    font-family: "CMU Typewriter";
     src: url("./fonts/cmu/cmuntt.otf");
     src: local("CMU Typewriter Text"), local("Typewriter"), url("./fonts/cmu/cmuntt.otf") format("opentype");
 }
@@ -20,27 +19,30 @@
 @font-face {
     font-family: "CMU Serif";
     src: url("./fonts/cmu/cmunrm.otf");
-    src: local("CMU Serif"), local("Serif"), url("./fonts/cmu/cmuntt.otf") format("opentype");
+    src: local("CMU Serif x"), local("Serif"), url("./fonts/cmu/cmunrm.otf") format("opentype");
 }
 
 @font-face {
-    font-family: "CMU Serif Bold Extended";
+    font-family: "CMU Serif";
+    font-weight: bold;
     src: url("./fonts/cmu/cmunbx.otf");
-    src: local("CMU Serif Bold Extended"), local("Serif Bold"), url("./fonts/cmu/cmunbx.otf") format("opentype");
+    src: local("CMU Serif2 Bold"), local("Serif Bold"), url("./fonts/cmu/cmunbx.otf") format("opentype");
 }
 
 @font-face {
-    font-family: "CMU Serif Italic";
+    font-family: "CMU Serif";
+    font-style: italic;
     src: url("./fonts/cmu/cmuni.otf");
     src: local("CMU Serif Italic"), local("Serif Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
 
 @font-face {
-    font-family: "CMU Serif Bold Italic";
+    font-family: "CMU Serif";
+    font-weight: bold;
+    font-style: italic;
     src: url("./fonts/cmu/cmunbi.otf");
     src: local("CMU Serif Bold Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
-*/
 
 #u {
     color: red;
@@ -57,7 +59,8 @@ body {
 }
 
 .man {
-	font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;
+	font-family: "CMU Serif"; /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;*/
+	/* font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	font-size: 12pt;
 	color: black;
@@ -78,11 +81,22 @@ body {
 .man h1 {
 	font-size: inherit;
 }
+*/
+.body .man h2 { /* safari won't override this unless .body is explicitly specified here. why? */
+    font-style: normal;
+}
 
-.man h2 {
-    clear: left;    /* workaround for bug in strip.1 [GL2-W2.5 §FILES] resulting in orphan </dt>*/
-/*}
+.body .man h3 {
+	font-size: 12pt;
+	background: white;
+	font-style: italic;
+	font-weight: bold;
+	border-bottom: 1px solid gray; 
+	padding: 0.25em 1em 0.25em 0em;
+	margin: 1em 4em 1em 3em;
+}
 
+/*
 .man p {
 	line-height: 1.35;
     margin-bottom: 0em;

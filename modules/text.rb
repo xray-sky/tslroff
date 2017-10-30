@@ -86,9 +86,11 @@ class Text
     # translate some troff fill/adjust fluff
     ent.gsub!(/(?:&roffctl_\S+?;)/) do |e|
       case e
-      when '&roffctl_br;'  then '<br />'
-      when '&roffctl_nrs;' then '<span class="nrs"></span>'
-      when '&roffctl_hns;' then '<span class="hns"></span>'
+      when '&roffctl_br;'      then '<br />'
+      when '&roffctl_nrs;'     then '<span class="nrs"></span>'
+      when '&roffctl_hns;'     then '<span class="hns"></span>'
+      when /&roffctl_sp:(.+);/ then %(<span style="display:inline-block;height:#{Regexp.last_match(1)};"></span>)
+      else warn "unimplemented #{e}"
       end
     end
 

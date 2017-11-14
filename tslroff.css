@@ -19,14 +19,14 @@
 @font-face {
     font-family: "CMU Serif";
     src: url("./fonts/cmu/cmunrm.otf");
-    src: local("CMU Serif x"), local("Serif"), url("./fonts/cmu/cmunrm.otf") format("opentype");
+    src: local("CMU Serif"), local("Serif"), url("./fonts/cmu/cmunrm.otf") format("opentype");
 }
 
 @font-face {
     font-family: "CMU Serif";
     font-weight: bold;
     src: url("./fonts/cmu/cmunbx.otf");
-    src: local("CMU Serif2 Bold"), local("Serif Bold"), url("./fonts/cmu/cmunbx.otf") format("opentype");
+    src: local("CMU Serif Bold Extended Roman"), local("Serif Bold"), url("./fonts/cmu/cmunbx.otf") format("opentype");
 }
 
 @font-face {
@@ -41,7 +41,7 @@
     font-weight: bold;
     font-style: italic;
     src: url("./fonts/cmu/cmunbi.otf");
-    src: local("CMU Serif Bold Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
+    src: local("CMU Serif Bold Extended Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
 
 #u {
@@ -59,9 +59,10 @@ body {
 }
 
 .man {
-	font-family: "CMU Serif"; /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;*/
+	font-family: "CMU Serif"; /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; 
 	/* font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
+	/* font-family: Times, "Times New Roman", serif; */
 	font-size: 12pt;
 	color: black;
 	background-image: url("/ts-watermark.gif");

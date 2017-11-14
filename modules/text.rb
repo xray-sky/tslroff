@@ -89,7 +89,8 @@ class Text
       when '&roffctl_br;'      then '<br />'
       when '&roffctl_nrs;'     then '<span class="nrs"></span>'
       when '&roffctl_hns;'     then '<span class="hns"></span>'
-      when /&roffctl_sp:(.+);/ then %(<span style="display:inline-block;height:#{Regexp.last_match(1)};"></span>)
+      when /&roffctl_sp:(.+);/ then %(<span style="display:inline-block;height:#{Regexp.last_match(1)};"></span>) # REVIEW: does this even work?
+      when /&roffctl_.+;/      then '' # ignore any other roffctl code
       else warn "unimplemented #{e}"
       end
     end

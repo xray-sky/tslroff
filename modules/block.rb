@@ -48,7 +48,7 @@ class Block
   end
 
   def text=(t)
-    @text = [t]
+    @text = t.is_a?(Array) ? t : [t]
     freeze unless t.empty?
   end
 
@@ -58,6 +58,9 @@ class Block
     case type
     when :bare    then t
     when :comment then %(<!--#{t} -->\n)
+    when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
+    when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
+    when :cell    then "  <td#{style.to_s}>#{t}</td>\n"
     when :th      then %(<div class="title"><h1>#{t}</h1></div><div class="body"><div class="man">\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
@@ -65,11 +68,20 @@ class Block
     when :p       
       return if t.strip.empty?
       case style.section
-      when 'SYNOPSIS' then %(<p class="synopsis">\n#{t}\n</p>\n)
-      else                 "<p>\n#{t}\n</p>\n"
+      when 'SYNOPSIS' 
+        %(<p class="synopsis">\n#{t}\n</p>\n)
+      when 'SEE ALSO' # TODO: this needs to be platform overrideable; section to lowercase (maybe?)
+        "<p>\n#{t.gsub(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
+          %(<a href="../man\\7/\\3.\\6.html">\\1</a>))}\n</p>\n"
+      else 
+        "<p>\n#{t}\n</p>\n"
       end
     else          %(<p style="color:gray;">BLOCK(#{type})<br>#{t}</p>\n)
     end
+  end
+
+  def to_s
+    text.collect(&:to_s).join
   end
 
   alias concat <<

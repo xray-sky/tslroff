@@ -73,7 +73,7 @@ module Immutable
 
   def keys
     instance_variables.collect do |v|
-      v.to_s.sub(/^@/, '').to_sym unless [:@control, :@frozen].include?(v)
+      v.to_s.sub(/^@/, '').to_sym unless [:@control, :@frozen, :@css, :@attributes].include?(v)
     end.compact
   end
 

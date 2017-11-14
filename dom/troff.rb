@@ -92,7 +92,7 @@ module Troff
   end
 
   def space_adj
-    return if @current_block.empty?
+    return if @current_block.empty? || continuation?
     # An input text line ending with ., ?, !, .), ?), or !) is taken to be the end
     # of a sentence, and an additional space character is automatically provided during
     # filling.  §4.1
@@ -102,6 +102,10 @@ module Troff
 
   def self.macro?(req)
     req.length.between?(1,2) and req.upcase == req
+  end
+
+  def continuation?
+    @current_block.to_s.match(/&roffctl_continuation;$/)
   end
 
   def sentence_end?
@@ -115,7 +119,7 @@ module Troff
   def fill?
     @state[:register]['.u'].zero? ? false : true
   end
-  
+
   def self.quote_method(reqstr)
     case reqstr
     when '*'  then 'star'
@@ -160,7 +164,7 @@ module Troff
     begin
       esc   = @state[:escape_char]
       parts = str.partition(esc)
-      @current_block << parts[0] unless parts[0].empty?
+      @current_block << parts[0] unless parts[0].empty? # str might begin with esc
 
       if parts[1] == esc
         str = case parts[2][0]
@@ -175,6 +179,7 @@ module Troff
               when '`' then parts[2].sub(/^\`/, '&#96;')         # "typographically equivalent to \(ga" §23.
               when '|' then parts[2].sub(/^\|/, '&roffctl_nrs;') # 1/6 em      narrow space char
               when '^' then parts[2].sub(/^\^/, '&roffctl_hns;') # 1/12em half-narrow space char
+              when 'c' then parts[2].sub(/^c/,  '&roffctl_continuation;') # continuation (shouldn't have been space-adjusted)
               else
                 esc_method = "esc_#{Troff.quote_method(parts[2][0])}"
                 if respond_to?(esc_method)
@@ -184,7 +189,7 @@ module Troff
                   parts[2]
                 end
               end
-      else
+      else # no esc chars remain in str
         str = parts[2]
       end
 

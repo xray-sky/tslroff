@@ -6,8 +6,8 @@
 #
 
 require 'modules/immutable.rb'
-require 'modules/style.rb'
-require 'modules/text.rb'
+require 'classes/style.rb'
+require 'classes/text.rb'
 
 class Block
   include Immutable

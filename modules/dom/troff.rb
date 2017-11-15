@@ -12,7 +12,7 @@ module Troff
       end
     end
 
-    require "platform/#{self.platform.downcase}.rb"
+    require "modules/platform/#{self.platform.downcase}.rb"
     self.extend Kernel.const_get(self.platform.to_sym)
 
     @state                = Hash.new

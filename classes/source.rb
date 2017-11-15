@@ -6,7 +6,7 @@
 # Just a container to hold input lines & determine where to hand off
 #
 
-require 'modules/magic.rb'
+require 'classes/file/magic.rb'
 
 class Source
   attr_reader :lines, :magic, :filename

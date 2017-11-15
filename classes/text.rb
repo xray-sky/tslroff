@@ -7,8 +7,8 @@
 
 require 'forwardable'
 require 'modules/immutable.rb'
-require 'modules/font.rb'
-require 'modules/style.rb'
+require 'classes/font.rb'
+require 'classes/style.rb'
 
 class Text
   include Immutable

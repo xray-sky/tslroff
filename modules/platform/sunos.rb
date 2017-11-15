@@ -10,7 +10,7 @@
 module SunOS
 
   def load_version_overrides
-    require "platform/#{self.platform.downcase}/#{self.version}.rb"
+    require "modules/platform/#{self.platform.downcase}/#{self.version}.rb"
     self.extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
   end
 

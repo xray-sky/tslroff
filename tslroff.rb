@@ -21,7 +21,7 @@
 #
 
 $LOAD_PATH << File.dirname(__FILE__)
-require 'modules/manual.rb'
+require 'classes/manual.rb'
 #require 'nokogiri'
 
 

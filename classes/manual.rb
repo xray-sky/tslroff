@@ -6,9 +6,10 @@
 # Just a delegatation to platform-specific methods
 #
 
-require 'modules/source.rb'
-require 'modules/block.rb'
-require 'modules/text.rb'
+require 'classes/enumerator/collect_through.rb'
+require 'classes/source.rb'
+require 'classes/block.rb'
+require 'classes/text.rb'
 
 class Manual
   attr_accessor :blocks
@@ -25,7 +26,7 @@ class Manual
     @lines  = @source.lines.each
     @current_block = Block.new
 
-    require "dom/#{@source.magic.downcase}"
+    require "modules/dom/#{@source.magic.downcase}"
     extend Kernel.const_get(@source.magic.to_sym)
 
     source_init

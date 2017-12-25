@@ -125,6 +125,7 @@ module Troff
     when '*'  then 'star'
     when '('  then 'lparen'
     when '\"' then 'BsQuot'
+    when 'T&' then 'TAmp'
     else           reqstr
     end
   end

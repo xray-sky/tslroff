@@ -41,27 +41,50 @@ module Troff
       end
     end
 
-    formats_terminator = Regexp.new('\.\s*$')
-    formats = Troff.tbl_formats(@lines.collect_through { |l| l.match(formats_terminator) })
+    # the format section is mandatory
+    req_TAmp(nil)
 
     # table data. terminated by .TE macro
-    
+
     row = 0
     while @blocks.last.type == :table do
       current_row = Block.new(type: :row, style: @current_block.style.dup, text: Array.new)
 
       # input lines like this aren't table rows, but cause cell borders to be drawn.
-      if @lines.peek.match(/^([_=])$/)
-        current_row.style[:row_border] = Regexp.last_match(1)
+      # depending on whitespace, they may apply to individual cells or to entire rows.
+      
+      if @lines.peek.chop.match(/^([\s_=]+)$/)
+        line = Regexp.last_match(0)
+        if line.match(/^([_=])/)
+        warn "foo"
+          current_row.style[:cell_borders] = Array.new(Troff.tbl_width(@state[:tbl_formats]), Regexp.last_match(1))
+        else
+          current_row.style[:cell_borders] = Array.new(Troff.tbl_width(@state[:tbl_formats]))
+          line.split(cell_delim).each_with_index do |fmt, cell|
+            current_row.style[:cell_borders][cell] = fmt if fmt == '_' || fmt == '='
+          end
+        end
         @lines.next
+
+        # special case if this was the LAST row of the table:
+        if @lines.peek.match(/^.\s*TE\s*$/)
+          current_row.style[:cell_borders].each_with_index do |cell, pos|
+            case cell
+            when '_' then tbl.text.last.text[pos].style.css[:border_bottom] = '1px solid black'
+            when '=' then tbl.text.last.text[pos].style.css[:border_bottom] = '3px double black'
+            end
+          end
+        end
       end
+
+      # row data
 
       @lines.next.split(cell_delim).each_with_index do |text, cell|
         # looks like row-spanned cells still exist, and need to be tabbed past.
-        unless text.empty?          # REVIEW: probably this approach is going to fall down on something
+        unless text.empty?          # TODO: falls down with whitespace chars (e.g. \^ <TAB>)
           @current_block = Block.new(type: :cell)
           # if there is no explicit format for this row, the last given row of formats apply.
-          row_format = formats.fetch(row, formats.last)
+          row_format = @state[:tbl_formats].fetch(row, @state[:tbl_formats].last)
           # if there is no explicit format for this cell, the last given format on this row applies.
           row_format.fetch(cell, row_format.last).split(//).each do |fmt|
             case fmt
@@ -77,20 +100,32 @@ module Troff
             when '|'    then @current_block.style.css[:border_right] = '1px solid black'
             else        warn "unimplemented tbl format #{fmt}"
             end
-            case current_row.style[:row_border]
+          end
+
+          # were there any other borders to apply here?
+          if current_row.style[:cell_borders]
+            case current_row.style[:cell_borders][cell]
             when '_' then @current_block.style.css[:border_top] = '1px solid black'
             when '=' then @current_block.style.css[:border_top] = '3px double black'
             end
-            @current_block.style.css[:border] = '1px solid black' if tbl.style[:allbox]
           end
+          @current_block.style.css[:border] = '1px solid black' if tbl.style[:allbox]
 
           parse(text)
           current_row.text << @current_block
         end
       end
-      tbl.text << current_row unless @blocks.last.type != :table # forget this "row" if it was a .TE macro
+      tbl.text << current_row unless @current_block.type != :cell
       row += 1
     end
+  end
+  
+  def self.tbl_width(formats)
+    cols = 0
+    formats.each do |row|
+      cols = row.count if row.count > cols
+    end
+    cols
   end
 
   def self.tbl_formats(format_section)
@@ -121,7 +156,7 @@ module Troff
     #key_letters = 'AaCcLlNnRrSs^'
     # 
     # plus _ and =, which may be substituted for a key letter to get a horizontal
-    # rule through that cell.
+    # rule through that cell. Nearby vertical rules are extended to meet.
     #
     # In order to apply the row (^) and column (S) spans more easily in HTML context,
     # however, we deal with these key letters differently, by shifting an S leftward, 
@@ -137,8 +172,11 @@ module Troff
 
       # suppress newlines, optional whitespace, and the formats terminator;
       # enable the use of comma for separating formats for successive rows
+      #
+      # REVIEW: can anything be done about the cell formats _ or = ?
 
       fmtline.chomp.gsub(/(?:\s+|\.\s*$)/, '').split(',').each do |fmts|
+        warn("table formats include horizontal rule #{Regexp.last_match(1)}") if fmts.match(/([_=])/)
         formats[row] = fmts.scan(/[#{key_letters}][^#{key_letters}]*/)
 
         # merge any ^ key letters upward

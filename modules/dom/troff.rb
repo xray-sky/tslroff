@@ -49,14 +49,17 @@ module Troff
         # troff considers a macro line to be an input text line
         space_adj if Troff.macro?(req)
       rescue NoMethodError => e
-        # Control lines with unrecognized names are ingored. §1.1
+        # Control lines with unrecognized names are ignored. §1.1
         warn "Unrecognized request: #{l}"
+        # TODO: this has the side-effect of hiding other runtime errors
+        warn e  # for now...
+        warn e.backtrace  # for now...
       end
     else
       case l
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3
-      when /^$/  then broke? ? req_br(nil) : req_br(nil);req_br(nil)
+      when /^$/  then broke? ? req_br(nil) : req_br(nil);req_br(nil) unless @current_block.type == :cell
       # initial spaces also cause a break. §4.1
       # -- but don't break again unnecessarily.
       # -- REVIEW: I think tabs don't count for this

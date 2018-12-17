@@ -15,10 +15,13 @@ class Font
   attr_reader :family, :face, :size
 
   def initialize(arg = Hash.new)
-    self.family = (arg[:family] or :default)
-    self.face   = (arg[:face]   or :regular)
-    self.size   = (arg[:size]   or @@defaultsize)
-    @control    =  arg[:control]
+    @family = (arg[:family] or :default)
+    @face   = (arg[:face]   or :regular)
+    @size   = (arg[:size]   or @@defaultsize)
+  end
+
+  def inspect
+    "family: #{@family.inspect}  size: #{@size.inspect}  face: #{@face.inspect}"
   end
 
   def self.defaultsize

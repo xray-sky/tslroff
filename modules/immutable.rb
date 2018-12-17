@@ -5,17 +5,13 @@
 # Immutable objects methods
 #
 
-class ImmutableObjectError < RuntimeError
-  attr_reader :control
-
-  def initialize(control, *message)
-    @control = control
-    super("Control object #{control} ==> #{message}")
-  end
-end
-
 module Immutable
   include Enumerable
+
+  def self.included(baseclass)
+    # Create an ImmutableObject exception class for the class that's been extended
+    Object.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
+  end
 
   def [](key)
     instance_variable_get("@#{key}")
@@ -23,18 +19,18 @@ module Immutable
 
   def []=(key, val)
     attr = "@#{key}"
-    raise ImmutableObjectError, @control if frozen? and instance_variable_get(attr) != val
+    raise get_object_exception_class if frozen? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
   def delete(key)
     attr = "@#{key}"
-    raise ImmutableObjectError, @control if frozen? and instance_variable_defined?(attr)
+    raise get_object_exception_class if frozen? and instance_variable_defined?(attr)
     instance_variable_remove(attr)
   end
 
   def dup
-    self.class.new(Hash[((keys + [:control]).collect do |k|
+    self.class.new(Hash[(keys.collect do |k|
       begin
         [k, self[k].dup]
       rescue TypeError
@@ -53,7 +49,7 @@ module Immutable
 
   def immutable_setter(val)
     attr = "@#{__callee__.to_s.sub(/=$/, '')}"
-    raise ImmutableObjectError, @control, "Attr: #{attr} => Val: #{val}" if frozen? and instance_variable_get(attr) != val
+    raise get_object_exception_class, "Attr: #{attr} => Val: #{val}" if frozen? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
@@ -65,15 +61,9 @@ module Immutable
     @frozen
   end
 
-  #def inspect
-  #  self.keys.map do |k|
-  #    
-  #  end.to_hash
-  #end
-
   def keys
     instance_variables.collect do |v|
-      v.to_s.sub(/^@/, '').to_sym unless [:@control, :@frozen, :@css, :@attributes].include?(v)
+      v.to_s.sub(/^@/, '').to_sym unless [:@frozen, :@css, :@attributes].include?(v)
     end.compact
   end
 
@@ -81,5 +71,11 @@ module Immutable
     keys.collect do |v|
       self.v
     end.compact
+  end
+
+  private
+
+  def get_object_exception_class
+    Kernel.const_get("Immutable#{self.class.name}Error")
   end
 end

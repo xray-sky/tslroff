@@ -35,15 +35,16 @@ class Manual
   def apply(&block)
     begin
       yield
-    rescue ImmutableObjectError => e
-      case e.control
-      when :Block
+    rescue ImmutableBlockError, ImmutableTextError, ImmutableFontError, ImmutableStyleError => e
+      case e
+      when ImmutableBlockError
         @blocks << @current_block
         @current_block = Block.new(style: @current_block.style.dup)
         retry
-      when :Text
+      when ImmutableTextError, ImmutableFontError
         @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
         retry
+      else warn "!!! rescuing #{e.class.name} (??)"
       end
     end
   end

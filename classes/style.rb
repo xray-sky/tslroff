@@ -10,14 +10,22 @@ require 'modules/immutable.rb'
 class Style
   include Immutable
   attr_accessor :css, :attributes
+  attr_writer   :exceptionclass
   
-  def initialize(arg = Hash.new)
-    @control = arg[:control]
+  def initialize(arg = Hash.new, exceptionclass = nil)
     @css = Hash.new
     @attributes = Hash.new
+    if exceptionclass
+      define_method get_object_exception_class { exceptionclass }
+      private :get_object_exception_class
+    end
     arg.each do |k, v|
       self[k] = v
     end
+  end
+
+  def inspect
+    "attributes: #{@attributes.inspect}\ncss:        #{@css.inspect}"
   end
 
   def method_missing(method_sym, *args, &block)

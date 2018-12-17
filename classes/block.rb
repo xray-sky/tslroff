@@ -16,17 +16,16 @@ class Block
   attr_accessor :style
 
   def initialize(arg = Hash.new)
-    @control   = :Block
     self.type  = (arg[:type]  or :p)
-    self.style = (arg[:style] or Style.new(control: @control))
+    self.style = (arg[:style] or Style.new({}, get_object_exception_class))
     self.text  = (arg[:text]  or Text.new)
   end
 
   def <<(t)
-    case t.class.name
-    when 'String' then @text.last << t
-    when 'Text'   then @text << t
-    when 'Block'  # this is primarily meant for handling named strings, which may include typesetter escapes
+    case t
+    when String then @text.last << t
+    when Text   then @text << t
+    when Block  # this is primarily meant for handling named strings, which may include typesetter escapes
       raise RuntimeError "appending non-bare block #{t.inspect}" unless t.type == :bare
       @text += t.text
       # don't leave the last text object open, or else you'll start writing into the named string definition.
@@ -47,13 +46,19 @@ class Block
     style.frozen?
   end
 
+  def inspect
+    "+- Block (#{__id__}) type: #{@type.inspect}\n|\n|  style: " +
+    @style.inspect.each_line.collect { |l| l }.join("|         ") + "\n|  text: " +
+    @text.inspect.each_line.collect { |l| l }.join("|         ") + "\n|\n"
+  end
+
   def text=(t)
     @text = t.is_a?(Array) ? t : [t]
     freeze unless t.empty?
   end
 
   def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
-    return if empty?
+    return if empty? and !([:row,:cell].include?(type)) # TODO: this is causing extra rows to be output (but they're also incorrectly being generated)
     t = type == :comment ? text.collect(&:to_s).join : text.collect(&:to_html).join
     case type
     when :bare    then t

@@ -19,9 +19,8 @@ class Text
   attr_accessor :font, :style
 
   def initialize(arg = Hash.new)
-    @control   = :Text
-    self.font  = (arg[:font]  or Font.new(control: @control))
-    self.style = (arg[:style] or Style.new(control: @control))
+    self.font  = (arg[:font]  or Font.new)
+    self.style = (arg[:style] or Style.new({}, get_object_exception_class))
     self.text  = (arg[:text]  or String.new)
   end
 
@@ -38,6 +37,14 @@ class Text
 
   def frozen?
     font.frozen? or style.frozen?
+  end
+
+  def inspect
+    #indent = text.is_a?(Array) ? 2 : 0
+    #"#{" " * indent}font:  #{font.inspect} (#{text.class.name})\n#{" " * indent}style: " +
+    "font:  [ #{font.inspect} ]\nstyle: " +
+    style.inspect.each_line.collect { |l| l }.join("       ") + "\ntext:  " +
+    text.inspect.each_line.collect { |l| l }.join("|         ") + "\n"
   end
 
   def text=(t)

@@ -61,6 +61,7 @@ class Block
     return if empty? and !([:row,:cell].include?(type)) # TODO: this is causing extra rows to be output (but they're also incorrectly being generated)
     t = type == :comment ? text.collect(&:to_s).join : text.collect(&:to_html).join
     case type
+    when :nil     then '' # suppress. used for placeholding in tbl.
     when :bare    then t
     when :comment then %(<!--#{t} -->\n)
     when :table   then "<table#{style.to_s}>\n#{t}</table>\n"

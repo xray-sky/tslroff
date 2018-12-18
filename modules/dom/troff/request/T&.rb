@@ -142,6 +142,69 @@ module Troff
   private
 
   def format_row
+    row = Array.new(@state[:tbl_formats].columns)
+    row.collect! do
+      cell = Block.new(type: :cell)
+      format = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
+      until format.empty? do
+        case format
+        when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML??
+        when /^(n)/i  then cell.style[:numeric_align]    = true
+        when /^(b)/i  then cell.text.last.font.face      = :bold
+        when /^(i)/i  then cell.text.last.font.face      = :italic
+        when /^(c)/i  then cell.style.css[:text_align]   = 'center'
+        when /^(l)/i  then cell.style.css[:text_align]   = 'left'
+        when /^(r)/i  then cell.style.css[:text_align]   = 'right'
+        when /^(\|)/  then cell.style.css[:border_right] = '1px solid black'
+        when /^(f\d{1,2})/   then warn "unimplemented tbl font change #{Regexp.last_match(1)}"      # REVIEW: regexp
+        when /^(p-?\d{1,2})/ then warn "unimplemented tbl font size change #{Regexp.last_match(1)}" # REVIEW: regexp
+        when /^(s)/i
+          row.pop # REVIEW: is modifying iterable inside loop like this reliable?? seems to work.
+          cell.style.attributes[:colspan] ? cell.style.attributes[:colspan] += 1 : cell.style.attributes[:colspan] = 2
+        when /^(\s+)/ then nil
+        when /^(.)/ # this serves as else clause
+          warn "unimplemented tbl format #{format}"
+          nil
+        end
+        format.sub!(Regexp.last_match(1), '')
+      end
+      @state[:tbl_formats].next_col
+      cell
+    end
+    @state[:tbl_formats].next_row
+    row
   end
+
+=begin
+    row_formats = @state[:tbl_formats].get_row
+    warn "cell format #{@state[:tbl_formats].get.inspect} for cell: #{text}"
+    format.split(//).each do |fmt|
+      case fmt
+      when '^'
+        @current_block.style.css[:vertical_align] = 'middle'
+        @current_block.style.attributes[:rowspan] ? @current_block.style.attributes[:rowspan] += 1 : @current_block.style.attributes[:rowspan] = 2
+      when '_'
+        # there's no text to parse for this cell; it contains only a horizontal rule
+        @current_block.style.css[:border_bottom] = '1px solid black'
+        @current_block.style.css[:line_height] = '50%'
+        next_row.style.css[:line_height] = "50%"
+        next_row.text << Block.new(type: :cell, style: @current_block.style.dup)
+        @state[:tbl_formats].box_extend?.each do |corner|
+          # REVIEW: does this need to work with double-box?
+          # TODO: border-collapse causes extra borders to be drawn (because the adjacent
+          #       cell is full height), and otherwise it may not align (stbl1)
+          case corner
+          when :nw then @current_block.style.css[:border_left] = '1px solid black'
+          when :ne then @current_block.style.css[:border_right] = '1px solid black'
+          when :sw then next_row.text.last.style.css[:border_left] = '1px solid black'
+          when :se then next_row.text.last.style.css[:border_right] = '1px solid black'
+          end
+        end
+        next_row.text.last << '&roffctl_br;'
+        text=' '
+        #warn "unimplemented rule extend #{@state[:tbl_formats].box_extend?.inspect}" 
+      end
+    end
+=end
 
 end

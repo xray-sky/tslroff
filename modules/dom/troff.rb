@@ -50,10 +50,13 @@ module Troff
         space_adj if Troff.macro?(req)
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
-        warn "Unrecognized request: #{l}"
-        # TODO: this has the side-effect of hiding other runtime errors
-        warn e  # for now...
-        warn e.backtrace  # for now...
+        if e.message.match(/^undefined method `req_/)
+          warn "Unrecognized request: #{l}"
+        else
+          # it's some other screwup; use the normal error reporting
+          warn e
+          warn e.backtrace
+        end
       end
     else
       case l

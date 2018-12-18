@@ -94,8 +94,11 @@ class Text
     ent.gsub!(/(?:&roffctl_\S+?;)/) do |e|
       case e
       when '&roffctl_br;'      then '<br />'
+      when '&roffctl_endspan;' then '</span>'
       when '&roffctl_nrs;'     then '<span class="nrs"></span>'
       when '&roffctl_hns;'     then '<span class="hns"></span>'
+      when '&roffctl_tbl_nl;'  then '<span style="width:50%;text-align:right;display:inline-block;">'
+      when '&roffctl_tbl_nr;'  then '<span style="width:50%;display:inline-block;">'
       when /&roffctl_sp:(.+);/ then %(<span style="display:inline-block;height:#{Regexp.last_match(1)};"></span>) # REVIEW: does this even work?
       when /&roffctl_.+;/      then '' # ignore any other roffctl code
       else warn "unimplemented #{e}"

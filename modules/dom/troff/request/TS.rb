@@ -62,9 +62,13 @@ module Troff
       @lines.next
     end
 
+    #row = 0
+    rowspan_active = Array.new(@state[:tbl_formats].columns, nil)
+    rowspan_hold   = Array.new(@state[:tbl_formats].columns, nil)
+
     # table data. terminated by .TE macro
     while @blocks.last.type == :table do
-      current_row = Block.new(type: :row, style: @current_block.style.dup, text: Array.new)
+      current_row = Block.new(type: :row, style: @current_block.style.dup, text: format_row)
       #warn "#{@state[:tbl_formats].columns} // row format #{@state[:tbl_formats].get_row.inspect} for row"
 
       # row data
@@ -74,68 +78,50 @@ module Troff
       # row span control characters (\^) also allowed to appear
       if @lines.peek.chop.match(/^(\s|\\\^|_|=)+$/)
         line = Regexp.last_match(0)
-        if line.match(/^([_=])/)
-          current_row.style[:bottom_borders] = Array.new(@state[:tbl_formats].columns, Regexp.last_match(1))
+        if line.match(/^([_=])$/)
+          current_row.text.each do |cell|
+            cell.style.css[:border_bottom] = case Regexp.last_match(1)
+                                             when '_' then '1px solid black'
+                                             when '=' then '3px double black'
+                                             end
+          end
         else
-          current_row.style[:bottom_borders] = Array.new(@state[:tbl_formats].columns)
           line.split(cell_delim).each_with_index do |fmt, column|
-            current_row.style[:bottom_borders][column] = fmt if fmt.match(/[_=]/)
+            current_row.text[column].style.css[:border_bottom] = case Regexp.last_match(1)
+                                                                 when '_' then '1px solid black'
+                                                                 when '=' then '3px double black'
+                                                                 end if fmt.match(/([_=])/)
           end
         end
+        # there'll be a format line for this guy. skip it.
+        @state[:tbl_formats].next_row
         @lines.next
       end
 
-      next_row = Block.new(type: :row, style: current_row.style.dup, text: Array.new)
-      while format = @state[:tbl_formats].get do
+      current_row.text.each_with_index do |cell, column|
+        @current_block = cell
         text = cells.shift
-        #if text and text.sub!('\^', '') # TODO: this is way too simple; we've already gone past the cell that needs this rowspan set.
-        #end
-        column = @state[:tbl_formats].column? 
-        # looks like row-spanned cells still exist, and need to be tabbed past.
-        @current_block = Block.new(type: :cell)
-        warn "cell format #{@state[:tbl_formats].get.inspect} for cell: #{text}"
-        format.split(//).each do |fmt|
-          case fmt
-          #when /[Aa]/ then # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML??
-          when /[Bb]/ then @current_block.text.last.font.face      = :bold
-          when /[Cc]/ then @current_block.style.css[:text_align]   = 'center'
-          when /[Ii]/ then @current_block.text.last.font.face      = :italic
-          when /[Ll]/ then @current_block.style.css[:text_align]   = 'left'
-          #when /[Nn]/ # TODO: "numerically adjust - units positions are aligned vertically" -- can this even work in HTML??
-          when /[Rr]/ then @current_block.style.css[:text_align]   = 'right'
-          when /[Ss]/
-            @state[:tbl_formats].next_col
-            @current_block.style.attributes[:colspan] ? @current_block.style.attributes[:colspan] += 1 : @current_block.style.attributes[:colspan] = 2
-          when '^'
-            @current_block.style.css[:vertical_align] = 'middle'
-            @current_block.style.attributes[:rowspan] ? @current_block.style.attributes[:rowspan] += 1 : @current_block.style.attributes[:rowspan] = 2
-          when '|'    then @current_block.style.css[:border_right] = '1px solid black'
-          when '_'
-            # there's no text to parse for this cell; it contains only a horizontal rule
-            @current_block.style.css[:border_bottom] = '1px solid black'
-            @current_block.style.css[:line_height] = '50%'
-            next_row.style.css[:line_height] = "50%"
-            next_row.text << Block.new(type: :cell, style: @current_block.style.dup)
-            @state[:tbl_formats].box_extend?.each do |corner|
-              # REVIEW: does this need to work with double-box?
-              # TODO: border-collapse causes extra borders to be drawn (because the adjacent
-              #       cell is full height), and otherwise it may not align (stbl1) 
-              case corner
-              when :nw then @current_block.style.css[:border_left] = '1px solid black'
-              when :ne then @current_block.style.css[:border_right] = '1px solid black'
-              when :sw then next_row.text.last.style.css[:border_left] = '1px solid black'
-              when :se then next_row.text.last.style.css[:border_right] = '1px solid black'
-              end
-            end
-            next_row.text.last << '&roffctl_br;'
-            text=' '
-            #warn "unimplemented rule extend #{@state[:tbl_formats].box_extend?.inspect}" 
-          when /\s+/  then nil
-          else        warn "unimplemented tbl format #{fmt}"
-          end
+
+        # handle cells that've been spanned downward
+        if text and text.sub!(/^\\\^$/, '')
+          rowspan_active[column] ||= true
+          rowspan_hold[column] ||= tbl.text.last.text[column]
+          rowspan_hold[column].style.attributes[:rowspan] ? rowspan_hold[column].style.attributes[:rowspan] += 1 : rowspan_hold[column].style.attributes[:rowspan] = 2
+          rowspan_hold[column].style.css[:vertical_align] = 'middle'
+          # propagate styles up, too. so far, border_bottom is the only one that's been set
+          # top borders & allbox will have already been set on whatever cell it's being spanned to
+          rowspan_hold[column].style.css[:border_bottom] = @current_block.style.css[:border_bottom] if @current_block.style.css[:border_bottom]
+          # suppress this cell from being output; whatever else happens to it is immaterial
+          # but it needs to remain in the tbl to keep the other columns correct
+          @current_block.type = :nil
         end
 
+        # looks like row-spanned cells still exist, and need to be tabbed past.
+        # but there won't be a format for them, because all the spans were merged left.
+        (cell.style.attributes[:colspan] - 1).times { cells.shift } if cell.style.attributes[:colspan]
+
         # was there a top border to apply here? do it, but only once
+        # TODO: refactor this
         if top_borders
           case top_borders[column]
           when '_' then @current_block.style.css[:border_top] = '1px solid black'
@@ -143,13 +129,6 @@ module Troff
           end
         end
 
-        # were there any other borders to apply here?
-        if current_row.style[:bottom_borders]
-          case current_row.style[:bottom_borders][column]
-          when '_' then @current_block.style.css[:border_bottom] = '1px solid black'
-          when '=' then @current_block.style.css[:border_bottom] = '3px double black'
-          end
-        end
         @current_block.style.css[:border] = '1px solid black' if tbl.style[:allbox]
 
         # REVIEW: there is a fundamental conflict between the _ that draws a rule (which 
@@ -160,21 +139,30 @@ module Troff
           parse(text)
           # REVIEW: is this sufficient to suppress a non-printing request line?
           break if @current_block.text.empty? and cells[1].nil?
+          rowspan_hold[column] = nil unless rowspan_active[column]
         else
           # even if it starts with a . this was from the middle of a line and is not a request
-          parse(text.sub(/^([.'])/, "\\\\\\1")) unless text.nil?
+          unless text.nil?
+            parse(text.sub(/^([.'])/, "\\\\\\1"))
+            if @current_block.style[:numeric_align]
+              # prefer to align on \& (has been parsed to &zwj;) -- this gets removed if present
+              # otherwise align on rightmost dot adjacent to a number (REVIEW: not clear if this counts either side; assume just right-hand-side for now)
+              # if full-numeric and no dot, align least significant digit.
+              # TODO: this doesn't quite cause column widths to expand as one would expect,
+              #       when given items that align too far off-center. but it's a reasonable approximation for now
+              #       right-hand-side can be forced to expand with &nbsp; but it's not necessarily one-to-one with lhs chars
+              unless @current_block.text.last.text.sub!(/^(.*)&zwj;(.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')
+                @current_block.text.last.text.sub!(/^(\d+)\s*$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;&nbsp;&roffctl_endspan;')
+                @current_block.text.last.text.sub!(/^(.*)(\.\d.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')
+              end
+            end
+            rowspan_hold[column] = nil unless rowspan_active[column]
+          end
         end
-        current_row.text << @current_block
-        @state[:tbl_formats].next_col
+        rowspan_active[column] = nil
       end
-      top_borders = nil  # suppress this, after the first row.
-      #warn "appending row #{current_row.inspect}"
-      tbl.text << current_row if @current_block.type == :cell
-      warn next_row.inspect
-      tbl.text << next_row #sunless next_row.text.empty?
-      @state[:tbl_formats].next_row
-      warn "===="
-      #warn @blocks.last.text.inspect
+      top_borders = nil  # suppress this, after the first row. TODO: still needed?
+      tbl.text << current_row if @current_block.type == :cell and !current_row.empty?
     end
   end
 

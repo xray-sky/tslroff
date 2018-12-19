@@ -57,19 +57,14 @@ module Troff
 
       # suppress newlines and the formats terminator; preserve whitespace
       # enable the use of comma for separating formats for successive rows
-      #
-      # REVIEW: can anything be done about the cell formats _ or = ?
-      # REVIEW: does this lose initial '|' ??
 
       fmtline.chomp.gsub(/\.\s*$/, '').split(',').each do |fmts|
-
-        warn("table formats include horizontal rule #{Regexp.last_match(1)}") if fmts.match(/([_=])/)
 
         # key letters (of which only one may appear per cell) may be followed by one or more
         # other format characters (e.g. f, s, w, etc.) each of which may be followed by
         # various types of parameters.
 
-        formats[row] = fmts.scan(/[#{key_letters}][^#{key_letters}]*/)
+        formats[row] = fmts.scan(/\|?[#{key_letters}][^#{key_letters}]*/)
         columns = formats[row].count if formats[row].count > columns   # TODO: don't allow this to change after initial format (i.e. during subsequent .T&)
 
         # In order to apply the row (^) and column (S) spans more easily in HTML context,
@@ -103,9 +98,16 @@ module Troff
           formats[merge_row][pos] << '^'
         end
 
+        # move some | to get clean box extends, if necessary
+        #if @formats[row].include?('_') or formats[row].include?('=')
+
         # hack in some extra row spans to accomodate _ and =
         if formats[row].include?('_') or formats[row].include?('=')
           formats[row].collect! do |column|
+          #  if formats[row-1][column-1].include?('|')
+          #    formats[row-1][column-1].sub!('|', '')
+          #    formats[row-1][column] = '|' + formats[row-1][column]
+          #  end
             column << '^' unless column == '_' or column == '='
             column
           end
@@ -118,19 +120,22 @@ module Troff
     formats.instance_variable_set(:@tbl_rows, formats.count)
     formats.instance_variable_set(:@tbl_cols, columns)
     formats.instance_variable_set(:@cursor, [ 0, 0 ])
-    formats.define_singleton_method(:columns) { @tbl_cols }
-    formats.define_singleton_method(:column?) { @cursor[1] }
+    formats.define_singleton_method(:columns)  { @tbl_cols }
+    formats.define_singleton_method(:row?)     { @cursor[0] }
+    formats.define_singleton_method(:column?)  { @cursor[1] }
     formats.define_singleton_method(:next_row) { @cursor[1] = 0 ; @cursor[0] += 1 unless @cursor[0] == (@tbl_rows - 1) }
     formats.define_singleton_method(:next_col) { @cursor[1] += 1 unless @cursor[1] == @tbl_cols }
-    formats.define_singleton_method(:get_row) { self[@cursor[0]] }
-    formats.define_singleton_method(:get) { @cursor[1] < @tbl_cols ? self[@cursor[0]].fetch(@cursor[1], "L") : nil }
+    formats.define_singleton_method(:get_row)  { self[@cursor[0]] }
+    formats.define_singleton_method(:get)      { @cursor[1] < @tbl_cols ? self[@cursor[0]].fetch(@cursor[1], "L") : nil }
     formats.define_singleton_method(:box_extend?) do
       extended = []
       if self.get.match(/[_=]/)
-        extended << :nw if self[@cursor[0]-1][@cursor[1]-1].include?('|')
-        extended << :ne if self[@cursor[0]-1][@cursor[1]].include?('|')
+        # these will be acted on before the | has been moved
         extended << :sw if self[@cursor[0]+1][@cursor[1]-1].include?('|')
-        extended << :se if self[@cursor[0]+1][@cursor[1]].include?('|')
+        extended << :se unless self[@cursor[0]+1][@cursor[1]].index('|', 1).nil?
+        # these will be acted on after the | has been moved 
+        extended << :nw if self[@cursor[0]-1][@cursor[1]].start_with?('|')
+        extended << :ne unless self[@cursor[0]-1][@cursor[1]].index('|', 1).nil?
       end
       extended
     end
@@ -145,24 +150,69 @@ module Troff
     row = Array.new(@state[:tbl_formats].columns)
     row.collect! do
       cell = Block.new(type: :cell)
+      break unless @state[:tbl_formats].get
       format = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
+      # hack to get a border_left (for box extend case; does it ever also appear for real-world tbl formatting?)
+      # the way the formats are parsed means we'll never get this unless it's the first character on the line, or I've moved it there
+      cell.style.css[:border_left] = '1px solid black' if format.sub!(/^\|/, '')
+      # continue with normal formatting, per documentation
       until format.empty? do
         case format
-        when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML??
+        # alignments
+        when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML?? how is it different in practice from L?
         when /^(n)/i  then cell.style[:numeric_align]    = true
+        when /^(c)/i  then cell.style.css[:text_align]   = 'center'
+        when /^(l)/i  then nil # I think this could be considered the default. => cell.style.css[:text_align]   = 'left'
+        when /^(r)/i  then cell.style.css[:text_align]   = 'right'
+
+        # font changes
         when /^(b)/i  then cell.text.last.font.face      = :bold
         when /^(i)/i  then cell.text.last.font.face      = :italic
-        when /^(c)/i  then cell.style.css[:text_align]   = 'center'
-        when /^(l)/i  then cell.style.css[:text_align]   = 'left'
-        when /^(r)/i  then cell.style.css[:text_align]   = 'right'
-        when /^(\|)/  then cell.style.css[:border_right] = '1px solid black'
         when /^(f\d{1,2})/   then warn "unimplemented tbl font change #{Regexp.last_match(1)}"      # REVIEW: regexp
         when /^(p-?\d{1,2})/ then warn "unimplemented tbl font size change #{Regexp.last_match(1)}" # REVIEW: regexp
+
+        # spans
         when /^(s)/i
-          row.pop # REVIEW: is modifying iterable inside loop like this reliable?? seems to work.
+          row.pop      # REVIEW: is modifying iterable inside loop like this reliable?? seems to work.
           cell.style.attributes[:colspan] ? cell.style.attributes[:colspan] += 1 : cell.style.attributes[:colspan] = 2
-        when /^(\s+)/ then nil
-        when /^(.)/ # this serves as else clause
+        when /^(\^)/
+          cell.style.attributes[:rowspan] ? cell.style.attributes[:rowspan] += 1 : cell.style.attributes[:rowspan] = 2
+
+        # box rules
+        when /^(\|)/
+          current_row = @state[:tbl_formats].row?
+          current_col = @state[:tbl_formats].column?
+          if current_row > 0 and current_col < (@state[:tbl_formats].columns - 1) and @state[:tbl_formats][current_row - 1][current_col + 1].chars.select { |c| ['_', '='].include?(c) }.any? # that's a lot of work to avoid a regexp, which would foul up the last_match at the bottom of the case statement
+            @state[:tbl_formats][current_row][current_col + 1].prepend('|')
+          else
+            cell.style.css[:border_right] = '1px solid black'
+          end
+        when /^(_|=)/
+          cell.style[:box_rule] = true
+          if row.last.nil? or row.last.text.last.type != :row_adj
+            row << Block.new(type: :row_adj, text: Block.new(type: :cell, text: Text.new(text: "&roffctl_br;")))
+          else
+            row.last.text << Block.new(type: :cell, text: Text.new(text: "&roffctl_br;"))
+          end
+          cell.style.css[:line_height]   = '50%'
+          row.last.text.last.style.css[:line_height]  = '50%'
+          @state[:tbl_formats].box_extend?.each do |corner|
+            case corner
+            when :nw then cell.style.css[:border_left]  = '1px solid black'
+            when :ne then cell.style.css[:border_right] = '1px solid black'
+            when :sw then row.last.text.last.style.css[:border_left]  = '1px solid black'
+            when :se then row.last.text.last.style.css[:border_right] = '1px solid black'
+            end
+          end
+          cell.style.css[:border_bottom] = case Regexp.last_match(1)
+                                           when '_' then '1px solid black'
+                                           when '=' then '3px double black'
+                                           end
+          warn row.inspect
+
+        # otherwise
+        when /^(\s+)/ then nil  # spaces that haven't been claimed by above are ignored
+        when /^(.)/             # this serves as an 'else' clause
           warn "unimplemented tbl format #{format}"
           nil
         end
@@ -180,9 +230,6 @@ module Troff
     warn "cell format #{@state[:tbl_formats].get.inspect} for cell: #{text}"
     format.split(//).each do |fmt|
       case fmt
-      when '^'
-        @current_block.style.css[:vertical_align] = 'middle'
-        @current_block.style.attributes[:rowspan] ? @current_block.style.attributes[:rowspan] += 1 : @current_block.style.attributes[:rowspan] = 2
       when '_'
         # there's no text to parse for this cell; it contains only a horizontal rule
         @current_block.style.css[:border_bottom] = '1px solid black'

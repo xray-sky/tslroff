@@ -99,9 +99,16 @@ module Troff
       end
 
       current_row.text.each_with_index do |cell, column|
+        break if cell.type != :cell # past the normal cells and into :row_adj
         @current_block = cell
         text = cells.shift
 
+        # fudge input text for box rule cells, so a <br> is output and they render
+        if cell.style[:box_rule]
+          warn "what?"
+          text = ' '
+        end
+        
         # handle cells that've been spanned downward
         if text and text.sub!(/^\\\^$/, '')
           rowspan_active[column] ||= true

@@ -66,6 +66,7 @@ class Block
     when :comment then %(<!--#{t} -->\n)
     when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
     when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
+    when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
     when :cell    then "  <td#{style.to_s}>#{t}</td>\n"
     when :th      then %(<div class="title"><h1>#{t}</h1></div><div class="body"><div class="man">\n)
     when :sh      then "<h2>#{t}</h2>\n"

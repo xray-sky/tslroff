@@ -208,7 +208,6 @@ module Troff
                                            when '_' then '1px solid black'
                                            when '=' then '3px double black'
                                            end
-          warn row.inspect
 
         # otherwise
         when /^(\s+)/ then nil  # spaces that haven't been claimed by above are ignored
@@ -224,34 +223,5 @@ module Troff
     @state[:tbl_formats].next_row
     row
   end
-
-=begin
-    row_formats = @state[:tbl_formats].get_row
-    warn "cell format #{@state[:tbl_formats].get.inspect} for cell: #{text}"
-    format.split(//).each do |fmt|
-      case fmt
-      when '_'
-        # there's no text to parse for this cell; it contains only a horizontal rule
-        @current_block.style.css[:border_bottom] = '1px solid black'
-        @current_block.style.css[:line_height] = '50%'
-        next_row.style.css[:line_height] = "50%"
-        next_row.text << Block.new(type: :cell, style: @current_block.style.dup)
-        @state[:tbl_formats].box_extend?.each do |corner|
-          # REVIEW: does this need to work with double-box?
-          # TODO: border-collapse causes extra borders to be drawn (because the adjacent
-          #       cell is full height), and otherwise it may not align (stbl1)
-          case corner
-          when :nw then @current_block.style.css[:border_left] = '1px solid black'
-          when :ne then @current_block.style.css[:border_right] = '1px solid black'
-          when :sw then next_row.text.last.style.css[:border_left] = '1px solid black'
-          when :se then next_row.text.last.style.css[:border_right] = '1px solid black'
-          end
-        end
-        next_row.text.last << '&roffctl_br;'
-        text=' '
-        #warn "unimplemented rule extend #{@state[:tbl_formats].box_extend?.inspect}" 
-      end
-    end
-=end
 
 end

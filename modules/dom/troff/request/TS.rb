@@ -69,33 +69,40 @@ module Troff
     # table data. terminated by .TE macro
     while @blocks.last.type == :table do
       current_row = Block.new(type: :row, style: @current_block.style.dup, text: format_row)
-      #warn "#{@state[:tbl_formats].columns} // row format #{@state[:tbl_formats].get_row.inspect} for row"
 
       # row data
       cells = @lines.next.chomp.split(cell_delim)
+      warn "i'm still processing tbl rows - #{cells.inspect}"
 
       # check for bottom borders:
       # row span control characters (\^) also allowed to appear
-      if @lines.peek.chop.match(/^(\s|\\\^|_|=)+$/)
-        line = Regexp.last_match(0)
-        if line.match(/^([_=])$/)
-          current_row.text.each do |cell|
-            cell.style.css[:border_bottom] = case Regexp.last_match(1)
-                                             when '_' then '1px solid black'
-                                             when '=' then '3px double black'
-                                             end
+      #
+      # if .TE is the last line of the file, we'll get a StopIteration from peek
+      # and it won't actually get processed.
+      begin
+        if @lines.peek.chop.match(/^(\s|\\\^|_|=)+$/)
+          line = Regexp.last_match(0)
+          if line.match(/^([_=])$/)
+            current_row.text.each do |cell|
+              cell.style.css[:border_bottom] = case Regexp.last_match(1)
+                                               when '_' then '1px solid black'
+                                               when '=' then '3px double black'
+                                               end
+            end
+          else
+            line.split(cell_delim).each_with_index do |fmt, column|
+              current_row.text[column].style.css[:border_bottom] = case Regexp.last_match(1)
+                                                                   when '_' then '1px solid black'
+                                                                   when '=' then '3px double black'
+                                                                   end if fmt.match(/([_=])/)
+            end
           end
-        else
-          line.split(cell_delim).each_with_index do |fmt, column|
-            current_row.text[column].style.css[:border_bottom] = case Regexp.last_match(1)
-                                                                 when '_' then '1px solid black'
-                                                                 when '=' then '3px double black'
-                                                                 end if fmt.match(/([_=])/)
-          end
+          # there'll be a format line for this guy. skip it.
+          @state[:tbl_formats].next_row
+          @lines.next
         end
-        # there'll be a format line for this guy. skip it.
-        @state[:tbl_formats].next_row
-        @lines.next
+      rescue StopIteration => e
+        # ignore it.
       end
 
       current_row.text.each_with_index do |cell, column|
@@ -104,15 +111,12 @@ module Troff
         text = cells.shift
 
         # fudge input text for box rule cells, so a <br> is output and they render
-        if cell.style[:box_rule]
-          warn "what?"
-          text = ' '
-        end
-        
+        text = ' ' if cell.style[:box_rule]
+
         # handle cells that've been spanned downward
         if text and text.sub!(/^\\\^$/, '')
           rowspan_active[column] ||= true
-          rowspan_hold[column] ||= tbl.text.last.text[column]
+          rowspan_hold[column] ||= tbl.text.last.text[column] # this is why there's a special Block type :row_adj for box rules, rather than inserting those rows directly
           rowspan_hold[column].style.attributes[:rowspan] ? rowspan_hold[column].style.attributes[:rowspan] += 1 : rowspan_hold[column].style.attributes[:rowspan] = 2
           rowspan_hold[column].style.css[:vertical_align] = 'middle'
           # propagate styles up, too. so far, border_bottom is the only one that's been set
@@ -151,6 +155,7 @@ module Troff
           # even if it starts with a . this was from the middle of a line and is not a request
           unless text.nil?
             parse(text.sub(/^([.'])/, "\\\\\\1"))
+            # TODO: refactor - there won't be numeric alignment in column zero!
             if @current_block.style[:numeric_align]
               # prefer to align on \& (has been parsed to &zwj;) -- this gets removed if present
               # otherwise align on rightmost dot adjacent to a number (REVIEW: not clear if this counts either side; assume just right-hand-side for now)

@@ -46,6 +46,10 @@ module Troff
     #
     # REVIEW: "you should put a space or a tab between a 1-letter font name
     #          and whatever follows."
+    #
+    # TODO: This is still incomplete. See tbl: Technical Discussion §4.2, pp. 7-10
+    #       space between columns, vertical spacing, explicit minimum column width,
+    #       equal-width and staggered columns, zero-width items
 
 
     row = 0
@@ -131,11 +135,28 @@ module Troff
       extended = []
       if self.get.match(/[_=]/)
         # these will be acted on before the | has been moved
-        extended << :sw if self[@cursor[0]+1][@cursor[1]-1].include?('|')
-        extended << :se unless self[@cursor[0]+1][@cursor[1]].index('|', 1).nil?
-        # these will be acted on after the | has been moved 
-        extended << :nw if self[@cursor[0]-1][@cursor[1]].start_with?('|')
-        extended << :ne unless self[@cursor[0]-1][@cursor[1]].index('|', 1).nil?
+        # TODO: it's not great this method depends on program state/flow
+        extended << if self[@cursor[0]+1][@cursor[1]-1].include?('||')
+                      :sw2
+                    elsif self[@cursor[0]+1][@cursor[1]-1].include?('|')
+                      :sw
+                    end
+        extended << if !self[@cursor[0]+1][@cursor[1]].index('||', 1).nil?
+                      :se2
+                    elsif !self[@cursor[0]+1][@cursor[1]].index('|', extended.include?(:sw2) ? 2 : 1).nil?
+                      :se
+                    end
+        # these will be acted on after the | has been moved
+        extended << if self[@cursor[0]-1][@cursor[1]].start_with?('||')
+                      :nw2
+                    elsif self[@cursor[0]-1][@cursor[1]].start_with?('|')
+                      :nw
+                    end
+        extended << if !self[@cursor[0]-1][@cursor[1]].index('||', 1).nil?
+                      :ne2
+                    elsif !self[@cursor[0]-1][@cursor[1]].index('|', extended.include?(:nw2) ? 2 : 1).nil?
+                      :ne
+                    end
       end
       extended
     end
@@ -154,7 +175,10 @@ module Troff
       format = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
       # hack to get a border_left (for box extend case; does it ever also appear for real-world tbl formatting?)
       # the way the formats are parsed means we'll never get this unless it's the first character on the line, or I've moved it there
-      cell.style.css[:border_left] = '1px solid black' if format.sub!(/^\|/, '')
+      cell.style.css[:border_left] = case Regexp.last_match(1)
+                                     when '|'  then '1px solid black'
+                                     when '||' then '3px double black'
+                                     end if format.sub!(/^(\|{1,2})/, '')
       # continue with normal formatting, per documentation
       until format.empty? do
         case format
@@ -168,8 +192,18 @@ module Troff
         # font changes
         when /^(b)/i  then cell.text.last.font.face      = :bold
         when /^(i)/i  then cell.text.last.font.face      = :italic
-        when /^(f\d{1,2})/   then warn "unimplemented tbl font change #{Regexp.last_match(1)}"      # REVIEW: regexp
-        when /^(p-?\d{1,2})/ then warn "unimplemented tbl font size change #{Regexp.last_match(1)}" # REVIEW: regexp
+        when /^(f\d{1,2})/
+          # unescape wants to work on @current_block
+          # this manipulation should be safe as we haven't frozen any of these blocks, yet
+          cur_blk = @current_block
+          @current_block = cell
+          unescape("\\" + Regexp.last_match[1])
+          @current_block = cur_blk
+        when /^(p([-+123]?\d))/
+          cur_blk = @current_block
+          @current_block = cell
+          unescape("\\s" + Regexp.last_match[2])
+          @current_block = cur_blk
 
         # spans
         when /^(s)/i
@@ -179,13 +213,16 @@ module Troff
           cell.style.attributes[:rowspan] ? cell.style.attributes[:rowspan] += 1 : cell.style.attributes[:rowspan] = 2
 
         # box rules
-        when /^(\|)/
+        when /^(\|{1,2})/
           current_row = @state[:tbl_formats].row?
           current_col = @state[:tbl_formats].column?
           if current_row > 0 and current_col < (@state[:tbl_formats].columns - 1) and @state[:tbl_formats][current_row - 1][current_col + 1].chars.select { |c| ['_', '='].include?(c) }.any? # that's a lot of work to avoid a regexp, which would foul up the last_match at the bottom of the case statement
-            @state[:tbl_formats][current_row][current_col + 1].prepend('|')
+            @state[:tbl_formats][current_row][current_col + 1].prepend(Regexp.last_match(1))
           else
-            cell.style.css[:border_right] = '1px solid black'
+            cell.style.css[:border_right] = case Regexp.last_match(1)
+                                            when '|'  then '1px solid black'
+                                            when '||' then '3px double black'
+                                            end
           end
         when /^(_|=)/
           cell.style[:box_rule] = true
@@ -198,10 +235,14 @@ module Troff
           row.last.text.last.style.css[:line_height]  = '50%'
           @state[:tbl_formats].box_extend?.each do |corner|
             case corner
-            when :nw then cell.style.css[:border_left]  = '1px solid black'
-            when :ne then cell.style.css[:border_right] = '1px solid black'
-            when :sw then row.last.text.last.style.css[:border_left]  = '1px solid black'
-            when :se then row.last.text.last.style.css[:border_right] = '1px solid black'
+            when :nw  then cell.style.css[:border_left]  = '1px solid black'
+            when :nw2 then cell.style.css[:border_left]  = '3px double black'
+            when :ne  then cell.style.css[:border_right] = '1px solid black'
+            when :ne2 then cell.style.css[:border_right] = '3px double black'
+            when :sw  then row.last.text.last.style.css[:border_left]  = '1px solid black'
+            when :sw2 then row.last.text.last.style.css[:border_left]  = '3px double black'
+            when :se  then row.last.text.last.style.css[:border_right] = '1px solid black'
+            when :se2 then row.last.text.last.style.css[:border_right] = '3px double black'
             end
           end
           cell.style.css[:border_bottom] = case Regexp.last_match(1)

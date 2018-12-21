@@ -72,7 +72,6 @@ module Troff
 
       # row data
       cells = @lines.next.chomp.split(cell_delim)
-      warn "i'm still processing tbl rows - #{cells.inspect}"
 
       # check for bottom borders:
       # row span control characters (\^) also allowed to appear

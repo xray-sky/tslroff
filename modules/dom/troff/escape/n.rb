@@ -10,7 +10,7 @@
 
 module Troff
   def esc_n(s)
-    if s.match(/^\*(\(..|.)/) && @state[:register][Regexp.last_match(1)]
+    if s.match(/^n(\(..|.)/) && @state[:register][Regexp.last_match(1)]
       s.sub(/#{Regexp.quote(Regexp.last_match(0))}/,
             @state[:register][Regexp.last_match(1)])
     else

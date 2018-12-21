@@ -10,6 +10,7 @@
 */
 
 /* needs more research. http://nicewebtype.com/notes/2009/10/30/how-to-use-css-font-face/ */
+/*
 @font-face {
     font-family: "CMU Typewriter";
     src: url("./fonts/cmu/cmuntt.otf");
@@ -43,7 +44,7 @@
     src: url("./fonts/cmu/cmunbi.otf");
     src: local("CMU Serif Bold Extended Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
-
+*/
 #u {
     color: red;
 }
@@ -59,8 +60,8 @@ body {
 }
 
 #man {
-	font-family: "CMU Serif"; /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; 
-	/* font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
+	/* font-family: "CMU Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
+	font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;
 	/* font-family: Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: Times, "Times New Roman", serif; */
 	font-size: 12pt;
@@ -83,11 +84,11 @@ body {
 	font-size: inherit;
 }
 */
-.body #man h2 { /* safari won't override this unless .body is explicitly specified here. why? */
+#man h2 { /* safari won't override this unless .body is explicitly specified here. why? */
     font-style: normal;
 }
 
-.body #man h3 {
+#man h3 {
 	font-size: 12pt;
 	background: white;
 	font-style: italic;

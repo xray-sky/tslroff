@@ -25,8 +25,8 @@ module SunOS
   end
 
   # TODO: these aren't sunos named strings, just samples for testing
-  def init_ns
-    {
+  def init_ds
+    super.merge({
       'S'  => "\\s#{Font.defaultsize}",
       'R'  => '&reg;',
       'Tm' => '&trade;',
@@ -34,7 +34,7 @@ module SunOS
       'rq' => '&rdquo;',
       ']D' => 'Silicon Graphics',
       ']W' => File.mtime(@source.filename) # REVIEW: probably this is incorrectly formatted for matching whatever it ought to look like
-    }
+    })
   end
 
 end

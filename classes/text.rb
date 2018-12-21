@@ -110,4 +110,6 @@ class Text
   end
 
   alias concat <<
+  alias font= immutable_setter
+  alias style= immutable_setter
 end

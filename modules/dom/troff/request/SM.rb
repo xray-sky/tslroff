@@ -8,12 +8,12 @@
 
 module Troff
   def req_SM(args)
-    @state[:register]['.s'] = Font.defaultsize - 1
+    @state[:register]['.s'].value = Font.defaultsize - 1
     apply do
-      @current_block.text.last.font.size = @state[:register]['.s']
+      @current_block.text.last.font.size = @state[:register]['.s'].value
       args.any? ? unescape(args.join(' ')) : parse(@lines.next)
     end
-    @state[:register]['.s'] = Font.defaultsize
-    apply { @current_block.text.last.font.size = @state[:register]['.s'] }
+    @state[:register]['.s'].value = Font.defaultsize
+    apply { @current_block.text.last.font.size = @state[:register]['.s'].value }
   end
 end

@@ -14,11 +14,12 @@
 # convert nroff output to HTML; terminal quality results
 # for platforms that do not ship sources.
 #
-# eventually, support rewriting HTML for site-specific standards. 
-# (AIX, BeOS, etc.)
+# eventually, support rewriting HTML for site-specific standards
+# (AIX, BeOS, etc.), Domain/OS or VMS help files, etc.
 #
 # remember, remember https://github.com/bbatsov/ruby-style-guide
 #
+require 'date'
 
 $LOAD_PATH << File.dirname(__FILE__)
 require 'classes/manual.rb'

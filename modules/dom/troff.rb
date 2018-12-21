@@ -20,7 +20,7 @@ module Troff
     @state[:escape_char]  = '\\'
     @state[:register]     = init_nr
     @state[:special_char] = init_sc
-    @state[:named_string] = init_ns
+    @state[:named_string] = init_ds
     @state[:font_pos]     = [nil, Font.new(face: :regular), Font.new(face: :italic), Font.new(face: :bold)]
 
     load_version_overrides

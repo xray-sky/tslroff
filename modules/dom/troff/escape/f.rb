@@ -12,7 +12,7 @@ module Troff
     if s.match(/^f#{esc}?([1-9BIPR])/)
       (esc_seq, font_req) = Regexp.last_match.to_a
       case font_req
-      when /\d/ then apply { @current_block.text.last.font = @state[:font_pos][font_req.to_i].dup } && @current_block.text.last.font.size = @state[:register]['.s']
+      when /\d/ then apply { @current_block.text.last.font = @state[:font_pos][font_req.to_i].dup } && @current_block.text.last.font.size = @state[:register]['.s'].value
       when 'R'  then apply { @current_block.text.last.font.face = :regular }
       when 'B'  then apply { @current_block.text.last.font.face = :bold }
       when 'I'  then apply { @current_block.text.last.font.face = :italic }

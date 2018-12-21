@@ -22,6 +22,6 @@
 
 module Troff
   def req_nf(_args)
-    @state[:register]['.u'] = 0
+    @state[:register]['.u'].value = 0
   end
 end

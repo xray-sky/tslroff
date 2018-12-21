@@ -6,7 +6,7 @@
 
 module Troff
   def source_init
-    %w[request escape].each do |t|
+    %w[request macro escape].each do |t|
       Dir.glob("#{File.dirname(__FILE__)}/troff/#{t}/*.rb").each do |i|
         require i
       end
@@ -126,16 +126,6 @@ module Troff
     @state[:register]['.u'].zero? ? false : true
   end
 
-  def self.quote_method(reqstr)
-    case reqstr
-    when '*'  then 'star'
-    when '('  then 'lparen'
-    when '\"' then 'BsQuot'
-    when 'T&' then 'TAmp'
-    else           reqstr
-    end
-  end
-
   def cm_unescape(str)
     copy = String.new
     begin
@@ -202,4 +192,15 @@ module Troff
 
     end until str.empty?
   end
+
+  def self.quote_method(reqstr)
+    case reqstr
+    when '*'  then 'star'
+    when '('  then 'lparen'
+    when '\"' then 'BsQuot'
+    when 'T&' then 'TAmp'
+    else           reqstr
+    end
+  end
+
 end

@@ -58,7 +58,7 @@ body {
 	background: #8b8ba7;
 }
 
-.man {
+#man {
 	font-family: "CMU Serif"; /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; 
 	/* font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
@@ -79,15 +79,15 @@ body {
 }
 */
 /*
-.man h1 {
+#man h1 {
 	font-size: inherit;
 }
 */
-.body .man h2 { /* safari won't override this unless .body is explicitly specified here. why? */
+.body #man h2 { /* safari won't override this unless .body is explicitly specified here. why? */
     font-style: normal;
 }
 
-.body .man h3 {
+.body #man h3 {
 	font-size: 12pt;
 	background: white;
 	font-style: italic;
@@ -98,13 +98,13 @@ body {
 }
 
 /*
-.man p {
+#man p {
 	line-height: 1.35;
     margin-bottom: 0em;
     margin-top: 1em;
 }
 
-.man p.foot {
+#man p.foot {
     margin-top: 1.5em;
     text-align: center;
     font-size: 0.9em;
@@ -112,7 +112,7 @@ body {
     color: gray;
 }
     
-.man pre {
+#man pre {
 	border: none;
 	background: none;
 	color: black;
@@ -128,21 +128,21 @@ body {
 	line-height: 1.2em;
 }
 
-.man tt {
+#man tt {
     font-family: monospace;
 }
 
 */
-.man .n {
+#man .n {
 	line-height: 0.6em;
 }
 
-.man pre strong {
+#man pre strong {
 	color: black;
 	font-weight: bold;
 }
 
-.man pre em {
+#man pre em {
 	/*color: darkslateblue;*/
     color: midnightblue;
 	/*font-style: italic;*/
@@ -150,13 +150,13 @@ body {
     font-weight: bold; 
 }
 
-.man .ul {
+#man .ul {
     color: black;
     font-weight: normal;
     text-decoration: underline;
 }
     
-.man table {
+#man table {
 	border: none;
 	background: none;
 	border-spacing: 0;
@@ -165,20 +165,20 @@ body {
     font-size: inherit;
 }
 
-.man td {
+#man td {
 	padding: 0.1em 0.75em 0.1em 0.75em;
     vertical-align: top;
 }
 
-.man tr:nth-child(even) td {
+#man tr:nth-child(even) td {
 	background: none;
 }
 
-.man tr:nth-child(odd) td {
+#man tr:nth-child(odd) td {
 	background: none;
 }
 
-.man dl {
+#man dl {
 	/*padding-right: 2em;*/
 	padding-left: 2em;
 	margin-right: 1em;
@@ -188,7 +188,7 @@ body {
     clear: left;
 }
 
-.man dt {
+#man dt {
 	float: left;
 	clear: left;
 	padding-right: 0.5em;
@@ -196,47 +196,47 @@ body {
 }
 
 /*
-.man dt:first-child {
+#man dt:first-child {
     margin-top: 0em;
 }
 */
 
-.man dd {
+#man dd {
     text-align: justify;
     padding-right: 3em;
     margin-top: 1em; 
 }
 
-.man .synopsis {
+#man .synopsis {
     word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
 }
     
-.man .nrs {     /* troff 1/6em narrow space */
+#man .nrs {     /* troff 1/6em narrow space */
     display: inline-block;
     width: 0.167em;
     text-wrap: suppress;    /* this property is currently unsupported. will it even do what I need? */
 }
 
-.man .hns {     /* troff 1/12em half-narrow space */
+#man .hns {     /* troff 1/12em half-narrow space */
     display: inline-block;
     width: 0.083em;
     /* this property is currently unsupported. will it even do what I need? */
     text-wrap: suppress;    
 }
 
-.man .tab {     /* HTML shortcut - cheapass source compression */
+#man .tab {     /* HTML shortcut - cheapass source compression */
     display: inline-block;
     /* this is only good if the element is a direct child of a block. 
        breaks again if it's in, say, <strong>, or another <span> */
     /*margin-left: inherit;  /* look at this more closely. I think it's wrong in tar.1 - where was it I did this for? bc.? bs.1? */
 }
 
-.man .sub {
+#man .sub {
     position: relative;
     top: 0.5em;
 }
 
-.man .sup {
+#man .sup {
     position: relative;
     bottom: 0.5em;
 }

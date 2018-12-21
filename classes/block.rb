@@ -58,7 +58,7 @@ class Block
   end
 
   def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
-    return if empty? and !([:row,:cell].include?(type)) # TODO: this is causing extra rows to be output (but they're also incorrectly being generated)
+    return if empty?
     t = type == :comment ? text.collect(&:to_s).join : text.collect(&:to_html).join
     case type
     when :nil     then '' # suppress. used for placeholding in tbl.
@@ -68,7 +68,7 @@ class Block
     when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
     when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
     when :cell    then "  <td#{style.to_s}>#{t}</td>\n"
-    when :th      then %(<div class="title"><h1>#{t}</h1></div><div class="body"><div class="man">\n)
+    when :th      then %(<div class="title"><h1>#{t}</h1></div><div class="body"><div id="man">\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
     when :tp      then "<dl>\n <dt>#{style.tag.to_html}</dt>\n  <dd>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.

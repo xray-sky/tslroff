@@ -84,7 +84,7 @@ module Troff
       '.s' => Register.new(Font.defaultsize, :ro => true),                # current point size.
       #.t                                                                 # distance to the next trap.
       '.u' => Register.new(1, :ro => true)                                # 1 in fill mode and 0 in no-fill mode.
-      #.v                                                                 # current vertical line spacing.
+      #.v                                                                 # current vertical line spacing (probably in u).
       #.w                                                                 # width of previous character.
       #.x                                                                 # reserved: version-dependent.
       #.y                                                                 # reserved: version-dependent.

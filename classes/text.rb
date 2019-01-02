@@ -53,7 +53,10 @@ class Text
   end
 
   def to_html
+    # TODO: some or most of this should probably be made troff-specific (somehow)
     return '' if length.zero?
+
+    # font face & size; TODO: family
     tags = Array.new
     tags << case font.face
             when :bold    then '<strong>'
@@ -79,7 +82,7 @@ class Text
 
     # troff treats ` and ' like typesetter's quotes (§2.1)
     # make sure < and > are printable while we're at it
-    ent.gsub!(/(?:<|>|`+|'+)/) do |c|
+    ent.gsub!(/<|>|`+|'+/) do |c|
       case c
       when '``' then '&ldquo;'
       when "''" then '&rdquo;'
@@ -91,7 +94,7 @@ class Text
     end
 
     # translate some troff fill/adjust fluff
-    ent.gsub!(/(?:&roffctl_\S+?;)/) do |e|
+    ent.gsub!(/&roffctl_\S+?;/) do |e|
       case e
       when '&roffctl_br;'      then '<br />'
       when '&roffctl_endspan;' then '</span>'

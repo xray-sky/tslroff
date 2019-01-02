@@ -13,8 +13,8 @@ module Troff
     cell_delim = "\t"
 
     tbl = Block.new(type: :table, style: @current_block.style.dup, text: Array.new)
-    @blocks << @current_block
-    @blocks << tbl
+    @document << @current_block
+    @document << tbl
     
     # You may specify a single line of options to affect the layout of the whole 
     # table. These must be placed immediately after the .TS line. On this line, you 
@@ -67,7 +67,7 @@ module Troff
     rowspan_hold   = Array.new(@state[:tbl_formats].columns, nil)
 
     # table data. terminated by .TE macro
-    while @blocks.last.type == :table do
+    while @document.last.type == :table do
       current_row = Block.new(type: :row, style: @current_block.style.dup, text: format_row)
 
       # row data

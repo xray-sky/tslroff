@@ -13,7 +13,7 @@
 
 module Troff
   def req_TP(args)	# TODO: incomplete; needs to accept width args
-    @blocks << @current_block
+    @document << @current_block
     # TODO: see PP.rb for style carryover note
     @current_block = Block.new(type: :tp, style: @current_block.style.dup)
 

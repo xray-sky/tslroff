@@ -8,7 +8,7 @@
 
 module Troff
   def req_PP(*)
-    @blocks << @current_block
+    @document << @current_block
     # REVIEW: copying the style is meant to continue the section marker, 
     # for .synopsis, etc. is this approach going to make a mess?
     @current_block = Block.new(style: @current_block.style.dup)

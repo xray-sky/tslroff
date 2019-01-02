@@ -12,7 +12,7 @@ module Troff
       @current_block.type = :sh
       @current_block << args.join(' ')
     end
-    @blocks << @current_block
+    @document << @current_block
     @current_block = Block.new(style: Style.new(section: args.join(' ')))
   end
 end

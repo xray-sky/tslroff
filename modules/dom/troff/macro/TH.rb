@@ -12,7 +12,7 @@ module Troff
     apply do
       @current_block.type = :th
       @current_block << args.join(' ')
-      @blocks << @current_block
+      @document << @current_block
       @current_block = Block.new 
     end
   end

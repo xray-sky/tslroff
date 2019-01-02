@@ -21,7 +21,7 @@ class Manual
     @version  = '4_1_4'
     # end temporary hardcode
 
-    @blocks = Array.new
+    @document = Array.new
     @source = Source.new(file)
     @lines  = @source.lines.each
     @current_block = Block.new
@@ -38,7 +38,7 @@ class Manual
     rescue ImmutableBlockError, ImmutableTextError, ImmutableFontError, ImmutableStyleError => e
       case e
       when ImmutableBlockError
-        @blocks << @current_block
+        @document << @current_block
         @current_block = Block.new(style: @current_block.style.dup)
         retry
       when ImmutableTextError, ImmutableFontError

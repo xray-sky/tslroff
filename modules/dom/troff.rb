@@ -32,8 +32,8 @@ module Troff
         l = @lines.next
         parse(l.rstrip)
       rescue StopIteration
-        @blocks << @current_block
-        return @blocks.collect(&:to_html).join
+        @document << @current_block
+        return @document.collect(&:to_html).join
       end
     end
   end
@@ -44,6 +44,7 @@ module Troff
     l.rstrip!
     if l.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
       (x, cmd, req, args) = Regexp.last_match.to_a
+      warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin
         send("req_#{Troff.quote_method(req)}", argsplit(args))
         # troff considers a macro line to be an input text line
@@ -54,6 +55,7 @@ module Troff
           warn "Unrecognized request: #{l}"
         else
           # it's some other screwup; use the normal error reporting
+          warn "in line #{l.inspect}:"
           warn e
           warn e.backtrace
         end
@@ -69,6 +71,7 @@ module Troff
       when /^ +/ then broke? ? '' : req_br(nil)
       end
 
+      warn "bare tab in input (#{l.inspect})" if l.include?("\t")
       unescape(l)
       space_adj
     end

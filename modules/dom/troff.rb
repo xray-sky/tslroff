@@ -162,14 +162,14 @@ module Troff
 
   def unescape(str)
     @state[:translate].any? and str.gsub!(/[#{Regexp.quote(@state[:translate].keys.join)}]/) { |c| @state[:translate][c] }
+    esc = @state[:escape_char]
     begin
-      esc   = @state[:escape_char]
       parts = str.partition(esc)
-      @current_block << parts[0] unless parts[0].empty? # str might begin with esc
+      @current_block << parts[0].sub(/&roffctl_esc;/, esc) unless parts[0].empty? # str might begin with esc
 
       if parts[1] == esc
         str = case parts[2][0]
-              when esc then parts[2]  # REVIEW: is this actually right?? does changing it prevent \*S from working??
+              when esc then parts[2].sub(/^#{Regexp.quote(esc)}/, '&roffctl_esc;')  # REVIEW: is this actually right?? does changing it prevent \*S from working??
               when '_' then parts[2]                             # underrule, equivalent to \(ul
               when '-' then parts[2].sub(/^-/,  '&minus;')       # "minus sign in current font"
               when ' ' then parts[2].sub(/^ /,  '&nbsp;')        # "unpaddable space-sized character"

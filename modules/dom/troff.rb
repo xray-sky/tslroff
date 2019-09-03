@@ -47,7 +47,9 @@ module Troff
       (x, cmd, req, args) = Regexp.last_match.to_a
       warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin
-        send("req_#{Troff.quote_method(req)}", *argsplit(args))
+      x=argsplit(args)
+      warn "args #{x.inspect}"
+        send("req_#{Troff.quote_method(req)}", *x)
         # troff considers a macro line to be an input text line
         space_adj if Troff.macro?(req)
       rescue NoMethodError => e
@@ -65,11 +67,11 @@ module Troff
       case l
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3
-      when /^$/  then broke? ? req_br(nil) : req_br(nil);req_br(nil) unless @current_block.type == :cell
+      when /^$/  then broke? ? req_br : req_br;req_br unless @current_block.type == :cell
       # initial spaces also cause a break. §4.1
       # -- but don't break again unnecessarily.
       # -- REVIEW: I think tabs don't count for this
-      when /^ +/ then broke? ? '' : req_br(nil)
+      when /^ +/ then broke? ? '' : req_br
       end
 
       warn "bare tab in input (#{l.inspect})" if l.include?("\t")
@@ -78,7 +80,7 @@ module Troff
     end
 
     # REVIEW: this break might also need to happen during macro processing
-    req_br(nil) unless fill? || broke? || cmd == "'"
+    req_br unless fill? || broke? || cmd == "'"
   end
 
   def argsplit(s)

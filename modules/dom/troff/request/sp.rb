@@ -22,7 +22,7 @@
 
 module Troff
   def req_sp(n)
-    req_br(nil)
+    req_br
     v = n.to_f + 1.2 # TODO: hardcoding 1.2 em line height is bogus
     @current_block << "&roffctl_sp:#{v}em;"
   end

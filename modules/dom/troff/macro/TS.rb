@@ -41,7 +41,7 @@ module Troff
     end
 
     # the format section is mandatory
-    req_TAmp(nil)
+    req_TAmp
 
     # check to see if the first input line contains only whitespace and _ or =;
     # input lines like this aren't table rows, but cause cell borders to be drawn.

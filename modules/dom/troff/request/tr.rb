@@ -19,6 +19,10 @@
 #                                          for instance, would be turned off as follows:
 #                                          '.tr aacc'.
 #
+# All text processing (e.g., character comparisons) takes place with the input
+# (stand-in) character which appears to have the width of the final character. The
+# graphic translation occurs at the moment of output (including diversions).
+#
 # Unfortunately this is not a strict one-to-one arrangement. Constructs like \& and \(**
 # are allowed for the substituted "character". See csh(1) [GL2-W2.5] for example.
 

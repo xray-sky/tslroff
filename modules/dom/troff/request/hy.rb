@@ -8,5 +8,5 @@
 #
 
 module Troff
-  def req_hy(args) ; end
+  def req_hy(_args) ; end
 end

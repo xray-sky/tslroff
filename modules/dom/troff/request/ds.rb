@@ -36,8 +36,9 @@ module Troff
   end
 
   def init_ds
-    {
+    @state[:named_string] = {
       '.T' => 'html'   # name of output device
     }
+    true
   end
 end

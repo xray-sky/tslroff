@@ -19,7 +19,7 @@ module Troff
   end
 
   def init_sc
-    {
+    @state[:special_char] = {
       'bu'	=> '&bull;',
       'co'	=> '&copy;',
       'rg'	=> '&reg;',
@@ -339,5 +339,6 @@ module Troff
     #  "<span style=\"color:green;\">#{key}</span>"
     #end
     #h
+    true
   end
 end

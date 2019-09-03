@@ -16,14 +16,15 @@ module Troff
     self.extend Kernel.const_get(self.platform.to_sym)
 
     @state                = Hash.new
-    @state[:translate]    = Hash.new
-    @state[:escape_char]  = '\\'
-    @state[:register]     = init_nr
-    @state[:special_char] = init_sc
-    @state[:named_string] = init_ds
-    @state[:font_pos]     = [nil, Font.new(face: :regular), Font.new(face: :italic), Font.new(face: :bold)]
 
     load_version_overrides
+
+    # call any initialization methods for .nr, .ds, etc.
+    # may be supplemented or overridden by version-specific methods
+
+    self.methods.each do |m|
+      self.send(m) if m.to_s.match(/^init_/)
+    end
   end
 
   def to_html

@@ -50,4 +50,9 @@ module Troff
       end
     end until str.empty?
   end
+
+  def init_tr
+    @state[:translate] = Hash.new
+    true
+  end
 end

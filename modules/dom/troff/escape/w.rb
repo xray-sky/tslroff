@@ -43,6 +43,6 @@ module Troff
     (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
     #warn "calculated width of #{Regexp.last_match.inspect}"
     warn "calculated width of #{req_str}"
-    s.slice(full_esc.length..-1)
+    s.slice(full_esc.length..-1) # FIXME: this is leaving anything after the close quote in the output
   end
 end

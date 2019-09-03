@@ -43,9 +43,16 @@
 # non-interpreted tab and leader respectively, and are equivalent to actual tabs and
 # leaders in copy mode but are ignored during output mode.
 #
+# TODO: initialize properly
+#
 
 module Troff
   def req_ta(args)
     warn("don't know how to .ta #{args.join(' ')}")
+  end
+
+  def init_ta
+    @state[:tabs] = [ '0.5i', '1i', '1.5i', '2i', '2.5i' ]
+    true
   end
 end

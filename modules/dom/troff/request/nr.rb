@@ -37,7 +37,7 @@ module Troff
 
   def init_nr
     date = Time.new
-    {
+    @state[:register] = {
       ############################################
       # §24 Predefined General Number Registers
       ############################################
@@ -90,6 +90,7 @@ module Troff
       #.y                                                                 # reserved: version-dependent.
       #.z                                                                 # name of current diversion.
     }
+    true
   end
 
   class Register

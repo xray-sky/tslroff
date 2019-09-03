@@ -7,7 +7,7 @@
 #
 
 module Troff
-  def req_SM(args)
+  def req_SM(*args)
     @state[:register]['.s'].value = Font.defaultsize - 1
     apply do
       @current_block.text.last.font.size = @state[:register]['.s'].value

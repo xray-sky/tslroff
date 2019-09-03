@@ -47,7 +47,7 @@
 #
 
 module Troff
-  def req_ta(args)
+  def req_ta(*args)
     warn("don't know how to .ta #{args.join(' ')}")
   end
 

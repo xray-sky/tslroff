@@ -7,7 +7,7 @@
 #
 
 module Troff
-  def req_SS(args)
+  def req_SS(*args)
     apply do
       @current_block.type = :ss
       @current_block << args.join(' ')

@@ -27,8 +27,7 @@
 # are allowed for the substituted "character". See csh(1) [GL2-W2.5] for example.
 
 module Troff
-  def req_tr(args)
-    str = args[0]
+  def req_tr(str)
     begin
       a = str.slice!(0)
       b = str.slice!(0)

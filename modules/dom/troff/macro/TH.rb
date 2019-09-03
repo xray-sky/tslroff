@@ -8,7 +8,7 @@
 #
 
 module Troff
-  def req_TH(args)
+  def req_TH(*args)
     apply do
       @current_block.type = :th
       @current_block << args.join(' ')

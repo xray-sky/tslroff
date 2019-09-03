@@ -7,7 +7,7 @@
 #
 
 module Troff
-  def req_BsQuot(args)
+  def req_BsQuot(*args)
     apply do
       @current_block.type = :comment
       @current_block << args.join(' ')

@@ -9,7 +9,7 @@
 #
 
 module Troff
-  def req_TS(args)
+  def req_TS(*args)
     cell_delim = "\t"
 
     tbl = Block.new(type: :table, style: @current_block.style.dup, text: Array.new)

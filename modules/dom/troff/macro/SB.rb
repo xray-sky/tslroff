@@ -7,7 +7,7 @@
 #
 
 module Troff
-  def req_SB(args)
+  def req_SB(*args)
     apply do
       @current_block.text.last.font.size = Font.defaultsize - 1
       @current_block.text.last.font.face = :bold

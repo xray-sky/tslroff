@@ -7,7 +7,7 @@
 #
 
 module Troff
-  def req_SH(args)
+  def req_SH(*args)
     apply do
       @current_block.type = :sh
       @current_block << args.join(' ')

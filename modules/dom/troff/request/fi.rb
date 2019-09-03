@@ -18,7 +18,7 @@
 #
 
 module Troff
-  def req_fi(_args)
+  def req_fi
     @state[:register]['.u'].value = 1
   end
 end

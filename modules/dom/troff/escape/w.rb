@@ -24,7 +24,7 @@
 #
 # TODO: actually render it and get something better than an estimate
 #       https://dev.to/mscccc/creating-images-with-ruby--htmlcss-api-16g4
-#	
+#
 # observed variations
 # \w'\fB/usr/share/groff/font/devps/download'u+2n
 # \w'\f(CWdelete array[expression]'u
@@ -43,6 +43,6 @@ module Troff
     (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
     #warn "calculated width of #{Regexp.last_match.inspect}"
     warn "calculated width of #{req_str}"
-    s.slice(full_esc.length..-1) # FIXME: this is leaving anything after the close quote in the output
+    req_str.length.to_s + s.slice(full_esc.length..-1) # FIXME: this is totally wrong (chars vs. u)
   end
 end

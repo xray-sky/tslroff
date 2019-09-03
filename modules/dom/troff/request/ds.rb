@@ -31,8 +31,8 @@
 #
 
 module Troff
-  def req_ds(args)
-    @state[:named_string][args.shift] = cm_unescape(args.join(' ').sub(/^"/, ''))
+  def req_ds(name, *args)
+    @state[:named_string][name] = cm_unescape(args.join(' ').sub(/^"/, ''))
   end
 
   def init_ds

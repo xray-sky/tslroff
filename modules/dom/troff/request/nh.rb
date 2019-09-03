@@ -8,5 +8,5 @@
 #
 
 module Troff
-  def req_nh(_args) ; end
+  def req_nh(*_args) ; end
 end

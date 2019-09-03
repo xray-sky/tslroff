@@ -18,7 +18,7 @@
 #
 
 module Troff
-  def req_fp(pos, font, *_file)
+  def req_fp(pos, font, file = nil)
     warn "don't know how to load #{font} on position #{pos}"
     #@state[:font][pos] = # TODO: something.
   end

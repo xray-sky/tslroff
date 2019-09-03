@@ -47,7 +47,7 @@ module Troff
       (x, cmd, req, args) = Regexp.last_match.to_a
       warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin
-        send("req_#{Troff.quote_method(req)}", argsplit(args))
+        send("req_#{Troff.quote_method(req)}", *argsplit(args))
         # troff considers a macro line to be an input text line
         space_adj if Troff.macro?(req)
       rescue NoMethodError => e

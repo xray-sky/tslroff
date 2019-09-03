@@ -12,7 +12,7 @@
 
 module Troff
   %w[B I R].each do |a|
-    define_method "req_#{a}".to_sym do |args|
+    define_method "req_#{a}".to_sym do |*args|
       args.any? or args = [@lines.next]
       apply do
         @current_block.text.last.font.face = case a
@@ -27,7 +27,7 @@ module Troff
   end
 
   %w[B I R].permutation(2).each do |a, b|
-    define_method "req_#{a + b}".to_sym do |args|
+    define_method "req_#{a + b}".to_sym do |*args|
       styles = [a, b]
       args.each_with_index do |arg, i|
         send("req_#{styles[i % 2]}".to_sym, [arg])

@@ -18,8 +18,8 @@
 #   TODO: implement something
 
 module Troff
-  def req_lg(_args)
+  def req_lg(n)
     # TODO: whoops
-    warn "unimplemented ligature mode #{args.inspect}"
+    warn "unimplemented ligature mode #{n.inspect}"
   end
 end

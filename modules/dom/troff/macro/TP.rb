@@ -10,12 +10,17 @@
 #   text...
 #
 # TODO: what does ".TP &" mean? (see: machid.1 [GL2-W2.5])
+#
+# FIXME: rendering context (current_block) - size is going into the output stream
+#
 
 module Troff
-  def req_TP(args)	# TODO: incomplete; needs to accept width args
-    warn "TP #{args.inspect}"
-    width = parse(args[0]) if args.any?
-    warn "=> TP #{width.inspect}"
+  def req_TP(width = nil)
+    if width
+      parse(width) 
+      width = @current_block.text.last.text.strip	# TODO: actually use the width
+      @current_block.text.pop			# REVIEW: side effects?
+    end
     @document << @current_block
     # TODO: see PP.rb for style carryover note
     @current_block = Block.new(type: :tp, style: @current_block.style.dup)

@@ -10,11 +10,12 @@
 
 module Troff
   def esc_n(s)
-    if s.match(/^n(\(..|.)/) && @state[:register][Regexp.last_match(1)]
-      s.sub(/#{Regexp.quote(Regexp.last_match(0))}/,
-            @state[:register][Regexp.last_match(1)].value)
+    (req, reg) = s.match(/^n(?:(\(..|.))/).to_a
+    reg.tr!('(', '') if reg and reg.length > 1
+    if req and @state[:register][reg]
+      s.sub(/#{Regexp.quote(req)}/, @state[:register][reg].value.to_s)
     else
-      warn "unselected number register #{s[0..1]} from #{s[2..-1]}"
+      warn "unselected number register #{s[0..1]} from #{s[2..-1]} (#{Regexp.last_match.inspect})"
       s[2..-1]
     end
   end

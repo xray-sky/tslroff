@@ -33,16 +33,26 @@
 # \w'.SM KRB5CCNAME\ \ 'u
 # \w'.eh \'x\'y\'z\'  'u
 # \w^B\\$1\\*(s1\\$2\\*(s2^Bu	<- TODO this might cause problems - where was it from?? was a .tr in effect?
+#                                       the manual suggests this might be illegal somehow?
 #
 
 module Troff
   def esc_w(s)
-  warn "received #{s.inspect}"
     esc = Regexp.quote(@state[:escape_char])
     s.match(/(^w(.)(.+?(#{esc}\2)*)\2)/)
     (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
-    #warn "calculated width of #{Regexp.last_match.inspect}"
-    warn "calculated width of #{req_str}"
-    req_str.length.to_s + s.slice(full_esc.length..-1) # FIXME: this is totally wrong (chars vs. u)
+
+    # get a manipulable block that can be rendered without leaving anything in the output stream
+    hold_block = @current_block
+    @current_block = Block.new(type: :bare)
+
+    parse(req_str)
+    width = @current_block.to_s.length.to_s  # FIXME: this is totally wrong (entitized chars vs. u)
+
+    # restore normal output
+    @current_block = hold_block
+
+    warn "calculated width of #{req_str} as #{width}"
+    width + s.slice(full_esc.length..-1)
   end
 end

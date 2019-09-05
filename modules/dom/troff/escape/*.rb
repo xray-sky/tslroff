@@ -5,6 +5,7 @@
 #
 #   basic definitions of the \* (named string) escape
 #
+#  TODO: align this implementation with \n
 
 module Troff
   def esc_star(s)

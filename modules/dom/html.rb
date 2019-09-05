@@ -4,7 +4,6 @@
 # ---------------
 #
 
-
 class Block
 
 	attr_accessor :type, :text, :style

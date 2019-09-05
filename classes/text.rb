@@ -67,7 +67,7 @@ class Text
     if @style.keys.any?
       tags += style.collect do |t, v|
         case t
-        when :shift       then %(<span style="baseline-shift:#{v};">)
+        when :baseline    then %(<span style="baseline-shift:#{v};">)
         when :unsupported then '<span style="color:red;">Unsupported request =&gt; '
         else                   %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
         end

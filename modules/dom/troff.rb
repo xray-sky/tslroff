@@ -47,9 +47,7 @@ module Troff
       (x, cmd, req, args) = Regexp.last_match.to_a
       warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin
-      x=argsplit(args)
-      warn "args #{x.inspect}"
-        send("req_#{Troff.quote_method(req)}", *x)
+        send("req_#{Troff.quote_method(req)}", *argsplit(args))
         # troff considers a macro line to be an input text line
         space_adj if Troff.macro?(req)
       rescue NoMethodError => e
@@ -132,6 +130,9 @@ module Troff
     @state[:register]['.u'].zero? ? false : true
   end
 
+  # "the escape sequences \\, \., \", \$, \*, \a, \n, \t, and \(new-line)
+  #  are interpreted in copy mode."
+  
   def cm_unescape(str)
     copy = String.new
     begin
@@ -209,4 +210,7 @@ module Troff
     end
   end
 
+  def self.is_req?(line)
+    line.match(/^[\.\']\s*\S{1,2}\s*(?:\S.*|$)/)
+  end
 end

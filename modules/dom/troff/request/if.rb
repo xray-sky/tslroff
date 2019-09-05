@@ -7,7 +7,7 @@
 #
 
 module Troff
-  def req_if(*_args)
+  def req_if(*args)
     # TODO: whoops
     warn "unimplemented .if #{args.inspect}"
   end

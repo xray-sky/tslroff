@@ -16,6 +16,8 @@
 #                                           argument, file, which is an alternate version
 #                                           of the font F.
 #
+# mounts, but does not select
+#
 
 module Troff
   def req_fp(pos, font, file = nil)
@@ -28,7 +30,8 @@ module Troff
       nil,
       Font.new(face: :regular),
       Font.new(face: :italic),
-      Font.new(face: :bold)
+      Font.new(face: :bold)#,
+      #Font.new(family: :math) # TODO: output
     ]
     true
   end

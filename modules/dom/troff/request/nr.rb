@@ -27,10 +27,10 @@ require 'forwardable'
 
 module Troff
 
-  def req_nr(register, value = 0, increment = nil)
+  def req_nr(register, value = '0', increment = nil)
     @state[:register][register] ||= Register.new(0)
     unless @state[:register][register].read_only?
-      @state[:register][register].value += value
+      @state[:register][register].value += value.to_i
       @state[:register][register].increment = increment if increment
     end
   end
@@ -42,7 +42,6 @@ module Troff
       # §24 Predefined General Number Registers
       ############################################
       #%                                                                  # current page number.
-      #.b                                                                 # emboldening factor of current font.
       #.b                                                                 # emboldening factor of current font.
       #c.                                                                 # input line-number (same as read-only .c).
       '.R' => Register.new(100),                                          # count of number registers that remain available for use.

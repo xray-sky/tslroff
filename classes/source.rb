@@ -41,14 +41,3 @@ class Source
              end
   end
 end
-
-=begin
-  def type
-    case @lines[0]
-    when %r{^<.+?>}    then "HTML"	# html, probably
-    when %r{^[\.\'].}  then "Troff"	# troff source, probably '
-    else                    "Nroff"	# plain text with or without carriage control
-    end
-  end
-=end
-

@@ -28,7 +28,11 @@ module Troff
     hold_block = @current_block
     @current_block.style[:tag] = Block.new(type: :bare)
     @current_block = @current_block.style.tag
-    @lines.collect_through { |l| parse(l) ; !@current_block.empty? }
+    @lines.collect_through do |l|
+      @state[:register]['.c'].value += 1
+      parse(l.rstrip)
+      !@current_block.empty?
+    end
     @current_block = hold_block
   end
 end

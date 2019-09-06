@@ -10,7 +10,10 @@ module Troff
 
   def req_TAmp
     formats_terminator = Regexp.new('\.\s*$')
-    @state[:tbl_formats] = Troff.tbl_formats(@lines.collect_through { |l| l.match(formats_terminator) })
+    @state[:tbl_formats] = Troff.tbl_formats(@lines.collect_through do |l|
+                             @state[:register]['.c'].value += 1
+                             l.match(formats_terminator) 
+                           end)
   end
 
   def self.tbl_formats(format_section)

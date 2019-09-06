@@ -43,7 +43,6 @@ module Troff
       ############################################
       #%                                                                  # current page number.
       #.b                                                                 # emboldening factor of current font.
-      #c.                                                                 # input line-number (same as read-only .c).
       '.R' => Register.new(100),                                          # count of number registers that remain available for use.
       #ct                                                                 # character type (set by width function \w).
       #dl                                                                 # width (maximum) of last completed diversion.
@@ -59,12 +58,12 @@ module Troff
       ############################################
       # §25 Predefined Read-only Number Registers
       ############################################
-      #$$                                                                 # process id of troff.
+      '$$' => Register.new(Process.pid, :ro => true),                     # process id of troff.
       #.$                                                                 # # of args avail at current macro level.
-      #.A                                                                 # 1 in troff if -a option used; always 1 in nroff.
+      '.A' => Register.new(0, :ro => true),                               # 1 in troff if -a option used; always 1 in nroff.
       '.F' => Register.new(File.basename(@source.filename), :ro => true), # name of current input file.
       #.H                                                                 # avail horizontal resolution in u.
-      #.L                                                                 # current line spacing parameter (.ls).
+      '.L' => Register.new(1, :ro => true),                               # current line spacing parameter (.ls).
       #.P                                                                 # 1 if current page is being printed; otherwise 0.
       #.T                                                                 # 1 if -T option used; otherwise 0.
       #.V                                                                 # avail vertical resolution in u.
@@ -82,13 +81,20 @@ module Troff
       #.p                                                                 # current page length.
       '.s' => Register.new(Font.defaultsize, :ro => true),                # current point size.
       #.t                                                                 # distance to the next trap.
-      '.u' => Register.new(1, :ro => true)                                # 1 in fill mode and 0 in no-fill mode.
-      #.v                                                                 # current vertical line spacing (probably in u).
+      '.u' => Register.new(1, :ro => true),                               # 1 in fill mode and 0 in no-fill mode.
+      '.v' => Register.new(to_u("#{Font.defaultsize}p*6/5"),
+                           :ro => true)                                   # current vertical line spacing in basic units (default: 1.2em)
       #.w                                                                 # width of previous character.
       #.x                                                                 # reserved: version-dependent.
       #.y                                                                 # reserved: version-dependent.
       #.z                                                                 # name of current diversion.
     }
+    
+    # c. is supposed to be the same as read-only variable .c
+    # REVIEW: but then why isn't it in the list of read-only registers?
+    
+    @state[:register]['c.'] = @state[:register]['.c'].__id__
+
     true
   end
 
@@ -143,7 +149,7 @@ module Troff
       case val
       when String  then @value = val.to_i
       when Integer then @value = val
-      else         raise RuntimeError "register sets only Integer value, not #{val.class.name}"
+      else         raise RuntimeError, "register sets only Integer value, not #{val.class.name}"
       end
     end
 

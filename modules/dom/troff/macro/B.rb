@@ -6,16 +6,17 @@
 #   applies basic type styles (B, I)
 #	plus alternating type styles (BR, IR, BI, IB, etc.)
 #
-# TODO: this (and .SB, .SM) have got to be made safe for e.g.
+# this (and .SB, .SM) has to be safe for e.g.
 # sh.1 [GL2-W2.5] -> .B has conditional following
 #
 
 module Troff
   %w[B I R].each do |a|
     define_method "req_#{a}".to_sym do |*args|
-      if args.empty?
-        args = @lines.collect_through { |l| Troff.is_req?(l) ? (parse(l);false) : l }.last.split
-      end
+      args = @lines.collect_through do |l|
+               @state[:register]['.c'].value += 1
+               Troff.req?(l) ? ( parse(l.rstrip) ; nil ) : l
+             end.last.split unless args.any?
       apply do
         @current_block.text.last.font.face = case a
                                              when 'B' then :bold

@@ -51,7 +51,7 @@
 # Wherever numerical input is expected an expression involving parentheses, the arithmetic
 # operators +, -, /, *, % (modulus), and the logical operators <, >, <=, >=, = (or ==),
 # & (and), and : (or) may be used. Except where controlled by parentheses, evaluation of
-# expressions is left-to-right. In the case of certain requests, an initial + or - is
+# expressions is left-to-right. In the case of certain requests (TODO), an initial + or - is
 # stripped and interpreted as an increment or decrememnt indicator respectively. In the
 # presence of default scaling, the desired scale indicator must be attached to every
 # number in an expression for which the desired and default scaling differ. For example,
@@ -73,7 +73,7 @@
 
 module Troff
 
-  @@units_per_inch = 240	# REVIEW: does this even matter?
+  @@units_per_inch = 1200	# REVIEW: does this even matter?
 
   def to_in(str)
     to_u(str).to_f / @@units_per_inch
@@ -88,25 +88,48 @@ module Troff
   end
 
   def to_em(str)
-    ps = @state[:register]['.s'].value.to_f
-    to_u(str).to_f * 72 / ( @@units_per_inch * ps )
+    to_u(str).to_f * 72 / ( @@units_per_inch * @state[:register]['.s'].value )
   end
 
   def to_u(str, default_unit: 'u')
 
-    (magnitude, unit) = str.match(/^([-+]?[\d.]+)([cimnPpuv]?)/)[1..2]
+    # translate number registers only
+    str = __unesc_nr(str)
+
+    # try to break down the expression
+    # start with parens; work inside -> out
+    while str.include?('(') do
+      (a,b,c) = str.partition(')')
+      (x,y,z) = a.rpartition('(')
+      str.sub!(a + b, x + to_u(z, :default_unit => default_unit) + 'u')
+    end
+
+    # tokenize the result
+    operands = str.scan(%r([\d\.cimnPpuv]+|[-+/*%<>=&:]+))
+
+    (magnitude, unit) = operands.shift.match(/^([\d.]+)([cimnPpuv]?)/)[1..2]
     unit = default_unit if unit.empty?
 
-    case unit
-    when 'u' then magnitude.to_f
-    when 'i' then magnitude.to_f * @@units_per_inch
-    when 'c' then magnitude.to_f * ( @@units_per_inch / 2.54 )
-    when 'P' then magnitude.to_f * ( @@units_per_inch / 6 )
-    when 'p' then magnitude.to_f * ( @@units_per_inch / 72 )
-    when 'm' then magnitude.to_f * @state[:register]['.s'].value * ( @@units_per_inch / 72 )
-    when 'n' then magnitude.to_f * @state[:register]['.s'].value * ( @@units_per_inch / 144 )
-    when 'v' then magnitude.to_f * @state[:register]['.v'].value
+    lhs = case unit
+    when 'u' then magnitude.to_i
+    when 'i' then magnitude.to_i * @@units_per_inch
+    when 'c' then magnitude.to_i * @@units_per_inch * 50 / 127
+    when 'P' then magnitude.to_i * @@units_per_inch / 6
+    when 'p' then magnitude.to_i * @@units_per_inch / 72
+    when 'm' then magnitude.to_i * @state[:register]['.s'].value * @@units_per_inch / 72
+    when 'n' then magnitude.to_i * @state[:register]['.s'].value * @@units_per_inch / 144
+    when 'v' then magnitude.to_i * @state[:register]['.v'].value
     end.to_i
+
+    while operands.any?
+      op = operands.shift.tr(':', '|')
+      rhs = operands.shift
+      op = '==' if op == '='
+      lhs = lhs.send(op, to_u(rhs, :default_unit => default_unit).to_i)
+    end
+
+    lhs.to_s
+          
   end
 
 end

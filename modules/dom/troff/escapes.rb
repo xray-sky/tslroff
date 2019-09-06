@@ -27,6 +27,26 @@ module Troff
   def unescape(str, copymode: nil)
     copymode ? __unesc_cm(str) : __unesc(str)
   end
+  
+  def __unesc_nr(str)
+    copy = String.new
+    begin
+      esc   = @state[:escape_char]
+      parts = str.partition(esc)
+      copy << parts[0] unless parts[0].empty?
+
+      if parts[1] == esc
+        str = case parts[2][0]
+              when 'n' then esc_n(parts[2])
+              else copy << esc ; parts[2]
+              end
+      else
+        str = parts[2]
+      end
+
+    end until str.empty?
+    copy
+  end
 
   def __unesc_cm(str)
     copy = String.new

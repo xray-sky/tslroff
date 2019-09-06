@@ -49,28 +49,4 @@ class Manual
     end
   end
 
-  # unit conversions
-  #
-  # this ought to be a class method except it needs to know what the current font size
-  # and vertical spacing are. input units are converted to inches, then to whatever was requested
-  #
-  # REVIEW: these conversions aren't particularly sophisticated. maybe they don't need to be?
-=begin
-  def scale(value, units)
-
-    (out, scale) = if value.match(/^([+\d\.\-\]+)(\w)$/)
-                     Regexp.last_match[1..2]
-                   else
-                     [ value, 'n' ]
-                   end
-
-    ps = req_nr('.s')
-    vs = @state[:
-    case scale
-    when 'm' then out *= ( ps / 72 )             # em
-    when 'n' then out *= ( 0.5 * ( ps / 72 )     # en
-    when 'v' then
-    end
-  end
-=end
 end

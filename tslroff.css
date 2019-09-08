@@ -47,7 +47,7 @@
     src: local("CMU Serif Bold Extended Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
 */
-/*
+
 @font-face {
     font-family: "Computer Modern Serif";
     src: url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.eot');
@@ -108,8 +108,9 @@ body {
 }
 
 #man {
+	font-family: "Computer Modern Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: "CMU Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
-	font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;
+	/* font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;
 	/* font-family: Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: Times, "Times New Roman", serif; */
 	font-size: 12pt;
@@ -141,7 +142,7 @@ body {
 	background: white;
 	font-style: italic;
 	font-weight: bold;
-	border-bottom: 1px solid gray; 
+	border-bottom: 1px solid gray;
 	padding: 0.25em 1em 0.25em 0em;
 	margin: 1em 4em 1em 3em;
 }
@@ -160,7 +161,7 @@ body {
     font-style: italic;
     color: gray;
 }
-    
+
 #man pre {
 	border: none;
 	background: none;
@@ -196,7 +197,7 @@ body {
     color: midnightblue;
 	/*font-style: italic;*/
     font-style: normal;
-    font-weight: bold; 
+    font-weight: bold;
 }
 
 #man .ul {
@@ -204,7 +205,7 @@ body {
     font-weight: normal;
     text-decoration: underline;
 }
-    
+
 #man table {
 	border: none;
 	background: none;
@@ -241,7 +242,7 @@ body {
 	float: left;
 	clear: left;
 	padding-right: 0.5em;
-    margin-top: 0em; 
+    margin-top: 0em;
 }
 
 /*
@@ -253,13 +254,13 @@ body {
 #man dd {
     text-align: justify;
     padding-right: 3em;
-    margin-top: 1em; 
+    margin-top: 1em;
 }
 
 #man .synopsis {
     word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
 }
-    
+
 #man .nrs {     /* troff 1/6em narrow space */
     display: inline-block;
     width: 0.167em;
@@ -270,12 +271,12 @@ body {
     display: inline-block;
     width: 0.083em;
     /* this property is currently unsupported. will it even do what I need? */
-    text-wrap: suppress;    
+    text-wrap: suppress;
 }
 
 #man .tab {     /* HTML shortcut - cheapass source compression */
     display: inline-block;
-    /* this is only good if the element is a direct child of a block. 
+    /* this is only good if the element is a direct child of a block.
        breaks again if it's in, say, <strong>, or another <span> */
     /*margin-left: inherit;  /* look at this more closely. I think it's wrong in tar.1 - where was it I did this for? bc.? bs.1? */
 }
@@ -449,7 +450,7 @@ kbd {
 	font-size: 10pt;
 	font-style: italic;
 	font-weight: normal;
-	border-bottom: 1px solid lightgray; 
+	border-bottom: 1px solid lightgray;
 	padding: 0.25em 1em 0.25em 1em;
 	margin: 1em 4em 1em 3em;
 }
@@ -460,14 +461,14 @@ kbd {
 	margin: 2em 45em 1em 4em;
 	border-bottom: 1px solid #cccccc;
 }
-	
+
 .body h5 {
 	color: dimgrey;
 	font-weight: bold;
 	margin: 2em 45em 1em 8em;
 	border-bottom: 1px solid #cccccc;
 }
-	
+
 .body p {
 	padding-right: 2em;
 	padding-left: 2em;
@@ -555,7 +556,7 @@ kbd {
 
 .body pre strong {
 	color: yellow;
-	font-style: italic;	
+	font-style: italic;
 }
 
 .body pre kbd {
@@ -567,8 +568,8 @@ kbd {
 
 table {
 	border: 1px outset gray;
-    border-spacing: 0.3em; 
-	background: #e0e0e0;     
+    border-spacing: 0.3em;
+	background: #e0e0e0;
 	padding: 0.5em;
 	margin: 1em 2em 1em 4em;
     empty-cells: hide;
@@ -588,7 +589,7 @@ table th {
 table td {
 	border: 0px solid #cccccc;
 	background: white;
-	margin: 1em; 
+	margin: 1em;
 	padding: 0.5em 1em 0.5em 1em;
     text-align: left;
 }
@@ -649,7 +650,7 @@ table.exhibit td {
 
 table.exhibit tr:first-child td {
 	border-top: 0px;
-} 
+}
 
 table.exhibit tr:nth-child(odd) td {
 	background: none;
@@ -718,7 +719,7 @@ table.exhibit p.cardcat {
 	color: black;
 }
 
-#menu a:hover { 
+#menu a:hover {
 	background: #d0d0d0; /* not sure this does anything in any browser, even */
 }
 

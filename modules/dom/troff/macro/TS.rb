@@ -4,7 +4,7 @@
 # -------------
 #
 #   Starts table (tbl) processing
-# 
+#
 # this is some hairy ish.
 #
 
@@ -15,10 +15,10 @@ module Troff
     tbl = Block.new(type: :table, style: @current_block.style.dup, text: Array.new)
     @document << @current_block
     @document << tbl
-    
-    # You may specify a single line of options to affect the layout of the whole 
-    # table. These must be placed immediately after the .TS line. On this line, you 
-    # must separate options with spaces, tabs, or commas. You must end the options 
+
+    # You may specify a single line of options to affect the layout of the whole
+    # table. These must be placed immediately after the .TS line. On this line, you
+    # must separate options with spaces, tabs, or commas. You must end the options
     # line with a semicolon. All allowable options appear below.
 
     options_separator  = Regexp.new('(?:,|\s+)')
@@ -141,7 +141,7 @@ module Troff
 
         @current_block.style.css[:border] = '1px solid black' if tbl.style[:allbox]
 
-        # REVIEW: there is a fundamental conflict between the _ that draws a rule (which 
+        # REVIEW: there is a fundamental conflict between the _ that draws a rule (which
         # must appear as a cell - stbl1) and a row with one column's worth of text that's
         # spanned to the end of the row (which must not appear as cells - stbl3)
 

@@ -71,16 +71,16 @@ class Block
     when :th      then %(<div class="title"><h1>#{t}</h1></div><div class="body"><div id="man">\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
-    when :tp      then "<dl>\n <dt>#{style.tag.to_html}</dt>\n  <dd>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
-    when :p       
+    when :tp      then "<dl>\n <dt>#{style[:tag].to_html}</dt>\n  <dd>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
+    when :p
       return if t.strip.empty?
-      case style.section
-      when 'SYNOPSIS' 
+      case style[:section]
+      when 'SYNOPSIS'
         %(<p class="synopsis">\n#{t}\n</p>\n)
       when 'SEE ALSO' # TODO: this needs to be platform overrideable; section to lowercase (maybe?)
         "<p>\n#{t.gsub(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
           %(<a href="../man\\7/\\3.\\6.html">\\1</a>))}\n</p>\n"
-      else 
+      else
         "<p>\n#{t}\n</p>\n"
       end
     else          %(<p style="color:gray;">BLOCK(#{type})<br>#{t}</p>\n)

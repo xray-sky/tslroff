@@ -26,17 +26,21 @@ module Immutable
   def delete(key)
     attr = "@#{key}"
     raise get_object_exception_class if frozen? and instance_variable_defined?(attr)
-    instance_variable_remove(attr)
+    remove_instance_variable(attr)
   end
 
-  def dup
-    self.class.new(Hash[(keys.collect do |k|
+  def prototype
+    Hash[(keys.collect do |k|
       begin
         [k, self[k].dup]
       rescue TypeError
         [k, self[k]]
       end
-    end)])
+    end)]
+  end
+
+  def dup
+    self.class.new(prototype)
   end
 
   def each(&block)
@@ -63,7 +67,7 @@ module Immutable
 
   def keys
     instance_variables.collect do |v|
-      v.to_s.sub(/^@/, '').to_sym unless [:@frozen, :@css, :@attributes].include?(v)
+      v.to_s.sub(/^@/, '').to_sym unless [:@frozen, :@tag, :@css, :@attributes].include?(v)
     end.compact
   end
 

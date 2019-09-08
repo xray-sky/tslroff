@@ -4,7 +4,7 @@
 # ---------------
 #
 #   §1.3
-# 
+#
 #    basic units (u) - device specific (use pixels for html? - does it matter if I want to keep things in the output as ems?)
 #    inches      (i) - 120u (120dpi?)
 #    centimeters (c) - 50/127i
@@ -12,10 +12,10 @@
 #    em          (m) - size of font in points
 #    en          (n) - 1/2m
 #    point       (p) - 1/72i
-#    vertical line space (v) - 6/5m (? - default v is 1.2em) 
+#    vertical line space (v) - 6/5m (? - default v is 1.2em)
 #
 # in nroff, i is 240u; m == n == C (output device dependent; usually 1/10i or 1/12i)
-# 
+#
 #    Orientation    Default    Request or Function
 #   --------------------------------------------------------------------------------
 #    Horizontal        m       .ll, .in, .ti, .ta, .lt, .po, .mc, \h, \l
@@ -26,23 +26,23 @@
 #    conditional
 #
 #    Misc              p       .ps, .vs, \H, \s
-# 
+#
 #
 # All other requests ignore any scale indications. When a number register containing
 # an already appropriately scaled number is interpreted to provide numerical input,
-# the unit scale indicator 'u' may need to be appended to prevent an additional 
+# the unit scale indicator 'u' may need to be appended to prevent an additional
 # inappropriate default scaling. The number, 'N', may be specified as a decimal fraction
 # but the parameter finally stored is rounded to an integer number of basic units.
 #
 # TODO (necessary? possible?)
 #
-# The absolute position indicator | may be prepended to a number N to generate the 
+# The absolute position indicator | may be prepended to a number N to generate the
 # distance to the vertical or horizontal place N. For vertically oriented requests and
 # functions, |N becomes the distance in basic units from the current vertical place on the
 # page or in a diversion to the vertical place N. (See section 7.4, "Diversions".) For
 # all other requests and functions, |N becomes the distance from the current horizontal
 # place on the input line to the horizontal place N.
-# 
+#
 # For example, .sp |3.2c will space in the required direction to 3.2 cm from the top of
 # the page.
 #
@@ -94,7 +94,10 @@ module Troff
   def to_u(str, default_unit: 'u')
 
     # translate number registers only
-    str = __unesc_nr(str)
+    # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
+    # in order to avoid having to differentiate between '-' as subtraction vs. negation
+    str = str.prepend('0u') if str.start_with?('-')
+    str = __unesc_nr(str.gsub('+-', '-').gsub('--', '+'))
 
     # try to break down the expression
     # start with parens; work inside -> out
@@ -112,13 +115,13 @@ module Troff
 
     lhs = case unit
     when 'u' then magnitude.to_i
-    when 'i' then magnitude.to_i * @@units_per_inch
-    when 'c' then magnitude.to_i * @@units_per_inch * 50 / 127
-    when 'P' then magnitude.to_i * @@units_per_inch / 6
-    when 'p' then magnitude.to_i * @@units_per_inch / 72
-    when 'm' then magnitude.to_i * @state[:register]['.s'].value * @@units_per_inch / 72
-    when 'n' then magnitude.to_i * @state[:register]['.s'].value * @@units_per_inch / 144
-    when 'v' then magnitude.to_i * @state[:register]['.v'].value
+    when 'i' then magnitude.to_f * @@units_per_inch
+    when 'c' then magnitude.to_f * @@units_per_inch * 50 / 127
+    when 'P' then magnitude.to_f * @@units_per_inch / 6
+    when 'p' then magnitude.to_f * @@units_per_inch / 72
+    when 'm' then magnitude.to_f * @state[:register]['.s'].value * @@units_per_inch / 72
+    when 'n' then magnitude.to_f * @state[:register]['.s'].value * @@units_per_inch / 144
+    when 'v' then magnitude.to_f * @state[:register]['.v'].value
     end.to_i
 
     while operands.any?
@@ -129,7 +132,7 @@ module Troff
     end
 
     lhs.to_s
-          
+
   end
 
 end

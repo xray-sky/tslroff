@@ -15,8 +15,8 @@ class Text
   extend Forwardable
   def_delegators :@text, :length, :empty?, :to_s
 
-  attr_reader   :text
-  attr_accessor :font, :style
+  attr_reader   :text, :font, :style
+  #attr_accessor :font, :style
 
   def initialize(arg = Hash.new)
     self.font  = (arg[:font]  or Font.new)
@@ -67,9 +67,10 @@ class Text
     if @style.keys.any?
       tags += style.collect do |t, v|
         case t
-        when :baseline    then %(<span style="baseline-shift:#{v};">)
-        when :unsupported then '<span style="color:red;">Unsupported request =&gt; '
-        else                   %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
+        when :baseline         then %(<span style="position:relative;top:#{v}em;line-height:0;">)
+        when :horizontal_shift then %(<span style="position:relative;left:#{v}em;">)
+        when :unsupported      then %(<span style="color:red;">Unsupported request =&gt; )
+        else                        %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
         end
       end
     end
@@ -78,7 +79,7 @@ class Text
     ent = text
     while ent.match(/  /)
       ent.sub!(/  /, '&nbsp; ')
-    end 
+    end
 
     # troff treats ` and ' like typesetter's quotes (§2.1)
     # make sure < and > are printable while we're at it

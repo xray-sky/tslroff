@@ -12,7 +12,7 @@ module Troff
     formats_terminator = Regexp.new('\.\s*$')
     @state[:tbl_formats] = Troff.tbl_formats(@lines.collect_through do |l|
                              @state[:register]['.c'].value += 1
-                             l.match(formats_terminator) 
+                             l.match(formats_terminator)
                            end)
   end
 
@@ -43,7 +43,7 @@ module Troff
     # The official key letters are:
     #
     #key_letters = 'AaCcLlNnRrSs^'
-    # 
+    #
     # plus _ and =, which may be substituted for a key letter to get a horizontal
     # rule through that cell. Nearby vertical rules are extended to meet.
     #
@@ -75,7 +75,7 @@ module Troff
         columns = formats[row].count if formats[row].count > columns   # TODO: don't allow this to change after initial format (i.e. during subsequent .T&)
 
         # In order to apply the row (^) and column (S) spans more easily in HTML context,
-        # however, we deal with these key letters differently, by shifting an S leftward, 
+        # however, we deal with these key letters differently, by shifting an S leftward,
         # and an ^ upward.
 
         while pos = formats[row].index { |cell| cell.downcase.strip == 's' } do
@@ -90,7 +90,7 @@ module Troff
         end
 
         while pos = formats[row].index { |cell| cell.match('\^') } do
-          # ^ formats in prior rows ought to result in an empty (but present) cell, 
+          # ^ formats in prior rows ought to result in an empty (but present) cell,
           # as they will already have been merged up.
           formats[row][pos].sub!('^', '')
           merge_row = row - 1

@@ -74,8 +74,8 @@ puts <<DOC
 		<div class="menu">
 
 #{related.collect do |link|
-%(            <p><a href="#{link['href']}">
-                 <item><tt>#{link.content}</tt></item></a></p>)
+%(          	<p><a href="#{link['href']}">
+          	    <item><tt>#{link.content}</tt></item></a></p>)
 end.join("\n")}
 
 		</div menu>
@@ -102,25 +102,3 @@ end.join("\n")}
 </body>
 </html>
 DOC
-
-# this ain't workin' so hot
-# output's incomplete
-#puts Nokogiri::XML(src.to_html, &:noblanks).to_xhtml(indent: 4)
-
-#src.blocks.each do |b|
-#  puts b.to_html
-#end
-
-=begin
-
-roff = Troff.new("gl2","w2.5")
-roff.parse(src.lines).each { |l| puts l.inspect }
-
-puts "TITLE: #{roff.title} SECTION: #{roff.section}"
-puts
-
-
-#puts source.format
-puts source.header#.dump
-puts source.title << " " << source.section
-=end

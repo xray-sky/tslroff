@@ -30,8 +30,8 @@ module Troff
   def req_nr(register, value = '0', increment = nil)
     @state[:register][register] ||= Register.new(0)
     unless @state[:register][register].read_only?
-      @state[:register][register].value += value.to_i
-      @state[:register][register].increment = increment if increment
+      @state[:register][register].value = value.to_i
+      @state[:register][register].increment = increment.to_i if increment
     end
   end
 
@@ -77,7 +77,7 @@ module Troff
       #.k                                                                 # horizontal size of text (minus indent) of current partially collected output line, if any, in current env.
       #.l                                                                 # current line length.
       #.n                                                                 # length of text portion on previous output line.
-      #.o                                                                 # current page offset.
+      '.o' => Register.new(0, :ro => true),                               # current page offset (left margin). separate from indents. REVIEW: how does changing this interact with css ('0' provides 1in margin)
       #.p                                                                 # current page length.
       '.s' => Register.new(Font.defaultsize, :ro => true),                # current point size.
       #.t                                                                 # distance to the next trap.
@@ -89,10 +89,10 @@ module Troff
       #.y                                                                 # reserved: version-dependent.
       #.z                                                                 # name of current diversion.
     }
-    
+
     # c. is supposed to be the same as read-only variable .c
     # REVIEW: but then why isn't it in the list of read-only registers?
-    
+
     @state[:register]['c.'] = @state[:register]['.c'].__id__
 
     true
@@ -155,6 +155,15 @@ module Troff
 
     def incrementing?
       !@increment.zero?
+    end
+
+    def +
+    warn "v: #{@value.inspect} (#{@value.class.name}) / #{@increment.inspect} (#{increment.class.name}"
+      @value += @increment
+    end
+
+    def -
+      @value -= @increment
     end
 
   end

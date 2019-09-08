@@ -27,7 +27,7 @@ module Troff
   def unescape(str, copymode: nil)
     copymode ? __unesc_cm(str) : __unesc(str)
   end
-  
+
   def __unesc_nr(str)
     copy = String.new
     begin
@@ -93,7 +93,8 @@ module Troff
               when ' ' then parts[2].sub(/^ /,  '&nbsp;')        # "unpaddable space-sized character"
               when '0' then parts[2].sub(/^0/,  '&ensp;')        # "digit-width space" - possibly "en space"?
               when '%' then parts[2].sub(/^%/,  '&shy;')         # discretionary hyphen
-              when '&' then parts[2].sub(/^\&/, '&zwj;')         # "non-printing, zero-width character" - possibly "zero-width joiner"
+              #when '&' then parts[2].sub(/^\&/, '&zwj;')         # "non-printing, zero-width character" - possibly "zero-width joiner"
+              when '&' then parts[2].sub(/^\&/, '')              # "non-printing, zero-width character" - more useful as ''
               when "'" then parts[2].sub(/^\'/, '&acute;')       # "typographically equivalent to \(aa" §23.
               when '`' then parts[2].sub(/^\`/, '&#96;')         # "typographically equivalent to \(ga" §23.
               when '|' then parts[2].sub(/^\|/, '&roffctl_nrs;') # 1/6 em      narrow space char
@@ -104,7 +105,7 @@ module Troff
                 if respond_to?(esc_method)
                   send(esc_method, parts[2])
                 else
-                  warn "unescaped char #{parts[2][0]} (#{parts[2][1..-1]})"
+                  warn "unescaped char in line #{@state[:register]['.c'].value}: #{parts[2][0].inspect} (#{parts[2][1..-1].inspect})"
                   parts[2]
                 end
               end

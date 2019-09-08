@@ -46,7 +46,7 @@ module Troff
     hold_block = @current_block
     @current_block = Block.new(type: :bare)
 
-    parse(req_str)
+    unescape(req_str)
     width = @current_block.to_s.length.to_s  # FIXME: this is totally wrong (entitized chars vs. u)
 
     # restore normal output

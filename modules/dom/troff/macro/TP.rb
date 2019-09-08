@@ -19,7 +19,7 @@ module Troff
     if width
       # divert the width; don't let it get into the output stream.
       @current_block = Block.new(type: :bare)
-      parse(width)
+      unescape(width)
       width = @current_block.text.pop.text.strip	# TODO: actually use the width
     end
     @current_block = Block.new(type: :tp, style: @document.last.style.dup)

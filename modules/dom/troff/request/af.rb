@@ -29,8 +29,8 @@
 module Troff
 
   def req_af(reg, fmt)
-    unless reg.match(/s[tb]/) or @state[:registers][reg].read_only?
-      @state[:registers][reg].format = fmt
+    unless reg.match(/s[tb]/) or @state[:register][reg].read_only?
+      @state[:register][reg].format = fmt
     end
   end
 

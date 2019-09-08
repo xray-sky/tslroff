@@ -112,7 +112,7 @@ module Troff
 
     def initialize(value = 0, increment = 0, ro: false)
       self.value = value
-      @format    = :roman
+      @format    = '1'
       @increment = increment
       @read_only = ro
     end
@@ -123,7 +123,7 @@ module Troff
 
     def value
       case @format
-      when :roman  then @value
+      when '1'     then @value
       when /(\d+)/ then sprintf("%0#{Regexp.last_match(1).length}d", @value)
       when /(a)/i
         Regexp.last_match(1) == 'A' ? @@alpha_map[@value].upcase : @@alpha_map[@value]
@@ -158,7 +158,6 @@ module Troff
     end
 
     def +
-    warn "v: #{@value.inspect} (#{@value.class.name}) / #{@increment.inspect} (#{increment.class.name}"
       @value += @increment
     end
 

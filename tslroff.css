@@ -47,7 +47,7 @@
     src: local("CMU Serif Bold Extended Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
 */
-
+/*
 @font-face {
     font-family: "Computer Modern Serif";
     src: url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.eot');
@@ -108,9 +108,9 @@ body {
 }
 
 #man {
-	font-family: "Computer Modern Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
+	/*font-family: "Computer Modern Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: "CMU Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
-	/* font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;
+	font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;
 	/* font-family: Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: Times, "Times New Roman", serif; */
 	font-size: 12pt;

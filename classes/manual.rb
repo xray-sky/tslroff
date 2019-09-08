@@ -13,7 +13,7 @@ require 'classes/text.rb'
 
 class Manual
   attr_accessor :blocks
-  attr_reader   :platform, :version, :lines
+  attr_reader   :platform, :version, :lines, :links
 
   def initialize(file)
     # TODO: temporary hardcode for early prototyping
@@ -22,6 +22,8 @@ class Manual
     # end temporary hardcode
 
     @document = Array.new
+    @related  = Array.new
+
     @source = Source.new(file)
     @lines  = @source.lines.each
     @current_block = Block.new

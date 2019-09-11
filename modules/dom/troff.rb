@@ -16,7 +16,8 @@ module Troff
     require "modules/platform/#{self.platform.downcase}.rb"
     self.extend Kernel.const_get(self.platform.to_sym)
 
-    @state                = Hash.new
+    @register = Hash.new
+    @state    = Hash.new
 
     load_version_overrides
 
@@ -32,7 +33,7 @@ module Troff
   def to_html
     loop do
       begin
-        l = @lines.tap { @state[:register]['.c'].value += 1 }.next
+        l = @lines.tap { @register['.c'].value += 1 }.next
         parse(l.rstrip)
       rescue StopIteration
         @document << @current_block

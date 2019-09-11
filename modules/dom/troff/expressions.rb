@@ -88,7 +88,7 @@ module Troff
   end
 
   def to_em(str)
-    to_u(str).to_f * 72 / ( @@units_per_inch * @state[:register]['.s'].value )
+    to_u(str).to_f * 72 / ( @@units_per_inch * @register['.s'].value )
   end
 
   def to_u(str, default_unit: 'u')
@@ -119,9 +119,9 @@ module Troff
     when 'c' then magnitude.to_f * @@units_per_inch * 50 / 127
     when 'P' then magnitude.to_f * @@units_per_inch / 6
     when 'p' then magnitude.to_f * @@units_per_inch / 72
-    when 'm' then magnitude.to_f * @state[:register]['.s'].value * @@units_per_inch / 72
-    when 'n' then magnitude.to_f * @state[:register]['.s'].value * @@units_per_inch / 144
-    when 'v' then magnitude.to_f * @state[:register]['.v'].value
+    when 'm' then magnitude.to_f * @register['.s'].value * @@units_per_inch / 72
+    when 'n' then magnitude.to_f * @register['.s'].value * @@units_per_inch / 144
+    when 'v' then magnitude.to_f * @register['.v'].value
     end.to_i
 
     while operands.any?

@@ -17,7 +17,7 @@ module Troff
   end
 
   def fill?
-    @state[:register]['.u'].zero? ? false : true
+    @register['.u'].zero? ? false : true
   end
 
   def sentence_end?

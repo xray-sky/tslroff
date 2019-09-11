@@ -105,7 +105,7 @@ module Troff
                 if respond_to?(esc_method)
                   send(esc_method, parts[2])
                 else
-                  warn "unescaped char in line #{@state[:register]['.c'].value}: #{parts[2][0].inspect} (#{parts[2][1..-1].inspect})"
+                  warn "unescaped char in line #{@register['.c'].value}: #{parts[2][0].inspect} (#{parts[2][1..-1].inspect})"
                   parts[2]
                 end
               end

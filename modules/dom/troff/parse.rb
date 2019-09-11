@@ -20,10 +20,10 @@ module Troff
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)
-          warn "Unrecognized request in line #{@state[:register]['.c'].value}: #{line}"
+          warn "Unrecognized request in line #{@register['.c'].value}: #{line}"
         else
           # it's some other screwup; use the normal error reporting
-          warn "in line #{@state[:register]['.c'].value}: #{line.inspect}:"
+          warn "in line #{@register['.c'].value}: #{line.inspect}:"
           warn e
           warn e.backtrace
         end
@@ -42,6 +42,7 @@ module Troff
       warn "bare tab in input (#{line.inspect})" if line.include?("\t")
       unescape(line)
       space_adj
+      process_input_traps
     end
 
     # REVIEW: this break might also need to happen during macro processing

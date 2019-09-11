@@ -8,15 +8,22 @@
 
 module Troff
   def req_SB(*args)
-    apply do
-      @current_block.text.last.font.size = Font.defaultsize - 1
-      @current_block.text.last.font.face = :bold
-      args = @lines.collect_through do |l|
-               @state[:register]['.c'].value += 1
-               Troff.req?(l) ? ( parse(l.rstrip) ; nil ) : l
-             end.last.split unless args.any?
+    req_ps(Font.defaultsize)
+    req_ps('-1')
+    req_ft('B')
+
+    if args
       unescape(args.join(' '))
+      send(:finalize_SB)
+    else
+      req_it(1, :finalize_SB)
     end
-    apply { @current_block.text.last.font.size = Font.defaultsize }
   end
+
+  def finalize_SB
+    req_ft
+    req_ps
+    process_input_traps
+  end
+
 end

@@ -8,16 +8,20 @@
 
 module Troff
   def req_SM(*args)
-    @state[:register]['.s'].value = Font.defaultsize - 1
-    apply do
-      @current_block.text.last.font.size = @state[:register]['.s'].value
-      args = @lines.collect_through do |l|
-               @state[:register]['.c'].value += 1
-               Troff.req?(l) ? ( parse(l.rstrip) ; nil ) : l
-             end.last.split unless args.any?
+    req_ps(Font.defaultsize)
+    req_ps('-1')
+
+    if args
       unescape(args.join(' '))
+      send(:finalize_SM)
+    else
+      req_it(1, :finalize_SM)
     end
-    @state[:register]['.s'].value = Font.defaultsize
-    apply { @current_block.text.last.font.size = @state[:register]['.s'].value }
   end
+
+  def finalize_SM
+    req_ps
+    process_input_traps
+  end
+
 end

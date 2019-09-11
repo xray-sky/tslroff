@@ -17,10 +17,11 @@
 # incrementing is done when processing the \n escape, rather than at output, because
 # it may be a positive or negative increment, or none at all
 #
+#
 # enforcement of read_only registers is done in .nr rather than internal to the class,
 # because the internal registers still need to be updated, just not from document context
 #
-#   TODO: generally underimplemented
+# REVIEW: does this accept a leading ± to indicate the "with respect to the previous value" part?
 #
 
 require 'forwardable'
@@ -28,16 +29,16 @@ require 'forwardable'
 module Troff
 
   def req_nr(register, value = '0', increment = nil)
-    @state[:register][register] ||= Register.new(0)
-    unless @state[:register][register].read_only?
-      @state[:register][register].value = value.to_i
-      @state[:register][register].increment = increment.to_i if increment
+    @register[register] ||= Register.new
+    unless @register[register].read_only?
+      @register[register].value = value.to_i
+      @register[register].increment = increment.to_i if increment
     end
   end
 
   def init_nr
     date = Time.new
-    @state[:register] = {
+    @register.merge!({
       ############################################
       # §24 Predefined General Number Registers
       ############################################
@@ -88,12 +89,12 @@ module Troff
       #.x                                                                 # reserved: version-dependent.
       #.y                                                                 # reserved: version-dependent.
       #.z                                                                 # name of current diversion.
-    }
+    })
 
     # c. is supposed to be the same as read-only variable .c
     # REVIEW: but then why isn't it in the list of read-only registers?
 
-    @state[:register]['c.'] = @state[:register]['.c'].__id__
+    @register['c.'] = @register['.c'].__id__
 
     true
   end

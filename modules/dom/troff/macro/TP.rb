@@ -10,6 +10,8 @@
 #   text...
 #
 # TODO: what does ".TP &" mean? (see: machid.1 [GL2-W2.5])
+# TODO: use the width
+# TODO: special handling of titles that exceed the width (perhaps during to_html)
 #
 
 module Troff
@@ -24,15 +26,12 @@ module Troff
     end
     @current_block = Block.new(type: :tp, style: @document.last.style.dup)
 
-    # the tag may be styled
-    hold_block = @current_block
+    req_it(1, :finalize_TP, @current_block)
     @current_block.style[:tag] = Block.new(type: :bare)
     @current_block = @current_block.style[:tag]
-    @lines.collect_through do |l|
-      @state[:register]['.c'].value += 1
-      parse(l.rstrip)
-      !@current_block.empty?
-    end
-    @current_block = hold_block
+  end
+
+  def finalize_TP(held_block)
+    @current_block = held_block
   end
 end

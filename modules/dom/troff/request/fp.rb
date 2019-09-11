@@ -26,13 +26,14 @@ module Troff
   end
 
   def init_fp
-    @state[:font] = [
-      nil,
-      Font.new(face: :regular),
-      Font.new(face: :italic),
-      Font.new(face: :bold)#,
-      #Font.new(family: :math) # TODO: output
-    ]
+    @state[:fpmap] = { 'R' => 1, 'I' => 2, 'B' => 3 }
+    @state[:fonts] = {
+      0 => nil,
+      1 => Font.new(face: :regular),
+      2 => Font.new(face: :italic),
+      3 => Font.new(face: :bold)#,
+      #4 => Font.new(family: :math) # TODO: output
+    }
     true
   end
 end

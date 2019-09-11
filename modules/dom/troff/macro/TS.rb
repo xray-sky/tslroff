@@ -25,7 +25,7 @@ module Troff
     options_terminator = Regexp.new(';\s*$')
 
     if @lines.peek.match(options_terminator)
-      @lines.tap { @state[:register]['.c'].value += 1 }.next.sub(options_terminator, '').split(options_separator).each do |option|
+      @lines.tap { @register['.c'].value += 1 }.next.sub(options_terminator, '').split(options_separator).each do |option|
         case option
         when 'center'    then tbl.style.css[:margin] = 'auto'
         when 'expand'    then tbl.style.css[:width]  = '100%' # REVIEW: this was 85% in old version
@@ -59,7 +59,7 @@ module Troff
           top_borders[column] = fmt if fmt.match(/[_=]/)
         end
       end
-      @lines.tap { @state[:register]['.c'].value += 1 }.next
+      @lines.tap { @register['.c'].value += 1 }.next
     end
 
     #row = 0
@@ -71,7 +71,7 @@ module Troff
       current_row = Block.new(type: :row, style: @current_block.style.dup, text: format_row)
 
       # row data
-      cells = @lines.tap { @state[:register]['.c'].value += 1 }.next.chomp.split(cell_delim)
+      cells = @lines.tap { @register['.c'].value += 1 }.next.chomp.split(cell_delim)
 
       # check for bottom borders:
       # row span control characters (\^) also allowed to appear
@@ -98,7 +98,7 @@ module Troff
           end
           # there'll be a format line for this guy. skip it.
           @state[:tbl_formats].next_row
-          @lines.tap { @state[:register]['.c'].value += 1 }.next
+          @lines.tap { @register['.c'].value += 1 }.next
         end
       rescue StopIteration => e
         # ignore it.

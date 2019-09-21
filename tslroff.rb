@@ -23,6 +23,8 @@ require 'date'
 require 'nokogiri'
 
 $LOAD_PATH << File.dirname(__FILE__)
+$CSS = File.expand_path(File.dirname(__FILE__)) + '/tslroff.css'
+
 require 'classes/manual.rb'
 
 
@@ -45,6 +47,20 @@ end
 manual  = src.to_html
 related = Nokogiri::HTML(manual).search('a')
 
+related_menu = %(
+		<div class="menu_title">
+			<h1>Related Articles</h1>
+		</div>
+		<div class="menu">
+
+#{related.collect do |link|
+%(          	<p><a href="#{link['href']}">
+          	    <item><tt>#{link.content}</tt></item></a></p>)
+end.join("\n")}
+
+		</div>
+)
+
 puts <<DOC
 <head>
   <link rel="stylesheet" type="text/css" href="tslroff.css"></link>
@@ -60,31 +76,20 @@ puts <<DOC
           	<p><a href="/"><item>Home</item></a></p>
          	<p><a href="/Systems/"><item>Lab Overview</item></a></p>
          	<p><a href="/Articles/"><item>Retrotechnology Articles</item></a></p>
-			<p class="here"><small>&rArr; Fhlushstones Results</small></p>
+			<p class="here"><small>&rArr; Online Manual</small></p>
          	<p><a href="/Media/"><item>Media Vault</item></a></p>
           	<p><a href="/Software/"><item>Software Library</item></a></p>
           	<p><a href="/Projects/"><item>Restoration Projects</item></a></p>
           	<p><a href="/wanted.html"><item>Artifacts Sought</item></a></p>
 
 		</div>
-
-		<div class="menu_title">
-			<h1>Related Articles</h1>
-		</div>
-		<div class="menu">
-
-#{related.collect do |link|
-%(          	<p><a href="#{link['href']}">
-          	    <item><tt>#{link.content}</tt></item></a></p>)
-end.join("\n")}
-
-		</div menu>
+#{related_menu if related.any?}
 	</div>
 </div>
 
 <div id="right">
 <div id="content">
-#{manual}</div></div> <!-- these two closing divs (.body, #man) should be handled by .to_html -->
+#{manual}
 
 	<div class="bottom_deco">
 		<table><tr><td class="left"></td><td></td><td class="right"></td></tr></table>

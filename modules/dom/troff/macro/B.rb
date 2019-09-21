@@ -3,8 +3,11 @@
 #   troff
 # -------------
 #
-#   applies basic type styles (B, I)
-#	plus alternating type styles (BR, IR, BI, IB, etc.)
+#   .B text			Make text bold.
+#   .I text			Make text italic.
+#   .RI a b			Concatenate roman a with italic b, and alternate these two fonts for
+#                   up to six arguments. Similar macros alternate between any two of
+#                   roman, italic, and bold:   .IR  .RB  .BR  .IB  .BI
 #
 
 module Troff

@@ -21,6 +21,9 @@ module Troff
 
   def init_ds
     @state[:named_string] = {
+      'R'  => '&reg;',
+      'S'  => "\\s#{Font.defaultsize}",
+      'Tm' => '&trade;',
       '.T' => 'html'   # name of output device
     }
     true

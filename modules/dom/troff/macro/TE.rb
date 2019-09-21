@@ -8,7 +8,7 @@
 
 module Troff
   def req_TE
-    @current_block = Block.new(style: @current_block.style.dup)
+    @current_block = blockproto
     @document << @current_block
   end
 end

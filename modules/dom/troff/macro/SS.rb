@@ -3,7 +3,9 @@
 #   troff
 # -------------
 #
-#   Marks a subsection header
+#   .SS text
+#
+#     Place sub-subhead text, for example, Options, here.
 #
 
 module Troff
@@ -12,8 +14,7 @@ module Troff
       @current_block.type = :ss
       @current_block << args.join(' ')
     end
+    @current_block = blockproto
     @document << @current_block
-    # TODO: see PP.rb for style carryover note
-    @current_block = Block.new(type: :p, style: @current_block.style.dup)
   end
 end

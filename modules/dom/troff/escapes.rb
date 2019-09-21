@@ -93,8 +93,8 @@ module Troff
               when ' ' then parts[2].sub(/^ /,  '&nbsp;')        # "unpaddable space-sized character"
               when '0' then parts[2].sub(/^0/,  '&ensp;')        # "digit-width space" - possibly "en space"?
               when '%' then parts[2].sub(/^%/,  '&shy;')         # discretionary hyphen
-              #when '&' then parts[2].sub(/^\&/, '&zwj;')         # "non-printing, zero-width character" - possibly "zero-width joiner"
-              when '&' then parts[2].sub(/^\&/, '')              # "non-printing, zero-width character" - more useful as ''
+              when '&' then parts[2].sub(/^\&/, '&zwj;')         # "non-printing, zero-width character" - possibly "zero-width joiner"
+              #when '&' then parts[2].sub(/^\&/, '')              # "non-printing, zero-width character" - more useful as '' except we need &zwj; for numeric align in tbl
               when "'" then parts[2].sub(/^\'/, '&acute;')       # "typographically equivalent to \(aa" §23.
               when '`' then parts[2].sub(/^\`/, '&#96;')         # "typographically equivalent to \(ga" §23.
               when '|' then parts[2].sub(/^\|/, '&roffctl_nrs;') # 1/6 em      narrow space char

@@ -19,13 +19,13 @@ module Immutable
 
   def []=(key, val)
     attr = "@#{key}"
-    raise get_object_exception_class if frozen? and instance_variable_get(attr) != val
+    raise get_object_exception_class if is_frozen? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
   def delete(key)
     attr = "@#{key}"
-    raise get_object_exception_class if frozen? and instance_variable_defined?(attr)
+    raise get_object_exception_class if is_frozen? and instance_variable_defined?(attr)
     remove_instance_variable(attr)
   end
 
@@ -53,7 +53,7 @@ module Immutable
 
   def immutable_setter(val)
     attr = "@#{__callee__.to_s.sub(/=$/, '')}"
-    raise get_object_exception_class, "Attr: #{attr} => Val: #{val}" if frozen? and instance_variable_get(attr) != val
+    raise get_object_exception_class, "Attr: #{attr} => Val: #{val}" if is_frozen? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
@@ -61,7 +61,7 @@ module Immutable
     @frozen = true
   end
 
-  def frozen?
+  def is_frozen?
     @frozen
   end
 

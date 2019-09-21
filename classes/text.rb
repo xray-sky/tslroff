@@ -30,13 +30,15 @@ class Text
   end
 
   def freeze
-    return if frozen?
+    return if is_frozen?
     font.freeze
     style.freeze
   end
 
-  def frozen?
-    font.frozen? or style.frozen?
+  def is_frozen?
+    [ :@font, :@style ].collect do |x|
+      (instance_variable_defined?(x) ? instance_variable_get(x).send(:is_frozen?) : nil)
+    end.compact.any?
   end
 
   def inspect
@@ -76,7 +78,7 @@ class Text
     end
 
     # Multiple inter-word space characters found in the input are retained. §4.1
-    ent = text
+    ent = text.dup
     while ent.match(/  /)
       ent.sub!(/  /, '&nbsp; ')
     end
@@ -111,6 +113,10 @@ class Text
 
     # mark it up the rest of the way
     (tags + [ent] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
+  end
+
+  def to_selenium
+    %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$LOAD_PATH}/tslroff.css"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
   end
 
   alias concat <<

@@ -3,35 +3,28 @@
 #   troff
 # -------------
 #
-#   Titled paragraph
+#   .TP in
+#
+#     Begin indented paragraph with hanging tag. The next line that contains text to be
+#     printed is taken as the tag. If the tag does not fit, it is printed on a separate
+#     line.
 #
 #   .TP (width)
-#   (title)
+#   (tag)
 #   text...
 #
 # TODO: what does ".TP &" mean? (see: machid.1 [GL2-W2.5])
-# TODO: use the width
-# TODO: special handling of titles that exceed the width (perhaps during to_html)
 #
 
 module Troff
-  def req_TP(width = nil)
-    # TODO: see PP.rb for style carryover note
-    @document << @current_block
-    if width
-      # divert the width; don't let it get into the output stream.
-      @current_block = Block.new(type: :bare)
-      unescape(width)
-      width = @current_block.text.pop.text.strip	# TODO: actually use the width
-    end
-    @current_block = Block.new(type: :tp, style: @document.last.style.dup)
-
-    req_it(1, :finalize_TP, @current_block)
-    @current_block.style[:tag] = Block.new(type: :bare)
-    @current_block = @current_block.style[:tag]
+  def req_TP(indent = nil)
+    req_it(1, :finalize_TP, indent)
+    @current_block = Block.new(type: :bare)
   end
 
-  def finalize_TP(held_block)
-    @current_block = held_block
+  def finalize_TP(indent)
+    tag = @current_block.text
+    @current_block = @document.last
+    req_IP(tag, indent)
   end
 end

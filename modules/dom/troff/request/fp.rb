@@ -28,12 +28,12 @@ module Troff
   def init_fp
     @state[:fpmap] = { 'R' => 1, 'I' => 2, 'B' => 3 }
     @state[:fonts] = {
-      0 => nil,
-      1 => Font.new(face: :regular),
-      2 => Font.new(face: :italic),
-      3 => Font.new(face: :bold)#,
-      #4 => Font.new(family: :math) # TODO: output
+      0   => nil,
+      1   => :regular,
+      2   => :italic,
+      3   => :bold,
+      #4   => :symbol, # TODO: output REVIEW: necessary? correct?
+      :cs => :mono		# h4x for .cs - REVIEW: is it useful?
     }
-    true
   end
 end

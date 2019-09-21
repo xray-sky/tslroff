@@ -5,6 +5,9 @@
 #
 #   basic definitions of the \* (named string) escape
 #
+#  REVIEW: looks like the string could contain escapes that need further processing?
+#          e.g. '.dsS \s\n()S'
+#
 #  TODO: align this implementation with \n
 
 module Troff
@@ -15,7 +18,7 @@ module Troff
     if s.match(/\*(?:(\(..|.))/)
       ds = Regexp.last_match(1).start_with?('(') ? Regexp.last_match(1)[1..-1] : Regexp.last_match(1)
       if @state[:named_string][ds]
-        s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, @state[:named_string][ds])
+        s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, unescape(@state[:named_string][ds]).to_s)
       else
         warn "unselected named string #{s[0..1]} from #{s[2..-1]}"
         s[2..-1]

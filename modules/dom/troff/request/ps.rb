@@ -17,6 +17,8 @@
 #                                           previous value is also remembered.
 #                                           Ignored in nroff.
 #
+#   our default font size is 12pt
+#
 
 module Troff
   def req_ps(ps = '0')

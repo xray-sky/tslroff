@@ -40,8 +40,8 @@ class Manual
     rescue ImmutableBlockError, ImmutableTextError, ImmutableFontError, ImmutableStyleError => e
       case e
       when ImmutableBlockError
+        @current_block = blockproto
         @document << @current_block
-        @current_block = Block.new(style: @current_block.style.dup)
         retry
       when ImmutableTextError, ImmutableFontError
         @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)

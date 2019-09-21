@@ -39,11 +39,11 @@ class Block
   end
 
   def freeze
-    frozen? or style.freeze
+    is_frozen? or style.freeze
   end
 
-  def frozen?
-    style.frozen?
+  def is_frozen?
+    instance_variable_defined?(:@style) ? style.is_frozen? : nil
   end
 
   def inspect
@@ -68,20 +68,21 @@ class Block
     when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
     when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
     when :cell    then "  <td#{style.to_s}>#{t}</td>\n"
-    when :th      then %(<div class="title"><h1>#{t}</h1></div><div class="body"><div id="man">\n)
+    when :th      then %(<div class="title"><h1>#{t}</h1></div>\n<div class="body">\n    <div id="man">\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
-    when :tp      then "<dl>\n <dt>#{style[:tag].to_html}</dt>\n  <dd>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
+    when :dl      then "<dl#{style.to_s}>\n <dt#{style[:dt].style.to_s}>#{style[:dt].to_html}</dt>\n  <dd#{style[:dd].style.to_s}>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
+    when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
     when :p
       return if t.strip.empty?
       case style[:section]
       when 'SYNOPSIS'
-        %(<p class="synopsis">\n#{t}\n</p>\n)
+        %(<p class="synopsis"#{style.to_s}>\n#{t}\n</p>\n)
       when 'SEE ALSO' # TODO: this needs to be platform overrideable; section to lowercase (maybe?)
-        "<p>\n#{t.gsub(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
+        "<p#{style.to_s}>\n#{t.gsub(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
           %(<a href="../man\\7/\\3.\\6.html">\\1</a>))}\n</p>\n"
       else
-        "<p>\n#{t}\n</p>\n"
+        "<p#{style.to_s}>\n#{t}\n</p>\n"
       end
     else          %(<p style="color:gray;">BLOCK(#{type})<br>#{t}</p>\n)
     end
@@ -89,6 +90,10 @@ class Block
 
   def to_s
     text.collect(&:to_s).join
+  end
+
+  def to_selenium
+    return %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
   end
 
   alias concat <<

@@ -4,6 +4,8 @@
 # ---------------
 #
 
+require 'selenium-webdriver'
+
 module Troff
 
   def source_init
@@ -31,15 +33,28 @@ module Troff
   end
 
   def to_html
+    @current_block = blockproto
+    @document << @current_block
     loop do
       begin
         l = @lines.tap { @register['.c'].value += 1 }.next
         parse(l.rstrip)
       rescue StopIteration
-        @document << @current_block
-        return @document.collect(&:to_html).join
+        # TODO: perform end-of-input trap macros from .em;
+        # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
+        return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs started by :th
       end
     end
   end
 
+  private
+
+  # prototype a new block with whatever necessary styles carried forward.
+  def blockproto(type = :p)
+    block = Block.new(type: type)
+    block.style[:section] = @state[:section] if @state[:section]
+    block.style.css[:margin_top] = "#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd]
+    block.style.css[:margin_left] = "#{to_em(@register[')R'].value.to_s + 'u')}em" unless @register[')R'].value == to_u('2m').to_i
+    block
+  end
 end

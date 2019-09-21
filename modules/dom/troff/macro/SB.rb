@@ -5,6 +5,8 @@
 #
 #   smaller text, bold
 #
+# TODO: move this to whatever platform this is defined for; it's not a SysV macro
+#
 
 module Troff
   def req_SB(*args)

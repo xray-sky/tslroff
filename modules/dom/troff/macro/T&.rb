@@ -93,6 +93,7 @@ module Troff
           # ^ formats in prior rows ought to result in an empty (but present) cell,
           # as they will already have been merged up.
           formats[row][pos].sub!('^', '')
+          residual = formats[row][pos]		# it's possible some format remains (e.g. |)
           merge_row = row - 1
           begin
             while formats[merge_row][pos].empty? do
@@ -103,6 +104,11 @@ module Troff
             # REVIEW: short format rows may cause NoMethodErrors? (nil.empty?)
           end
           formats[merge_row][pos] << '^'
+          unless residual.empty?
+            #warn "spanned row residual format: #{residual.inspect} (merged/cleared)"
+            formats[merge_row][pos] << residual unless formats[merge_row][pos].include?(residual)
+            formats[row][pos] = '&nil;'
+          end
         end
 
         # move some | to get clean box extends, if necessary
@@ -178,6 +184,10 @@ module Troff
       format = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
       # hack to get a border_left (for box extend case; does it ever also appear for real-world tbl formatting?)
       # the way the formats are parsed means we'll never get this unless it's the first character on the line, or I've moved it there
+      if format == '&nil;'
+        cell.type = :nil
+        format = ''
+      end
       cell.style.css[:border_left] = case Regexp.last_match(1)
                                      when '|'  then '1px solid black'
                                      when '||' then '3px double black'

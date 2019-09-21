@@ -114,14 +114,15 @@ module Troff
     unit = default_unit if unit.empty?
 
     lhs = case unit
-    when 'u' then magnitude.to_i
-    when 'i' then magnitude.to_f * @@units_per_inch
-    when 'c' then magnitude.to_f * @@units_per_inch * 50 / 127
-    when 'P' then magnitude.to_f * @@units_per_inch / 6
-    when 'p' then magnitude.to_f * @@units_per_inch / 72
-    when 'm' then magnitude.to_f * @register['.s'].value * @@units_per_inch / 72
-    when 'n' then magnitude.to_f * @register['.s'].value * @@units_per_inch / 144
-    when 'v' then magnitude.to_f * @register['.v'].value
+    when 'u'  then magnitude.to_i
+    when 'i'  then magnitude.to_f * @@units_per_inch
+    when 'c'  then magnitude.to_f * @@units_per_inch * 50 / 127
+    when 'P'  then magnitude.to_f * @@units_per_inch / 6
+    when 'p'  then magnitude.to_f * @@units_per_inch / 72
+    when 'm'  then magnitude.to_f * @register['.s'].value * @@units_per_inch / 72
+    when 'n'  then magnitude.to_f * @register['.s'].value * @@units_per_inch / 144
+    when 'v'  then magnitude.to_f * @register['.v'].value
+    when 'px' then magnitude.to_f * @@units_per_inch / @@pixels_per_inch
     end.to_i
 
     while operands.any?

@@ -30,15 +30,7 @@ module Troff
     @register['.f'].value = font
   end
 
-  def init_fp
-    @state[:fpmap] = { 'R' => 1, 'I' => 2, 'B' => 3 }
-    @state[:fonts] = {
-      0 => nil,
-      1 => :regular,
-      2 => :italic,
-      3 => :bold#,
-      #4 => :symbol # TODO: output
-    }
+  def init_ft
     @register[:prev_fp] = Register.new
     true
   end

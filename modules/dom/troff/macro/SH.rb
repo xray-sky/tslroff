@@ -3,7 +3,9 @@
 #   troff
 # -------------
 #
-#   Marks a normal section header
+#   .SH text
+#
+#     Place subhead text, for example, SYNOPSIS, here.
 #
 
 module Troff
@@ -13,7 +15,8 @@ module Troff
       @current_block.type = :sh
       @current_block << text
     end
+    @state[:section] = text
+    @current_block = blockproto
     @document << @current_block
-    @current_block = Block.new(style: Style.new({ :section => text }, Kernel.const_get('ImmutableBlockError')))
   end
 end

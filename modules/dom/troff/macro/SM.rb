@@ -3,7 +3,9 @@
 #   troff
 # -------------
 #
-#   smaller text
+#   .SM text
+#
+#     Make text 1 point smaller than default point size.
 #
 
 module Troff
@@ -20,7 +22,7 @@ module Troff
   end
 
   def finalize_SM
-    req_ps
+    req_ps(Font.defaultsize)	# it's possible somebody messed with the font size in the .SM text
     process_input_traps
   end
 

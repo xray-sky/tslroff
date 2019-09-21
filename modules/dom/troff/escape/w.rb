@@ -22,16 +22,13 @@
 # TODO: set number registers
 # REVIEW: is it necessary? (is it used in practice)
 #
-# TODO: actually render it and get something better than an estimate
-#       https://dev.to/mscccc/creating-images-with-ruby--htmlcss-api-16g4
-#
 # observed variations
 # \w'\fB/usr/share/groff/font/devps/download'u+2n
 # \w'\f(CWdelete array[expression]'u
 # \w'\fBsprintf(\^\fIfmt\fB\^, \fIexpr-list\^\fB)\fR'u+1n
 # \w'\(bu'u+1n
-# \w'.SM KRB5CCNAME\ \ 'u
-# \w'.eh \'x\'y\'z\'  'u
+# \w'.SM KRB5CCNAME\ \ 'u       <- REVIEW what up with this
+# \w'.eh \'x\'y\'z\'  'u        <- REVIEW ...or this?
 # \w^B\\$1\\*(s1\\$2\\*(s2^Bu	<- TODO this might cause problems - where was it from?? was a .tr in effect?
 #                                       the manual suggests this might be illegal somehow?
 #
@@ -44,15 +41,25 @@ module Troff
 
     # get a manipulable block that can be rendered without leaving anything in the output stream
     hold_block = @current_block
-    @current_block = Block.new(type: :bare)
+    @current_block = Block.new(type: :se)
 
     unescape(req_str)
-    width = @current_block.to_s.length.to_s  # FIXME: this is totally wrong (entitized chars vs. u)
+    @webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
+    width = to_u("#{@webdriver.find_element(id: 'selenium').size.width}px")
 
     # restore normal output
     @current_block = hold_block
 
-    warn "calculated width of #{req_str} as #{width}"
-    width + s.slice(full_esc.length..-1)
+    width.to_s + s.slice(full_esc.length..-1)
   end
+
+  def init_selenium
+    chrome_opts = Selenium::WebDriver::Chrome::Options.new
+    chrome_opts.add_argument('--headless')
+    @webdriver = Selenium::WebDriver.for(:chrome, options: chrome_opts)
+    # calibrate Selenium (dimension results are in px)
+    @webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')
+    @@pixels_per_inch = @webdriver.find_element(id: 'calibrate').size.width
+  end
+
 end

@@ -12,8 +12,8 @@ module Troff
   def req_TS(*args)
     cell_delim = "\t"
 
-    tbl = Block.new(type: :table, style: @current_block.style.dup, text: Array.new)
-    @document << @current_block
+    tbl = blockproto(:table)
+    tbl.text = Array.new
     @document << tbl
 
     # You may specify a single line of options to affect the layout of the whole
@@ -79,7 +79,7 @@ module Troff
       # if .TE is the last line of the file, we'll get a StopIteration from peek
       # and it won't actually get processed.
       begin
-        if @lines.peek.chop.match(/^(\s|\\\^|_|=)+$/)
+        if @lines.peek.chop.match(/^(\s|\\\^|_|=)+$/)	# TODO: allow changed field separator
           line = Regexp.last_match(0)
           if line.match(/^([_=])$/)
             current_row.text.each do |cell|
@@ -96,8 +96,8 @@ module Troff
                                                                    end if fmt.match(/([_=])/)
             end
           end
-          # there'll be a format line for this guy. skip it.
-          @state[:tbl_formats].next_row
+          # if there's rowspan characters in the text, there'll be a line for this row in formats. skip it.
+          @state[:tbl_formats].next_row if line.match(/\\\^/)
           @lines.tap { @register['.c'].value += 1 }.next
         end
       rescue StopIteration => e
@@ -105,7 +105,8 @@ module Troff
       end
 
       current_row.text.each_with_index do |cell, column|
-        break if cell.type != :cell # past the normal cells and into :row_adj
+        break if cell.type == :row_adj # past the normal cells and into :row_adj
+
         @current_block = cell
         text = cells.shift
 
@@ -113,10 +114,13 @@ module Troff
         text = ' ' if cell.style[:box_rule]
 
         # handle cells that've been spanned downward
-        if text and text.sub!(/^\\\^$/, '')
+        # move bottom_border lines in the text; spanned cells have to be tabbed past
+        if (text and text.sub!(/^\\\^$/, '')) or cell.type == :nil
           rowspan_active[column] ||= true
           rowspan_hold[column] ||= tbl.text.last.text[column] # this is why there's a special Block type :row_adj for box rules, rather than inserting those rows directly
-          rowspan_hold[column].style.attributes[:rowspan] ? rowspan_hold[column].style.attributes[:rowspan] += 1 : rowspan_hold[column].style.attributes[:rowspan] = 2
+          # the spans are already known if they were done in the formats
+          # if they are in the text, they need to be figured out
+          rowspan_hold[column].style.attributes[:rowspan] ? rowspan_hold[column].style.attributes[:rowspan] += 1 : rowspan_hold[column].style.attributes[:rowspan] = 2 unless cell.type == :nil
           rowspan_hold[column].style.css[:vertical_align] = 'middle'
           # propagate styles up, too. so far, border_bottom is the only one that's been set
           # top borders & allbox will have already been set on whatever cell it's being spanned to
@@ -149,6 +153,7 @@ module Troff
           parse(text)
           # REVIEW: is this sufficient to suppress a non-printing request line?
           break if @current_block.text.empty? and cells[1].nil?
+          break if @current_block.type == :p		# quit if we hit .TE -- REVIEW: is this going to get tripped accidentally? no .P in .TE, ever?
           rowspan_hold[column] = nil unless rowspan_active[column]
         else
           # even if it starts with a . this was from the middle of a line and is not a request
@@ -163,7 +168,7 @@ module Troff
               #       when given items that align too far off-center. but it's a reasonable approximation for now
               #       right-hand-side can be forced to expand with &nbsp; but it's not necessarily one-to-one with lhs chars
               unless @current_block.text.last.text.sub!(/^(.*)&zwj;(.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')
-                @current_block.text.last.text.sub!(/^(\d+)\s*$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;&nbsp;&roffctl_endspan;')
+                @current_block.text.last.text.sub!(/^(\d+)\s*$/, '&roffctl_tbl_nl;\1&roffctl_endspan;')
                 @current_block.text.last.text.sub!(/^(.*)(\.\d.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')
               end
             end

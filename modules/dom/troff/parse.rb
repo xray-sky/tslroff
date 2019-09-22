@@ -39,7 +39,11 @@ module Troff
       # initial spaces also cause a break. §4.1
       # -- but don't break again unnecessarily.
       # -- REVIEW: I think tabs don't count for this
-      req_br if fill? && line.start_with?(' ') && !broke? && @current_block.type != :cell
+      if line.start_with?(' ')
+        # REVIEW: these initial spaces are probably also supposed to appear in the output
+        line.prepend("\\")    # force this initial space to appear in the output
+        req_br if fill? && !broke? && @current_block.type != :cell
+      end
 
       warn "bare tab in input (#{line.inspect})" if line.include?("\t")
       unescape(line)

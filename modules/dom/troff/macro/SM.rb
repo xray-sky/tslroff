@@ -7,6 +7,13 @@
 #
 #     Make text 1 point smaller than default point size.
 #
+# TODO: this fails on constructs like
+#       .TP
+#       .SM
+#       .B whatever
+#
+#       [GL2-W2.5] sh.1
+#
 
 module Troff
   def req_SM(*args)

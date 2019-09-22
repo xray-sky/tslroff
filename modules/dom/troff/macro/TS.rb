@@ -167,6 +167,7 @@ module Troff
               # TODO: this doesn't quite cause column widths to expand as one would expect,
               #       when given items that align too far off-center. but it's a reasonable approximation for now
               #       right-hand-side can be forced to expand with &nbsp; but it's not necessarily one-to-one with lhs chars
+              #       ...probably selenium can be used to calculate the various widths directly and do it that way
               unless @current_block.text.last.text.sub!(/^(.*)&zwj;(.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')
                 @current_block.text.last.text.sub!(/^(\d+)\s*$/, '&roffctl_tbl_nl;\1&roffctl_endspan;')
                 @current_block.text.last.text.sub!(/^(.*)(\.\d.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')

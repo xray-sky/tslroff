@@ -17,7 +17,11 @@ module Troff
   end
 
   def fill?
-    @register['.u'].zero? ? false : true
+    @register['.u'].value == 1
+  end
+
+  def nofill?
+    @register['.u'].zero?
   end
 
   def sentence_end?

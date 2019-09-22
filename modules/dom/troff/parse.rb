@@ -11,7 +11,7 @@ module Troff
     # trailing spaces. §4.1
     line.rstrip!
     if line.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
-      (x, cmd, req, args) = Regexp.last_match.to_a
+      (_, cmd, req, args) = Regexp.last_match.to_a
       warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin
         send("req_#{Troff.quote_method(req)}", *getargs(args))
@@ -29,24 +29,28 @@ module Troff
         end
       end
     else
-      case line
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3
-      when /^$/  then broke? ? req_br : req_br;req_br unless @current_block.type == :cell
+      if line.empty? && @current_block.type != :cell
+        req_br unless broke?
+        req_br
+      end
+
       # initial spaces also cause a break. §4.1
       # -- but don't break again unnecessarily.
       # -- REVIEW: I think tabs don't count for this
-      when /^ +/ then broke? ? '' : req_br
-      end
+      req_br if fill? && line.start_with?(' ') && !broke? && @current_block.type != :cell
 
       warn "bare tab in input (#{line.inspect})" if line.include?("\t")
       unescape(line)
       space_adj
+      req_br if nofill? && !broke? && @current_block.type != :cell
       process_input_traps
     end
 
     # REVIEW: this break might also need to happen during macro processing
-    req_br unless fill? || broke? || cmd == "'"
+    # TODO: I'm getting extra breaks in .nf -- [GL2-W2.5] acct.4
+    #req_br unless fill? || broke? || cmd == "'"
   end
 
 end

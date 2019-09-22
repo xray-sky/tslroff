@@ -13,7 +13,6 @@
 
 module Troff
   def req_IP(tag = '', indent = nil)	# )I reg holds carryover indent
-
     if indent
       # divert the width; don't let it get into the output stream.
       @current_block = Block.new(type: :bare)

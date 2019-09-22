@@ -10,7 +10,7 @@ module Troff
     esc  = Regexp.quote(@state[:escape_char])
     args = Array.new
     until str.empty?
-      if str.sub!(/^\"(.+?(#{esc}\")*)(\"|$)/, '') # an open quote may be closed by EOL
+      if str.sub!(/^\"(.*?(#{esc}\")*)(\"|$)/, '') # an open quote may be closed by EOL
         args << Regexp.last_match(1)             # REVIEW: are single-quoted args allowed??
       else
         str.sub!(/^\s*(.+?(#{esc}\s)*\s*)(\s|$)/, '')

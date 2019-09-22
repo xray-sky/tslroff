@@ -32,6 +32,11 @@
 # \w^B\\$1\\*(s1\\$2\\*(s2^Bu	<- TODO this might cause problems - where was it from?? was a .tr in effect?
 #                                       the manual suggests this might be illegal somehow?
 #
+# TOOD: this sort of construct -- [GL2-W2.5] adb.1
+# .tr ~"
+# .RS "\w'\f3~...~\f1\ 0\^\ \ \ \ \ 'u"
+# .tr ~~
+
 
 module Troff
   def esc_w(s)

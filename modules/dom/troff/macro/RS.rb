@@ -33,11 +33,10 @@ module Troff
       # divert the width; don't let it get into the output stream.
       @current_block = Block.new(type: :bare)
       unescape(indent)
-      to_u(@current_block.text.pop.text.strip).to_i
+      to_u(@current_block.text.pop.text.strip, :default_unit => 'n').to_i
     else
       @register[')I'].value
     end
-    warn @register[')R'].value.inspect
     init_IP
     req_P
   end

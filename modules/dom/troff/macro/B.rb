@@ -9,6 +9,14 @@
 #                   up to six arguments. Similar macros alternate between any two of
 #                   roman, italic, and bold:   .IR  .RB  .BR  .IB  .BI
 #
+# TODO: this fails on constructs like
+#       .TP
+#       .B
+#       .SM whatever
+#
+#       [GL2-W2.5] sh.1
+#
+
 
 module Troff
   %w[B I].each do |a|

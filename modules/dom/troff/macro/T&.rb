@@ -16,44 +16,43 @@ module Troff
                            end)
   end
 
+  # The format section specifies the layout of the columns. Each line in the format
+  # section corresponds to one line of table data except the last format line,
+  # which corresponds to all following data lines up to any additional .T& command
+  # line. Each format line contains a key letter for each column of the table.
+  #
+  # In the format section, you may separate key letters with spaces or tabs to
+  # improve readability, but spaces or tabs are not necessary. A dot (.) indicates
+  # the end of key letters and should follow the last key letter before data is
+  # entered on the lines below.
+  #
+  # Column descriptors missing from the end of a format line are assumed to be L.
+  # That is, if you have more columns of data than descriptors to specify them,
+  # the data in the unspecified columns are left-justified. The longest line in
+  # the format section defines the number of columns in the table. tbl ignores
+  # columns in the data if there are not corresponding key letters in the format
+  # section.
+  #
+  # You may give successive line formats on the same line, separated by commas.
+  #
+  # The format section is mandatory.
+  #
+  #
+  # The official key letters are:
+  #
+  #key_letters = 'AaCcLlNnRrSs^'
+  #
+  # plus _ and =, which may be substituted for a key letter to get a horizontal
+  # rule through that cell. Nearby vertical rules are extended to meet.
+  #
+  # REVIEW: "you should put a space or a tab between a 1-letter font name
+  #          and whatever follows."
+  #
+  # TODO: This is still incomplete. See tbl: Technical Discussion §4.2, pp. 7-10
+  #       space between columns, vertical spacing, explicit minimum column width,
+  #       equal-width and staggered columns, zero-width items
+
   def self.tbl_formats(format_section)
-
-    # The format section specifies the layout of the columns. Each line in the format
-    # section corresponds to one line of table data except the last format line,
-    # which corresponds to all following data lines up to any additional .T& command
-    # line. Each format line contains a key letter for each column of the table.
-    #
-    # In the format section, you may separate key letters with spaces or tabs to
-    # improve readability, but spaces or tabs are not necessary. A dot (.) indicates
-    # the end of key letters and should follow the last key letter before data is
-    # entered on the lines below.
-    #
-    # Column descriptors missing from the end of a format line are assumed to be L.
-    # That is, if you have more columns of data than descriptors to specify them,
-    # the data in the unspecified columns are left-justified. The longest line in
-    # the format section defines the number of columns in the table. tbl ignores
-    # columns in the data if there are not corresponding key letters in the format
-    # section.
-    #
-    # You may give successive line formats on the same line, separated by commas.
-    #
-    # The format section is mandatory.
-    #
-    #
-    # The official key letters are:
-    #
-    #key_letters = 'AaCcLlNnRrSs^'
-    #
-    # plus _ and =, which may be substituted for a key letter to get a horizontal
-    # rule through that cell. Nearby vertical rules are extended to meet.
-    #
-    # REVIEW: "you should put a space or a tab between a 1-letter font name
-    #          and whatever follows."
-    #
-    # TODO: This is still incomplete. See tbl: Technical Discussion §4.2, pp. 7-10
-    #       space between columns, vertical spacing, explicit minimum column width,
-    #       equal-width and staggered columns, zero-width items
-
 
     row = 0
     columns = 0
@@ -179,6 +178,7 @@ module Troff
   def format_row
     row = Array.new(@state[:tbl_formats].columns)
     row.collect! do
+
       cell = Block.new(type: :cell)
       break unless @state[:tbl_formats].get
       format = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
@@ -197,7 +197,7 @@ module Troff
         case format
         # alignments
         when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML?? how is it different in practice from L?
-        when /^(n)/i  then cell.style[:numeric_align]    = true
+        when /^(n)/i  then cell.style[:numeric_align]    = { :left => 0, :right => 0 }
         when /^(c)/i  then cell.style.css[:text_align]   = 'center'
         when /^(l)/i  then nil # I think this could be considered the default. => cell.style.css[:text_align]   = 'left'
         when /^(r)/i  then cell.style.css[:text_align]   = 'right'
@@ -212,7 +212,8 @@ module Troff
           @current_block = cell
           unescape("\\" + Regexp.last_match[1])
           @current_block = cur_blk
-        when /^(p([-+123]?\d))/
+
+        when /^(p([-+123]?\d))/ #then req_ps(Regexp.last_match[2])
           cur_blk = @current_block
           @current_block = cell
           unescape("\\s" + Regexp.last_match[2])
@@ -274,6 +275,11 @@ module Troff
       @state[:tbl_formats].next_col
       cell
     end
+
+    # reset font and size to default
+    req_ft('R')
+    req_ps(Font.defaultsize)
+
     @state[:tbl_formats].next_row
     row
   end

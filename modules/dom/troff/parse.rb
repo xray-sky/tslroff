@@ -31,7 +31,7 @@ module Troff
     else
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3
-      if line.empty? && @current_block.type != :cell
+      if line.empty?
         req_br unless broke?
         req_br
       end

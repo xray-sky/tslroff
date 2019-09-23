@@ -36,5 +36,6 @@ module Troff
 
   def init_ps
     @register[:prev_ps] = Register.new
+    true
   end
 end

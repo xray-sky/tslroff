@@ -88,6 +88,7 @@ module Troff
   end
 
   def to_em(str)
+    warn "absurd font size #{@register['.s'].value} converting units to em" if @register['.s'].value < 1
     to_u(str).to_f * 72 / ( @@units_per_inch * @register['.s'].value )
   end
 

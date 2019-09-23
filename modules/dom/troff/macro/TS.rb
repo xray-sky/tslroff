@@ -16,6 +16,17 @@ module Troff
     tbl.text = Array.new
     @document << tbl
 
+    # REVIEW: probably this is better as a totally generic reusable utility routine?
+    partial = Proc.new { |str|
+      # divert the width; don't let it get into the output stream.
+      hold_block = @current_block
+      @current_block = Block.new(type: :bare)
+      unescape("\\w'#{str}'")
+      w = to_u(@current_block.text.pop.text.strip).to_i
+      @current_block = hold_block
+      w
+    }
+
     # You may specify a single line of options to affect the layout of the whole
     # table. These must be placed immediately after the .TS line. On this line, you
     # must separate options with spaces, tabs, or commas. You must end the options
@@ -43,6 +54,9 @@ module Troff
     # the format section is mandatory
     req_TAmp
 
+    # initialize numeric alignment data before block gets frozen
+    tbl[:nalign] = Array.new(@state[:tbl_formats].columns) { Array.new(2,0) }
+
     # check to see if the first input line contains only whitespace and _ or =;
     # input lines like this aren't table rows, but cause cell borders to be drawn.
     # depending on whitespace, they may apply to individual cells or to entire rows.
@@ -68,10 +82,19 @@ module Troff
 
     # table data. terminated by .TE macro
     while @document.last.type == :table do
-      current_row = Block.new(type: :row, style: @current_block.style.dup, text: format_row)
+
+      line = @lines.tap { @register['.c'].value += 1 } .next.chomp
+
+      # skip row processing if this is a request line
+      if Troff.req?(line)
+        parse(line)
+        break if @current_block.type == :p     # encountered .TE
+        next
+      end
 
       # row data
-      cells = @lines.tap { @register['.c'].value += 1 }.next.chomp.split(cell_delim)
+      current_row = Block.new(type: :row, text: format_row)
+      cells = line.split(cell_delim)
 
       # check for bottom borders:
       # row span control characters (\^) also allowed to appear
@@ -110,8 +133,8 @@ module Troff
         @current_block = cell
         text = cells.shift
 
-        # fudge input text for box rule cells, so a <br> is output and they render
-        text = ' ' if cell.style[:box_rule]
+        # fudge the contents of this cell to ensure the row doesn't get collapsed
+        text = '&roffctl_br;' if cell.style[:box_rule]
 
         # handle cells that've been spanned downward
         # move bottom_border lines in the text; spanned cells have to be tabbed past
@@ -149,32 +172,42 @@ module Troff
         # must appear as a cell - stbl1) and a row with one column's worth of text that's
         # spanned to the end of the row (which must not appear as cells - stbl3)
 
-        if column.zero?
-          parse(text)
-          # REVIEW: is this sufficient to suppress a non-printing request line?
-          break if @current_block.text.empty? and cells[1].nil?
-          break if @current_block.type == :p		# quit if we hit .TE -- REVIEW: is this going to get tripped accidentally? no .P in .TE, ever?
-          rowspan_hold[column] = nil unless rowspan_active[column]
-        else
-          # even if it starts with a . this was from the middle of a line and is not a request
-          unless text.nil?
-            parse(text.sub(/^([.'])/, "\\\\\\1"))
-            # TODO: refactor - there won't be numeric alignment in column zero!
-            if @current_block.style[:numeric_align]
-              # prefer to align on \& (has been parsed to &zwj;) -- this gets removed if present
-              # otherwise align on rightmost dot adjacent to a number (REVIEW: not clear if this counts either side; assume just right-hand-side for now)
-              # if full-numeric and no dot, align least significant digit.
-              # TODO: this doesn't quite cause column widths to expand as one would expect,
-              #       when given items that align too far off-center. but it's a reasonable approximation for now
-              #       right-hand-side can be forced to expand with &nbsp; but it's not necessarily one-to-one with lhs chars
-              #       ...probably selenium can be used to calculate the various widths directly and do it that way
-              unless @current_block.text.last.text.sub!(/^(.*)&zwj;(.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')
-                @current_block.text.last.text.sub!(/^(\d+)\s*$/, '&roffctl_tbl_nl;\1&roffctl_endspan;')
-                @current_block.text.last.text.sub!(/^(.*)(\.\d.*)$/, '&roffctl_tbl_nl;\1&roffctl_endspan;&roffctl_tbl_nr;\2&roffctl_endspan;')
-              end
+        unless text.nil?
+          unescape(text)
+          if @current_block.style[:numeric_align]
+
+            # prefer to align on \& (has been parsed to &zwj;) -- this gets removed if present
+            # otherwise align on rightmost dot adjacent to a number (REVIEW: not clear if this counts either side; assume just right-hand-side for now)
+            # if full-numeric and no dot, align least significant digit.
+
+            @current_block.style[:numeric_align][:left]  = Proc.new { to_em(tbl[:nalign][column][0].to_s + 'u') }
+            @current_block.style[:numeric_align][:right] = Proc.new { to_em(tbl[:nalign][column][1].to_s + 'u') }
+
+            (left, right) = case @current_block.text.last.text.strip
+                            when /^(.*)&zwj;(.*)$/ then   Regexp.last_match[1,2]
+                            when /^(.*)(\.\d+)$/   then   Regexp.last_match[1,2]   # REVIEW: "the rightmost dot adjacent to a digit"
+                            when /^(\d+)$/         then [ Regexp.last_match[1], '' ]
+                            else                        [ text, :noalign ]
+                            end
+
+            unless left.empty?
+              w = partial.call(left)
+              tbl[:nalign][column][0] = w if w > tbl[:nalign][column][0]
             end
-            rowspan_hold[column] = nil unless rowspan_active[column]
+
+            unless right.empty? || right == :noalign
+              w = partial.call(right)
+              tbl[:nalign][column][1] = w if w > tbl[:nalign][column][1]
+            end
+
+            if right == :noalign
+              @current_block.text.last.text = "&tblctl_ctr;#{left}&roffctl_endspan;"
+            else
+              @current_block.text.last.text = "&tblctl_nl;#{left}&roffctl_endspan;&tblctl_nr;#{right}&roffctl_endspan;"
+            end
+
           end
+          rowspan_hold[column] = nil unless rowspan_active[column]
         end
         rowspan_active[column] = nil
       end

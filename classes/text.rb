@@ -99,7 +99,7 @@ class Text
     # translate some troff fill/adjust fluff
     ent.gsub!(/&roffctl_\S+?;/) do |e|
       case e
-      when '&roffctl_br;'      then '<br />'
+      when '&roffctl_br;'      then '<br />'   # TODO/REVIEW: I think <br> at the end of a block needs to be suppressed -- [GL2-W2.5] acct.4
       when '&roffctl_endspan;' then '</span>'
       when '&roffctl_nrs;'     then '<span class="nrs"></span>'
       when '&roffctl_hns;'     then '<span class="hns"></span>'

@@ -58,6 +58,10 @@ class Text
     # TODO: some or most of this should probably be made troff-specific (somehow)
     return '' if length.zero?
 
+    # tab separately, as it may encompass several Text objects
+    # this relies on all other spans being closed tidily within a single Text object
+    tab = @tab_width ? %(<span class="tab" style="width:#{@tab_width};">) : ''
+
     # font face & size; TODO: family
     tags = Array.new
     tags << case font.face
@@ -112,7 +116,7 @@ class Text
     end
 
     # mark it up the rest of the way
-    (tags + [ent] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
+    (@break ? '<br />' : '') + tab + (tags + [ent] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
   end
 
   def to_selenium

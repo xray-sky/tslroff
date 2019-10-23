@@ -17,15 +17,15 @@ module Troff
       # divert the width; don't let it get into the output stream.
       @current_block = Block.new(type: :bare)
       unescape(indent)
-      @register[')I'].value = to_u(@current_block.text.pop.text.strip)
+      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'm')
     end
 
     tag_block = Block.new(type: :bare)
     tag_block.text = tag
     unless tag_block.empty?
       @webdriver.get(tag_block.to_selenium)
-      tag_width = to_u("#{@webdriver.find_element(id: 'selenium').size.width}px").to_i
-      tag_block.style.css[:width] = '100%' if tag_width > @register[')I'].value
+      tag_width = to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      tag_block.style.css[:width] = '100%' if tag_width + 36 > @register[')I'].value # add the width of a space
     end
 
     text_block = blockproto(:bare)

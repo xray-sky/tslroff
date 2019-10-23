@@ -9,7 +9,8 @@ module Troff
   private
 
   def broke?
-    @current_block.text.last.text.match(/&roffctl_br;\s+$/)
+    #@current_block.type != :cell && @current_block.text.last.text.match(/&roffctl_br;\s+$/)
+    @current_block.text.last[:break]
   end
 
   def continuation?

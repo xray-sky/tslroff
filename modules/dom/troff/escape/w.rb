@@ -1,4 +1,4 @@
-# e.rb
+# w.rb
 # -------------
 #   troff
 # -------------
@@ -19,8 +19,10 @@
 # one character is tall (like "H"); and 3 means that both tall characters and characters
 # with descenders are present.
 #
+# TODO: "will not affect the current environment"
 # TODO: set number registers
 # REVIEW: is it necessary? (is it used in practice)
+# REVIEW: i'm in big trouble if I ever get a \w with a tab in it
 #
 # observed variations
 # \w'\fB/usr/share/groff/font/devps/download'u+2n
@@ -31,26 +33,31 @@
 # \w'.eh \'x\'y\'z\'  'u        <- REVIEW ...or this?
 # \w^B\\$1\\*(s1\\$2\\*(s2^Bu	<- TODO this might cause problems - where was it from?? was a .tr in effect?
 #                                       the manual suggests this might be illegal somehow?
+#                                       -- the answer is in §10.1 -- "In addition, STX, ETX, ENQ, ACK, and BEL
+#                                       may be used as delimiters or translated into a graphic with .tr. [...]
+#                                       troff normally passes none of these characters to its output; nroff
+#                                       passes the BEL character. All others are ignored."
+#                                       so that's ^B, ^C, ^E, ^F and ^G, and these work with .if too
+#                                       -- though sh(1) [GL2-W2.5] has \h@-.3m@ with no .tr in effect
 #
-# TOOD: this sort of construct -- [GL2-W2.5] adb.1
+# TOOD: this sort of construct -- [GL2-W2.5] adb.1 -- REVIEW: actually I think it's already handled
 # .tr ~"
 # .RS "\w'\f3~...~\f1\ 0\^\ \ \ \ \ 'u"
 # .tr ~~
-
+#
 
 module Troff
   def esc_w(s)
     esc = Regexp.quote(@state[:escape_char])
-    s.match(/(^w(.)(.+?(#{esc}\2)*)\2)/)
+    s.match(/(^w([#{@@delim}])(.+?(#{esc}\2)*)\2)/)
     (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
 
     # get a manipulable block that can be rendered without leaving anything in the output stream
     hold_block = @current_block
     @current_block = Block.new(type: :se)
-
     unescape(req_str)
     @webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
-    width = to_u("#{@webdriver.find_element(id: 'selenium').size.width}px")
+    width = to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
 
     # restore normal output
     @current_block = hold_block

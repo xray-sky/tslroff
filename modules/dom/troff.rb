@@ -8,6 +8,8 @@ require 'selenium-webdriver'
 
 module Troff
 
+  @@delim = %(\002\003\005\006\007"')
+
   def source_init
     %w[. request macro escape].each do |t|
       Dir.glob("#{File.dirname(__FILE__)}/troff/#{t}/*.rb").each do |i|
@@ -38,7 +40,7 @@ module Troff
     loop do
       begin
         l = @lines.tap { @register['.c'].value += 1 }.next
-        parse(l.rstrip)
+        parse(l)#.rstrip)
       rescue StopIteration
         # TODO: perform end-of-input trap macros from .em;
         # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
@@ -54,7 +56,9 @@ module Troff
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]
     block.style.css[:margin_top] = "#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd]
-    block.style.css[:margin_left] = "#{to_em(@register[')R'].value.to_s + 'u')}em" unless @register[')R'].value == to_u('2m').to_i
+    block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" unless @register['.i'].value == @base_indent
+    @current_tabstop = block.text.last
+    @current_tabstop[:tab_stop] = 0
     block
   end
 end

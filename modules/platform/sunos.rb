@@ -27,9 +27,9 @@ module SunOS
   # TODO: these aren't sunos named strings, just samples for testing
   def init_ds
     super
-    @state[:named_string].merge({
-      'S'  => "\\s#{Font.defaultsize}",
-      'R'  => '&reg;',
+    @state[:named_string].merge!({
+      #'R'  => '&reg;',
+      #'S'  => "\\s#{Font.defaultsize}",
       'Tm' => '&trade;',
       'lq' => '&ldquo;',
       'rq' => '&rdquo;',

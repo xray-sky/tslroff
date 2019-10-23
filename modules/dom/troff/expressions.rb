@@ -93,7 +93,6 @@ module Troff
   end
 
   def to_u(str, default_unit: 'u')
-
     # translate number registers only
     # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
     # in order to avoid having to differentiate between '-' as subtraction vs. negation
@@ -123,6 +122,7 @@ module Troff
     when 'm'  then magnitude.to_f * @register['.s'].value * @@units_per_inch / 72
     when 'n'  then magnitude.to_f * @register['.s'].value * @@units_per_inch / 144
     when 'v'  then magnitude.to_f * @register['.v'].value
+    # non-Troff unit for use with Selenium results -- must be accessed with :default_unit
     when 'px' then magnitude.to_f * @@units_per_inch / @@pixels_per_inch
     end.to_i
 

@@ -243,6 +243,7 @@ body {
 	clear: left;
 	padding-right: 0.5em;
     margin-top: 0em;
+    white-space: nowrap;
     font-variant-ligatures: none;
 }
 

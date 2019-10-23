@@ -23,7 +23,7 @@ module Troff
     @state[:named_string] = {
       'R'  => '&reg;',
       'S'  => "\\s#{Font.defaultsize}",
-      'Tm' => '&trade;',
+      #'Tm' => '&trade;',
       '.T' => 'html'   # name of output device
     }
     true

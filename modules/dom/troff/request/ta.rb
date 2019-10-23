@@ -14,10 +14,10 @@
 #                                          character widths. The stop values are
 #                                          separated by spaces, and a value preceeded
 #                                          by + is treated as an increment to the
-#                                          previous stop value. 
+#                                          previous stop value.
 #
 # The ASCII horizontal tab character and the ASCII SOH (hereinafter known as the leader
-# character) can both be used to generate either horizontal motion or a string of 
+# character) can both be used to generate either horizontal motion or a string of
 # repeated characters. The length of the generated entity is governed by internal tab
 # stops specifiable with .ta. The default difference is that tabs generate motion and
 # leaders generate a string of periods; .tc and .lc offer the choice of repeated character
@@ -29,7 +29,7 @@
 #
 #     Tab    | Legnth of motion or |    Location of
 #     type   | repeated characters |    next-string
-#  ----------|---------------------|----------------------------å
+#  ----------|---------------------|----------------------------
 #     Left   |           D         | Following D
 #    Right   |         D - W       | Right adjusted within D
 #   Centered |       D - W / 2     | Centered on right end of D
@@ -44,15 +44,28 @@
 # leaders in copy mode but are ignored during output mode.
 #
 # TODO: initialize properly
+# TODO: justifications (right/centered)
 #
 
 module Troff
   def req_ta(*args)
-    warn("don't know how to .ta #{args.join(' ')}")
+    hold_block = @current_block
+    @state[:tabs] = Array.new
+    while args.any? do
+      stop = args.shift
+      stop.prepend("#{@state[:tabs].last || 0}u") if stop.start_with?('+')
+      # may contain \w, arithmetic expressions, scaled units...
+      @current_block = Block.new(type: :bare)
+      unescape(stop)
+      @state[:tabs].push(to_u(@current_block.to_s).to_i)
+    end
+    #warn "leaving .ta with #{@state[:tabs].inspect}"
+    @current_block = hold_block
   end
 
   def init_ta
-    @state[:tabs] = [ '0.5i', '1i', '1.5i', '2i', '2.5i' ]
+    @state[:tabs] = [ '0.5i', '1i', '1.5i', '2i', '2.5i', '3i', '3.5i', '4i',
+                      '4.5i', '5i', '5.5i', '6i', '6.5i' ].collect { |t| to_u(t).to_i }
     true
   end
 end

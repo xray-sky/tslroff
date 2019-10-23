@@ -17,12 +17,13 @@
 #       LL  Line length including IN.
 #       PD  Current interparagraph distance.
 #
-# none of this is relevant to tslroff (REVIEW: unless some man page tries to use them)
+# none of this is relevant to tslroff (REVIEW: unless some man page tries to use them - e.g. IN in ms.5)
 # TODO: this is totally incomplete
 #
 
 module Troff
   def req_TH(*args)
+    req_DT
     apply do
       @current_block.type = :th
       @current_block << args.join(' ')

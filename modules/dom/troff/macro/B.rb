@@ -9,6 +9,8 @@
 #                   up to six arguments. Similar macros alternate between any two of
 #                   roman, italic, and bold:   .IR  .RB  .BR  .IB  .BI
 #
+#   tmac.an defines behavior where a shift out of I inserts \^ except after the last arg
+#
 # TODO: this fails on constructs like
 #       .TP
 #       .B
@@ -26,6 +28,7 @@ module Troff
         unescape(args.join(' '))
         finalize_B
       else
+        it_adj
         req_it(1, :finalize_B)
       end
     end
@@ -35,9 +38,10 @@ module Troff
     define_method "req_#{a + b}".to_sym do |*args|
       styles = [@state[:fpmap][a], @state[:fpmap][b]]
       unescape(args.each_with_index.map do |arg, i|
-                 '\f' + styles[i % 2].to_s + arg
+                 p = styles[i % 2].to_s
+                 '\f' + p + arg + "#{'\^' if p == 'I' and !peek[0].empty?}"
                end.join)
-      process_input_traps
+      finalize_B
     end
   end
 

@@ -19,6 +19,9 @@
 #            since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
 #            as a number register indicator when the macro or string is reread.
 #
+#
+# TODO: not happy about the proliferation of basically identical methods
+#
 
 module Troff
 
@@ -38,6 +41,29 @@ module Troff
       if parts[1] == esc
         str = case parts[2][0]
               when 'n' then esc_n(parts[2])
+              else copy << esc ; parts[2]
+              end
+      else
+        str = parts[2]
+      end
+
+    end until str.empty?
+    copy
+  end
+
+  def __unesc_w(str)
+    copy = String.new
+    # why am I doing this separately? translation is already happening safely in esc_w
+    # doing it here interferes with hiding " from argument parsing -- adb(1) [AOS 4.3]
+    #@state[:translate].any? and str.gsub!(/[#{Regexp.quote(@state[:translate].keys.join)}]/) { |c| @state[:translate][c] }
+    begin
+      esc   = @state[:escape_char]
+      parts = str.partition(esc)
+      copy << parts[0] unless parts[0].empty?
+
+      if parts[1] == esc
+        str = case parts[2][0]
+              when 'w' then esc_w(parts[2])
               else copy << esc ; parts[2]
               end
       else
@@ -82,7 +108,8 @@ module Troff
     @state[:translate].any? and str.gsub!(/[#{Regexp.quote(@state[:translate].keys.join)}]/) { |c| @state[:translate][c] }
     esc = @state[:escape_char]
     begin
-      parts = str.partition(esc)
+      # do tabs too, while we're at it, so the input line is only dissected once
+      parts = str.partition(/#{Regexp.quote(esc)}|\t+/)
       @current_block << parts[0].sub(/&roffctl_esc;/, esc) unless parts[0].empty? # str might begin with esc
 
       if parts[1] == esc
@@ -105,11 +132,20 @@ module Troff
                 if respond_to?(esc_method)
                   send(esc_method, parts[2])
                 else
-                  warn "unescaped char in line #{@register['.c'].value}: #{parts[2][0].inspect} (#{parts[2][1..-1].inspect})"
+                  warn "pointlessly escaped char #{parts[2][0].inspect} in line #{@register['.c'].value}? (rest: #{parts[2][1..-1].inspect})"
                   parts[2]
                 end
               end
-      else # no esc chars remain in str
+      elsif parts[1].start_with?("\t")
+        stop = next_tab(parts[1].length)
+        @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((stop - @current_tabstop[:tab_stop]).to_s)}em")
+        @current_block << '&roffctl_endspan;'
+        apply {
+          @current_block.text.last[:tab_stop] = stop
+        }
+        @current_tabstop = @current_block.text.last
+        str = parts[2]
+      else # no tabs or esc chars remain in str
         str = parts[2]
       end
 

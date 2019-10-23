@@ -15,15 +15,30 @@
 #                                     distance to the nearest trap. If the no-space mode
 #                                     is on, no spacing occurs (see '.ns' and '.rs').
 #
+# Blank text line   -         B       Causes a break and outputs a blank line exactly
+#                                     like .sp 1.
+#
 # TODO: negative motion, traps, no-space mode, unit scaling, etc.
 # REVIEW: Looks like .sp is meant to cause a break. But I'm not sure.
 # REVIEW: is this better accomplished with baseline-shift??
 #
+# REVIEW: because of constructs like
+#            whatever. For example:
+#            .sp
+#            .in +8
+#            .nf
+#            star::
+#            bigcpu::
+#            .fi
+#            .in -8
+#            .PP
+#          this might have to be made to work with <p> -- Xserver(1) [AOS/4.3]
+#
 
 module Troff
-  def req_sp(n)
+  def req_sp(n = '1')  # TODO: everything is wrong?
     req_br
-    v = n.to_f + 1.2 # TODO: hardcoding 1.2 em line height is bogus
+    v = to_em(to_u(n, default_unit: 'v')) # TODO: hardcoding 1.2 em line height is bogus
     @current_block << "&roffctl_sp:#{v}em;"
   end
 end

@@ -37,8 +37,8 @@ module Troff
     else
       @register[')I'].value
     end
+    req_in("#{@register[')R'].value}u")
     init_IP
-    req_P
   end
 
   def init_RS

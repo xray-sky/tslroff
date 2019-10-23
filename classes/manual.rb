@@ -17,8 +17,10 @@ class Manual
 
   def initialize(file)
     # TODO: temporary hardcode for early prototyping
-    @platform = 'SunOS'
-    @version  = '4_1_4'
+    #@platform = 'SunOS'
+    #@version  = '4_1_4'
+    @platform = 'AOS'
+    @version  = '4_3'
     # end temporary hardcode
 
     @document = Array.new

@@ -10,7 +10,7 @@ require 'classes/file/magic.rb'
 
 class Source
   attr_reader :lines, :magic, :filename
-  
+
   def initialize(file)
     @filename = file
     begin
@@ -30,7 +30,7 @@ class Source
         @lines = IO.readlines(file)
       end
     rescue
-      puts $!
+      warn $!
       exit(1)
     end
 

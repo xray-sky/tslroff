@@ -7,12 +7,19 @@
 module Troff
 
   def parse(line)
+
+    # hidden newlines -- REVIEW: does this need to be any more sophisticated?
+    while line.end_with?("#{@state[:escape_char]}\n")
+      line.chop!.chop! << @lines.next
+    end
+
     # Multiple inter-word space characters found in the input are retained except for
     # trailing spaces. §4.1
-    line.rstrip!
+    line.rstrip! unless line.end_with?("#{@state[:escape_char]} ")
+
     if line.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
       (_, cmd, req, args) = Regexp.last_match.to_a
-      warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
+      #warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin
         send("req_#{Troff.quote_method(req)}", *getargs(args))
         # troff considers a macro line to be an input text line
@@ -37,18 +44,17 @@ module Troff
       end
 
       # initial spaces also cause a break. §4.1
-      # -- but don't break again unnecessarily.
+      # -- but don't break again unnecessarily (i.e. in nofill mode).
       # -- REVIEW: I think tabs don't count for this
       if line.start_with?(' ')
-        # REVIEW: these initial spaces are probably also supposed to appear in the output
         line.prepend("\\")    # force this initial space to appear in the output
-        req_br if fill? && !broke? && @current_block.type != :cell
+        req_br if fill? && !broke?
       end
 
-      warn "bare tab in input (#{line.inspect})" if line.include?("\t")
+      #warn "bare tab in input (#{line.inspect})" if line.include?("\t")
       unescape(line)
       space_adj
-      req_br if nofill? && !broke? && @current_block.type != :cell
+      req_br if nofill?# && !broke?
       process_input_traps
     end
 

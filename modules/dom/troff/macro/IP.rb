@@ -17,7 +17,7 @@ module Troff
       # divert the width; don't let it get into the output stream.
       @current_block = Block.new(type: :bare)
       unescape(indent)
-      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'm')
+      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'n')
     end
 
     tag_block = Block.new(type: :bare)

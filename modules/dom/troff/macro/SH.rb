@@ -13,9 +13,10 @@ module Troff
     text = args.join(' ')
     apply do
       @current_block.type = :sh
-      @current_block << text
+      #@current_block << text
     end
-    @state[:section] = text
+    unescape(text)
+    @state[:section] = @current_block.to_s
     @current_block = blockproto
     @document << @current_block
   end

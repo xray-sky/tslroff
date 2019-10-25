@@ -22,19 +22,11 @@
 
 module Troff
   def req_ti(indent = nil)
-    #previous = @state[:previous_indent]
-    #@state[:previous_indent] = @register['.i'].value
-    #@register['.i'].value = if indent
-    #                          indent.sub!(/^([-+])/, "#{@state[:previous_indent]}u\\1")
-    #                          to_u(indent, default_unit: 'm')
-    #                        else
-    #                          previous
-    #                        end
-  return unless indent
-  indent = to_u(indent, default_unit: 'm')
-  warn "set temporary indent to #{@register['.i'].value.inspect}"
-  req_P
-  @current_block.style.css[:margin_top] = '0'
-  @current_block.style.css[:text_indent] = "#{to_em(indent)}em"
+    return unless indent
+    indent = to_u(indent, default_unit: 'm')
+    warn "set temporary indent to #{indent.inspect}"
+    req_P
+    @current_block.style.css[:margin_top] = '0'
+    @current_block.style.css[:text_indent] = "#{to_em(indent)}em"
   end
 end

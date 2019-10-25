@@ -87,7 +87,7 @@ class Block
       case style[:section]
       when 'SYNOPSIS'
         %(<p class="synopsis"#{style.to_s}>\n#{t}\n</p>\n)
-      when 'SEE ALSO' # TODO: this needs to be platform overrideable; section to lowercase (maybe?)
+      when 'SEE ALSO', 'SEE&nbsp;ALSO' # TODO: this needs to be platform overrideable; section to lowercase (maybe?)
         "<p#{style.to_s}>\n#{t.gsub(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
           %(<a href="../man\\7/\\3.\\6.html">\\1</a>))}\n</p>\n"
       else

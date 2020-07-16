@@ -10,7 +10,7 @@
 #
 # .in ±N        -         ignored   B,E,m   Temporary indent. The next output text line
 #                                           will be indented a distance ±N with respect
-#                                           to the current indent. The resuting total
+#                                           to the current indent. The resulting total
 #                                           indent may be zero (equal to the current
 #                                           page offset) but may not be less than the
 #                                           current page offset. The temporary indent
@@ -25,8 +25,8 @@ module Troff
     return unless indent
     indent = to_u(indent, default_unit: 'm')
     warn "set temporary indent to #{indent.inspect}"
-    req_P
-    @current_block.style.css[:margin_top] = '0'
+    req_br
+    #@current_block.style.css[:margin_top] = '0'
     @current_block.style.css[:text_indent] = "#{to_em(indent)}em"
   end
 end

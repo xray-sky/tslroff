@@ -9,6 +9,7 @@
 #     interparagraph distance to the default value (0.4v in troff(1), 1v in nroff(1)).
 #
 #     just sets )P, does nothing to @current_block
+#     some implementations set PD instead
 #
 #     tslroff.css has it as 1em, which is some kind of de-facto browser standard.
 #     I think this is better for HTML than 0.4v (0.48em). REVIEW: if we decide to change

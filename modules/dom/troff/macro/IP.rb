@@ -20,22 +20,27 @@ module Troff
       @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'n')
     end
 
+    req_ti(to_u("#{@register['.i'].value}u-#{@register[')I'].value}u"))
+    req_sp("#{@register[')P'].value}u")
+
     tag_block = Block.new(type: :bare)
     tag_block.text = tag
     unless tag_block.empty?
       @webdriver.get(tag_block.to_selenium)
       tag_width = to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
-      tag_block.style.css[:width] = '100%' if tag_width + 36 > @register[')I'].value # add the width of a space
+      tag_block.style.css[:display] = 'inline-block'
+      tag_block.style.css[:width] = (tag_width + 36 > @register[')I'].value) ? '100%' : (to_em("#{@register[')I'].value}u").to_s + 'em') # add the width of a space
     end
 
-    text_block = blockproto(:bare)
-    @current_block = blockproto(:dl)
-    @document << @current_block
+    #text_block = blockproto(:bare)
+    #@current_block = blockproto(:dl)
+    #@document << @current_block
 
     @current_block.style[:dt] = tag_block
-    @current_block.style[:dd] = text_block
-    @current_block.style[:dd].style.css[:margin_left] = "#{to_em(@register[')I'].value.to_s + 'u')}em"
-
+    #@current_block.style[:dd] = text_block
+    #@current_block.style[:dd].style.css[:margin_left] = "#{to_em(@register[')I'].value.to_s + 'u')}em"
+    @current_block.style.css[:
+    @current_block.style.css[:margin_left] = "#{to_em(@register[')I'].value.to_s + 'u')}em"
   end
 
   def init_IP

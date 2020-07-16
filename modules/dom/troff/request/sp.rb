@@ -19,9 +19,6 @@
 #                                     like .sp 1.
 #
 # TODO: negative motion, traps, no-space mode, unit scaling, etc.
-# REVIEW: Looks like .sp is meant to cause a break. But I'm not sure.
-# REVIEW: is this better accomplished with baseline-shift??
-#
 # REVIEW: because of constructs like
 #            whatever. For example:
 #            .sp
@@ -37,8 +34,10 @@
 
 module Troff
   def req_sp(n = '1')  # TODO: everything is wrong?
+    return if @state[:nospace]
     req_br
     v = to_em(to_u(n, default_unit: 'v')) # TODO: hardcoding 1.2 em line height is bogus
-    @current_block << "&roffctl_sp:#{v}em;"
+    #@current_block << "&roffctl_sp:#{v}em;"
+    @current_block.style.css[:margin_top] = "#{v}em" #unless @register[')P'].value == @state[:default_pd]
   end
 end

@@ -20,7 +20,7 @@ module Troff
       @webdriver.get("data:text/html;charset=utf-8,#{block.to_html}")
       position = block.text[0][:tab_stop] + to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
     end
-    @state[:tabs][@state[:tabs].find_index { |stop| stop > position } + (count - 1)]
+    @state[:tabs][@state[:tabs].find_index { |stop| stop >= position } + (count - 1)]
   end
 
 end

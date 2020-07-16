@@ -19,9 +19,14 @@ module Troff
   def req_br
     # REVIEW: does this need to be more sophisticated??
     #@current_block << '&roffctl_br;'
-    @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
-    @current_tabstop = @current_block.text.last
-    @current_tabstop[:break] = true
-    @current_tabstop[:tab_stop] = 0
+
+    #@current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    #@current_tabstop = @current_block.text.last
+    #@current_tabstop[:break] = true
+    #@current_tabstop[:tab_stop] = 0
+
+    @current_block = blockproto
+    @document << @current_block
+
   end
 end

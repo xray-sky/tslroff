@@ -28,7 +28,7 @@ module Troff
         unescape(args.join(' '))
         finalize_B
       else
-        it_adj
+        #it_adj
         req_it(1, :finalize_B)
       end
     end

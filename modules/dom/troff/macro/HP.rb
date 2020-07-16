@@ -20,6 +20,7 @@ module Troff
 
     hang = @register['.i'].value - @register[')I'].value
     req_in("#{@register[')I'].value}u")
+    req_sp("#{@register[')P'].value}u")
     req_ti("#{hang}u")
 
   end

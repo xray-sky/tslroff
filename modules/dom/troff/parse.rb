@@ -8,6 +8,8 @@ module Troff
 
   def parse(line)
 
+    outpos = @current_block.text.last
+
     # hidden newlines -- REVIEW: does this need to be any more sophisticated?
     while line.end_with?("#{@state[:escape_char]}\n")
       line.chop!.chop! << @lines.next
@@ -55,12 +57,17 @@ module Troff
       unescape(line)
       space_adj
       req_br if nofill?# && !broke?
-      process_input_traps
     end
 
     # REVIEW: this break might also need to happen during macro processing
     # TODO: I'm getting extra breaks in .nf -- [GL2-W2.5] acct.4
     #req_br unless fill? || broke? || cmd == "'"
+
+    # did we output any text? - TODO probably this is totally insufficient
+    unless @current_block.text.last == outpos
+      process_input_traps
+      req_rs
+    end
   end
 
 end

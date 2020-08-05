@@ -63,6 +63,7 @@ class Block
     case type
     when :nil     then '' # suppress. used for placeholding in tbl.
     when :bare    then t
+    when :nroff   then %(<div class="body"><div id="man"><pre class="n">#{t}</pre></div></div>) # TODO maybe something with a gutter instead of breaking html with multiple id=man
     when :comment then %(<!--#{t} -->\n)
     when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
     when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"

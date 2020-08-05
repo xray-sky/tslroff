@@ -3,7 +3,7 @@
 #
 #
 # Manual class
-# Just a delegatation to platform-specific methods
+# Just a delegatation to input format specific methods
 #
 
 require 'classes/enumerator/collect_through.rb'

@@ -39,7 +39,7 @@ module Troff
     @current_block.style[:dt] = tag_block
     #@current_block.style[:dd] = text_block
     #@current_block.style[:dd].style.css[:margin_left] = "#{to_em(@register[')I'].value.to_s + 'u')}em"
-    @current_block.style.css[:
+    #@current_block.style.css[:
     @current_block.style.css[:margin_left] = "#{to_em(@register[')I'].value.to_s + 'u')}em"
   end
 

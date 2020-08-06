@@ -4,19 +4,8 @@
 # ---------------
 #
 
-
 module Nroff
 
-  @@typebox = {
-	'A' => '&Alpha;',   'G' => '&Gamma;',  'S'  => '&epsilon;',  'O' => '&Theta;',  'E' => '&Lambda;',
-	'X' => '&xi;',      'K' => '&rho;',    'I'  => '&tau;',      'V' => '&psi;',    'Z' => '&Omega;',
-	']' => '&part;',    'B' => '&beta;',   'D'  => '&delta;',    'Q' => '&zeta;',   'T' => '&theta;',
-	'M' => '&mu;',      'J' => '&pi;',     'Y'  => '&sigma;',    'U' => '&#981;',   'H' => '&Psi;',
-	'[' => '&nabla;',   '^' => '&int;',    "\\" => '&gamma;',    'W' => '&Delta;',  'N' => '&eta;',
-	'L' => '&lambda;',  '@' => '&nu;',     'P'  => '&Pi;',       'R' => '&Sigma;',  'F' => '&Phi;',
-	'C' => '&omega;',   '_' => '&not;'
-  }
-  @@typebox.default_proc = Proc.new { |_hash, key| %(<span class="u">typebox (#{key})</span) }
 
   def source_init
 
@@ -29,36 +18,40 @@ module Nroff
 
     @tab_width = 8
     @lines_per_page = 66
+    # watch for alphabetic text starting in first column, which would be a title or section head
+    @heading_detection = %r(^([A-Z][A-Za-z\s]+)$)
     load_version_overrides
 
   end
 
   def to_html
 
-    alt_typebox_shift = false
-    escape_shift = false
-    printhead_position = 0  # leftmost column
-    platen_position   = 1  # top of page, with room for one backward half-linefeed
-    section = ''
+    alt_typebox_shift  = false
+    escape_shift       = false
+    platen_position    = 1      # top of page, with room for one backward half-linefeed
+    printhead_position = 0      # leftmost column
+    section            = ''     # give this life outside the following loop
 
     loop do
       begin
         input_line = @lines.next
 
-        # watch for text starting in first column, which would be a title or section head
-        unformat(input_line).match(/^([A-Z][A-Za-z\s]+)$/)
+        unformat(input_line).match(@heading_detection)
         section = Regexp.last_match[1].chomp if Regexp.last_match
 
         input_line.each_char do |char|
 
-          page_ptr = platen_position / (2 * @lines_per_page)
-          @document[page_ptr] ||= Block.new(type: :nroff, text: [])
-          line_ptr = (platen_position - 2 * @lines_per_page * page_ptr) / 2
-          @document[page_ptr].text[line_ptr] ||= Line.new
-          line = @document[page_ptr].text[line_ptr]
-          line.section = section
-          platen_position % 2 == 0 ? line.up! : line.down!
+          page = platen_position / (2 * @lines_per_page)
+          @document[page] ||= Block.new(type: :nroff, text: [])
 
+          line = (platen_position - 2 * @lines_per_page * page) / 2
+          @document[page].text[line] ||= Line.new
+
+          text = @document[page].text[line]
+          text.section = section
+          platen_position % 2 == 0 ? text.up! : text.down!
+
+          # REVIEW I wonder if these control characters ought to be programmable
           case char
           when ' '   then printhead_position += 1
           when "\n"  then platen_position += 2 and printhead_position = 0
@@ -78,8 +71,8 @@ module Nroff
               end
               escape_shift = false
             else
-              line.print_at(printhead_position, char)
-              line.print_at(printhead_position, "\cN") if alt_typebox_shift
+              text.print_at(printhead_position, char)
+              text.print_at(printhead_position, "\cN") if alt_typebox_shift
               printhead_position += 1
             end
           end

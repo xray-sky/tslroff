@@ -21,24 +21,22 @@ class Line
     @section = ''
   end
 
-  def superscripts?
-    @superscript.any?
-  end
-
   def print_at(x, char)
     line = instance_variable_get(@line)
     line[x] ||= String.new
     line[x] << char
   end
 
-  def up!
-    @line = :@superscript
-    nil
+  def superscripts?
+    @superscript.any?
   end
 
   def down!
     @line = :@baseline
-    nil
+  end
+
+  def up!
+    @line = :@superscript
   end
 
   def to_html
@@ -149,7 +147,7 @@ class Line
     end.join
 
     line.gsub!(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
-        %(<a href="../man\\7/\\3.\\6.html">\\1</a>)) if @section == 'SEE ALSO' # TODO: this needs to be platform overrideable; section to lowercase (maybe?) also the regexp should be reusable in Block context instead of copied & pasted
+        %(<a href="../man\\7/\\3.\\6.html">\\1</a>)) if @section == Manual.related_info_heading # TODO the regexp should be reusable in Block context instead of copied & pasted
     line + close_styles.call
   end
 

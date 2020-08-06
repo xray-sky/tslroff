@@ -12,6 +12,7 @@ require 'classes/block.rb'
 require 'classes/text.rb'
 
 class Manual
+
   attr_accessor :blocks
   attr_reader   :platform, :version, :lines, :links
 
@@ -21,6 +22,8 @@ class Manual
     #@version  = '4_1_4'
     @platform = 'AOS'
     @version  = '4_3'
+    #@platform = 'CLIX'
+    #@version  = "3_1r7_6_28"
     # end temporary hardcode
 
     @document = Array.new
@@ -51,6 +54,10 @@ class Manual
       else warn "!!! rescuing #{e.class.name} (??)"
       end
     end
+  end
+
+  def self.related_info_heading
+    'SEE ALSO'
   end
 
 end

@@ -49,6 +49,10 @@ module Troff
     end
   end
 
+  def self.related_info_heading
+    %r(SEE(?: |&nbsp;)ALSO)
+  end
+
   private
 
   # prototype a new block with whatever necessary styles carried forward.

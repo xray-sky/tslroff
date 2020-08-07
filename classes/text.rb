@@ -103,7 +103,7 @@ class Text
     # translate some troff fill/adjust fluff
     ent.gsub!(/&roffctl_\S+?;/) do |e|
       case e
-      when '&roffctl_br;'      then '<br />'   # TODO/REVIEW: I think <br> at the end of a block needs to be suppressed -- [GL2-W2.5] acct.4
+      #when '&roffctl_br;'      then '<br />'   # TODO/REVIEW: I think <br> at the end of a block needs to be suppressed -- [GL2-W2.5] acct.4
       when '&roffctl_endspan;' then '</span>'
       when '&roffctl_nrs;'     then '<span class="nrs"></span>'
       when '&roffctl_hns;'     then '<span class="hns"></span>'
@@ -116,10 +116,12 @@ class Text
     end
 
     # mark it up the rest of the way
+    # REVIEW what is the point of this isolated reference to @break? and where does the tab span get closed??
     (@break ? '<br />' : '') + tab + (tags + [ent] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
   end
 
   def to_selenium
+    # TODO consolidate this filesystem reference to the stylesheet
     %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$LOAD_PATH}/tslroff.css"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
   end
 

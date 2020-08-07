@@ -8,7 +8,7 @@ module Troff
 
   def parse(line)
 
-    outpos = @current_block.text.last
+    #outpos = @current_block.text.last
 
     # hidden newlines -- REVIEW: does this need to be any more sophisticated?
     while line.end_with?("#{@state[:escape_char]}\n")
@@ -25,7 +25,7 @@ module Troff
       begin
         send("req_#{Troff.quote_method(req)}", *getargs(args))
         # troff considers a macro line to be an input text line
-        space_adj if Troff.macro?(req)
+        space_adj if Troff.macro?(req) and @current_block.output_indicator?
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)
@@ -64,10 +64,15 @@ module Troff
     #req_br unless fill? || broke? || cmd == "'"
 
     # did we output any text? - TODO probably this is totally insufficient
-    unless @current_block.text.last == outpos
-      process_input_traps
-      req_rs
-    end
+    #unless @current_block.text.last == outpos
+    #  process_input_traps
+    #  req_rs
+    #end
+    # --- why was req_rs in there?? what's that got to do with input traps?
+#warn "#{@current_block.output_indicator?.inspect} from #{line.inspect}"
+#    process_input_traps if @current_block.output_indicator?
+#warn "reset?"
+#    @current_block.reset_output_indicator
   end
 
 end

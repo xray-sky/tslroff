@@ -17,12 +17,11 @@ module Troff
       end
     end
 
-    require "modules/platform/#{self.platform.downcase}.rb"
-    self.extend Kernel.const_get(self.platform.to_sym)
 
     @register = Hash.new
     @state    = Hash.new
 
+    load_platform_overrides
     load_version_overrides
 
     # call any initialization methods for .nr, .ds, etc.

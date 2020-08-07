@@ -24,7 +24,7 @@ class Style
   end
 
   def inspect
-    %(#{keys.collect { |k| {k=>self[k]}}.inspect + "\n" if keys.any?}attributes: #{@attributes.inspect}\ncss:        #{@css.inspect}\nfrozen?:    #{frozen?.inspect}\n)
+    %(#{keys.collect { |k| {k=>self[k]}}.inspect + "\n" if keys.any?}attributes: #{@attributes.inspect}\ncss:        #{@css.inspect}\nfrozen?:    #{is_frozen?.inspect}\n)
   end
 
   def method_missing(method_sym, *args, &block)

@@ -134,7 +134,7 @@ module Troff
         text = cells.shift
 
         # fudge the contents of this cell to ensure the row doesn't get collapsed
-        text = '&roffctl_br;' if cell.style[:box_rule]
+        @current_block << LineBreak.new and text='' if cell.style[:box_rule]
 
         # handle cells that've been spanned downward
         # move bottom_border lines in the text; spanned cells have to be tabbed past
@@ -174,6 +174,7 @@ module Troff
 
         unless text.nil?
           unescape(text)
+
           if @current_block.style[:numeric_align]
 
             # prefer to align on \& (has been parsed to &zwj;) -- this gets removed if present

@@ -9,6 +9,7 @@
 require 'classes/enumerator/collect_through.rb'
 require 'classes/source.rb'
 require 'classes/block.rb'
+require 'classes/break.rb'
 require 'classes/text.rb'
 
 class Manual
@@ -18,10 +19,10 @@ class Manual
 
   def initialize(file)
     # TODO: temporary hardcode for early prototyping
-    #@platform = 'SunOS'
-    #@version  = '4_1_4'
-    @platform = 'AOS'
-    @version  = '4_3'
+    @platform = 'SunOS'
+    @version  = '4_1_4'
+    #@platform = 'AOS'
+    #@version  = '4_3'
     #@platform = 'CLIX'
     #@version  = "3_1r7_6_28"
     # end temporary hardcode
@@ -53,6 +54,22 @@ class Manual
         retry
       else warn "!!! rescuing #{e.class.name} (??)"
       end
+    end
+  end
+
+  def load_platform_overrides
+    platform_overrides = "modules/platform/#{self.platform.downcase}.rb"
+    if File.readable?("#{File.dirname(__FILE__)}/#{platform_overrides}")
+      require platform_overrides
+      self.extend Kernel.const_get(self.platform.to_sym)
+    end
+  end
+
+  def load_version_overrides
+    version_overrides = "modules/platform/#{self.platform.downcase}/#{self.version}.rb"
+    if File.readable?("#{File.dirname(__FILE__)}/#{version_overrides}")
+      require version_overrides
+      self.extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
     end
   end
 

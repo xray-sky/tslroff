@@ -23,19 +23,23 @@ class Block
 
   def <<(t)
     case t
-    when String then @text.last << t
     when Text   then @text << t
+    when String then @text.last << t
+    when LineBreak
+      cur_fmt =  @text.last.respond_to?(:font) ? Text.new(font: @text.last.font.dup, style: @text.last.style.dup) : Text.new
+      @text << t << cur_fmt
     when Block  # this is primarily meant for handling named strings, which may include typesetter escapes
       raise RuntimeError "appending non-bare block #{t.inspect}" unless t.type == :bare
       @text += t.text
       # don't leave the last text object open, or else you'll start writing into the named string definition.
       @text << Text.new(font: text.last.font.dup, style: text.last.style.dup)
     end
-    freeze unless t.empty?
+    (freeze and @output_indicator = true) unless t.empty?
   end
 
   def empty?
-    text.collect(&:to_s).join.strip.empty?  # REVIEW: does this even make sense?
+    #text.collect(&:to_s).join.strip.empty?  # REVIEW: does this even make sense?
+    !text.reject(&:empty?).any?
   end
 
   def freeze
@@ -55,6 +59,15 @@ class Block
   def text=(t)
     @text = t.is_a?(Array) ? t : [t]
     freeze unless t.empty?
+    @output_indicator = !text.empty?
+  end
+
+  def output_indicator?
+    @output_indicator
+  end
+
+  def reset_output_indicator
+    @output_indicator = false
   end
 
   def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
@@ -71,8 +84,8 @@ class Block
     when :th      then %(<div class="title"><h1>#{t}</h1></div>\n<div class="body">\n    <div id="man">\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
-    #when :dl      then "<dl#{style.to_s}>\n <dt#{style[:dt].style.to_s}>#{style[:dt].to_html}</dt>\n  <dd#{style[:dd].style.to_s}>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
-    when :dl      then "<p#{style.to_s}>\n <span#{style[:dt].style.to_s}>#{style[:dt].to_html}</span>\n  #{t}\n</p>\n" # FIXME: this crashes if 'tag' is unset.
+    when :dl      then "<dl#{style.to_s}>\n <dt#{style[:dt].style.to_s}>#{style[:dt].to_html}</dt>\n  <dd#{style[:dd].style.to_s}>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
+    #when :dl      then "<p#{style.to_s}>\n <span#{style[:dt].style.to_s}>#{style[:dt].to_html}</span>\n  #{t}\n</p>\n" # FIXME: this crashes if 'tag' is unset.
     when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
     when :cell
       t.gsub!(/&tblctl_\S+?;/) do |e|

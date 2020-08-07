@@ -10,10 +10,12 @@ module Troff
 
   def process_input_traps
 
+    # decrement the line counters
     @state[:input_trap] = Hash[ @state[:input_trap].collect do |trap, macros|
                                   [ trap -= 1 , macros ]
                                 end ]
 
+    # select the ones that should happen now
     macros = @state[:input_trap].delete(0)
 
     if macros

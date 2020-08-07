@@ -23,6 +23,7 @@
 module Troff
   def req_ti(indent = nil)
     return unless indent
+    warn ".ti received indent #{indent.inspect}"
     indent = to_u(indent, default_unit: 'm')
     warn "set temporary indent to #{indent.inspect}"
     req_br

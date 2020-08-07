@@ -25,8 +25,12 @@ module Troff
     #@current_tabstop[:break] = true
     #@current_tabstop[:tab_stop] = 0
 
-    @current_block = blockproto
-    @document << @current_block
+    #@current_block = blockproto
+    #@document << @current_block
+
+    @current_block << LineBreak.new
+    @current_tabstop = @current_block.text.last
+    @current_tabstop[:tab_stop] = 0
 
   end
 end

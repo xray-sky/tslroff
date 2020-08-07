@@ -9,11 +9,6 @@
 
 module SunOS
 
-  def load_version_overrides
-    require "modules/platform/#{self.platform.downcase}/#{self.version}.rb"
-    self.extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
-  end
-
   def parse(l)
     # TODO: this is just a test of the modular bug rewrite capability.
     #       it is working; this is an FSF (linux) bug though.

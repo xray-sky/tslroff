@@ -14,7 +14,7 @@ module Troff
     req_ps('-1')
     req_ft('B')
 
-    if args
+    if args.any?
       unescape(args.join(' '))
       send(:finalize_SB)
     else
@@ -25,7 +25,6 @@ module Troff
   def finalize_SB
     req_ft
     req_ps
-    process_input_traps
   end
 
 end

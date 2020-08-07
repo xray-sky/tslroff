@@ -11,24 +11,16 @@
 #
 #   tmac.an defines behavior where a shift out of I inserts \^ except after the last arg
 #
-# TODO: this fails on constructs like
-#       .TP
-#       .B
-#       .SM whatever
-#
-#       [GL2-W2.5] sh.1
-#
 
 
 module Troff
   %w[B I].each do |a|
     define_method "req_#{a}".to_sym do |*args|
       unescape('\f' + @state[:fpmap][a].to_s)
-      if args
+      if args.any?
         unescape(args.join(' '))
         finalize_B
       else
-        #it_adj
         req_it(1, :finalize_B)
       end
     end
@@ -48,7 +40,6 @@ module Troff
   # the same, whether .B or .I
   def finalize_B
     unescape('\f1')
-    process_input_traps
   end
 
 end

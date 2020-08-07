@@ -241,9 +241,9 @@ module Troff
         when /^(_|=)/
           cell.style[:box_rule] = true
           if row.last.nil? or row.last.text.last.type != :row_adj
-            row << Block.new(type: :row_adj, text: Block.new(type: :cell, text: Text.new(text: "&roffctl_br;")))
+            row << Block.new(type: :row_adj, text: Block.new(type: :cell, text: LineBreak.new))
           else
-            row.last.text << Block.new(type: :cell, text: Text.new(text: "&roffctl_br;"))
+            row.last.text << Block.new(type: :cell, text: LineBreak.new)
           end
           cell.style.css[:line_height]   = '50%'
           row.last.text.last.style.css[:line_height]  = '50%'

@@ -151,7 +151,7 @@ body {
 #man p {
 	line-height: 1.35;
     margin-bottom: 0em;
-    /* margin-top: 1em; */
+    margin-top: 1em;
 }
 
 #man p.foot {
@@ -161,7 +161,7 @@ body {
     font-style: italic;
     color: gray;
 }
-
+*/
 #man pre {
 	border: none;
 	background: none;
@@ -181,10 +181,14 @@ body {
 #man tt {
     font-family: monospace;
 }
-
-*/
+/*
 #man .n {
 	line-height: 0.6em;
+}
+*/
+#man .halfline {
+    margin: 0;
+	line-height: 50%;
 }
 
 #man pre strong {
@@ -241,7 +245,7 @@ body {
 #man dt {
 	float: left;
 	clear: left;
-	padding-right: 0.5em;
+/*	padding-right: 0.5em; */
     margin-top: 0em;
     white-space: nowrap;
     font-variant-ligatures: none;

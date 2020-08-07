@@ -24,9 +24,11 @@ module Troff
                             else
                               previous
                             end
-  warn "set indent to #{@register['.i'].value.inspect}"
-  req_P
-  @current_block.style.css[:margin_top] = '0'
+  warn "set indent (#{indent.inspect}/#{to_em(indent)}em) to #{@register['.i'].value.inspect}"
+  apply { @current_block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" } unless @register['.i'].value == @base_indent
+
+  #req_P
+  #@current_block.style.css[:margin_top] = '0'
   end
 
   def init_in

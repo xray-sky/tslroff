@@ -58,8 +58,7 @@ module Troff
   def blockproto(type = :p)
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]
-    block.style.css[:margin_top] = '0' if nofill?
-    #block.style.css[:margin_top] = "#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd]
+    block.style.css[:margin_top] = nofill? ? '0' : ("#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd])
     block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" unless @register['.i'].value == @base_indent
     @current_tabstop = block.text.last
     @current_tabstop[:tab_stop] = 0

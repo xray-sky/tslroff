@@ -39,7 +39,7 @@ class Block
 
   def empty?
     #text.collect(&:to_s).join.strip.empty?  # REVIEW: does this even make sense?
-    !text.reject(&:empty?).any?
+    type == :comment or !text.reject(&:empty?).any?
   end
 
   def freeze
@@ -71,8 +71,8 @@ class Block
   end
 
   def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
-    return if empty? and type != :cell  # don't eat empty table cells.
-    t = type == :comment ? text.collect(&:to_s).join : text.collect(&:to_html).join
+    return if empty? and ![:cell, :comment].include?(type)  # don't eat comments or empty table cells.
+    t = text.collect(&(type == :comment ? :to_s : :to_html)).join
     case type
     when :nil     then '' # suppress. used for placeholding in tbl.
     when :bare    then t
@@ -85,7 +85,6 @@ class Block
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
     when :dl      then "<dl#{style.to_s}>\n <dt#{style[:dt].style.to_s}>#{style[:dt].to_html}</dt>\n  <dd#{style[:dd].style.to_s}>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
-    #when :dl      then "<p#{style.to_s}>\n <span#{style[:dt].style.to_s}>#{style[:dt].to_html}</span>\n  #{t}\n</p>\n" # FIXME: this crashes if 'tag' is unset.
     when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
     when :cell
       t.gsub!(/&tblctl_\S+?;/) do |e|

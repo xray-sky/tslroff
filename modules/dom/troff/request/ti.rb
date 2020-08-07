@@ -26,8 +26,7 @@ module Troff
     warn ".ti received indent #{indent.inspect}"
     indent = to_u(indent, default_unit: 'm')
     warn "set temporary indent to #{indent.inspect}"
-    req_br
-    #@current_block.style.css[:margin_top] = '0'
-    @current_block.style.css[:text_indent] = "#{to_em(indent)}em"
+    req_br unless broke?
+    apply { @current_block.style.css[:text_indent] = "#{to_em(indent)}em" }
   end
 end

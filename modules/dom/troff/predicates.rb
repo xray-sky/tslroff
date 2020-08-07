@@ -10,7 +10,7 @@ module Troff
 
   def broke?
     #@current_block.type != :cell && @current_block.text.last.text.match(/&roffctl_br;\s+$/)
-    @current_block.text.last[:break]
+    @current_block.empty? || @current_block.text.last.is_a?(LineBreak)
   end
 
   def continuation?

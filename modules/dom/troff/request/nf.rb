@@ -22,7 +22,7 @@
 
 module Troff
   def req_nf
-    req_br unless broke? or @current_block.empty?
+    req_br unless broke?
     @register['.u'].value = 0
   end
 end

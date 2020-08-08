@@ -22,7 +22,7 @@
 require 'date'
 require 'nokogiri'
 
-$LOAD_PATH << File.dirname(__FILE__)
+$LOAD_PATH << $INSTALL_ROOT = File.dirname(__FILE__)
 $CSS = File.expand_path(File.dirname(__FILE__)) + '/tslroff.css'
 
 require 'classes/manual.rb'

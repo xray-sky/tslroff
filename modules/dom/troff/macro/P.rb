@@ -14,7 +14,7 @@ module Troff
     init_IP		# .PP resets \n()I to 0.5i
     @current_block = blockproto
     @document << @current_block
-    req_sp("#{@register[')P'].value}u")
+    #req_sp("#{@register[')P'].value}u")
   end
 
   alias req_PP req_P

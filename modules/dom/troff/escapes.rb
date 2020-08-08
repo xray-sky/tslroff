@@ -28,7 +28,7 @@ module Troff
   private
 
   def unescape(str, copymode: nil)
-    copymode ? __unesc_cm(str) : __unesc(str)
+    copymode ? __unesc_cm(str) : __unesc(__unesc_cm(str))
   end
 
   def __unesc_nr(str)
@@ -105,6 +105,9 @@ module Troff
   end
 
   def __unesc(str)
+    # REVIEW are we meant to do a copy-mode pass first, then do everything else? is this how
+    #        to keep .ds with stuff like \h from vanishing prematurely?? (instead of unescaping
+    #        the output of \* directly in esc_star, which causes it to be parsed during assignment in .ds?)
     @state[:translate].any? and str.gsub!(/[#{Regexp.quote(@state[:translate].keys.join)}]/) { |c| @state[:translate][c] }
     esc = @state[:escape_char]
     begin
@@ -132,12 +135,13 @@ module Troff
                 if respond_to?(esc_method)
                   send(esc_method, parts[2])
                 else
-                  warn "pointlessly escaped char #{parts[2][0].inspect} in line #{@register['.c'].value}? (rest: #{parts[2][1..-1].inspect})"
+                  warn "pointlessly escaped char #{parts[2][0].inspect} in line #{input_line_number}? (rest: #{parts[2][1..-1].inspect})"
                   parts[2]
                 end
               end
       elsif parts[1].start_with?("\t")
         stop = next_tab(parts[1].length)
+        stop = @state[:tabs].last and warn "out of tabs after #{parts[1].inspect} with tabs=#{@state[:tabs].inspect} in line #{input_line_number}! (rest: #{parts[2][1..-1].inspect})" if stop.nil? # should prevent exception on running out of tabs, but will result in overlapping text boxes - seems necessary? see a.out(5) [AOS 4.3]
         @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((stop - @current_tabstop[:tab_stop]).to_s)}em")
         @current_block << '&roffctl_endspan;'
         apply {

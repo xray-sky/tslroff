@@ -56,6 +56,8 @@ module Troff
     hold_block = @current_block
     @current_block = Block.new(type: :se)
     unescape(req_str)
+    warn "measuring #{@current_block.inspect} from #{req_str.inspect} (#{full_esc.inspect} with quote #{quote_char.inspect}"
+    warn "==> #{@current_block.to_html.inspect}"
     @webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
     width = to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
 

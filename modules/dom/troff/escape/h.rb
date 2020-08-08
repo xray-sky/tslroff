@@ -6,6 +6,9 @@
 #   local horizontal motion
 #
 #   negative values shift carriage toward left margin
+#   TODO trying to \w a lonely \h fails, as there's no text component and
+#        selenium considers it unrenderable -- spline(1g) [GL2 W2.5]
+#        pathological interactions with .ds and \* ========> so.... now what?
 #
 
 module Troff

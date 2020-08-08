@@ -103,13 +103,13 @@ class Text
     # translate some troff fill/adjust fluff
     ent.gsub!(/&roffctl_\S+?;/) do |e|
       case e
-      #when '&roffctl_br;'      then '<br />'   # TODO/REVIEW: I think <br> at the end of a block needs to be suppressed -- [GL2-W2.5] acct.4
       when '&roffctl_endspan;' then '</span>'
       when '&roffctl_nrs;'     then '<span class="nrs"></span>'
       when '&roffctl_hns;'     then '<span class="hns"></span>'
       when '&roffctl_tbl_nl;'  then '<span style="width:50%;text-align:right;display:inline-block;">'
       when '&roffctl_tbl_nr;'  then '<span style="width:50%;display:inline-block;">'
-      when /&roffctl_sp:(.+);/ then %(<span style="display:inline-block;height:#{Regexp.last_match(1)};"></span>) # REVIEW: does this even work?
+      when /&roffctl_hs:(.+);/ then %(<span style="display:inline-block;width:#{Regexp.last_match(1)};"></span>)
+      when /&roffctl_vs:(.+);/ then %(<span style="display:block;width:100%;height:#{Regexp.last_match(1)};"></span>)
       when /&roffctl_.+;/      then '' # ignore any other roffctl code
       else warn "unimplemented #{e}"
       end

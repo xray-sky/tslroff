@@ -40,7 +40,7 @@ class Style
     end.join
 
     styles = css.collect do |style, value|
-      "#{style.to_s.gsub(/_/, '-')}:#{value};"
+      "#{style.to_s.gsub(/_/, '-')}:#{value};" unless value.nil?
     end.join
     styles = %( style="#{styles.strip}") unless styles.empty?
 

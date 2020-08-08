@@ -18,7 +18,8 @@ module Troff
     if s.match(/\*(?:(\(..|.))/)
       ds = Regexp.last_match(1).start_with?('(') ? Regexp.last_match(1)[1..-1] : Regexp.last_match(1)
       if @state[:named_string][ds]
-        s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, unescape(@state[:named_string][ds]).to_s)
+        #s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, unescape(@state[:named_string][ds]).to_s) # REVIEW - AHA, it's this to_s that's blanking the \h
+        s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, @state[:named_string][ds])
       else
         warn "unselected named string #{s[0..1]} from #{s[2..-1]}"
         s[2..-1]

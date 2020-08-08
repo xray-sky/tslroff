@@ -29,10 +29,10 @@ module Troff
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)
-          warn "Unrecognized request in line #{@register['.c'].value}: #{line}"
+          warn "Unrecognized request in line #{input_line_number}: #{line}"
         else
           # it's some other screwup; use the normal error reporting
-          warn "in line #{@register['.c'].value}: #{line.inspect}:"
+          warn "in line #{input_line_number}: #{line.inspect}:"
           warn e
           warn e.backtrace
         end
@@ -40,14 +40,14 @@ module Troff
     else
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3
-      if line.empty?
+      if line.empty? and !nofill?
         req_br unless broke?
         req_br
       end
 
       # initial spaces also cause a break. §4.1
       # -- but don't break again unnecessarily (i.e. in nofill mode).
-      # -- REVIEW: I think tabs don't count for this
+      # -- REVIEW: I think tabs don't count for this (...based on??)
       if line.start_with?(' ')
         line.prepend("\\")    # force this initial space to appear in the output
         req_br if fill? && !broke?

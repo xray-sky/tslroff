@@ -19,6 +19,9 @@
 #
 # none of this is relevant to tslroff (REVIEW: unless some man page tries to use them - e.g. IN in ms.5)
 # TODO: this is totally incomplete
+# TOOD: TH just sets registers; they necessarily don't get printed until later (e.g. at page footer)
+#       subsequent macros may overwrite these registers, and it is those later values which
+#       will get used! see e.g. -- a.out(5) [AOS 4.3]
 #
 
 module Troff

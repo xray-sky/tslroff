@@ -17,10 +17,12 @@ module Troff
       # divert the width; don't let it get into the output stream.
       @current_block = Block.new(type: :bare)
       unescape(indent)
-      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'n')
+      #@register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'n')
+      # which unit is assumed? tmac.an suggests n, but usage suggests m ??
+      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'm')
     end
 
-    req_sp("#{@register[')P'].value}u")
+    #req_sp("#{@register[')P'].value}u")
 
     tag_block = Block.new(type: :bare)
     tag_block.text = tag
@@ -38,6 +40,7 @@ module Troff
     @current_block.style[:dt] = tag_block
     @current_block.style[:dd] = text_block
     @current_block.style[:dd].style.css[:margin_left] = "#{to_em(@register[')I'].value.to_s + 'u')}em"
+    @current_block.style[:dd].style.css[:margin_top] = '0' # REVIEW what about if the interparagraph spacing changes??
   end
 
   def init_IP

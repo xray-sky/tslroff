@@ -23,6 +23,10 @@
 module Troff
   def req_nf
     req_br unless broke?
+    req_br # is this too many? I'm trying to make up for a <br> at the end
+           # of a <p> which the browser disappears, followed immediately by a .nf
+           # which makes the next .PP have margin-top:0. (see a.out(5) [AOS 4.3])
+           # in the meanwhile I'd rather have one extra than none at all
     @register['.u'].value = 0
   end
 end

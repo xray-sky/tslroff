@@ -17,7 +17,6 @@ module Troff
       end
     end
 
-
     @register = Hash.new
     @state    = Hash.new
 
@@ -39,13 +38,17 @@ module Troff
     loop do
       begin
         l = @lines.tap { @register['.c'].value += 1 }.next
-        parse(l)#.rstrip)
+        parse(l)
       rescue StopIteration
         # TODO: perform end-of-input trap macros from .em;
         # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
         return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs started by :th
       end
     end
+  end
+
+  def input_line_number
+    @register['.c'].value
   end
 
   def self.related_info_heading

@@ -6,6 +6,7 @@
 
 module Nroff
 
+  attr_reader :input_line_number
 
   def source_init
 
@@ -20,6 +21,9 @@ module Nroff
     @lines_per_page = 66
     # watch for alphabetic text starting in first column, which would be a title or section head
     @heading_detection = %r(^([A-Z][A-Za-z\s]+)$)
+
+    @input_line_number = 0
+
     load_version_overrides
 
   end
@@ -35,6 +39,7 @@ module Nroff
     loop do
       begin
         input_line = @lines.next
+        @input_line_number += 1
 
         unformat(input_line).match(@heading_detection)
         section = Regexp.last_match[1].chomp if Regexp.last_match

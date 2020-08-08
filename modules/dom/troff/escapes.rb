@@ -135,13 +135,13 @@ module Troff
                 if respond_to?(esc_method)
                   send(esc_method, parts[2])
                 else
-                  warn "pointlessly escaped char #{parts[2][0].inspect} in line #{input_line_number}? (rest: #{parts[2][1..-1].inspect})"
+                  warn "pointlessly escaped char #{parts[2][0].inspect}? (rest: #{parts[2][1..-1].inspect})"
                   parts[2]
                 end
               end
       elsif parts[1].start_with?("\t")
         stop = next_tab(parts[1].length)
-        stop = @state[:tabs].last and warn "out of tabs after #{parts[1].inspect} with tabs=#{@state[:tabs].inspect} in line #{input_line_number}! (rest: #{parts[2][1..-1].inspect})" if stop.nil? # should prevent exception on running out of tabs, but will result in overlapping text boxes - seems necessary? see a.out(5) [AOS 4.3]
+        stop = @state[:tabs].last and warn "out of tabs after #{parts[1].inspect} with tabs=#{@state[:tabs].inspect}! (rest: #{parts[2][1..-1].inspect})" if stop.nil? # should prevent exception on running out of tabs, but will result in overlapping text boxes - seems necessary? see a.out(5) [AOS 4.3]
         @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((stop - @current_tabstop[:tab_stop]).to_s)}em")
         @current_block << '&roffctl_endspan;'
         apply {

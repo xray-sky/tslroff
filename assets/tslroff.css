@@ -267,6 +267,11 @@ body {
     word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
 }
 
+#man .vs {		/* troff vertical motion */
+	display: block;
+	width: 100%;
+}
+
 #man .nrs {     /* troff 1/6em narrow space */
     display: inline-block;
     width: 0.167em;
@@ -280,11 +285,16 @@ body {
     text-wrap: suppress;
 }
 
-#man .tab {     /* HTML shortcut - cheapass source compression */
+#man .tab {     /* also used for horizontal motion - REVIEW be careful if it starts to look like more than just inline-block */
     display: inline-block;
     /* this is only good if the element is a direct child of a block.
        breaks again if it's in, say, <strong>, or another <span> */
     /*margin-left: inherit;  /* look at this more closely. I think it's wrong in tar.1 - where was it I did this for? bc.? bs.1? */
+}
+
+#man tbl .nalign {	/* tbl numerical column alignment  */
+	width: 50%;
+	display: inline-block;
 }
 
 #man .sub {

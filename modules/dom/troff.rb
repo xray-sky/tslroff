@@ -43,6 +43,10 @@ module Troff
         # TODO: perform end-of-input trap macros from .em;
         # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
         return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs started by :th
+      rescue => e
+        warn "#{l.inspect} -"
+        warn e
+        warn e.backtrace.join("\n")
       end
     end
   end

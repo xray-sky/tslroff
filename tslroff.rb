@@ -19,92 +19,64 @@
 #
 # remember, remember https://github.com/bbatsov/ruby-style-guide
 #
+
+assets = __dir__ + '/assets'
+$LOAD_PATH << File.dirname(__FILE__)
+$CSS = assets + '/tslroff.css'
+
 require 'date'
 require 'nokogiri'
-
-$LOAD_PATH << $INSTALL_ROOT = File.dirname(__FILE__)
-$CSS = File.expand_path(File.dirname(__FILE__)) + '/tslroff.css'
-
 require 'classes/manual.rb'
 
-
-# TODO: parse arguments properly
-raise ArgumentError, 'need an input file!' if ARGV[0].nil?
-
-
-cwd = Dir.getwd
-(ipath,ifile) = ARGV[0].scan(%r|^(.+)/(.+)$|)[0]
-#Dir.chdir(ipath)
-
-begin
-  src = Manual.new(ARGV[0])
-rescue FileIsLinkError
-  target = $!.to_s
-  File.symlink("#{target}.html", "#{ifile}.html")
-  exit(0)
+filelist = []
+outdir = '.'
+os = ver = ''
+args = ARGV.each
+loop do
+  begin
+    arg = args.next
+    case arg
+    when '-os'   then os = args.next
+    when '-ver'  then ver = args.next
+    when '-odir' then outdir = args.next
+    else filelist << arg
+    end
+  rescue StopIteration
+    break
+  end
 end
 
-manual  = src.to_html
-related = Nokogiri::HTML(manual).search('a')
+raise ArgumentError, 'need an input file!' if filelist.empty?
 
-related_menu = %(
-		<div class="menu_title">
-			<h1>Related Articles</h1>
-		</div>
-		<div class="menu">
+files = filelist.each
+loop do
+  begin
+    file = files.next
+    ifile = File.basename(file)
+    src = Manual.new(file)
+    page = src.to_html
+    related = Nokogiri::HTML(page).search('a')
 
-#{related.collect do |link|
-%(          	<p><a href="#{link['href']}">
-          	    <item><tt>#{link.content}</tt></item></a></p>)
-end.join("\n")}
+    ofile = "#{outdir}/#{ifile}.html" # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).
+    loopcontext = binding
 
-		</div>
-)
+    # forking is more to keep 'erb' from polluting my string methods than it is
+    # for "performance"
+    fork do
+      # whoa hoss, why does requiring this at the top break my string parsing?!
+      # this needs resolving before we can deal with multiple files per invokation
+      require 'erb'
+      #out = ERB.new(File.read("#{assets}/manual.erb")).result(loopcontext)
+      File.open(ofile, File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
+        file.write(ERB.new(File.read("#{assets}/manual.erb")).result(loopcontext))
+      end
+    end
 
-puts <<DOC
-<head>
-  <link rel="stylesheet" type="text/css" href="tslroff.css"></link>
-</head>
-<body>
-<div id="left">
-	<div id="menu">
-		<div class="menu_title">
-			<h1>Museum</h1>
-		</div>
-		<div class="menu">
-
-          	<p><a href="/"><item>Home</item></a></p>
-         	<p><a href="/Systems/"><item>Lab Overview</item></a></p>
-         	<p><a href="/Articles/"><item>Retrotechnology Articles</item></a></p>
-			<p class="here"><small>&rArr; Online Manual</small></p>
-         	<p><a href="/Media/"><item>Media Vault</item></a></p>
-          	<p><a href="/Software/"><item>Software Library</item></a></p>
-          	<p><a href="/Projects/"><item>Restoration Projects</item></a></p>
-          	<p><a href="/wanted.html"><item>Artifacts Sought</item></a></p>
-
-		</div>
-#{related_menu if related.any?}
-	</div>
-</div>
-
-<div id="right">
-<div id="content">
-#{manual}
-
-	<div class="bottom_deco">
-		<table><tr><td class="left"></td><td></td><td class="right"></td></tr></table>
-	</div>
-</div>
-
-	<div id="footer">
-
-		<p>Typewritten Software &bull;
-		<a href="mailto:bear@typewritten.org">bear@typewritten.org</a> &bull;
-		Edmonds, WA 98026</p>
-
-	</div>
-</div>
-</body>
-</html>
-DOC
+  rescue FileIsLinkError
+    target = $!.to_s
+    File.symlink("#{target}.html", "#{ifile}.html") # TODO wrong
+  rescue StopIteration
+    break
+  end
+end
 

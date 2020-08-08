@@ -35,9 +35,11 @@
 module Troff
   def req_sp(n = '1')  # TODO: everything is wrong?
     return if @state[:nospace]
-    #req_br unless broke?
     v = to_em(to_u(n, default_unit: 'v')) # TODO: hardcoding 1.2 em line height is bogus
     @current_block << "&roffctl_vs:#{v}em;"
-    #apply { @current_block.style.css[:margin_top] = "#{v}em" } unless @register[')P'].value == @state[:default_pd]
+    # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
+    @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    @current_tabstop = @current_block.text.last
+    @current_tabstop[:tab_stop] = 0
   end
 end

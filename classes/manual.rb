@@ -30,6 +30,7 @@ class Manual
     @document = Array.new
     @related  = Array.new
 
+    @input_filename = File.basename(file)
     @source = Source.new(file)
     @lines  = @source.lines.each
     @current_block = Block.new
@@ -59,7 +60,7 @@ class Manual
 
   def load_platform_overrides
     platform_overrides = "modules/platform/#{self.platform.downcase}.rb"
-    if File.readable?("#{$INSTALL_ROOT}/#{platform_overrides}")
+    if File.readable?("#{__dir__}/../#{platform_overrides}")
       require platform_overrides
       self.extend Kernel.const_get(self.platform.to_sym)
     end
@@ -67,10 +68,14 @@ class Manual
 
   def load_version_overrides
     version_overrides = "modules/platform/#{self.platform.downcase}/#{self.version}.rb"
-    if File.readable?("#{$INSTALL_ROOT}/#{version_overrides}")
+    if File.readable?("#{__dir__}/../#{version_overrides}")
       require version_overrides
       self.extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
     end
+  end
+
+  def warn(m)
+    super("#{@input_filename} [#{input_line_number}]: #{m}")
   end
 
   def self.related_info_heading

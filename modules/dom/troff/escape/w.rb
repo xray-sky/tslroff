@@ -52,12 +52,11 @@ module Troff
     s.match(/(^w([#{@@delim}])(.+?(#{esc}\2)*)\2)/)
     (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
 
+# TODO make this reusable (here, next_tab, etc)
     # get a manipulable block that can be rendered without leaving anything in the output stream
     hold_block = @current_block
     @current_block = Block.new(type: :se)
     unescape(req_str)
-    warn "measuring #{@current_block.inspect} from #{req_str.inspect} (#{full_esc.inspect} with quote #{quote_char.inspect}"
-    warn "==> #{@current_block.to_html.inspect}"
     @webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
     width = to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
 
@@ -70,6 +69,11 @@ module Troff
   def init_selenium
     chrome_opts = Selenium::WebDriver::Chrome::Options.new
     chrome_opts.add_argument('--headless')
+    # look for installed Chrome browser location
+    chrome_bin = %w( ~/bin/chrome    ~/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
+                     /usr/bin/chrome /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome ).
+                 find { |b| File.executable?(File.expand_path(b)) }
+    chrome_opts.binary = chrome_bin
     @webdriver = Selenium::WebDriver.for(:chrome, options: chrome_opts)
     # calibrate Selenium (dimension results are in px)
     @webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')

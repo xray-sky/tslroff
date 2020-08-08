@@ -1,0 +1,47 @@
+<head>
+  <link rel="stylesheet" type="text/css" href="tslroff.css"></link>
+</head>
+<body>
+<div id="left">
+	<div id="menu">
+		<div class="menu_title">
+			<h1>Museum</h1>
+		</div>
+		<div class="menu">
+
+          	<p><a href="/"><item>Home</item></a></p>
+         	<p><a href="/Systems/"><item>Lab Overview</item></a></p>
+         	<p><a href="/Articles/"><item>Retrotechnology Articles</item></a></p>
+			<p class="here"><small>&rArr; Online Manual</small></p>
+         	<p><a href="/Media/"><item>Media Vault</item></a></p>
+          	<p><a href="/Software/"><item>Software Library</item></a></p>
+          	<p><a href="/Projects/"><item>Restoration Projects</item></a></p>
+          	<p><a href="/wanted.html"><item>Artifacts Sought</item></a></p>
+
+		</div>
+
+<%= ERB.new(File.read("#{assets}/menu_related.erb"), 0, '', '_menu').result(loopcontext) if related.any? %>
+
+	</div>
+</div>
+
+<div id="right">
+<div id="content">
+<%= page %>
+
+	<div class="bottom_deco">
+		<table><tr><td class="left"></td><td></td><td class="right"></td></tr></table>
+	</div>
+</div>
+
+	<div id="footer">
+
+		<p>Typewritten Software &bull;
+		<a href="mailto:bear@typewritten.org">bear@typewritten.org</a> &bull;
+		Edmonds, WA 98026</p>
+
+	</div>
+</div>
+</body>
+</html>
+

@@ -29,12 +29,10 @@ module Troff
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)
-          warn "Unrecognized request in line #{input_line_number}: #{line}"
+          warn "Unrecognized request #{line}"
         else
           # it's some other screwup; use the normal error reporting
-          warn "in line #{input_line_number}: #{line.inspect}:"
-          warn e
-          warn e.backtrace
+          raise
         end
       end
     else

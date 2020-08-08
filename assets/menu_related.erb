@@ -1,0 +1,9 @@
+		<div class="menu_title">
+			<h1>Related Articles</h1>
+		</div>
+		<div class="menu">
+<% related.each do |link| %>
+          	<p><a href="<%= link['href'] %>">
+          	    <item><tt><%= link.content %></tt></item></a></p><% end %>
+
+		</div>

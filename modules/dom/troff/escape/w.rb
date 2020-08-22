@@ -57,8 +57,8 @@ module Troff
     hold_block = @current_block
     @current_block = Block.new(type: :se)
     unescape(req_str)
-    @webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
-    width = to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+    @@webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
+    width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
 
     # restore normal output
     @current_block = hold_block
@@ -67,17 +67,19 @@ module Troff
   end
 
   def init_selenium
-    chrome_opts = Selenium::WebDriver::Chrome::Options.new
-    chrome_opts.add_argument('--headless')
-    # look for installed Chrome browser location
-    chrome_bin = %w( ~/bin/chrome    ~/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
-                     /usr/bin/chrome /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome ).
-                 find { |b| File.executable?(File.expand_path(b)) }
-    chrome_opts.binary = chrome_bin
-    @webdriver = Selenium::WebDriver.for(:chrome, options: chrome_opts)
-    # calibrate Selenium (dimension results are in px)
-    @webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')
-    @@pixels_per_inch = @webdriver.find_element(id: 'calibrate').size.width
+    unless defined? @@webdriver
+      chrome_opts = Selenium::WebDriver::Chrome::Options.new
+      chrome_opts.add_argument('--headless')
+      # look for installed Chrome browser location
+      chrome_bin = %w( ~/bin/chrome    ~/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
+                       /usr/bin/chrome /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome ).
+                   find { |b| File.executable?(File.expand_path(b)) }
+      chrome_opts.binary = chrome_bin
+      @@webdriver = Selenium::WebDriver.for(:chrome, options: chrome_opts)
+      # calibrate Selenium (dimension results are in px)
+      @@webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')
+      @@pixels_per_inch = @@webdriver.find_element(id: 'calibrate').size.width
+    end
   end
 
 end

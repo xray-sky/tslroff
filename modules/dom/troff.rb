@@ -42,7 +42,8 @@ module Troff
       rescue StopIteration
         # TODO: perform end-of-input trap macros from .em;
         # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
-        return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs started by :th
+        #@webdriver.quit
+        return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs start ed by :th
       rescue => e
         warn "#{l.inspect} -"
         warn e

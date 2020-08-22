@@ -70,6 +70,7 @@ loop do
       File.open(ofile, File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
         file.write(ERB.new(File.read("#{assets}/manual.erb")).result(loopcontext))
       end
+      exit
     end
 
   rescue FileIsLinkError

@@ -27,8 +27,8 @@ module Troff
     tag_block = Block.new(type: :bare)
     tag_block.text = tag
     unless tag_block.empty?
-      @webdriver.get(tag_block.to_selenium)
-      tag_width = to_u(@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      @@webdriver.get(tag_block.to_selenium)
+      tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
       tag_block.style.css[:display] = 'inline-block'
       tag_block.style.css[:width] = (tag_width + 36 > @register[')I'].value) ? '100%' : (to_em("#{@register[')I'].value}u").to_s + 'em') # add the width of a space
     end

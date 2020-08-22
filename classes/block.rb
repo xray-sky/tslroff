@@ -102,7 +102,9 @@ class Block
       when 'SYNOPSIS'
         %(<p class="synopsis"#{style.to_s}>\n#{t}\n</p>\n)
       when Manual.related_info_heading
-        "<p#{style.to_s}>\n#{t.gsub(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
+        # TODO this is getting into trouble when there are <br />, and enclosing it within the <a>
+        #      (though everything else about it seems fine) -- see hf77(1), hc(1) [AOS-4.3]
+        "<p#{style.to_s}>\n#{t.gsub(%r{((<[^<]+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)},
           %(<a href="../man\\7/\\3.\\6.html">\\1</a>))}\n</p>\n"
       else
         "<p#{style.to_s}>\n#{t}\n</p>\n"

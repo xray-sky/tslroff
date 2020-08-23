@@ -36,7 +36,7 @@ module Troff
     end
   end
 
-  def init_nr
+  def xinit_nr
     date = Time.new
     @register.merge!({
       ############################################

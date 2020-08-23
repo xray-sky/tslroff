@@ -26,6 +26,11 @@ module Troff
     # call any initialization methods for .nr, .ds, etc.
     # may be supplemented or overridden by version-specific methods
 
+    xinit_selenium
+    xinit_ec
+    xinit_in
+    xinit_nr
+
     self.methods.each do |m|
       self.send(m) if m.to_s.match(/^init_/)
     end

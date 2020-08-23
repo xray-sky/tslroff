@@ -29,7 +29,7 @@ module Troff
     @current_block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" unless @register['.i'].value == @base_indent
   end
 
-  def init_in
+  def xinit_in
     @base_indent = 400 #to_u('2m').to_i		# from the CSS; TODO: link this with css
   end
 end

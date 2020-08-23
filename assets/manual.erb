@@ -20,7 +20,7 @@
 
 		</div>
 
-<%= ERB.new(File.read("#{assets}/menu_related.erb"), 0, '', '_menu').result(loopcontext) if related.any? %>
+<%= ERB.new(File.read("#{assets}/menu_related.erb"), 0, nil, '_menu').result(loopcontext) if related.any? %>
 
 	</div>
 </div>

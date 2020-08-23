@@ -16,7 +16,7 @@ module Troff
     @state[:escape_char] = char || '\\'
   end
 
-  def init_ec
+  def xinit_ec
     @state[:escape_char]  = '\\'
     true
   end

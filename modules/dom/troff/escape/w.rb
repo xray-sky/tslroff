@@ -66,14 +66,14 @@ module Troff
     width.to_s + s.slice(full_esc.length..-1)
   end
 
-  def init_selenium
+  def xinit_selenium
     unless defined? @@webdriver
       chrome_opts = Selenium::WebDriver::Chrome::Options.new
       chrome_opts.add_argument('--headless')
       # look for installed Chrome browser location
       chrome_bin = %w( ~/bin/chrome    ~/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
                        /usr/bin/chrome /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome ).
-                   find { |b| File.executable?(File.expand_path(b)) }
+                   map { |p| File.expand_path(p) }.find { |b| File.executable?(b) }
       chrome_opts.binary = chrome_bin
       @@webdriver = Selenium::WebDriver.for(:chrome, options: chrome_opts)
       # calibrate Selenium (dimension results are in px)

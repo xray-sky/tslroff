@@ -25,6 +25,8 @@ module Troff
 
     # call any initialization methods for .nr, .ds, etc.
     # may be supplemented or overridden by version-specific methods
+    # REVIEW do this in a grown up way - these need ordered to succeed
+    #  - if left to random wildcard chance, may throw exceptions
 
     xinit_selenium
     xinit_ec
@@ -47,7 +49,6 @@ module Troff
       rescue StopIteration
         # TODO: perform end-of-input trap macros from .em;
         # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
-        #@webdriver.quit
         return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs start ed by :th
       rescue => e
         warn "#{l.inspect} -"

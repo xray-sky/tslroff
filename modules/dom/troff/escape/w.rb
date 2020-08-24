@@ -58,12 +58,17 @@ module Troff
     @current_block = Block.new(type: :se)
     unescape(req_str)
     @@webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
-    width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
-
-    # restore normal output
-    @current_block = hold_block
-
-    width.to_s + s.slice(full_esc.length..-1)
+    begin
+      width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      # restore normal output
+      @current_block = hold_block
+      width.to_s + s.slice(full_esc.length..-1)
+    rescue Selenium::WebDriver::Error::NoSuchElementError => e
+      # needed to restore @current_block
+      @current_block = hold_block
+      warn e
+      'NaN' # REVIEW side effects - returning nil - but what string makes sense?
+    end
   end
 
   def xinit_selenium

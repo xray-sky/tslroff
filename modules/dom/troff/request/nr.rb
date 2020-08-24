@@ -31,7 +31,7 @@ module Troff
   def req_nr(register, value = '0', increment = nil)
     @register[register] ||= Register.new
     unless @register[register].read_only?
-      @register[register].value = value.to_i
+      @register[register].value = __unesc_nr(value).to_i  # REVIEW what else might appear and need parsing?? should this happen before invoking this method (like \w)??
       @register[register].increment = increment.to_i if increment
     end
   end

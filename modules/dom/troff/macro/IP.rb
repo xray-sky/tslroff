@@ -22,8 +22,6 @@ module Troff
       @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'm')
     end
 
-    #req_sp("#{@register[')P'].value}u")
-
     tag_block = Block.new(type: :bare)
     tag_block.text = tag
     unless tag_block.empty?

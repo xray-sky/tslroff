@@ -5,10 +5,12 @@
 #
 #   basic definitions of the \* (named string) escape
 #
-#  REVIEW: looks like the string could contain escapes that need further processing?
+#  the string could contain escapes that need further processing
 #          e.g. '.dsS \s\n()S'
+#    so we send back the expanded string, so that it might be unescaped
 #
 #  TODO: align this implementation with \n
+#
 
 module Troff
   def esc_star(s)
@@ -18,7 +20,6 @@ module Troff
     if s.match(/\*(?:(\(..|.))/)
       ds = Regexp.last_match(1).start_with?('(') ? Regexp.last_match(1)[1..-1] : Regexp.last_match(1)
       if @state[:named_string][ds]
-        #s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, unescape(@state[:named_string][ds]).to_s) # REVIEW - AHA, it's this to_s that's blanking the \h
         s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, @state[:named_string][ds])
       else
         warn "unselected named string #{s[0..1]} from #{s[2..-1]}"

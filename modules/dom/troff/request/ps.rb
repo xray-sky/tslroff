@@ -22,7 +22,7 @@
 
 module Troff
   def req_ps(ps = '0')
-
+    ps = __unesc_nr(ps)     # REVIEW should this happen before method invoke? see also .nr
     size = case ps
     when '0'                then @register[:prev_ps].value
     when /^([-+])(\d{1,2})/ then @register['.s'].value.send(Regexp.last_match(1), Regexp.last_match(2).to_i)

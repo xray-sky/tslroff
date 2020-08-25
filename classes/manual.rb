@@ -62,7 +62,7 @@ class Manual
     platform_overrides = "modules/platform/#{self.platform.downcase}.rb"
     if File.readable?("#{__dir__}/../#{platform_overrides}")
       require platform_overrides
-      self.extend Kernel.const_get(self.platform.to_sym)
+      extend Kernel.const_get(self.platform.to_sym)
     end
   end
 
@@ -70,7 +70,7 @@ class Manual
     version_overrides = "modules/platform/#{self.platform.downcase}/#{self.version}.rb"
     if File.readable?("#{__dir__}/../#{version_overrides}")
       require version_overrides
-      self.extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
+      extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
     end
   end
 

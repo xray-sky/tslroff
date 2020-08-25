@@ -6,6 +6,12 @@
 
 require 'selenium-webdriver'
 
+class Manual
+  def self.related_info_heading
+    %r(SEE(?: |&nbsp;)ALSO)
+  end
+end
+
 module Troff
 
   @@delim = %(\002\003\005\006\007"')
@@ -60,10 +66,6 @@ module Troff
 
   def input_line_number
     @register['.c'].value
-  end
-
-  def self.related_info_heading
-    %r(SEE(?: |&nbsp;)ALSO)
   end
 
   private

@@ -10,7 +10,7 @@
 
 module Troff
   def req_SM(*args)
-    req_ps(Font.defaultsize)
+    req_ps(Font.defaultsize.to_s)
     req_ps('-1')
     if args.any?
       unescape(args.join(' '))
@@ -21,7 +21,7 @@ module Troff
   end
 
   def finalize_SM
-    req_ps(Font.defaultsize)	# it's possible somebody messed with the font size in the .SM text
+    req_ps(Font.defaultsize.to_s)	# it's possible somebody messed with the font size in the .SM text
   end
 
 end

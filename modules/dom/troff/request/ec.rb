@@ -12,12 +12,12 @@
 #
 
 module Troff
-  def req_ec(*char)
-    @state[:escape_char] = char || '\\'
+  def req_ec(char = '\\')
+    @state[:escape_char] = char
   end
 
   def xinit_ec
-    @state[:escape_char]  = '\\'
+    req_ec
     true
   end
 end

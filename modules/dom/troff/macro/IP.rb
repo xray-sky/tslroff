@@ -23,7 +23,8 @@ module Troff
     end
 
     tag_block = Block.new(type: :bare)
-    tag_block.text = tag
+    #tag_block.text = tag
+    tag_block.text = tag.class == String ? Text.new(text: tag) : tag     # REVIEW we'll get a proper Text tag from .TP, but not directly as an argument to .IP - make this uniform?
     unless tag_block.empty?
       @@webdriver.get(tag_block.to_selenium)
       tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i

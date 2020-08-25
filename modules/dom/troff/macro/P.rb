@@ -10,7 +10,8 @@
 #
 
 module Troff
-  def req_P
+  def req_P(*_args)
+    warn "received argument #{_args.inspect} to .P - why??" unless _args.empty?
     init_IP		# .PP resets \n()I to 0.5i
     @current_block = blockproto
     @document << @current_block

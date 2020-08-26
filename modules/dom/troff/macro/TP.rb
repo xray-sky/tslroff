@@ -20,7 +20,7 @@
 module Troff
   def req_TP(indent = nil)
     indent = nil if indent == '&'	# TODO: ???
-    req_it(1, :finalize_TP, indent)
+    req_it('1', :finalize_TP, indent)
     @current_block = Block.new(type: :bare)
     @current_tabstop = @current_block.text.last
     @current_tabstop[:tab_stop] = 0

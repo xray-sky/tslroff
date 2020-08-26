@@ -103,14 +103,15 @@ class Text
     # translate some troff fill/adjust fluff
     ent.gsub!(/&roffctl_\S+?;/) do |e|
       case e
-      when '&roffctl_endspan;' then '</span>'
-      when '&roffctl_nrs;'     then '<span class="nrs"></span>'
-      when '&roffctl_hns;'     then '<span class="hns"></span>'
-      when '&roffctl_tbl_nr;'  then '<span class="nalign">'
-      when '&roffctl_tbl_nl;'  then '<span class="nalign" style="text-align:right">'
-      when /&roffctl_hs:(.+);/ then %(<span class="tab" style="width:#{Regexp.last_match(1)};"></span>)
-      when /&roffctl_vs:(.+);/ then %(<span class="vs" style="height:#{Regexp.last_match(1)};"></span>)
-      when /&roffctl_.+;/      then '' # ignore any other roffctl code
+      when '&roffctl_endspan;'  then '</span>'
+      when '&roffctl_unsupp;'   then '<span class="u">'
+      when '&roffctl_nrs;'      then '<span class="nrs"></span>'
+      when '&roffctl_hns;'      then '<span class="hns"></span>'
+      when '&roffctl_tbl_nr;'   then '<span class="nalign">'
+      when '&roffctl_tbl_nl;'   then '<span class="nalign" style="text-align:right">'
+      when /&roffctl_hs:(.+?);/ then %(<span class="tab" style="width:#{Regexp.last_match(1)};"></span>)
+      when /&roffctl_vs:(.+?);/ then %(<span class="vs" style="height:#{Regexp.last_match(1)};"></span>)
+      when /&roffctl_.+;/       then '' # ignore any other roffctl code
       else warn "unimplemented #{e}"
       end
     end

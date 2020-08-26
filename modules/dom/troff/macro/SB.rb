@@ -18,7 +18,7 @@ module Troff
       unescape(args.join(' '))
       send(:finalize_SB)
     else
-      req_it(1, :finalize_SB)
+      req_it('1', :finalize_SB)
     end
   end
 

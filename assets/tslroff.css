@@ -1,14 +1,3 @@
-/*
-.smaller {
-	font-size: 0.9em;
-}
-
-.larger {
-	font-size: 1.1em;
-    line-height: 0;
-}
-*/
-
 /* needs more research. http://nicewebtype.com/notes/2009/10/30/how-to-use-css-font-face/ */
 /* https://stackoverflow.com/questions/6476351/how-to-use-the-computer-modern-font-in-webpages */
 /* still hinky - gives bold when not desired, either for roman or for italic. WHY. */
@@ -93,9 +82,6 @@
     font-style: normal;
 }
 */
-#u {
-    color: red;
-}
 
 /* typewritten.org master style sheet v.10 */
 
@@ -123,16 +109,7 @@ body {
 /*    width: 9in; */
 }
 
-/* I think this isn't used
-#man .nf {
-    display: inline-block;
-}
-*/
-/*
-#man h1 {
-	font-size: inherit;
-}
-*/
+
 #man h2 { /* safari won't override this unless .body is explicitly specified here. why? */
     font-style: normal;
 }
@@ -147,21 +124,6 @@ body {
 	margin: 1em 4em 1em 3em;
 }
 
-/*
-#man p {
-	line-height: 1.35;
-    margin-bottom: 0em;
-    margin-top: 1em;
-}
-
-#man p.foot {
-    margin-top: 1.5em;
-    text-align: center;
-    font-size: 0.9em;
-    font-style: italic;
-    color: gray;
-}
-*/
 #man pre {
 	border: none;
 	background: none;
@@ -178,19 +140,6 @@ body {
 	line-height: 1.2em;
 }
 
-#man tt {
-    font-family: monospace;
-}
-/*
-#man .n {
-	line-height: 0.6em;
-}
-*/
-#man .halfline {
-    margin: 0;
-	line-height: 50%;
-}
-
 #man pre strong {
 	color: black;
 	font-weight: bold;
@@ -202,6 +151,19 @@ body {
 	/*font-style: italic;*/
     font-style: normal;
     font-weight: bold;
+}
+
+#man tt {
+    font-family: monospace;
+}
+
+#man .halfline {
+    margin: 0;
+	line-height: 50%;
+}
+
+#man .u {
+	color: red;
 }
 
 #man .ul {
@@ -233,7 +195,6 @@ body {
 }
 
 #man dl {
-	/*padding-right: 2em;*/
 	padding-left: 2em;
 	margin-right: 1em;
 	margin-left: 2em;
@@ -245,7 +206,6 @@ body {
 #man dt {
 	float: left;
 	clear: left;
-/*	padding-right: 0.5em; */
     margin-top: 0em;
     white-space: nowrap;
     font-variant-ligatures: none;

@@ -52,7 +52,11 @@ module Troff
       end
 
       #warn "bare tab in input (#{line.inspect})" if line.include?("\t")
-      unescape(line)
+      if @state[:eqn_start] and line.include?(@state[:eqn_start])
+        parse_eqn(line)
+      else
+        unescape(line)
+      end
       space_adj
       req_br if nofill?# && !broke?
     end

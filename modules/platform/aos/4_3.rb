@@ -13,6 +13,10 @@ module AOS_4_3
   #  super
   #  self.apply { @current_block.text << Text.new(:text => "super.", :style => Style.new(:grated => true)) }
   #end
+  #
+  # NOTES
+  #
+  # fpr.1 needs override for tbl (postprocess replaced with preprocess) lines 27-171
 
 end
 

@@ -39,7 +39,8 @@ loop do
     when '-os'   then os = args.next
     when '-ver'  then ver = args.next
     when '-odir' then outdir = args.next
-    else filelist << arg
+    else
+      filelist += File.directory?(arg) ? Dir.glob(arg + '/**').select { |f| File.file?(f) } : [arg]
     end
   rescue StopIteration
     break

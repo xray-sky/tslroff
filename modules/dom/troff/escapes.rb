@@ -28,10 +28,15 @@ module Troff
   private
 
   def unescape(str, copymode: nil)
-    copymode ? __unesc_cm(str) : __unesc(__unesc_cm(str))
+    if @state[:escape_char]	# REVIEW how does this interact with copymode?
+      copymode ? __unesc_cm(str) : __unesc(__unesc_nr(str))
+    else
+      @current_block << str
+    end
   end
 
   def __unesc_nr(str)
+    return str unless @state[:escape_char]	# REVIEW how does this interact with copymode?
     copy = String.new
     begin
       esc   = @state[:escape_char]
@@ -52,6 +57,7 @@ module Troff
   end
 
   def __unesc_w(str)
+    return str unless @state[:escape_char]	# REVIEW how does this interact with copymode?
     copy = String.new
     # why am I doing this separately? translation is already happening safely in esc_w
     # doing it here interferes with hiding " from argument parsing -- adb(1) [AOS 4.3]
@@ -117,7 +123,10 @@ module Troff
 
       if parts[1] == esc
         str = case parts[2][0]
-              when esc then parts[2].sub(/^#{Regexp.quote(esc)}/, '&roffctl_esc;')  # REVIEW: is this actually right?? does changing it prevent \*S from working??
+              #when esc then parts[2].sub(/^#{Regexp.quote(esc)}/, '&roffctl_esc;')  # REVIEW: is this actually right?? does changing it prevent \*S from working??
+              when esc
+                @current_block << esc
+                parts[2].sub(/^#{Regexp.quote(esc)}/, '')
               when '_' then parts[2]                             # underrule, equivalent to \(ul
               when '-' then parts[2].sub(/^-/,  '&minus;')       # "minus sign in current font"
               when ' ' then parts[2].sub(/^ /,  '&nbsp;')        # "unpaddable space-sized character"

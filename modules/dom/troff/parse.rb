@@ -8,16 +8,15 @@ module Troff
 
   def parse(line)
 
-    #outpos = @current_block.text.last
-
-    # hidden newlines -- REVIEW: does this need to be any more sophisticated?
-    while line.end_with?("#{@state[:escape_char]}\n")
-      line.chop!.chop! << @lines.next
+    if @state[:escape_char]		# the escape mechanism may be disabled
+      # hidden newlines -- REVIEW: does this need to be any more sophisticated?
+      while line.end_with?("#{@state[:escape_char]}\n")
+        line.chop!.chop! << @lines.next
+      end
+      # Multiple inter-word space characters found in the input are retained except for
+      # trailing spaces. §4.1
+      line.rstrip! unless line.end_with?("#{@state[:escape_char]} ")
     end
-
-    # Multiple inter-word space characters found in the input are retained except for
-    # trailing spaces. §4.1
-    line.rstrip! unless line.end_with?("#{@state[:escape_char]} ")
 
     if line.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
       (_, cmd, req, args) = Regexp.last_match.to_a
@@ -65,16 +64,6 @@ module Troff
     # TODO: I'm getting extra breaks in .nf -- [GL2-W2.5] acct.4
     #req_br unless fill? || broke? || cmd == "'"
 
-    # did we output any text? - TODO probably this is totally insufficient
-    #unless @current_block.text.last == outpos
-    #  process_input_traps
-    #  req_rs
-    #end
-    # --- why was req_rs in there?? what's that got to do with input traps?
-#warn "#{@current_block.output_indicator?.inspect} from #{line.inspect}"
-#    process_input_traps if @current_block.output_indicator?
-#warn "reset?"
-#    @current_block.reset_output_indicator
   end
 
 end

@@ -5,6 +5,7 @@
 #
 # TODO: how do tabs interact with .TP / .IP / .RS etc. ?
 #
+# REVIEW: details in §9.1, §9.2
 # REVIEW: returns nil if we're out of tabs
 #
 # vertical motion must be suppressed when calculating widths through selenium

@@ -41,9 +41,9 @@
 module Troff
 
   def getargs(str)
-    esc  = Regexp.quote(@state[:escape_char])
+    esc  = Regexp.quote(@state[:escape_char].to_s)	# escape mechanism may be disabled
     args = Array.new
-    argstr = __unesc_w(str)
+    argstr = __unesc_w(str.sub(%r{\s*\\".*$}, ''))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
     until argstr.empty?
       argstr.sub!(/^(?:"(.*?)(?:(?<!#{esc})"(?: +|$)|$)|(.+?)(?:(?<!#{esc}) +|$))/, '')
       args << Regexp.last_match[1..2].compact.first

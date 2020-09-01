@@ -11,6 +11,7 @@ module Troff
   def self.quote_method(reqstr)
     case reqstr
     when '.'  then 'dot'
+    when '"'  then 'quot'
     when '*'  then 'star'
     when '('  then 'lparen'
     when '\"' then 'BsQuot'

@@ -16,7 +16,9 @@ module AOS_4_3
   #
   # NOTES
   #
+  # bitmap.1 has \fP wart in summary line 14
   # fpr.1 needs override for tbl (postprocess replaced with preprocess) lines 27-171
+  # xterm.1 has \B and means \fB line 1316
 
 end
 

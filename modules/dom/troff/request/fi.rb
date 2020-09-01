@@ -20,5 +20,7 @@
 module Troff
   def req_fi
     @register['.u'].value = 1
+    @current_block = blockproto
+    @document << @current_block
   end
 end

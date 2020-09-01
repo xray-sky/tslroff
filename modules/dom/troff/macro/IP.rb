@@ -23,8 +23,15 @@ module Troff
     end
 
     tag_block = Block.new(type: :bare)
-    #tag_block.text = tag
-    tag_block.text = tag.class == String ? Text.new(text: tag) : tag     # REVIEW we'll get a proper Text tag from .TP, but not directly as an argument to .IP - make this uniform?
+    if tag.class == String 	# we didn't get a Text object passed from e.g. .TP
+      @current_block = tag_block
+      @current_tabstop = @current_block.text.last
+      @current_tabstop[:tab_stop] = 0	# REVIEW or is it indent ??
+      unescape(tag)
+    else
+      tag_block.text = tag
+    end
+
     unless tag_block.empty?
       @@webdriver.get(tag_block.to_selenium)
       tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i

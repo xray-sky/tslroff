@@ -27,7 +27,7 @@
 #
 
 module Troff
-  def req_de(name, delim = '..')
+  def req_de(name, delim = '..', *)
     macro = @lines.collect_through do |l|
       @register['.c'].value += 1
       l.match(/^\.?#{Regexp.escape delim}/)

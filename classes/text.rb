@@ -68,14 +68,16 @@ class Text
             when :bold    then '<strong>'
             when :italic  then '<em>'
             when :regular then ''
+            else %(<span class="u">unknown font face #{font.face.inspect} =&gt; )
             end
     tags << %(<span style="font-size:#{font.size}pt;">) unless font.size.to_i == Font.defaultsize
     if @style.keys.any?
-      tags += style.collect do |t, v|
+      tags += style.collect do |t, v| # TODO consolidate multiple styles??
         case t
         when :baseline         then %(<span style="position:relative;top:#{v}em;line-height:0;">)
         when :horizontal_shift then %(<span style="position:relative;left:#{v}em;">)
-        when :unsupported      then %(<span style="color:red;">Unsupported request =&gt; )
+        when :word_spacing     then %(<span style="word-spacing:#{v}em;">) # REVIEW this seems to give wider spaces than I'd expect - jot(1) [AOS-4.3]
+        when :unsupported      then %(<span class="u">Unsupported request =&gt; )
         else                        %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
         end
       end

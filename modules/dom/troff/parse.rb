@@ -10,15 +10,16 @@ module Troff
 
     if @state[:escape_char]		# the escape mechanism may be disabled
       # hidden newlines -- REVIEW: does this need to be any more sophisticated?
+      # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
       while line.end_with?("#{@state[:escape_char]}\n")
-        line.chop!.chop! << @lines.next
+        line.chop!.chop! << @lines.next.tap { @register['.c'].value += 1 }
       end
       # Multiple inter-word space characters found in the input are retained except for
       # trailing spaces. §4.1
-      line.rstrip! unless line.end_with?("#{@state[:escape_char]} ")
+      line.rstrip! unless line.end_with?("#{@state[:escape_char]} \n")
     end
 
-    if line.match(/^([\.\'])\s*(\S{1,2})\s*(\S.*|$)/)
+    if line.match(/^([\.\'])\s*(\S[^\s\\]?)\s*(\S.*|$)/)
       (_, cmd, req, args) = Regexp.last_match.to_a
       #warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin

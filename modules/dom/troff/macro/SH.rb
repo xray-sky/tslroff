@@ -11,10 +11,7 @@
 module Troff
   def req_SH(*args)
     text = args.join(' ')
-    apply do
-      @current_block.type = :sh
-      #@current_block << text
-    end
+    apply { @current_block.type = :sh }
     unescape(text)
     @state[:section] = @current_block.to_s
     @current_block = blockproto

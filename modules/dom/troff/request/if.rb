@@ -63,7 +63,18 @@ module Troff
                 when /^([#{@@delim}])(.*?)\1(.*?)\1$/, /^([^@@delim].*?)"(.*?)$/
                   warn "don't know how to compare strings #{Regexp.last_match[1].inspect} and #{Regexp.last_match[2].inspect}"
                 else
-                  warn "don't know how to evaluate conditional expression #{test.inspect}"
+                  # try to evaluate it as an expression
+                  begin
+                    expr = to_u(test)
+                    case expr
+                    when 'true'        then true
+                    when 'false'       then false
+                    when Fixnum, Float then expr > 0 ? true : false
+                    else warn "unexpected return from evaluation of expression #{expr.inspect} #{expr.class}"
+                    end
+                  rescue => e
+                    warn "failed to evaluate conditional expression #{test.inspect} => #{e}"
+                  end
                 end
 
     # multi-line input

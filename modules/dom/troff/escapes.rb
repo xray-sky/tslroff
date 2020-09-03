@@ -29,7 +29,7 @@ module Troff
 
   def unescape(str, copymode: nil)
     if @state[:escape_char]	# REVIEW how does this interact with copymode?
-      copymode ? __unesc_cm(str) : __unesc(__unesc_nr(str))
+      copymode ? __unesc_cm(str) : __unesc(str)
     else
       @current_block << str
     end
@@ -37,7 +37,7 @@ module Troff
 
   def __unesc_nr(str)
     return str unless @state[:escape_char]	# REVIEW how does this interact with copymode?
-    copy = String.new
+    copy = String.new # TODO deal with escaped escape characters? e.g. \\n should not translate
     begin
       esc   = @state[:escape_char]
       parts = str.partition(esc)

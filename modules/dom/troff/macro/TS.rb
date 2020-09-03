@@ -85,6 +85,16 @@ module Troff
 
       line = @lines.tap { @register['.c'].value += 1 } .next.chomp
 
+      # includes a text block?
+      if line.sub!(/T{$/, '')
+        additional = @lines.collect_through do |l|
+                       @register['.c'].value += 1
+                       l.start_with?('T}')
+                     end
+        additional[-1].sub!(/^T}/, '')
+        line << additional.join
+      end
+
       # skip row processing if this is a request line
       if Troff.req?(line)
         parse(line)

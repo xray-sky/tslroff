@@ -15,6 +15,9 @@
 #     I think this is better for HTML than 0.4v (0.48em). REVIEW: if we decide to change
 #     it later, the CSS should be updated (for p, dl, others?)
 #
+#  TODO .PD 0 followed immediately by .TP anything is resulting in extra space
+#       see bfs(1) Description, xbz/xbn [GL2-W2.5]
+#
 
 module Troff
 

@@ -45,6 +45,10 @@
 #
 # TODO: initialize properly
 # TODO: justifications (right/centered)
+# TODO: what really happens when you get
+#         .ta 0.5i 1.0i 1.5i
+#         \tfoo\tbar\t\tbaz
+#       e.g. more tabs in input than currently defined - rwhod(1m) [GL2-W2.5]
 #
 
 module Troff

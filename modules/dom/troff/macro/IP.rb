@@ -10,6 +10,9 @@
 # tmac.an turns ligatures off for the tag. interesting. -- did this via css.
 # \n()I is also manipulated by/used for the indents on .RS and .HP
 #
+# REVIEW .IP/.PP/.IP with no further args is giving inconsistent indents, ar(1) Examples [GL2-W2.5]
+#        -- that first .IP is holding over from .TP in previous section; should .SH reset like .PP does? porbly
+#
 
 module Troff
   def req_IP(tag = '', indent = nil)	# )I reg holds carryover indent
@@ -17,9 +20,10 @@ module Troff
       # divert the width; don't let it get into the output stream.
       @current_block = Block.new(type: :bare)
       unescape(indent)
-      #@register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'n')
-      # which unit is assumed? tmac.an suggests n, but usage suggests m ??
-      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'm')
+      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'n')
+      # which unit is assumed? tmac.an suggests n, but usage suggests m ?? which usage? in AOS-4.3? REVIEW
+      # lpadmin(1m) [GL2-W2.5] makes it look like 'n'.
+      #@register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'm')
     end
 
     tag_block = Block.new(type: :bare)

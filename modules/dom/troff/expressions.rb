@@ -93,11 +93,12 @@ module Troff
   end
 
   def to_u(str, default_unit: 'u')
-    # translate number registers only
+    # translate number registers only -- REVIEW they should already be translated, now (as macro args)
     # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
     # in order to avoid having to differentiate between '-' as subtraction vs. negation
     str = str.prepend('0u') if str.match(/^[+-]/)
-    str = __unesc_nr(str.gsub('+-', '-').gsub('--', '+').gsub('++', '+'))
+    #str = __unesc_nr(str.gsub('+-', '-').gsub('--', '+').gsub('++', '+'))
+    str = str.gsub('+-', '-').gsub('--', '+').gsub('++', '+')
 
     # try to break down the expression
     # start with parens; work inside -> out

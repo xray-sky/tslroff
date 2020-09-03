@@ -20,7 +20,7 @@ module Troff
     end
     @register[')I'].value =  @register["]#{@register[')p'].value}"].value
     @register[')R'].value =  @register[")#{@register[')p'].value}"].value
-    @register[')p'].value -= 1 if @register[')p'].value < 0
+    @register[')p'].value -= 1 if @register[')p'].value > 0
     req_in("#{@register[')R'].value}u")
   end
 end

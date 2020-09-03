@@ -195,6 +195,11 @@ module Troff
       # continue with normal formatting, per documentation
       until format.empty? do
         case format
+        # sizing
+        when /^(\d+)/ then warn "tbl wants to change space between columns to #{Regexp.last_match[1]}"	# TODO? see tbl: tech discussion p.8
+        when /^(w\(?([\d.]+(?:[uicpmnv]\))?))/i		# minimum column width
+         cell.style.css[:min_width] = to_em(to_u(Regexp.last_match[2], default_unit: 'n'))
+
         # alignments
         when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML?? how is it different in practice from L?
         when /^(n)/i  then cell.style[:numeric_align]    = { :left => 0, :right => 0 }
@@ -210,13 +215,13 @@ module Troff
           # this manipulation should be safe as we haven't frozen any of these blocks, yet
           cur_blk = @current_block
           @current_block = cell
-          unescape("\\" + Regexp.last_match[1])
+          unescape(@state[:escape_char] + Regexp.last_match[1])
           @current_block = cur_blk
 
         when /^(p([-+123]?\d))/ #then req_ps(Regexp.last_match[2])
           cur_blk = @current_block
           @current_block = cell
-          unescape("\\s" + Regexp.last_match[2])
+          unescape(@state[:escape_char] + 's' + Regexp.last_match[2])
           @current_block = cur_blk
 
         # spans

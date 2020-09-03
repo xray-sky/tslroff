@@ -22,8 +22,6 @@
 
 module Troff
   def req_ss(ss = '12')
-    ss = __unesc_nr(ss)     # REVIEW should this happen before method invoke? see also .nr
-
     new_style = Style.new(@current_block.text.last.style.dup)
     current_spacing = new_style[:word_spacing] || @state[:default_ss]
     new_spacing = ss.to_f / 36

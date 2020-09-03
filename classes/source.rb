@@ -34,7 +34,7 @@ class Source
       exit(1)
     end
 
-    @magic = case @lines[0]
+    @magic = case @lines.find { |l| !l.match(/^\s+$/) } # use the first non-blank line - cc(1) [GL2-W2.5]
              when /^<.+?>/   then 'HTML'   # html, probably
              when /^[\.\']./ then 'Troff'  # troff source, probably
              else                 'Nroff'  # plain text with or without carriage control

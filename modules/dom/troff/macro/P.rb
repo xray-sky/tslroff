@@ -8,6 +8,9 @@
 #     Begin a paragraph with normal font, point size, and indent. .PP is a synonym for
 #     mm(5) macro .P
 #
+#  REVIEW this is interacting with .in, not resetting that indent. correct? mkfs(1m) [GL2-W2.5]
+#         it's also causing margin_top to collapse to 0 - bfs(1) [GL2-W2.5]
+#
 
 module Troff
   def req_P(*_args)
@@ -15,7 +18,6 @@ module Troff
     init_IP		# .PP resets \n()I to 0.5i
     @current_block = blockproto
     @document << @current_block
-    #req_sp("#{@register[')P'].value}u")
   end
 
   alias req_PP req_P

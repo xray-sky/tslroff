@@ -74,7 +74,7 @@ module Troff
       '.f' => Register.new(1, :ro => true),                               # current font position.
       #.h                                                                 # text baseline high-water mark on current page or diversion (?)
       '.i' => Register.new(@base_indent, :ro => true),                    # current indent.
-      #.j                                                                 # current adj mode and type. can be saved for use with .ad to restore
+      '.j' => Register.new(1, :ro => true),                               # current adj mode and type. can be saved for use with .ad to restore
       #.k                                                                 # horizontal size of text (minus indent) of current partially collected output line, if any, in current env.
       #.l                                                                 # current line length.
       #.n                                                                 # length of text portion on previous output line.

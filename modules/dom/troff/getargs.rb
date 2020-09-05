@@ -35,7 +35,7 @@
 #
 # good.
 #
-# TODO: details in §7.3
+# TODO: details in §7.3 (including "arguments are copied in copy mode onto a stack")
 #
 
 module Troff

@@ -18,6 +18,20 @@
 #
 # mounts, but does not select
 #
+# REVIEW TODO
+# solaris 10 troff mounts these fonts:
+#   x font 1 R
+#   x font 2 I
+#   x font 3 B
+#   x font 4 BI
+#   x font 5 CW
+#   x font 6 H
+#   x font 7 HB
+#   x font 8 HX
+#   x font 9 S1
+#   x font 10 S
+#   s10
+#
 
 module Troff
   def req_fp(pos, font, file = nil)

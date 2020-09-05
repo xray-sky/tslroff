@@ -18,9 +18,11 @@ module Troff
     when '0' then @register[')p'] = Register.new(1, 1)
     else          @register[')p'] = Register.new(k, 1)
     end
-    @register[')I'].value =  @register["]#{@register[')p'].value}"].value
-    @register[')R'].value =  @register[")#{@register[')p'].value}"].value
-    @register[')p'].value -= 1 if @register[')p'].value > 0
+
+    @register[')I'].value = @register["]#{@register[')p'].value}"].value
+    @register[')R'].value = @register[")#{@register[')p'].value}"].value
+    @register[')p'].- if @register[')p'].value > 0
+    warn ".RE (#{k.inspect}) -> #{@register[')I'].inspect} / #{@register[')R'].inspect}"
     req_in("#{@register[')R'].value}u")
   end
 end

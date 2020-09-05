@@ -93,12 +93,18 @@ body {
 	background: #8b8ba7;
 }
 
+#selenium {
+    margin: 0;
+    padding: 0;
+}
+
 #man {
 	/*font-family: "Computer Modern Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: "CMU Serif"; */ /*, "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	font-family: "Adobe Garamond Pro", Garamond, Palatino, "Palatino Linotype", Times, "Times New Roman", serif;
 	/* font-family: Palatino, "Palatino Linotype", Times, "Times New Roman", serif; */
 	/* font-family: Times, "Times New Roman", serif; */
+	/* font-size: 10pt; */
 	font-size: 12pt;
 	color: black;
 	background-image: url("/ts-watermark.gif");
@@ -106,7 +112,7 @@ body {
 	background-position: center;
 	background-attachment: fixed;
     zoom: 1;        /* I hate IE */
-/*    width: 9in; */
+    /* min-width: 8.5in; */
 }
 
 
@@ -122,6 +128,10 @@ body {
 	border-bottom: 1px solid gray;
 	padding: 0.25em 1em 0.25em 0em;
 	margin: 1em 4em 1em 3em;
+}
+
+#man p {
+    margin-bottom: 0;
 }
 
 #man pre {
@@ -225,6 +235,11 @@ body {
 
 #man .synopsis {
     word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
+}
+
+#man .foot {
+    text-align: center;
+    color: silver;
 }
 
 #man .vs {		/* troff vertical motion */

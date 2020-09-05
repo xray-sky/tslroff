@@ -17,6 +17,14 @@ module Troff
     @current_block.to_s.match(/&roffctl_continuation;$/)
   end
 
+  def adj?
+    @state[:adjust] == true
+  end
+
+  def noadj?
+    @state[:adjust] == false
+  end
+
   def fill?
     @register['.u'].value == 1
   end

@@ -9,13 +9,10 @@
 
 module Troff
   def esc_lparen(s)
-    if s.match(/^\((..)/) && @state[:special_char][Regexp.last_match(1)]
-      s.sub(/#{Regexp.quote(Regexp.last_match(0))}/,
-            @state[:special_char][Regexp.last_match(1)])
-    else
-      warn "unselected special char #{s[0..1]} from #{s[2..-1]}"
-      s[2..-1]
-    end
+    sc = s[1..2]
+    chr = @state[:special_char][sc].to_s
+    warn "unselected special character #{sc} from #{s.inspect}" if chr.empty?
+    chr + s[3..-1]
   end
 
   def init_sc

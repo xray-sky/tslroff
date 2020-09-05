@@ -19,16 +19,22 @@
 #            text. If the intervening control lines cause a break, any partial line will
 #            be forced out along with any partial word.
 #
+# REVIEW all the edge cases
+#        .PP followed by .nf shouldn't margin_top: 0 -- ascii(5) [GL2-W2.5]
+#        .br followed by .nf; the browser swallows the <br /> before the </p>, and
+#            we get an incorrect margin_top:0 on the next <p>? -- a.out(5) [AOS 4.3]
 
 module Troff
   def req_nf
-    #req_br unless broke?
-    #req_br # is this too many? I'm trying to make up for a <br> at the end
-           # of a <p> which the browser disappears, followed immediately by a .nf
-           # which makes the next .PP have margin-top:0. (see a.out(5) [AOS 4.3])
-           # in the meanwhile I'd rather have one extra than none at all
     @register['.u'].value = 0
-    @current_block = blockproto
-    @document << @current_block
+    # do we need to break? or is this already a brand new block.
+    if @current_block.immutable?
+      case @current_block.type
+      when :p  then req_P
+      when :dl then req_IP('')
+      else warn "trying to do .nf in unexpected context (#{@current_block.type.inspect})"
+      end
+      @current_block.style[:margin_top] = 0
+    end
   end
 end

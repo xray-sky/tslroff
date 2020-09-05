@@ -1,24 +1,7 @@
-# getargs.rb
+# escapes.rb
 # ---------------
-#    Troff.getargs source
+#    Troff.escapes source
 # ---------------
-#
-# TODO: §7.2 Copy mode input interpretation
-#            During the definition and extension of strings and macros, the input is
-#            read in copy mode. The input is copied without interpretation except that
-#            * the contents of number registers, indicated by '\n', are substituted.
-#            * Strings, indicated by '\*x' and '\*(xx', are read into the text.
-#            * Arguments indicated by '\$' are replaced by the appropriate values at
-#              the current macro level.
-#            * Concealed new-lines indicated by '\(new-line)' are eliminated.
-#            * Comments indicated by '\"' are eliminated.
-#            * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
-#            * \\ is interpreted as \.
-#            * \. is interpreted as ".".
-#            These interpretations can be suppressed by prepending a \. For example,
-#            since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
-#            as a number register indicator when the macro or string is reread.
-#
 #
 # TODO: not happy about the proliferation of basically identical methods
 #
@@ -80,6 +63,23 @@ module Troff
     copy
   end
 
+# TODO: §7.2 Copy mode input interpretation
+#            During the definition and extension of strings and macros, the input is
+#            read in copy mode. The input is copied without interpretation except that
+#            * the contents of number registers, indicated by '\n', are substituted.
+#            * Strings, indicated by '\*x' and '\*(xx', are read into the text.
+#            * Arguments indicated by '\$' are replaced by the appropriate values at
+#              the current macro level.
+#            * Concealed new-lines indicated by '\(new-line)' are eliminated.
+#            * Comments indicated by '\"' are eliminated.
+#            * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
+#            * \\ is interpreted as \.
+#            * \. is interpreted as ".".
+#            These interpretations can be suppressed by prepending a \. For example,
+#            since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
+#            as a number register indicator when the macro or string is reread.
+#
+
   def __unesc_cm(str)
     copy = String.new
     begin
@@ -114,12 +114,11 @@ module Troff
     # REVIEW are we meant to do a copy-mode pass first, then do everything else? is this how
     #        to keep .ds with stuff like \h from vanishing prematurely?? (instead of unescaping
     #        the output of \* directly in esc_star, which causes it to be parsed during assignment in .ds?)
-    @state[:translate].any? and str.gsub!(/[#{Regexp.quote(@state[:translate].keys.join)}]/) { |c| @state[:translate][c] }
     esc = @state[:escape_char]
     begin
       # do tabs too, while we're at it, so the input line is only dissected once
       parts = str.partition(/#{Regexp.quote(esc)}|\t+/)
-      @current_block << parts[0].sub(/&roffctl_esc;/, esc) unless parts[0].empty? # str might begin with esc
+      @current_block << translate(parts[0].sub(/&roffctl_esc;/, esc)) unless parts[0].empty? # str might begin with esc
 
       if parts[1] == esc
         str = case parts[2][0]
@@ -150,19 +149,30 @@ module Troff
               end
       elsif parts[1].start_with?("\t")
         stop = next_tab(parts[1].length)
-        stop = @state[:tabs].last and warn "out of tabs after #{parts[1].inspect} with tabs=#{@state[:tabs].inspect}! (rest: #{parts[2][1..-1].inspect})" if stop.nil? # should prevent exception on running out of tabs, but will result in overlapping text boxes - seems necessary? see a.out(5) [AOS 4.3]
-        @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((stop - @current_tabstop[:tab_stop]).to_s)}em")
-        @current_block << '&roffctl_endspan;'
-        apply {
-          @current_block.text.last[:tab_stop] = stop
-        }
-        @current_tabstop = @current_block.text.last
+        if stop.nil?
+          # prevent exception on running out of tabs - seems necessary? see a.out(5) [AOS 4.3]
+          warn "out of tabs after #{parts[0].inspect} with tabs=#{@state[:tabs].inspect}! (rest: #{parts[2][1..-1].inspect})"
+          @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
+        else
+          @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((stop - @current_tabstop[:tab_stop]).to_s)}em")
+          @current_block << '&roffctl_endspan;'
+          apply {
+            @current_block.text.last[:tab_stop] = stop
+          }
+          @current_tabstop = @current_block.text.last
+        end
         str = parts[2]
       else # no tabs or esc chars remain in str
         str = parts[2]
       end
 
     end until str.empty?
+  end
+
+  def translate(str = '')
+    # TODO I probably have to protect stuff that was unescaped into an entity or anything
+    #      else that was left on parts[2] from the last iteration
+    @state[:translate].any? ? str.gsub(/[#{Regexp.quote(@state[:translate].keys.join)}]/) { |c| @state[:translate][c] } : str
   end
 
 end

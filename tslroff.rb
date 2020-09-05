@@ -53,8 +53,12 @@ files = filelist.each
 loop do
   begin
     file = files.next
+    unless File.readable?(file)
+      warn "can't read #{file}"
+      next
+    end
     ifile = File.basename(file)
-    src = Manual.new(file)
+    src = Manual.new(file, os, ver)
     page = src.to_html
     related = Nokogiri::HTML(page).search('a')
 

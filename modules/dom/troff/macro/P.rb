@@ -21,5 +21,4 @@ module Troff
   end
 
   alias req_PP req_P
-  alias req_LP req_PP	# TODO: move this to whatever system defines it; it's not SysV [ gl2-w2.5 ]
 end

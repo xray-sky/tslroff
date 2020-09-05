@@ -10,6 +10,8 @@
 #        selenium considers it unrenderable -- spline(1g) [GL2 W2.5]
 #        pathological interactions with .ds and \* ========> so.... now what?
 #
+# TODO need to clear horizontal shift after tab, break, block, etc. once it's
+#      happened, it's stuck on forever. ascii(5) - [GL2-W2.5]
 
 module Troff
   def esc_h(s)

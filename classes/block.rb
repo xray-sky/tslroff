@@ -5,19 +5,22 @@
 # Block class
 #
 
+require 'forwardable'
 require 'modules/immutable.rb'
 require 'classes/style.rb'
 require 'classes/text.rb'
 
 class Block
   include Immutable
+  extend Forwardable
 
   attr_reader   :text, :type
   attr_accessor :style
+  def_delegators :@style, :immutable?, :immutable!
 
   def initialize(arg = Hash.new)
-    self.type  = (arg[:type]  or :p)
     self.style = (arg[:style] or Style.new({}, get_object_exception_class))
+    self.type  = (arg[:type]  or :p)
     self.text  = (arg[:text]  or Text.new)
   end
 
@@ -34,31 +37,27 @@ class Block
       # don't leave the last text object open, or else you'll start writing into the named string definition.
       @text << Text.new(font: text.last.font.dup, style: text.last.style.dup)
     end
-    (freeze and @output_indicator = true) unless t.empty?
+    (immutable! and @output_indicator = true) unless t.empty?
   end
 
   def empty?
     #text.collect(&:to_s).join.strip.empty?  # REVIEW: does this even make sense?
-    type == :comment or !text.reject(&:empty?).any?
-  end
-
-  def freeze
-    is_frozen? or style.freeze
-  end
-
-  def is_frozen?
-    instance_variable_defined?(:@style) ? style.is_frozen? : nil
+    type == :comment or text.reject(&:empty?).none?
   end
 
   def inspect
-    "+- Block (#{__id__}) type: #{@type.inspect}\n|\n|  style: " +
-    @style.inspect.each_line.collect { |l| l }.join("|         ") + "\n|  text: " +
-    @text.inspect.each_line.collect { |l| l }.join("|         ") + "\n|\n"
+    <<~MSG
+      +- Block (#{__id__}) type: #{@type.inspect}
+      |
+      |  style: #{@style.inspect.each_line.collect { |l| l }.join('|         ')}
+      |  text:  #{@text.inspect.each_line.collect { |l| l }.join('|         ')}
+      |
+    MSG
   end
 
   def text=(t)
     @text = t.is_a?(Array) ? t : [t]
-    freeze unless t.empty?
+    immutable! unless t.empty?
     @output_indicator = !text.empty?
   end
 

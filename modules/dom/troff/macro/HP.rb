@@ -12,15 +12,13 @@
 module Troff
   def req_HP(indent = nil)
     if indent
-      # divert the width; don't let it get into the output stream.
-      @current_block = Block.new(type: :bare)
-      unescape(indent)
-      @register[')I'].value = to_u(@current_block.text.pop.text.strip, :default_unit => 'n')
+      @register[')I'].value = to_u(indent, :default_unit => 'n')
     end
 
-    hang = @register['.i'].value - @register[')I'].value
-    req_in("#{@register[')I'].value}u")
-    req_sp("#{@register[')P'].value}u")
+    hang = 0 - @register[')I'].value
+    indent = @register[')R'].value + @register[')I'].value
+
+    req_in("#{indent}u")
     req_ti("#{hang}u")
 
   end

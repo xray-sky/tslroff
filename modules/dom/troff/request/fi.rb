@@ -20,7 +20,14 @@
 module Troff
   def req_fi
     @register['.u'].value = 1
-    @current_block = blockproto
-    @document << @current_block
+    # do we need to break? or is this already a brand new block.
+    if @current_block.immutable?
+      case @current_block.type
+      when :p  then req_P
+      when :dl then req_IP('')
+      else warn "trying to do .fi in unexpected context (#{@current_block.type.inspect})"
+      end
+      @current_block.style[:margin_top] = 0
+    end
   end
 end

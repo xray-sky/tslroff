@@ -4,6 +4,8 @@
 #
 # Style class
 #
+# TODO something (probably not here) to prevent over-precise values from being output
+#      (e.g. '0.0949391831209309em') -- ascii(5) [GL2-W2.5]
 
 require 'modules/immutable.rb'
 
@@ -24,14 +26,12 @@ class Style
   end
 
   def inspect
-    %(#{keys.collect { |k| {k=>self[k]}}.inspect + "\n" if keys.any?}attributes: #{@attributes.inspect}\ncss:        #{@css.inspect}\nfrozen?:    #{is_frozen?.inspect}\n)
-  end
-
-  def method_missing(method_sym, *args, &block)
-    warn "==> style method missing #{method_sym.inspect}, #{args.inspect} (deprecate?)"
-    attr = method_sym.to_s.sub(/@/, '')
-    val  = args.join
-    attr.sub!(/=$/, '') ? self[attr.to_sym] = val : self[attr.to_sym]
+    <<~MSG
+      #{keys.collect { |k| {k=>self[k]}}.inspect if keys.any?}
+      attributes: #{@attributes.inspect}
+      css:        #{@css.inspect}
+      immutable?: #{immutable?.inspect}
+    MSG
   end
 
   def to_s

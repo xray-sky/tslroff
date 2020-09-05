@@ -11,12 +11,12 @@ module Troff
     if @state[:escape_char]		# the escape mechanism may be disabled
       # hidden newlines -- REVIEW: does this need to be any more sophisticated?
       # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
-      while line.end_with?("#{@state[:escape_char]}\n")
+      while line.end_with?("#{@state[:escape_char]}\n") and line[-3] != @state[:escape_char]
         line.chop!.chop! << @lines.next.tap { @register['.c'].value += 1 }
       end
       # Multiple inter-word space characters found in the input are retained except for
       # trailing spaces. §4.1
-      line.rstrip! unless line.end_with?("#{@state[:escape_char]} \n")
+      line.rstrip! unless line.match(/#{Regexp.quote(@state[:escape_char])}\s+$/)
     end
 
     if line.match(/^([\.\'])\s*(\S[^\s\\]?)\s*(\S.*|$)/)
@@ -26,6 +26,7 @@ module Troff
         send("req_#{Troff.quote_method(req)}", *getargs(args))
         # troff considers a macro line to be an input text line
         space_adj if Troff.macro?(req) and @current_block.output_indicator?
+        req_br if nofill? and Troff.macro?(req)# and @current_block.output_indicator?# && !broke?		# REVIEW unconditional .br results in extras (e.g. immediately upon .nf -- wait(2) [GL2-W2.5])
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)

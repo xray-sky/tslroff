@@ -15,7 +15,8 @@
 #
 
 module Troff
-  def req_ns
+  def req_ns(*_args)
+    warn ".ns pointlessly received args #{_args.inspect} - why?" if _args.any?
     @state[:nospace] = true
   end
 end

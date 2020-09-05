@@ -9,7 +9,7 @@
 #  form       value      argument
 #
 # .ta Nt ...  8n; 0.5in  none       E,m    t=R, right adjusting; t=C, centering;
-#                                          t absent, left adjusting. tR tab stops are
+#                                          t absent, left adjusting. tR tab stops are    ## -- tL ??
 #                                          present every 0.5in; nroff every 8 nominal
 #                                          character widths. The stop values are
 #                                          separated by spaces, and a value preceeded
@@ -49,22 +49,27 @@
 #         .ta 0.5i 1.0i 1.5i
 #         \tfoo\tbar\t\tbaz
 #       e.g. more tabs in input than currently defined - rwhod(1m) [GL2-W2.5]
+#       nroff just piles everything in, with no whitespace between
+# TODO: are comma-separated tabs legit? they seem to not be unusual. but, see above re: more tabs?
 #
 
 module Troff
   def req_ta(*args)
-    hold_block = @current_block
+    warn ".ta received comma-separated args #{args.inspect}" if args[0].include?(',')
+    #hold_block = @current_block
+    # REVIEW is blanking all the tabs correct? Or does it replace them by position??
     @state[:tabs] = Array.new
     while args.any? do
       stop = args.shift
       stop.prepend("#{@state[:tabs].last || 0}u") if stop.start_with?('+')
       # may contain \w, arithmetic expressions, scaled units...
-      @current_block = Block.new(type: :bare)
-      unescape(stop)
-      @state[:tabs].push(to_u(@current_block.to_s).to_i)
+      # but I think now all of this sort of thing is handled in getargs(), before it gets here
+#      @current_block = Block.new(type: :bare)
+#      unescape(stop)
+#      @state[:tabs].push(to_u(@current_block.to_s).to_i)
+      @state[:tabs].push(to_u(stop).to_i)
     end
-    #warn "leaving .ta with #{@state[:tabs].inspect}"
-    @current_block = hold_block
+    #@current_block = hold_block
   end
 
   def init_ta

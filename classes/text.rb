@@ -16,7 +16,6 @@ class Text
   def_delegators :@text, :length, :empty?, :to_s
 
   attr_reader   :text, :font, :style
-  #attr_accessor :font, :style
 
   def initialize(arg = Hash.new)
     self.font  = (arg[:font]  or Font.new)
@@ -26,32 +25,32 @@ class Text
 
   def <<(t)
     @text << t
-    freeze unless t.empty?
+    immutable! unless t.empty?
   end
 
-  def freeze
-    return if is_frozen?
-    font.freeze
-    style.freeze
+  def immutable!
+    return if immutable?
+    font.immutable!
+    style.immutable!
   end
 
-  def is_frozen?
-    [ :@font, :@style ].collect do |x|
-      (instance_variable_defined?(x) ? instance_variable_get(x).send(:is_frozen?) : nil)
-    end.compact.any?
+  def immutable?
+    [ :@font, :@style ].find do |x|
+      instance_variable_get(x).send(:immutable?) if instance_variable_defined?(x)
+    end
   end
 
   def inspect
-    #indent = text.is_a?(Array) ? 2 : 0
-    #"#{" " * indent}font:  #{font.inspect} (#{text.class.name})\n#{" " * indent}style: " +
-    "font:  [ #{font.inspect} ]\nstyle: " +
-    style.inspect.each_line.collect { |l| l }.join("       ") + "\ntext:  " +
-    text.inspect.each_line.collect { |l| l }.join("|         ") + "\n"
+    <<~MSG
+      font:  [ #{font.inspect} ]
+      style: #{style.inspect.each_line.collect { |l| l }.join('       ')}
+      text:  #{text.inspect.each_line.collect { |l| l }.join('|         ')}
+    MSG
   end
 
   def text=(t)
     @text = t
-    freeze unless t.empty?
+    immutable! unless t.empty?
   end
 
   def to_html

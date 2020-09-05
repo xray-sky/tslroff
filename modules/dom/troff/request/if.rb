@@ -65,7 +65,7 @@ module Troff
                 else
                   # try to evaluate it as an expression
                   begin
-                    expr = to_u(test)
+                    expr = to_u(test).to_f
                     case expr
                     when 'true'        then true
                     when 'false'       then false
@@ -95,11 +95,10 @@ module Troff
     #       .if t if  then  else  elif  f\|i  case  esac  for  while  until  do  done  {  }
     #
     input.unshift(Troff.req?(args[0]) ? "#{args.shift} #{args.map { |arg| %("#{arg}") }.join(' ')}" : args.join(' '))
-
     if condition == predicate
       input.each { |line| parse(line) }
     else
-      warn "rejected condition #{test.inspect}"
+      warn "rejected condition #{test.inspect}" unless test == 'n'
     end
   end
 end

@@ -22,11 +22,10 @@ module Troff
     n = n.to_i
     req_nf
     @current_block.style.css[:text_align] = 'center'
-    loop do
-      parse(@lines.next.tap { @register['.c'].value += 1 })
-      n -= 1
-      break if n.zero?
-    end
+    req_it(n, :finalize_ce)
+  end
+
+  def finalize_ce
     req_fi
     @current_block.style.css.delete(:text_align)
   end

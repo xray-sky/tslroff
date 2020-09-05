@@ -17,20 +17,14 @@ class Manual
   attr_accessor :blocks
   attr_reader   :platform, :version, :lines, :links
 
-  def initialize(file)
-    # TODO: temporary hardcode for early prototyping
-    #@platform = 'SunOS'
-    #@version  = '4_1_4'
-    @platform = 'AOS'
-    @version  = '4_3'
-    #@platform = 'CLIX'
-    #@version  = "3_1r7_6_28"
-    # end temporary hardcode
+  def initialize(file, os, ver)
+    @platform = os
+    @version  = ver
+    @input_filename = File.basename(file)
 
     @document = Array.new
     @related  = Array.new
 
-    @input_filename = File.basename(file)
     @source = Source.new(file)
     @lines  = @source.lines.each
     @current_block = Block.new
@@ -62,7 +56,7 @@ class Manual
     platform_overrides = "modules/platform/#{self.platform.downcase}.rb"
     if File.readable?("#{__dir__}/../#{platform_overrides}")
       require platform_overrides
-      extend Kernel.const_get(self.platform.to_sym)
+      extend Kernel.const_get(self.platform.gsub(/[^0-9A-Za-z]/, '_').to_sym)
     end
   end
 
@@ -70,7 +64,7 @@ class Manual
     version_overrides = "modules/platform/#{self.platform.downcase}/#{self.version}.rb"
     if File.readable?("#{__dir__}/../#{version_overrides}")
       require version_overrides
-      extend Kernel.const_get("#{self.platform}_#{self.version}".to_sym)
+      extend Kernel.const_get("#{self.platform}_#{self.version}".gsub(/[^0-9A-Za-z]/, '_').to_sym)
     end
   end
 

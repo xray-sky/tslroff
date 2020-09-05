@@ -14,17 +14,13 @@
 
 module Troff
   def esc_star(s)
-    # REVIEW: shortcut - I think it's okay to delete all ( from the match
-    #                    \*( as a single-char is clearly not allowable
-    #                    \*((. and \*(.( maybe could, though crazy?
-    if s.match(/\*(?:(\(..|.))/)
-      ds = Regexp.last_match(1).start_with?('(') ? Regexp.last_match(1)[1..-1] : Regexp.last_match(1)
-      if @state[:named_string][ds]
-        s.sub(/#{Regexp.quote(Regexp.last_match(0))}/, @state[:named_string][ds])
-      else
-        warn "unselected named string #{s[0..1]} from #{s[2..-1]}"
-        s[2..-1]
-      end
-    end
+    ns = case s[1]
+         when '(' then s[2..3]
+         else          s[1]
+         end
+    ds = @state[:named_string][ns].to_s
+    warn "unselected named string #{ns} from #{s.inspect}" if ds.empty?
+    ds + s[2*(ns.length)..-1]	# tricky - one char ns removes *x
+                             	#          two char ns removes *(xx
   end
 end

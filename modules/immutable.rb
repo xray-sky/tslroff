@@ -19,14 +19,14 @@ module Immutable
 
   def []=(key, val)
     attr = "@#{key}"
-    raise get_object_exception_class if is_frozen? and instance_variable_get(attr) != val
+    raise get_object_exception_class if immutable? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
   def delete(key)
     attr = "@#{key}"
-    raise get_object_exception_class if is_frozen? and instance_variable_defined?(attr)
-    remove_instance_variable(attr)
+    raise get_object_exception_class if immutable? and instance_variable_defined?(attr)
+    remove_instance_variable(attr) if instance_variable_defined?(attr)
   end
 
   def prototype
@@ -53,21 +53,21 @@ module Immutable
 
   def immutable_setter(val)
     attr = "@#{__callee__.to_s.sub(/=$/, '')}"
-    raise get_object_exception_class, "Attr: #{attr} => Val: #{val}" if is_frozen? and instance_variable_get(attr) != val
+    raise get_object_exception_class, "Attr: #{attr} => Val: #{val}" if immutable? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
-  def freeze
-    @frozen = true
+  def immutable!
+    @immutable = true
   end
 
-  def is_frozen?
-    @frozen
+  def immutable?
+    @immutable
   end
 
   def keys
     instance_variables.collect do |v|
-      v.to_s.sub(/^@/, '').to_sym unless [:@frozen, :@tag, :@css, :@attributes].include?(v)
+      v.to_s.sub(/^@/, '').to_sym unless [:@immutable, :@tag, :@css, :@attributes].include?(v)
     end.compact
   end
 

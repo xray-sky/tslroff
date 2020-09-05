@@ -18,8 +18,6 @@
 #
 #   note: "all output"
 #
-# TODO: make this use .in under the covers?
-#
 
 module Troff
 
@@ -27,13 +25,11 @@ module Troff
     # troff won't tolerate more than 9 levels of indent even though theoretically we could
     raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'].value == 9
     @register[')p'].+
+    warn ".RS :: -> #{@register[')I'].inspect} / #{@register[')R'].inspect}"
     @register["]#{@register[')p'].value}"].value = @register[')I'].value
     @register[")#{@register[')p'].value}"].value = @register[')R'].value
     @register[')R'].value += if indent
-      # divert the width; don't let it get into the output stream.
-      @current_block = Block.new(type: :bare)
-      unescape(indent)
-      to_u(@current_block.text.pop.text.strip, :default_unit => 'n').to_i
+      to_u(indent, :default_unit => 'n').to_i
     else
       @register[')I'].value
     end
@@ -42,7 +38,7 @@ module Troff
   end
 
   def init_RS
-    @register[')R'] = Register.new(to_u('2m'))   # 2em is the base indent from the CSS -- also declared in blockproto
+    @register[')R'] = Register.new(0)
     @register[')p'] = Register.new(0, 1)
     ('1'..'9').each do |n|
       [')', ']'].each do |i|

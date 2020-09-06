@@ -18,6 +18,12 @@ module Troff
     # check for input traps before we trip the output indicator
     process_input_traps if @current_block.output_indicator?
 
+    # janky hack to prevent space adjusting after .IP tag (once)
+    if @current_block.text.last.instance_variable_defined?(:@no_space_adj)
+      @current_block.text.last.remove_instance_variable(:@no_space_adj)
+      return
+    end
+
     # An input text line ending with ., ?, !, .), ?), or !) is taken to be the end
     # of a sentence, and an additional space character is automatically provided during
     # filling.  §4.1

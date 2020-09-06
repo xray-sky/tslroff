@@ -69,8 +69,8 @@ class Block
     @output_indicator = false
   end
 
-  def to_html             # TODO: this needs more work to leave <dl>, <!-->, etc. open for subsequent output
-    return if empty? and ![:cell, :comment].include?(type)  # don't eat comments or empty table cells.
+  def to_html             # TODO: this needs more work to leave <!-->, etc. open for subsequent output
+    #return if empty? and ![:cell, :comment].include?(type)  # don't eat comments or empty table cells.
     t = text.collect(&(type == :comment ? :to_s : :to_html)).join
     case type
     when :nil     then '' # suppress. used for placeholding in tbl.
@@ -83,7 +83,6 @@ class Block
     when :th      then %(<div class="title"><h1>#{t}</h1></div>\n<div class="body">\n    <div id="man">\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
-    when :dl      then "<dl#{style.to_s}>\n <dt#{style[:dt].style.to_s}>#{style[:dt].to_html}</dt>\n  <dd#{style[:dd].style.to_s}>#{t}</dd>\n</dl>\n" # FIXME: this crashes if 'tag' is unset.
     when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
     when :cell
       t.gsub!(/&tblctl_\S+?;/) do |e|
@@ -96,7 +95,7 @@ class Block
       end
       "  <td#{style.to_s}>#{t}</td>\n"
     when :p
-      return if t.strip.empty?
+      #return if t.strip.empty?
       case style[:section]
       when 'SYNOPSIS'
         %(<p class="synopsis"#{style.to_s}>\n#{t}\n</p>\n)

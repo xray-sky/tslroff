@@ -97,8 +97,10 @@ module Troff
     input.unshift(Troff.req?(args[0]) ? "#{args.shift} #{args.map { |arg| %("#{arg}") }.join(' ')}" : args.join(' '))
     if condition == predicate
       input.each { |line| parse(line) }
+      true
     else
       warn "rejected condition #{test.inspect}" unless test == 'n'
+      false
     end
   end
 end

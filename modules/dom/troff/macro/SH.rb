@@ -16,7 +16,7 @@ module Troff
     apply { @current_block.type = :sh }
     unescape(text)
     @state[:section] = @current_block.to_s
-    @current_block = blockproto
-    @document << @current_block
+    req_nr(')R', '0')
+    req_P
   end
 end

@@ -73,7 +73,7 @@ module Troff
       #.d                                                                 # current vertical place in current diversion. == nl if no diversion
       '.f' => Register.new(1, :ro => true),                               # current font position.
       #.h                                                                 # text baseline high-water mark on current page or diversion (?)
-      '.i' => Register.new(@base_indent, :ro => true),                    # current indent.
+      #.i' => Register.new(@state[:base_indent], :ro => true),            # current indent. - circular dependency referencing @base_indent here - see xinit_in
       '.j' => Register.new(1, :ro => true),                               # current adj mode and type. can be saved for use with .ad to restore
       #.k                                                                 # horizontal size of text (minus indent) of current partially collected output line, if any, in current env.
       #.l                                                                 # current line length.

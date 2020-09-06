@@ -26,6 +26,9 @@
 #                                     the "Summary," "Predefined Read-Only Registers.")
 #
 # [ :left, :both, nil, :center, nil, :right ]
+#
+#  REVIEW: proper interaction with fill mode
+#
 
 module Troff
   def req_ad(adj = nil)
@@ -40,9 +43,10 @@ module Troff
                             else
                               warn "trying to adjust nonsense #{adj.inspect}"
                             end
-    if !nofill? and @current_block.immutable?	# REVIEW this should keep .PP followed by .ad from collapsing margin_top
-      req_P
-      @current_block.style.css[:margin_top] = '0'
+    if !nofill? and @current_block.immutable?
+      @current_block = blockproto
+      @current_block.style[:margin_top] = 0
+      @document << @current_block
     end
   end
 

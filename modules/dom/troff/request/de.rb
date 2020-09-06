@@ -38,7 +38,7 @@ module Troff
     #      e.g. conditional input blocks (.if \{ \}) -- comb(1) [GL2-W2.5]
     define_singleton_method("req_#{name}") do |*args|
       macro[0..-2].each do |l|  # only args 0-9 allowed
-        parse(l.gsub(/\$(\d)/) { args[$1.to_i - 1] })
+        parse(l.gsub(/#{Regexp.quote(@state[:escape_char])}\$(\d)/) { args[$1.to_i - 1] })
       end
     end
   end

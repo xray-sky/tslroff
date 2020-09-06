@@ -24,17 +24,22 @@ module Troff
   def req_RS(indent = nil)
     # troff won't tolerate more than 9 levels of indent even though theoretically we could
     raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'].value == 9
+
+    # push old values onto stack
     @register[')p'].+
-    warn ".RS :: -> #{@register[')I'].inspect} / #{@register[')R'].inspect}"
     @register["]#{@register[')p'].value}"].value = @register[')I'].value
     @register[")#{@register[')p'].value}"].value = @register[')R'].value
+
+    # increase relative indent by arg, or by )I if arg not given
     @register[')R'].value += if indent
       to_u(indent, :default_unit => 'n').to_i
     else
       @register[')I'].value
     end
-    req_in("#{@register[')R'].value}u")
+
     init_IP
+    req_in("#{@state[:base_indent]}u+#{@register[')R'].value}u")
+
   end
 
   def init_RS

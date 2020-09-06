@@ -16,8 +16,10 @@ module Troff
     end
 
     hang = 0 - @register[')I'].value
-    indent = @register[')R'].value + @register[')I'].value
+    indent = @state[:base_indent] + @register[')R'].value + @register[')I'].value
 
+    @current_block = blockproto
+    @document << @current_block
     req_in("#{indent}u")
     req_ti("#{hang}u")
 

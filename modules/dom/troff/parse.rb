@@ -21,7 +21,6 @@ module Troff
 
     if line.match(/^([\.\'])\s*(\S[^\s\\]?)\s*(\S.*|$)/)
       (_, cmd, req, args) = Regexp.last_match.to_a
-      #warn "bare tab in #{cmd}#{req} args (#{args.inspect})" if args.include?("\t") and req != '\"'
       begin
         send("req_#{Troff.quote_method(req)}", *getargs(args))
         # troff considers a macro line to be an input text line

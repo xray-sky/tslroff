@@ -26,20 +26,25 @@
 
 module AOS
 
+  def self.extended(klasse)
+    klasse.send(:instance_eval, 'alias req_LP req_PP')
+  end
+
+  def init_footer
+    @state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
+  end
+
   def init_ds
     super
     @state[:named_string].merge!({
-      # I think these are always in tmac.an
-      #'R'  => '&reg;',
-      #'S'  => "\\s#{Font.defaultsize}",
-      # these aren't in tmac.an -- where do they come from?
-      #'Tm' => '&trade;',
       # tmac.an.new
+      'R'  => '&reg;',
+      'S'  => "\\s#{Font.defaultsize}",
       'lq' => '&ldquo;',
       'rq' => '&rdquo;',
       ']D' => 'Unix Programmer\'s Manual',  # default set by .TH
       ']W' => '7th Edition'                 # default set by .TH
-      #']W' => File.mtime(@source.filename) # REVIEW: probably this is incorrectly formatted for matching whatever it ought to look like
+      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y")
     })
   end
 
@@ -73,8 +78,5 @@ module AOS
     req_RE
     req_sp('.5')
   end
-
-  #/Users/bear/Unix/git/tslroff/modules/platform/aos.rb:80:in `<module:AOS>': undefined method `req_PP' for module `AOS' (NameError)
-  #alias req_LP req_PP
 
 end

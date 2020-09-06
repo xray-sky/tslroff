@@ -14,6 +14,17 @@
 #                                     characters and empty text lines (blank lines) also
 #                                     cause a break.
 #
+# REVIEW: the intersection of all these things needs closer look; on the AOS pages
+#         there are lots of examples like adb(1), or bitprt(1) [ AOS 4.3 ]:
+#           .nf
+#              something
+#           .br
+#              something else
+#           .br
+#              third thing
+#           .fi
+#         where this is output with no extra space between any of the three lines.
+#
 
 module Troff
   def req_br

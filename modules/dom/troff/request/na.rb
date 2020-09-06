@@ -19,12 +19,9 @@ module Troff
     @state[:adjust] = false
     # REVIEW this should keep .P followed by .na from collapsing margin_top
     if !nofill? and @current_block.immutable?
-      case @current_block.type
-      when :p  then req_P
-      when :dl then req_IP('')
-      else warn "trying to do .na in unexpected context (#{@current_block.type.inspect})"
-      end
+      @current_block = blockproto
       @current_block.style[:margin_top] = 0
+      @document << @current_block
     end
   end
 end

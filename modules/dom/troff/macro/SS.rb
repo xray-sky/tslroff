@@ -14,7 +14,7 @@ module Troff
       @current_block.type = :ss
       @current_block << args.join(' ')
     end
-    @current_block = blockproto
-    @document << @current_block
+    req_nr(')R', '0')
+    req_P
   end
 end

@@ -25,12 +25,9 @@ module Troff
     return unless indent
     indent = to_u(indent, default_unit: 'm')
     if @current_block.immutable?
-      case @current_block.type
-      when :p  then req_P
-      when :dl then req_IP('')
-      else warn "trying to do .ti in unexpected context (#{@current_block.type.inspect})"
-      end
+      @current_block = blockproto
       @current_block.style[:margin_top] = 0
+      @document << @current_block
     end
     @current_block.style.css[:text_indent] = "#{to_em(indent)}em"
   end

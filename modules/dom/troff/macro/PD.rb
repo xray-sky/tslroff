@@ -22,7 +22,7 @@
 module Troff
 
   def req_PD(v = nil)
-    v ? @register[')P'].value = to_u(v) : init_PD
+    v ? @register[')P'].value = to_u(v, default_unit: 'v') : init_PD
   end
 
   def init_PD

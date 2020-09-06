@@ -204,40 +204,12 @@ body {
 	background: none;
 }
 
-#man dl {
-	padding-left: 2em;
-	margin-right: 1em;
-	margin-left: 2em;
-    margin-top: 1em;
-    margin-bottom: 0;
-    clear: left;
-}
-
-#man dt {
-	float: left;
-	clear: left;
-    margin-top: 0em;
-    white-space: nowrap;
-    font-variant-ligatures: none;
-}
-
-/*
-#man dt:first-child {
-    margin-top: 0em;
-}
-*/
-
-#man dd {
-    text-align: justify;
-    padding-right: 3em;
-    margin-top: 1em;
-}
-
 #man .synopsis {
     word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
 }
 
 #man .foot {
+    margin: 4em 0 0 0;
     text-align: center;
     color: silver;
 }
@@ -262,6 +234,7 @@ body {
 
 #man .tab {     /* also used for horizontal motion - REVIEW be careful if it starts to look like more than just inline-block */
     display: inline-block;
+    text-indent: 0;		/* this is inheriting from <p> */
     /* this is only good if the element is a direct child of a block.
        breaks again if it's in, say, <strong>, or another <span> */
     /*margin-left: inherit;  /* look at this more closely. I think it's wrong in tar.1 - where was it I did this for? bc.? bs.1? */

@@ -147,7 +147,7 @@ module Troff
                   parts[2]
                 end
               end
-      elsif parts[1].start_with?("\t")
+      elsif parts[1].start_with?("\t")	# REVIEW: does this work right with multiple consecutive tabs? a.out(4) [GL2-W2.5]
         stop = next_tab(parts[1].length)
         if stop.nil?
           # prevent exception on running out of tabs - seems necessary? see a.out(5) [AOS 4.3]

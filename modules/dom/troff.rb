@@ -36,8 +36,8 @@ module Troff
 
     xinit_selenium
     xinit_ec
-    xinit_in
     xinit_nr
+    xinit_in
 
     self.methods.each do |m|
       self.send(m) if m.to_s.match(/^init_/)
@@ -55,12 +55,11 @@ module Troff
       rescue StopIteration
         # TODO: perform end-of-input trap macros from .em;
         req_P
+        @current_block.style.css.delete(:margin_left)
         @current_block.style.attributes[:class] = 'foot'
         @current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
         parse(@state[:footer])
         @current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
-        req_br
-        req_br
         # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
         return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs start ed by :th
       rescue => e
@@ -86,7 +85,7 @@ module Troff
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]
     block.style.css[:margin_top] = nofill? ? '0' : ("#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd])
-    block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" unless @register['.i'].value == @base_indent
+    block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" unless @register['.i'].value == @state[:base_indent]
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j'].value] unless @register['.j'].value == 1
     block.style.css[:text_align] = 'left' if noadj?		# .na sets left adjust without changing .j
     @current_tabstop = block.text.last

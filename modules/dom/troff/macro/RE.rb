@@ -22,7 +22,6 @@ module Troff
     @register[')I'].value = @register["]#{@register[')p'].value}"].value
     @register[')R'].value = @register[")#{@register[')p'].value}"].value
     @register[')p'].- if @register[')p'].value > 0
-    warn ".RE (#{k.inspect}) -> #{@register[')I'].inspect} / #{@register[')R'].inspect}"
-    req_in("#{@register[')R'].value}u")
+    req_in("#{@state[:base_indent]}u+#{@register[')R'].value}u")
   end
 end

@@ -34,6 +34,14 @@ module AOS
     @state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
   end
 
+  def init_sc
+    super
+    @state[:special_char].merge!({
+      'ga'  => '&lsquo;',	# this 'accent' character is intended to be non-combining
+      'aa'  => '&rsquo;',	# this 'accent' character is intended to be non-combining
+    })
+  end
+
   def init_ds
     super
     @state[:named_string].merge!({
@@ -43,8 +51,8 @@ module AOS
       'lq' => '&ldquo;',
       'rq' => '&rdquo;',
       ']D' => 'Unix Programmer\'s Manual',  # default set by .TH
-      ']W' => '7th Edition'                 # default set by .TH
-      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y")
+      ']W' => '7th Edition',                # default set by .TH
+      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
     })
   end
 

@@ -9,7 +9,15 @@ module Troff
   private
 
   def break_adj
-    # TODO: this
+    # TODO: this - I'm taking this over to erase end-of-block breaks, because I don't
+    #              remember what this was originally supposed to be about
+    if @current_block.text.length > 1
+      end_of_block = @current_block.text[-2..-1]
+      if end_of_block[0].is_a?(LineBreak) and end_of_block[1].empty?
+        @current_block.text.pop
+        @current_block.text.pop
+      end
+    end
   end
 
   def space_adj
@@ -33,6 +41,10 @@ module Troff
     # this is a bit janky, but we need to avoid the space adjustment tripping the
     # output indicator, in order to correctly account for input line traps through
     # macros which do or do not output (i.e. count as an input line)
+    #
+    # well... it has to be reset _somewhere_. just make sure you do everything
+    # that relies on it before space_adj.
+
     @current_block.reset_output_indicator
   end
 

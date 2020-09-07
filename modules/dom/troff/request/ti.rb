@@ -23,12 +23,13 @@
 module Troff
   def req_ti(indent = nil)
     return unless indent
-    indent = to_u(indent, default_unit: 'm')
-    if @current_block.immutable?
-      @current_block = blockproto
-      @current_block.style[:margin_top] = 0
-      @document << @current_block
-    end
-    @current_block.style.css[:text_indent] = "#{to_em(indent)}em"
+    @current_block = blockproto
+    @current_block.style.css[:margin_top] = '0'
+    @document << @current_block
+    temp_indent(to_u(indent, default_unit: 'm'))
+  end
+
+  def temp_indent(hang)
+    apply { @current_block.style.css[:text_indent] = "#{to_em(hang.to_s)}em" }
   end
 end

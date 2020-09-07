@@ -42,6 +42,7 @@ class Text
 
   def inspect
     <<~MSG
+
       font:  [ #{font.inspect} ]
       style: #{style.inspect.each_line.collect { |l| l }.join('       ')}
       text:  #{text.inspect.each_line.collect { |l| l }.join('|         ')}
@@ -118,13 +119,8 @@ class Text
     end
 
     # mark it up the rest of the way
-    # REVIEW what is the point of this isolated reference to @break? and where does the tab span get closed??
-    (@break ? '<br />' : '') + tab + (tags + [ent] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
-  end
-
-  def to_selenium
-    # TODO consolidate this filesystem reference to the stylesheet
-    %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$LOAD_PATH}/tslroff.css"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
+    # REVIEW where does the tab span get closed?? it seems to be, but..?
+    tab + (tags + [ent] + (tags.reverse.map { |t| t.sub(/^</, '</').sub(/\s.*/, '>') })).join
   end
 
   alias concat <<

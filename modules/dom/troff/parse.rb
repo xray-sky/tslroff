@@ -24,8 +24,20 @@ module Troff
       begin
         send("req_#{Troff.quote_method(req)}", *getargs(args))
         # troff considers a macro line to be an input text line
-        space_adj if Troff.macro?(req) and @current_block.output_indicator?
-        req_br if nofill? and Troff.macro?(req)# and @current_block.output_indicator?# && !broke?		# REVIEW unconditional .br results in extras (e.g. immediately upon .nf -- wait(2) [GL2-W2.5])
+        if @current_block.output_indicator?
+          space_adj
+          if nofill?
+            @current_block << LineBreak.new	# this duplicates .br, but if that is guarded on nofill...
+            @current_tabstop = @current_block.text.last
+            @current_tabstop[:tab_stop] = 0
+          end
+        end
+        #space_adj if Troff.macro?(req) and @current_block.output_indicator?
+        #if nofill? and @current_block.output_indicator? #and Troff.macro?(req)# # && !broke?		# REVIEW unconditional .br results in extras (e.g. immediately upon .nf -- wait(2) [GL2-W2.5])
+        #  @current_block << LineBreak.new	# this duplicates .br, but if that is guarded on nofill...
+        #  @current_tabstop = @current_block.text.last
+        #  @current_tabstop[:tab_stop] = 0
+        #end
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)
@@ -51,20 +63,21 @@ module Troff
         req_br if fill? && !broke?
       end
 
-      #warn "bare tab in input (#{line.inspect})" if line.include?("\t")
       if @state[:eqn_start] and line.include?(@state[:eqn_start])
         parse_eqn(line)
       else
         unescape(line)
       end
+      # reset no-space mode, if output has occurred
+      # do it before space adjusting, which could reset the output_indicator
+      req_rs if nospace? and @current_block.output_indicator?
       space_adj
-      req_br if nofill?# && !broke?
+
+      if nofill? and !broke?	# this duplicates .br, but if that is guarded on nofill...
+        @current_block << LineBreak.new
+        @current_tabstop = @current_block.text.last
+        @current_tabstop[:tab_stop] = 0
+      end # && !broke?
     end
-
-    # REVIEW: this break might also need to happen during macro processing
-    # TODO: I'm getting extra breaks in .nf -- [GL2-W2.5] acct.4
-    #req_br unless fill? || broke? || cmd == "'"
-
   end
-
 end

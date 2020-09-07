@@ -28,8 +28,10 @@
 
 module Troff
   def req_br
-    @current_block << LineBreak.new
-    @current_tabstop = @current_block.text.last
-    @current_tabstop[:tab_stop] = 0
+    unless nofill? and !broke?	# REVIEW I think in nofill mode a .br makes nothing happen, because there's no line to output?
+      @current_block << LineBreak.new
+      @current_tabstop = @current_block.text.last
+      @current_tabstop[:tab_stop] = 0
+    end
   end
 end

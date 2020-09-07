@@ -11,17 +11,10 @@
 
 module Troff
   def req_HP(indent = nil)
-    if indent
-      @register[')I'].value = to_u(indent, :default_unit => 'n')
-    end
-
-    hang = 0 - @register[')I'].value
-    indent = @state[:base_indent] + @register[')R'].value + @register[')I'].value
-
+    @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
     @current_block = blockproto
     @document << @current_block
-    req_in("#{indent}u")
-    req_ti("#{hang}u")
-
+    indent(@state[:base_indent] + @register[')R'].value + @register[')I'].value)
+    temp_indent(-@register[')I'].value)
   end
 end

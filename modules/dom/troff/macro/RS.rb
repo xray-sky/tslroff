@@ -38,7 +38,10 @@ module Troff
     end
 
     init_IP
-    req_in("#{@state[:base_indent]}u+#{@register[')R'].value}u")
+    @current_block = blockproto
+    @current_block.style.css[:margin_top] = '0'
+    @document << @current_block
+    indent(@state[:base_indent] + @register[')R'].value)
 
   end
 

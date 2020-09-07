@@ -47,6 +47,7 @@ class Block
 
   def inspect
     <<~MSG
+
       +- Block (#{__id__}) type: #{@type.inspect}
       |
       |  style: #{@style.inspect.each_line.collect { |l| l }.join('|         ')}

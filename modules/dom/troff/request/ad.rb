@@ -45,7 +45,7 @@ module Troff
                             end
     if !nofill? and @current_block.immutable?
       @current_block = blockproto
-      @current_block.style[:margin_top] = 0
+      @current_block.style.css[:margin_top] = 0
       @document << @current_block
     end
   end

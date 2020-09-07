@@ -82,10 +82,13 @@ module Troff
 
   # prototype a new block with whatever necessary styles carried forward.
   def blockproto(type = :p)
+    break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]
-    block.style.css[:margin_top] = nofill? ? '0' : ("#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd])
-    block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" unless @register['.i'].value == @state[:base_indent]
+    block.style.css[:margin_top] = @register[')P'].value unless @register[')P'].value == @state[:default_pd]
+    block.style.css[:margin_top] = '0' if nofill? or nospace?
+    block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em"
+    block.style.css.delete(:margin_left) if @register['.i'].value == @state[:base_indent]
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j'].value] unless @register['.j'].value == 1
     block.style.css[:text_align] = 'left' if noadj?		# .na sets left adjust without changing .j
     @current_tabstop = block.text.last

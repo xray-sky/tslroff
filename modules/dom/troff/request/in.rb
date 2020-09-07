@@ -24,20 +24,23 @@ module Troff
   def req_in(indent = nil)
     previous = @state[:previous_indent]
     @state[:previous_indent] = @register['.i'].value
-    @register['.i'].value = if indent
-                              indent.sub!(/^([-+])/, "#{@state[:previous_indent]}u\\1")
-                              to_u("#{@state[:base_indent]}u+#{indent}", default_unit: 'm')
-                            else
-                              previous
-                            end
-    # do we need to break? or is this already a brand new block.
-    # this should keep .PP followed by .RS from collapsing margin_top - bfs(1) [GL2-W2.5]
-    if @current_block.immutable?
-      @current_block = blockproto
-      @current_block.style[:margin_top] = 0
-      @document << @current_block
-    end
-    @current_block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em" unless @register['.i'].value == @state[:base_indent]
+
+    @current_block = blockproto
+    @current_block.style.css[:margin_top] = '0'
+    @document << @current_block
+
+    indent(if indent
+             indent.sub!(/^([-+])/, "#{@state[:previous_indent]}u\\1")
+             to_u("#{indent}", default_unit: 'm')
+           else
+             previous
+           end)
+  end
+
+  def indent(margin)
+    @register['.i'].value = margin
+    apply { @current_block.style.css[:margin_left] = "#{to_em(margin.to_s)}em" }
+    @current_block.style.css.delete(:margin_left) if margin == @state[:base_indent]
   end
 
   def xinit_in

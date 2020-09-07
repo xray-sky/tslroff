@@ -34,7 +34,7 @@
 
 module Troff
   def req_sp(n = '1')  # TODO: everything is wrong?
-    return if @state[:nospace]
+    return if nospace?
     v = to_em(to_u(n, default_unit: 'v')) # TODO: hardcoding 1.2 em line height is bogus
     @current_block << "&roffctl_vs:#{v}em;"
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)

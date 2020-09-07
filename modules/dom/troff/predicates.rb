@@ -10,7 +10,7 @@ module Troff
 
   def broke?
     #@current_block.type != :cell && @current_block.text.last.text.match(/&roffctl_br;\s+$/)
-    @current_block.empty? || @current_block.text.last.is_a?(LineBreak)
+    @current_block.empty? || @current_block.text[-2].is_a?(LineBreak) # TODO this fails if, for example, we have .PP -> .vs -> \ \ foo -- mset(1) [AOS 4.3]
   end
 
   def continuation?
@@ -31,6 +31,14 @@ module Troff
 
   def nofill?
     @register['.u'].zero?
+  end
+
+  def space?
+    @state[:nospace].nil?
+  end
+
+  def nospace?
+    @state[:nospace] == true
   end
 
   def sentence_end?

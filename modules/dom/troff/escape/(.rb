@@ -272,7 +272,7 @@ module Troff
       'a.'  => '&#775;',  # dot, U0307 (U02D9)
       'a^'  => '&#770;',  # circumflex, U0302 (U005E)
       'aa'  => '&acute;',  # acute, U0301 (U00B4)
-      'ga'  => '&#768;',  # grave, U0300 (U0060)
+      'ga'  => '&#768;',  # grave, U0300 (U0060) -- this is actually giving me a combining accent, and at least on AOS this is wrong. \(ga is spacing
       'ab'  => '&#774;',  # breve, U0306 (U02D8)
       'ac'  => '&#807;',  # cedilla, U0327 (U00B8)
       'ad'  => '&#776;',  # dieresis, U0308 (U00A8)

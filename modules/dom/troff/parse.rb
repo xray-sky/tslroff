@@ -23,21 +23,6 @@ module Troff
       (_, cmd, req, args) = Regexp.last_match.to_a
       begin
         send("req_#{Troff.quote_method(req)}", *getargs(args))
-        # troff considers a macro line to be an input text line
-        if @current_block.output_indicator?
-          space_adj
-          if nofill?
-            @current_block << LineBreak.new	# this duplicates .br, but if that is guarded on nofill...
-            @current_tabstop = @current_block.text.last
-            @current_tabstop[:tab_stop] = 0
-          end
-        end
-        #space_adj if Troff.macro?(req) and @current_block.output_indicator?
-        #if nofill? and @current_block.output_indicator? #and Troff.macro?(req)# # && !broke?		# REVIEW unconditional .br results in extras (e.g. immediately upon .nf -- wait(2) [GL2-W2.5])
-        #  @current_block << LineBreak.new	# this duplicates .br, but if that is guarded on nofill...
-        #  @current_tabstop = @current_block.text.last
-        #  @current_tabstop[:tab_stop] = 0
-        #end
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)
@@ -49,9 +34,11 @@ module Troff
       end
     else
       # A blank text line causes a break and outputs a blank line
-      # exactly like '.sp 1' §5.3
-      if line.empty? and !nofill?
-        req_br unless broke?
+      # exactly like '.sp 1' §5.3 - also in nofill mode
+
+      if line.match(/^\s*$/)
+        req_br
+        @current_block << '&nbsp;'
         req_br
       end
 
@@ -60,7 +47,7 @@ module Troff
       # -- REVIEW: I think tabs don't count for this (...based on??)
       if line.start_with?(' ')
         line.prepend("\\")    # force this initial space to appear in the output
-        req_br if fill? && !broke?
+        req_br
       end
 
       if @state[:eqn_start] and line.include?(@state[:eqn_start])
@@ -68,16 +55,22 @@ module Troff
       else
         unescape(line)
       end
-      # reset no-space mode, if output has occurred
-      # do it before space adjusting, which could reset the output_indicator
-      req_rs if nospace? and @current_block.output_indicator?
-      space_adj
 
-      if nofill? and !broke?	# this duplicates .br, but if that is guarded on nofill...
-        @current_block << LineBreak.new
-        @current_tabstop = @current_block.text.last
-        @current_tabstop[:tab_stop] = 0
-      end # && !broke?
     end
+
+    if @current_block.output_indicator?
+      process_input_traps
+      if nofill?
+        @current_block << LineBreak.new	# this duplicates .br, but if that is guarded on nofill...
+        @current_tabstop = @current_block.text.last
+      else
+        space_adj
+      end
+      # reset no-space mode, which is only in effect for one output line
+      req_rs if nospace?
+    end
+
+    @current_block.reset_output_indicator
+
   end
 end

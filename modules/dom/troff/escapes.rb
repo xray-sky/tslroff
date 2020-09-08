@@ -114,15 +114,28 @@ module Troff
     # REVIEW are we meant to do a copy-mode pass first, then do everything else? is this how
     #        to keep .ds with stuff like \h from vanishing prematurely?? (instead of unescaping
     #        the output of \* directly in esc_star, which causes it to be parsed during assignment in .ds?)
+
+    # TODO: lines with escape chars prior to tabs result in that text living outside the tab span!
+    #        csh(1) [GL2-W2.5]
+    # - to this end, fix up the text block if we just broke. we oughtn't need to deal with
+    #   a mid-unesc break.
+    #
+    # there's a special case if we just had a break. we don't want to set the tab width on that.
+    # REVIEW is there a more orderly way of handling this?
+    if broke?
+      ß@current_block << String.new
+      @current_tabstop = @current_block.text.last
+      @current_tabstop[:tab_stop] = 0
+    end
+
+
     esc = @state[:escape_char]
     begin
       # do tabs too, while we're at it, so the input line is only dissected once
       parts = str.partition(/#{Regexp.quote(esc)}|\t+/)
       @current_block << translate(parts[0].sub(/&roffctl_esc;/, esc)) unless parts[0].empty? # str might begin with esc
-
       if parts[1] == esc
         str = case parts[2][0]
-              #when esc then parts[2].sub(/^#{Regexp.quote(esc)}/, '&roffctl_esc;')  # REVIEW: is this actually right?? does changing it prevent \*S from working??
               when esc
                 @current_block << esc
                 parts[2].sub(/^#{Regexp.quote(esc)}/, '')
@@ -147,7 +160,7 @@ module Troff
                   parts[2]
                 end
               end
-      elsif parts[1].start_with?("\t")	# REVIEW: does this work right with multiple consecutive tabs? a.out(4) [GL2-W2.5]
+      elsif parts[1].start_with?("\t")
         stop = next_tab(parts[1].length)
         if stop.nil?
           # prevent exception on running out of tabs - seems necessary? see a.out(5) [AOS 4.3]

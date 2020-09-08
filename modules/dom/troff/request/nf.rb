@@ -28,11 +28,10 @@ module Troff
   def req_nf
     @register['.u'].value = 0
     # do we need to break? or is this already a brand new block.
-    apply { @current_block.style.css[:margin_top] = 0 }
-    #if @current_block.immutable?
-    #  @current_block = blockproto
-    #  @current_block.style.css[:margin_top] = 0
-    #  @document << @current_block
-    #end
+    if @current_block.immutable?
+      @current_block = blockproto
+      @current_block.style.css[:margin_top] = 0
+      @document << @current_block
+    end
   end
 end

@@ -35,6 +35,18 @@
 # ping(8) has                    PING(8)    Silicon Graphics (May 23, 1986)    PING(8)
 #           --> this is .TH arg  $1   $2    $4                $3
 #
+#  TODO:
+#
+# The man command executes manprog that takes a file name as its argument.  Manprog
+# calculates and returns a string of three register definitions used by the formatters
+# identifying the date the file was last modified.  The returned string has the form:
+#    −rdday −rmmonth −ryyear
+# and is passed to nroff which sets this string as variables for the man macro package.
+# Months are given from 0 to 11, therefore month is always 1 less than the actual month.
+# The man macros calculate the correct month.  If the man macro package is invoked as an
+# option to nroff/troff (i.e., nroff −man file), then the current day/month/year is used
+# as the printed date.
+#
 
 module GL2
 

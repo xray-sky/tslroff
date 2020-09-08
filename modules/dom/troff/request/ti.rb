@@ -26,7 +26,7 @@ module Troff
     @current_block = blockproto
     @current_block.style.css[:margin_top] = '0'
     @document << @current_block
-    temp_indent(to_u(indent, default_unit: 'm'))
+    temp_indent(to_u(indent, default_unit: 'm')) # TODO this actually has to become negative, for css. but what to subtract it from?? sendmail(1m) [GL2-W2.5]
   end
 
   def temp_indent(hang)

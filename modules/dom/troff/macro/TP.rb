@@ -66,8 +66,8 @@ module Troff
         @current_block << '&roffctl_endspan;'
         apply { @current_block.text.last[:tab_stop] = 0 }
         @current_tabstop = @current_block.text.last
-        @current_tabstop.instance_variable_set(:@no_space_adj, true)
       end
+      @current_tabstop.instance_variable_set(:@no_space_adj, true)
       req_ft('1')
     end
   end

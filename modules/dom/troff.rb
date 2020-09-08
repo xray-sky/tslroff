@@ -54,8 +54,8 @@ module Troff
         parse(l)
       rescue StopIteration
         # TODO: perform end-of-input trap macros from .em;
-        req_P
-        @current_block.style.css.delete(:margin_left)
+        @current_block = Block.new
+        @document << @current_block
         @current_block.style.attributes[:class] = 'foot'
         @current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
         parse(@state[:footer])
@@ -74,19 +74,19 @@ module Troff
     @register['.c'].value
   end
 
-  def debug(line, msg)
-    warn msg if input_line_number == line
+  def debug(line, *msg)
+    warn (['debug: ']+(msg.collect(&:inspect))).join(' ') if input_line_number == line
   end
 
   private
 
   # prototype a new block with whatever necessary styles carried forward.
   def blockproto(type = :p)
-    break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will
+    break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will REVIEW is this working??
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]
-    block.style.css[:margin_top] = @register[')P'].value unless @register[')P'].value == @state[:default_pd]
-    block.style.css[:margin_top] = '0' if nofill? or nospace?
+    block.style.css[:margin_top] = "#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd]
+    block.style.css[:margin_top] = '0' if nospace? #if nofill? or nospace?
     block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em"
     block.style.css.delete(:margin_left) if @register['.i'].value == @state[:base_indent]
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j'].value] unless @register['.j'].value == 1

@@ -25,13 +25,16 @@
 #           .fi
 #         where this is output with no extra space between any of the three lines.
 #
+#         experiments with nroff on a terminal demonstrate that .br never inserts
+#         space; it only breaks a line. so three consecutive .brs has the same effect
+#         as one, and in nofill mode it has no effect at all.
+#
 
 module Troff
   def req_br
-    unless nofill? and !broke?	# REVIEW I think in nofill mode a .br makes nothing happen, because there's no line to output?
+    unless nofill? or broke?
       @current_block << LineBreak.new
       @current_tabstop = @current_block.text.last
-      @current_tabstop[:tab_stop] = 0
     end
   end
 end

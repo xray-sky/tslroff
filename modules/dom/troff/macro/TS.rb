@@ -92,7 +92,7 @@ module Troff
                        l.start_with?('T}')
                      end
         additional[-1].sub!(/^T}/, '')
-        line << additional.join
+        line << additional.join		# TODO wrong, because the lines may contain requests! - boot(8) [GL2-W2.5]
       end
 
       # skip row processing if this is a request line

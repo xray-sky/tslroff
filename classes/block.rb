@@ -24,13 +24,43 @@ class Block
     self.text  = (arg[:text]  or Text.new)
   end
 
+  def output_indicator?
+    @output_indicator
+  end
+
+  def reset_output_indicator
+    @output_indicator = false
+  end
+
+  def empty?
+    type == :comment or text.reject(&:empty?).none?
+  end
+
+  def text=(t)
+    unless t.empty?
+      @output_indicator = true
+      immutable!
+    end
+    @text = t.is_a?(Array) ? t : [t]
+  end
+
   def <<(t)
     case t
     when Text   then @text << t
-    when String then @text.last << t
+    when String
+      if text.last.text.respond_to?(:<<)
+        @text.last << t
+      else
+       brk = Text.new(font: text.last.font.dup, style: text.last.style.dup)
+       brk[:tab_stop] = 0
+       brk.text = t
+       @text << brk
+      end
     when LineBreak
-      cur_fmt =  @text.last.respond_to?(:font) ? Text.new(font: @text.last.font.dup, style: @text.last.style.dup) : Text.new
-      @text << t << cur_fmt
+      brk = Text.new(font: text.last.font.dup, style: text.last.style.dup)
+      brk[:tab_stop] = 0
+      brk.text = t
+      @text << brk
     when Block  # this is primarily meant for handling named strings, which may include typesetter escapes
       raise RuntimeError "appending non-bare block #{t.inspect}" unless t.type == :bare
       @text += t.text
@@ -40,38 +70,15 @@ class Block
     (immutable! and @output_indicator = true) unless t.empty?
   end
 
-  def empty?
-    #text.collect(&:to_s).join.strip.empty?  # REVIEW: does this even make sense?
-    type == :comment or text.reject(&:empty?).none?
+  def to_s
+    text.collect(&:to_s).join
   end
 
-  def inspect
-    <<~MSG
-
-      +- Block (#{__id__}) type: #{@type.inspect}
-      |
-      |  style: #{@style.inspect.each_line.collect { |l| l }.join('|         ')}
-      |  text:  #{@text.inspect.each_line.collect { |l| l }.join('|         ')}
-      |
-    MSG
-  end
-
-  def text=(t)
-    @text = t.is_a?(Array) ? t : [t]
-    immutable! unless t.empty?
-    @output_indicator = !text.empty?
-  end
-
-  def output_indicator?
-    @output_indicator
-  end
-
-  def reset_output_indicator
-    @output_indicator = false
+  def to_selenium
+    return %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
   end
 
   def to_html             # TODO: this needs more work to leave <!-->, etc. open for subsequent output
-    #return if empty? and ![:cell, :comment].include?(type)  # don't eat comments or empty table cells.
     t = text.collect(&(type == :comment ? :to_s : :to_html)).join
     case type
     when :nil     then '' # suppress. used for placeholding in tbl.
@@ -96,7 +103,6 @@ class Block
       end
       "  <td#{style.to_s}>#{t}</td>\n"
     when :p
-      #return if t.strip.empty?
       case style[:section]
       when 'SYNOPSIS'
         %(<p class="synopsis"#{style.to_s}>\n#{t}\n</p>\n)
@@ -112,12 +118,15 @@ class Block
     end
   end
 
-  def to_s
-    text.collect(&:to_s).join
-  end
+  def inspect
+    <<~MSG
 
-  def to_selenium
-    return %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
+      +- Block (#{__id__}) type: #{@type.inspect}
+      |
+      |  style: #{@style.inspect.each_line.collect { |l| l }.join('|         ')}
+      |  text:  #{@text.inspect.each_line.collect { |l| l }.join('|         ')}
+      |
+    MSG
   end
 
   alias concat <<

@@ -9,8 +9,12 @@ module Troff
   private
 
   def broke?
-    #@current_block.type != :cell && @current_block.text.last.text.match(/&roffctl_br;\s+$/)
-    @current_block.empty? || @current_block.text[-2].is_a?(LineBreak) # TODO this fails if, for example, we have .PP -> .vs -> \ \ foo -- mset(1) [AOS 4.3]
+    return true if @current_block.empty?
+    return true if @current_block.text.last.text.is_a?(LineBreak)
+    if @current_block.text[-2]&.text and !@current_block.text[-2].text.is_a?(LineBreak)
+      return true if @current_block.text[-2].text.start_with?('&roffctl_vs')
+    end
+    false
   end
 
   def continuation?
@@ -42,7 +46,7 @@ module Troff
   end
 
   def sentence_end?
-    @current_block.text.last.text.match(/(?:\!|\.|\?)\)?$/)
+    !broke? and @current_block.text.last.text.match(/(?:\!|\.|\?)\)?$/)
   end
 
   def self.macro?(req)

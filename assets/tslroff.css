@@ -222,14 +222,11 @@ body {
 #man .nrs {     /* troff 1/6em narrow space */
     display: inline-block;
     width: 0.167em;
-    text-wrap: suppress;    /* this property is currently unsupported. will it even do what I need? */
 }
 
 #man .hns {     /* troff 1/12em half-narrow space */
     display: inline-block;
     width: 0.083em;
-    /* this property is currently unsupported. will it even do what I need? */
-    text-wrap: suppress;
 }
 
 #man .tab {     /* also used for horizontal motion - REVIEW be careful if it starts to look like more than just inline-block */

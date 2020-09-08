@@ -8,8 +8,12 @@ class LineBreak
     "\n"
   end
 
+  def length
+    0
+  end
+
   def empty?
-    false
+    true
   end
 
   def inspect

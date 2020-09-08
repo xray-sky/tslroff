@@ -39,6 +39,7 @@ module Troff
     @current_block << "&roffctl_vs:#{v}em;"
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
     @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    @current_block.reset_output_indicator
     @current_tabstop = @current_block.text.last
     @current_tabstop[:tab_stop] = 0
   end

@@ -23,9 +23,11 @@ module Troff
     @register[')R'].value = @register[")#{@register[')p'].value}"].value
     @register[')p'].- if @register[')p'].value > 0
 
-    @current_block = blockproto
-    @current_block.style.css[:margin_top] = '0'
-    @document << @current_block
+    if @current_block.immutable?
+      @current_block = blockproto
+      @current_block.style.css[:margin_top] = '0'
+      @document << @current_block
+    end
     indent(@state[:base_indent] + @register[')R'].value)
   end
 end

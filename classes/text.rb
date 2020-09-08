@@ -56,6 +56,7 @@ class Text
 
   def to_html
     # TODO: some or most of this should probably be made troff-specific (somehow)
+    return '<br />' if text.is_a?(LineBreak)
     return '' if length.zero?
 
     # tab separately, as it may encompass several Text objects

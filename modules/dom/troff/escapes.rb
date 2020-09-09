@@ -123,7 +123,7 @@ module Troff
     # there's a special case if we just had a break. we don't want to set the tab width on that.
     # REVIEW is there a more orderly way of handling this?
     if broke?
-      ß@current_block << String.new
+      @current_block << String.new
       @current_tabstop = @current_block.text.last
       @current_tabstop[:tab_stop] = 0
     end

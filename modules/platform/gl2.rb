@@ -89,6 +89,9 @@ module GL2
     true
   end
 
+  def init_so
+    @state[:path_translations] = { %r{/usr} => '' }
+  end
 
 end
 

@@ -26,9 +26,19 @@ module Troff
     # TODO only works with paths relative to pwd. Some systems include absolute
     # path references to .so; these will have to be rewritten somehow.
     # e.g. AOS-4.3 includes /usr/athena/etc/tmac.h
+    localfile = './' + name    # force relative path
+    unless File.readable?(localfile)
+      @state[:path_translations].each do |path, xlate|
+        break if localfile.sub!(path, xlate) and File.readable?(localfile)
+      end
+    end
+    unless File.readable?(localfile)
+      warn ".so can't read #{localfile}"
+      return nil
+    end
+
     ofile = @lines
-    (warn ".so can't read ./#{name}" ; return nil) unless File.readable?("./#{name}")
-    @lines = File.read("./#{name}").lines.each   # force relative path TODO path translation
+    @lines = File.read(localfile).lines.each
     loop do
       begin
         l = @lines.tap { @register['.c'].value += 1 }.next
@@ -38,5 +48,10 @@ module Troff
       end
     end
     @lines = ofile
+  end
+
+  def init_so
+    @state[:path_translations] = Hash.new
+    true
   end
 end

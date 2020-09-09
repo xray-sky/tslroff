@@ -114,7 +114,7 @@ module Troff
     end
 
     # tokenize the result
-    operands = str.scan(%r([\d\.cimnPpuv]+|[-+/*%<>=&:]+))
+    operands = str.scan(%r([\d\.cimnPpuv]+|[-+/*%<>=&:]+)) # TODO somewhere in here I'm getting ==- as an operator (as in 10==-1 - end result works as it throws an exception and is rejected by if)
 
     (magnitude, unit) = operands.shift.match(/^([\d.]+)([cimnPpuv]?)/)[1..2]
     unit = default_unit if unit.empty?

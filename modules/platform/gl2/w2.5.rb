@@ -20,7 +20,7 @@ module GL2_W2_5
     #  @lines = newsrc.each
     when 'eqn.1'
       newsrc = @source.lines
-      newsrc[45].sub!(/\\\*$/, '')
+      newsrc[45].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
       @lines = newsrc.each
     when 'ftp.1c'
       newsrc = @source.lines

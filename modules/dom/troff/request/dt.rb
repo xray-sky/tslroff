@@ -21,7 +21,8 @@ module Troff
 
   def req_dt(pos = nil, macro = nil, *args)
     if pos and macro
-      pos = count.to_i
+      warn "!! setting diversion trap #{pos.inspect} #{macro.inspect}"
+      pos = pos.to_i
       @state[:diversion_trap][pos] ||= []
       @state[:diversion_trap][pos] << [ macro, args ]
     else

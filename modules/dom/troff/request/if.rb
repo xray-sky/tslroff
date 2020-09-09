@@ -58,17 +58,19 @@ module Troff
     condition = case test
                 when 'e', 'E' then warn 'can\'t test for even page number'
                 when 'o', 'O' then warn 'can\'t test for odd page number'
-                when 't', 'T' then true			# troff
-                when 'n', 'N' then false		# nroff
+                when 't', 'T' then true			# troff - TODO: this needn't be followed by a space!
+                when 'n', 'N' then false		# nroff - TODO: this needn't be followed by a space!
                 when /^([#{@@delim}])(.*?)\1(.*?)\1$/, /^([^@@delim].*?)"(.*?)$/
-                  warn "don't know how to compare strings #{Regexp.last_match[1].inspect} and #{Regexp.last_match[2].inspect}"
+                  (str1, str2) = Regexp.last_match[-2..-1]
+                  #warn "don't know how to compare strings #{str1.inspect} and #{str2.inspect}"
+                  str1 == str2  # TODO this needs to expand named strings without interfering with output - mhook(1) [AOS 4.3]
                 else
                   # try to evaluate it as an expression
                   begin
                     expr = to_u(test).to_f
                     case expr
-                    when 'true'        then true
-                    when 'false'       then false
+                    #when 'true'        then true -- maybe don't need case anymore, just the > test?
+                    #when 'false'       then false -- these oughtn't happen anymore as they are coerced in to_u
                     when Fixnum, Float then expr > 0 ? true : false
                     else warn "unexpected return from evaluation of expression #{expr.inspect} #{expr.class}"
                     end

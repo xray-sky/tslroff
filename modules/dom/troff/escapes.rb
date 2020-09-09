@@ -40,6 +40,7 @@ module Troff
   end
 
   def __unesc_w(str)
+    # TODO this is trying to parse \\w (which shouldn't, as it's a _printing_ escape) - zwgc(1) [AOS 4.3]
     return str unless @state[:escape_char]	# REVIEW how does this interact with copymode?
     copy = String.new
     # why am I doing this separately? translation is already happening safely in esc_w

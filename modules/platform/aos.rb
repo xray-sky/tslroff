@@ -36,7 +36,7 @@ module AOS
 
   def init_so
     @state[:path_translations] = {
-      %r{^/usr}     => '..',
+      %r{/usr}     => '..',
     }
   end
 

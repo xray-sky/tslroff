@@ -61,7 +61,7 @@ module GL2
   end
 
   def init_so
-    @state[:path_translations] = { %r{^/usr} => '' }
+    @state[:path_translations] = { %r{/usr} => '' }
   end
 
   def init_ds

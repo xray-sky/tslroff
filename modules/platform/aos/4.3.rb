@@ -9,6 +9,20 @@
 
 module AOS_4_3
 
+  def init_rewrites
+    case File.basename(@source.filename)
+    when 'ftp.1c'
+      newsrc = @source.lines
+      newsrc[210].sub!(/f$/, 'fP')
+      @lines = newsrc.each
+    when 'mdtar.1'
+      newsrc = @source.lines
+      newsrc[96].sub!(/\\\*$/, '')
+      newsrc[102].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
+      @lines = newsrc.each
+    end
+  end
+
   #def parse ( lines = @source.lines )
   #  super
   #  self.apply { @current_block.text << Text.new(:text => "super.", :style => Style.new(:grated => true)) }

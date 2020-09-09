@@ -32,7 +32,7 @@ module Troff
     # must separate options with spaces, tabs, or commas. You must end the options
     # line with a semicolon. All allowable options appear below.
 
-    options_separator  = Regexp.new('(?:,|\s+)')
+    options_separator  = Regexp.new('(?:,\s*|\s+)')
     options_terminator = Regexp.new(';\s*$')
 
     if @lines.peek.match(options_terminator)
@@ -46,7 +46,7 @@ module Troff
         when /^tab\s*\((.)\)/   then cell_delim = Regexp.last_match(1)
         #when /^delim\s*\((..)\)/     then # TODO: -- recognizes . and . as eqn delimiters
         #when /^linesize\s*\((\d+)\)/ then # TODO: -- sets lines or rules in n point type
-        else warn "unimplemented tbl global #{option}"
+        else warn "unimplemented tbl global #{option.inspect}"
         end
       end
     end

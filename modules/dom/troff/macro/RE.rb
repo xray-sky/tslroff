@@ -9,6 +9,7 @@
 #     if k is omitted, return to the most recent lower indent level.
 #
 #   this works like a stack (see .RS)
+#   kermit(1c) [GL2-W2.5] seems to call it repeatedly without ever having called .RS.
 #
 
 module Troff
@@ -21,7 +22,7 @@ module Troff
 
     @register[')I'].value = @register["]#{@register[')p'].value}"].value
     @register[')R'].value = @register[")#{@register[')p'].value}"].value
-    @register[')p'].- if @register[')p'].value > 0
+    @register[')p'].- if @register[')p'].value > 1
 
     if @current_block.immutable?
       @current_block = blockproto

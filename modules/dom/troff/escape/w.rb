@@ -39,21 +39,18 @@
 #                                       passes the BEL character. All others are ignored."
 #                                       so that's ^B, ^C, ^E, ^F and ^G, and these work with .if too
 #                                       -- though sh(1) [GL2-W2.5] has \h@-.3m@ with no .tr in effect
-#
-# TOOD: this sort of construct -- [GL2-W2.5] adb.1 -- REVIEW: actually I think it's already handled
-# .tr ~"
-# .RS "\w'\f3~...~\f1\ 0\^\ \ \ \ \ 'u"
-# .tr ~~
+#                                          and so does bcopy(1m) - so I'll add @ to the delims? REVIEW
+#                                          and hp(1) uses `; mv(5) uses #
 #
 
 module Troff
   def esc_w(s)
     esc = Regexp.quote(@state[:escape_char])
-    s.match(/(^w([#{@@delim}])(.+?(#{esc}\2)*)\2)/)
+    s.match(/(^w([#{@@delim}#@`])(.+?(#{esc}\2)*)\2)/)
     (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
 
-# TODO make this reusable (here, next_tab, etc)
     # get a manipulable block that can be rendered without leaving anything in the output stream
+    # TODO make this reusable (here, next_tab, etc)
     hold_block = @current_block
     @current_block = Block.new(type: :se)
     unescape(req_str)

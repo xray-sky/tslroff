@@ -46,5 +46,6 @@ module Troff
   def xinit_in
     @state[:base_indent] = to_u('2m').to_i		# from the CSS; TODO: link this with css
     @register['.i'] = Register.new(@state[:base_indent], :ro => true)
+    @state[:previous_indent] = @register['.i'].value
   end
 end

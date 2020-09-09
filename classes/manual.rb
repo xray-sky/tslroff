@@ -21,6 +21,7 @@ class Manual
     @platform = os
     @version  = ver
     @input_filename = File.basename(file)
+    @source_dir     = File.dirname(file)
 
     @document = Array.new
     @related  = Array.new

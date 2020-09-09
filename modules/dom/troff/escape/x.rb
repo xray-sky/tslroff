@@ -8,6 +8,7 @@
 # negative before, positive after
 #
 # REVIEW '0' arg - see spline(1g) [GL2-W2.5]
+# REVIEW does it actually use delimiters??
 #
 # TODO what does this actually DO??
 #

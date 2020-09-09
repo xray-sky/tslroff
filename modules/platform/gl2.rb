@@ -47,6 +47,8 @@
 # option to nroff/troff (i.e., nroff −man file), then the current day/month/year is used
 # as the printed date.
 #
+# What the hell are \(Dy and \(Dn ?? - section 3G
+#
 
 module GL2
 
@@ -56,6 +58,10 @@ module GL2
 
   def init_footer
     @state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
+  end
+
+  def init_so
+    @state[:path_translations] = { %r{^/usr} => '' }
   end
 
   def init_ds
@@ -89,8 +95,10 @@ module GL2
     true
   end
 
-  def init_so
-    @state[:path_translations] = { %r{/usr} => '' }
+  def init_PD
+    super
+    @register['PD'] = @register[')P']
+    @register['IN'] = @state[:base_indent]
   end
 
 end

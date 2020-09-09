@@ -55,21 +55,12 @@
 
 module Troff
   def req_ta(*args)
-    warn ".ta received comma-separated args #{args.inspect}" if args[0].include?(',')
-    #hold_block = @current_block
-    # REVIEW is blanking all the tabs correct? Or does it replace them by position??
     @state[:tabs] = Array.new
     while args.any? do
       stop = args.shift
       stop.prepend("#{@state[:tabs].last || 0}u") if stop.start_with?('+')
-      # may contain \w, arithmetic expressions, scaled units...
-      # but I think now all of this sort of thing is handled in getargs(), before it gets here
-#      @current_block = Block.new(type: :bare)
-#      unescape(stop)
-#      @state[:tabs].push(to_u(@current_block.to_s).to_i)
       @state[:tabs].push(to_u(stop).to_i)
     end
-    #@current_block = hold_block
   end
 
   def init_ta

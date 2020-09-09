@@ -19,6 +19,9 @@
 #                                           current indent (that value stored in the
 #                                           .i register) is not changed.
 #
+#  so an absolute position is relative to the page, and in html context needs to be
+#  relative to the current indent. but a relative position (starts with ±) needs nothing.
+#
 
 module Troff
   def req_ti(indent = nil)
@@ -26,7 +29,7 @@ module Troff
     @current_block = blockproto
     @current_block.style.css[:margin_top] = '0'
     @document << @current_block
-    temp_indent(to_u(indent, default_unit: 'm')) # TODO this actually has to become negative, for css. but what to subtract it from?? sendmail(1m) [GL2-W2.5]
+    temp_indent(to_u(indent.match(/^[-+]/) ? "#{indent}" : "#{indent}-#{@register['.i'].value}u", default_unit: 'm'))
   end
 
   def temp_indent(hang)

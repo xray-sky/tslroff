@@ -272,6 +272,7 @@ module Troff
         # otherwise
         when /^(\s+)/ then nil  # spaces that haven't been claimed by above are ignored
         when /^(.)/             # this serves as an 'else' clause
+          # TODO (maybe): all columns marked 'e' get equal width - gethitcode(3g) [GL2-W2.5]
           warn "unimplemented tbl format #{format}"
           nil
         end

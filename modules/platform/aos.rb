@@ -34,6 +34,12 @@ module AOS
     @state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
   end
 
+  def init_so
+    @state[:path_translations] = {
+      %r{^/usr}     => '..',
+    }
+  end
+
   def init_sc
     super
     @state[:special_char].merge!({

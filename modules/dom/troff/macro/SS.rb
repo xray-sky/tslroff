@@ -10,10 +10,9 @@
 
 module Troff
   def req_SS(*args)
-    apply do
-      @current_block.type = :ss
-      @current_block << args.join(' ')
-    end
+    req_fi
+    apply { @current_block.type = :ss }
+    unescape(args.join(' '))
     req_nr(')R', '0')
     req_P
   end

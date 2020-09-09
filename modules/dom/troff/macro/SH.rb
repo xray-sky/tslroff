@@ -11,10 +11,9 @@
 
 module Troff
   def req_SH(*args)
-    text = args.join(' ')
     req_fi
     apply { @current_block.type = :sh }
-    unescape(text)
+    unescape(args.join(' '))
     @state[:section] = @current_block.to_s
     req_nr(')R', '0')
     req_P

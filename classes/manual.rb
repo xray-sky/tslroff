@@ -15,13 +15,16 @@ require 'classes/text.rb'
 class Manual
 
   attr_accessor :blocks
-  attr_reader   :platform, :version, :lines, :links
+  attr_reader   :platform, :version, :lines, :links, :manual_entry, :manual_section, :output_directory
 
   def initialize(file, os, ver)
     @platform = os
     @version  = ver
-    @input_filename = File.basename(file)
-    @source_dir     = File.dirname(file)
+    @input_filename   = File.basename(file)
+    @source_dir       = File.dirname(file)
+    #@manual_entry     = String.new
+    #@manual_section   = String.new
+    #@output_directory = String.new
 
     @document = Array.new
     @related  = Array.new

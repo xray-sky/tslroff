@@ -29,7 +29,7 @@ module AOS_4_3
   end
 
 =begin
-
+aliases(5) has "SEE&nbsp; ALSO"
   # NOTES
   #
   # bitmap.1 has \fP wart in summary line 14

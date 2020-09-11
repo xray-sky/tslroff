@@ -25,12 +25,13 @@
 #
 
 module Troff
-  def req_TH(*args)
+  def req_TH(*args, heading: nil)
+    @state[:manual_section] = args[1]
     req_DT
     apply do
       @current_block.type = :th
-      @current_block << args.join(' ')
     end
+    unescape(heading || "#{args[0]}\\^(\\^#{args[1]}\\^)")
     @current_block = blockproto
     @document << @current_block
   end

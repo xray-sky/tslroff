@@ -57,9 +57,9 @@ module Troff
         @current_block = Block.new
         @document << @current_block
         @current_block.style.attributes[:class] = 'foot'
-        @current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
-        parse(@state[:footer])
-        @current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
+        #@current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
+        unescape(@state[:footer])
+        #@current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
         # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
         return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs start ed by :th
       rescue => e

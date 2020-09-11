@@ -176,6 +176,17 @@ body {
 	color: red;
 }
 
+#man .clash {
+    display: inline-block;
+    width: 0.5em;
+	color: red;
+}
+
+#man .pile {
+    position: relative;
+    left: -0.5em;
+}
+
 #man .ul {
     color: black;
     font-weight: normal;
@@ -219,12 +230,12 @@ body {
 	width: 100%;
 }
 
-#man .nrs {     /* troff 1/6em narrow space */
+.nrs {     /* troff 1/6em narrow space */
     display: inline-block;
     width: 0.167em;
 }
 
-#man .hns {     /* troff 1/12em half-narrow space */
+.hns {     /* troff 1/12em half-narrow space */
     display: inline-block;
     width: 0.083em;
 }

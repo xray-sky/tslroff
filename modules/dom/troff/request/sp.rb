@@ -19,23 +19,18 @@
 #                                     like .sp 1.
 #
 # TODO: negative motion, traps, no-space mode, unit scaling, etc.
-# REVIEW: because of constructs like
-#            whatever. For example:
-#            .sp
-#            .in +8
-#            .nf
-#            star::
-#            bigcpu::
-#            .fi
-#            .in -8
-#            .PP
-#          this might have to be made to work with <p> -- Xserver(1) [AOS/4.3]
+# TODO: for some reason (probably to reserve page height) a.out(4) [GL2-W2.5] has
+#           .sp 1i
+#           .sp -1i
+#       html is output "correctly" but it's not _useful_ to have a span with
+#       negative height. now what? might just have to use the rewrite facility.
 #
 
 module Troff
   def req_sp(n = '1')  # TODO: everything is wrong?
     return if nospace?
     v = to_em(to_u(n, default_unit: 'v')) # TODO: hardcoding 1.2 em line height is bogus
+    warn "useless output of .sp #{v}em" and return if v<=0
     @current_block << "&roffctl_vs:#{v}em;"
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
     @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)

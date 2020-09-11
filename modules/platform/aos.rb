@@ -30,7 +30,10 @@ module AOS
     klasse.send(:instance_eval, 'alias req_LP req_PP')
   end
 
-  def init_footer
+  def init_aos
+    @manual_entry     = @input_filename.sub(/\.(\d\S?)$/, '')
+    @manual_section   = Regexp.last_match[1]
+    @output_directory = "man#{@manual_section}"
     @state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
   end
 
@@ -60,6 +63,20 @@ module AOS
       ']W' => '7th Edition',                # default set by .TH
       #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
     })
+  end
+
+  def req_TH(*args)
+    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+    if args[4]
+      req_ds(']D', args[4])
+      @state[:footer] = "\\*(]W" if args[4].strip.empty?
+    end
+    req_ds(']W', args[3]) if args[3]
+    if args[2]
+      req_ds(']L', args[2])
+      @state[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless args[2].strip.empty?
+    end
+    super(heading: heading)
   end
 
   def req_AC(*args)

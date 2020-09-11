@@ -129,8 +129,37 @@ module Troff
       @current_tabstop[:tab_stop] = 0
     end
 
-
     esc = @state[:escape_char]
+
+    # start by breaking up fields, then re-entering for each field part, if fields are enabled
+    if @state[:field_delimiter] and str.include?(@state[:field_delimiter])
+      warn "processing fields - #{str.inspect}"
+      fields = str.split(@state[:field_delimiter])
+      # if the last character is a delimiter, then the last index is a field (otherwise, ordinary text)
+      str = str.end_with?(@state[:field_delimiter]) ? '' : fields.pop
+      # the first part is outside the field. if delim is the first character, the string will be empty
+      __unesc(fields.shift)
+      stop = @state[:tabs].index(next_tab)
+      fields.each_with_index do |field, index|
+		# this mostly mirrors tab processing
+        warn "don't know how to do field padding except at right! #{@field.inspect}" unless field.nil? or field.end_with?(@state[:field_pad_char]) # empty fields won't have padding
+		__unesc(field.sub(/#{Regexp.escape(@state[:field_pad_char])}$/, '')) # TODO try with .tr instead?
+		fpos = @state[:tabs][stop + index]
+        if fpos.nil?
+          # prevent exception on running out of tabs
+          warn "out of fields with tabs=#{@state[:tabs].inspect}! (field: #{field.inspect})"
+          @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
+        else
+          @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((fpos - @current_tabstop[:tab_stop]).to_s)}em")
+          @current_block << '&roffctl_endspan;'
+          apply {
+            @current_block.text.last[:tab_stop] = stop
+          }
+          @current_tabstop = @current_block.text.last
+        end
+      end
+    end
+
     begin
       # do tabs too, while we're at it, so the input line is only dissected once
       parts = str.partition(/#{Regexp.quote(esc)}|\t+/)

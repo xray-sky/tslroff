@@ -97,6 +97,7 @@ class Line
         # compose overstruck characters (may have been piled up in any order)
         # also entitize < and > that were underlined or emboldened
         out << case cell
+               when ''          then ' '		# REVIEW is this right? how would I tell? how do we even end up here?
                when '&'         then '&amp;'
                when '>'         then '&gt;'
                when '<'         then '&lt;'
@@ -140,7 +141,11 @@ class Line
                when /[f,]{2}/   then '&fnof;'
                when /[#^]{2}/   then '&#9636;'  # curses "board of squares" equivalent
                when /(.)\cN/    then @@typebox[Regexp.last_match[1]]
-               else             %(<span id="u">#{cell}</span>)
+               else
+                 warn "unresolved overstrike #{cell.inspect}"
+                 base = cell[0]
+                 pile = cell[1..-1].chars.collect { |c| %(<span class="pile">#{c}</span>) }.join
+                 %(<span class="clash">#{base}#{pile}</span>)
                end
         out
       end

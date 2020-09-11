@@ -18,6 +18,10 @@ module CLIX
     super
   end
 
+  def init_clix
+    @manual_entry     = @input_filename.sub(/\.([\dZz]\S?)$/, '')
+  end
+
 end
 
 

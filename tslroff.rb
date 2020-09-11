@@ -62,12 +62,15 @@ loop do
     page = src.to_html
     related = Nokogiri::HTML(page).search('a')
 
-    ofile = "#{outdir}/#{ifile}.html" # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).
+    odir = "#{outdir}/#{src.output_directory}"
+    ofile = "#{odir}/#{src.manual_entry}.#{src.manual_section}.html" # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).
+    system('mkdir', '-p', odir) unless Dir.exists?(odir)
+
     loopcontext = binding
 
     # forking is more to keep 'erb' from polluting my string methods than it is
     # for "performance"
-    fork do
+    pid = fork do
       # whoa hoss, why does requiring this at the top break my string parsing?!
       # this needs resolving before we can deal with multiple files per invokation
       require 'erb'
@@ -77,6 +80,7 @@ loop do
       end
       exit
     end
+    Process.detach(pid)
 
   rescue FileIsLinkError
     target = $!.to_s

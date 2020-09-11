@@ -89,6 +89,7 @@ class Block
     when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
     when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
     when :th      then %(<div class="title"><h1>#{t}</h1></div>\n<div class="body">\n    <div id="man">\n)
+    when :subhead then %(<p class="subhead">#{t}</p>\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
     when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
@@ -107,10 +108,13 @@ class Block
       when 'SYNOPSIS'
         %(<p class="synopsis"#{style.to_s}>\n#{t}\n</p>\n)
       when Manual.related_info_heading
-        # TODO this is getting into trouble when there are <br />, and enclosing it within the <a>
-        #      (though everything else about it seems fine) -- see hf77(1), hc(1) [AOS-4.3]
-        "<p#{style.to_s}>\n#{t.gsub(%r{((<[^<]+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)},
-          %(<a href="../man\\7/\\3.\\6.html">\\1</a>))}\n</p>\n"
+        links = t.gsub(%r{((<[^<]+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)}) {
+                  (text, dir, section) = [$1, $7.downcase, $6.downcase]
+                  entry = $3.sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
+                  %(<a href="../man#{dir}/#{entry}.#{section}.html">#{text}</a>)
+                  # <br /> tags still causing problems; just not so severe? - tftp(1c) [AOS 4.3]
+                }
+        "<p#{style.to_s}>\n#{links}\n</p>\n"
       else
         "<p#{style.to_s}>\n#{t}\n</p>\n"
       end

@@ -56,8 +56,11 @@ module GL2
     klasse.send(:instance_eval, 'alias req_LP req_PP')
   end
 
-  def init_footer
-    @state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
+  def init_gl2
+    @manual_entry     = @input_filename.sub(/\.(\d\S?)$/, '')
+    @manual_section   = Regexp.last_match[1]
+    @output_directory = "man#{@manual_section}"
+    @state[:footer] = "\\*(]W"
   end
 
   def init_so
@@ -93,6 +96,17 @@ module GL2
     @state[:tabs] = [ '3.6m', '7.2m', '10.8m', '14.4m', '18m', '21.6m', '25.2m', '28.8m',
                       '32.4m', '36m', '39.6m', '43.2m', '46.8m' ].collect { |t| to_u(t).to_i }
     true
+  end
+
+  def req_TH(*args)
+    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+    if args[2]
+      req_ds(']L', args[2]) # "(\\^#{args[2]}\\^)") <= this is how it was in the perl version
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless args[2].strip.empty?
+    end
+    req_ds(']D', args[3]) if args[3]
+    heading << '\\0\\0\\(em\\0\\0\\*(]D'
+    super(heading: heading)
   end
 
   def init_PD

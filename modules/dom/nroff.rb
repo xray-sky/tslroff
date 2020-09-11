@@ -20,7 +20,8 @@ module Nroff
     @tab_width = 8
     @lines_per_page = 66
     # watch for alphabetic text starting in first column, which would be a title or section head
-    @heading_detection = %r(^([A-Z][A-Za-z\s]+)$)
+    @heading_detection = %r{^([A-Z][A-Za-z\s]+)$}
+    @title_detection   = %r{((\S+?)\(((\S+?)(-\S+)*)\))}		# TODO supposedly this doesn't always match correctly. rrestore.ffs(1) [RISC/os 4.52]
 
     @input_line_number = 0
 
@@ -35,13 +36,30 @@ module Nroff
     platen_position    = 1      # top of page, with room for one backward half-linefeed
     printhead_position = 0      # leftmost column
     section            = ''     # give this life outside the following loop
+    title_line         = ''
+    title_entry        = ''
+    title_section      = ''
 
     loop do
       begin
         input_line = @lines.next
         @input_line_number += 1
 
-        unformat(input_line).match(@heading_detection)
+        plaintext = unformat(input_line)
+
+        if title_line.empty?
+          # REVIEW this is going to be hard to override if I end up needing to.
+          plaintext.match(@title_detection)
+          if Regexp.last_match
+            title_line = plaintext
+            (fullname, title_entry, title_section, title_fullsec) = Regexp.last_match[1..4]
+            @manual_entry     ||= title_entry
+            @manual_section   ||= title_section.downcase
+            @output_directory ||= "man#{title_fullsec.downcase}"
+          end
+        end
+
+        plaintext.match(@heading_detection)
         section = Regexp.last_match[1].chomp if Regexp.last_match
 
         input_line.each_char do |char|
@@ -53,7 +71,7 @@ module Nroff
           @document[page].text[line] ||= Line.new
 
           text = @document[page].text[line]
-          text.section = section
+          text.section = section unless plaintext == title_line # don't assign a section to a title line
           platen_position % 2 == 0 ? text.up! : text.down!
 
           # REVIEW I wonder if these control characters ought to be programmable
@@ -83,6 +101,7 @@ module Nroff
           end
         end
       rescue StopIteration
+      warn "reached end of document without finding title!" if title_entry.empty?
         return @document.collect(&:to_html).join
       end
     end

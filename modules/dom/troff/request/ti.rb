@@ -29,7 +29,7 @@ module Troff
     @current_block = blockproto
     @current_block.style.css[:margin_top] = '0'
     @document << @current_block
-    temp_indent(to_u(indent.match(/^[-+]/) ? "#{indent}" : "#{indent}-#{@register['.i'].value}u", default_unit: 'm'))
+    temp_indent(to_u(indent.match(/^[-+]/) ? "#{indent}" : "#{indent}-#{@register['.i']}u", default_unit: 'm'))
   end
 
   def temp_indent(hang)

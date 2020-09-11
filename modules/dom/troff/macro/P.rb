@@ -18,7 +18,7 @@ module Troff
     init_IP		# .PP resets \n()I to 0.5i
     @current_block = blockproto
     @document << @current_block
-    indent(@state[:base_indent] + @register[')R'].value)
+    indent(@state[:base_indent] + @register[')R'])
   end
 
   alias req_PP req_P

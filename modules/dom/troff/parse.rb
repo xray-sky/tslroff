@@ -12,7 +12,7 @@ module Troff
       # hidden newlines -- REVIEW: does this need to be any more sophisticated?
       # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
       while line.end_with?("#{@state[:escape_char]}\n") and line[-3] != @state[:escape_char]
-        line.chop!.chop! << @lines.next.tap { @register['.c'].value += 1 }
+        line.chop!.chop! << @lines.next.tap { @register['.c'].incr }
       end
       # Multiple inter-word space characters found in the input are retained except for
       # trailing spaces. §4.1

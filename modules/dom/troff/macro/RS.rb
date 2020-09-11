@@ -23,12 +23,12 @@ module Troff
 
   def req_RS(indent = nil)
     # troff won't tolerate more than 9 levels of indent even though theoretically we could
-    raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'].value == 9
+    raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'] == 9
 
     # push old values onto stack
-    @register[')p'].+
-    @register["]#{@register[')p'].value}"].value = @register[')I'].value
-    @register[")#{@register[')p'].value}"].value = @register[')R'].value
+    @register[')p'].incr
+    @register["]#{@register[')p']}"].value = @register[')I'].value
+    @register[")#{@register[')p']}"].value = @register[')R'].value
 
     # increase relative indent by arg, or by )I if arg not given
     @register[')R'].value += if indent
@@ -43,7 +43,7 @@ module Troff
       @current_block.style.css[:margin_top] = '0'
       @document << @current_block
     end
-    indent(@state[:base_indent] + @register[')R'].value)
+    indent(@state[:base_indent] + @register[')R'])
 
   end
 

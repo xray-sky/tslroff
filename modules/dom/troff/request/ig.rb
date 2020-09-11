@@ -22,7 +22,7 @@ module Troff
     @current_block = blockproto
     begin
       @lines.collect_through do |l|
-        @register['.c'].value += 1
+        @register['.c']+
         unescape(l, copymode: true)
         l.start_with?(term_str)
       end

@@ -14,7 +14,7 @@ module Troff
     @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
     @current_block = blockproto
     @document << @current_block
-    indent(@state[:base_indent] + @register[')R'].value + @register[')I'].value)
-    temp_indent(-@register[')I'].value)
+    indent(@state[:base_indent] + @register[')R'] + @register[')I'])
+    temp_indent(-@register[')I'])
   end
 end

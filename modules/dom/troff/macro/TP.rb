@@ -36,10 +36,10 @@ module Troff
   end
 
   def tagpara(tag)
-    indent(@state[:base_indent] + @register[')R'].value + @register[')I'].value)
+    indent(@state[:base_indent] + @register[')R'] + @register[')I'])
 
     unless tag.empty?
-      temp_indent(-@register[')I'].value)
+      temp_indent(-@register[')I'])
       tag.class == String ? unescape(tag) : @current_block.text = tag
 
       # get the width
@@ -47,10 +47,10 @@ module Troff
       tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
 
       # is the tag wider than 3 points less than the indent?
-      if tag_width + @state[:tag_padding] > @register[')I'].value
+      if @register[')I'] < tag_width + @state[:tag_padding]
         req_br
       else
-        tab_width = to_em("#{@register[')I'].value}u")
+        tab_width = to_em("#{@register[')I']}u")
 
         # The odd insertion is so we don't clobber tags which themselves include tabs.
         # - adb(1) [GL2-W2.5]

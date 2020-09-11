@@ -41,7 +41,7 @@ module Troff
     @lines = File.read(localfile).lines.each
     loop do
       begin
-        l = @lines.tap { @register['.c'].value += 1 }.next
+        l = @lines.tap { @register['.c'].incr }.next
         parse(l)
       rescue StopIteration
         break

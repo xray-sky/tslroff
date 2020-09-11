@@ -82,7 +82,7 @@ module Troff
     # multi-line input
     input = if args[0].sub!(/^#{esc}{/, '')
       @lines.collect_through do |line|
-        @register['.c'].value += 1 # TODO oops, this will go nuts if we have multiple collect_through (e.g., .de inside .if)
+        @register['.c'].incr # TODO oops, this will go nuts if we have multiple collect_through (e.g., .de inside .if)
         line.sub!(/#{esc}}\s*$/, '')  # comb(1), delta(1) [GL2-W2.5]
       end
     else

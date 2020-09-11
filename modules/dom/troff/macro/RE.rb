@@ -20,15 +20,15 @@ module Troff
     else          @register[')p'] = Register.new(k, 1)
     end
 
-    @register[')I'].value = @register["]#{@register[')p'].value}"].value
-    @register[')R'].value = @register[")#{@register[')p'].value}"].value
-    @register[')p'].- if @register[')p'].value > 1
+    @register[')I'].value = @register["]#{@register[')p']}"].value
+    @register[')R'].value = @register[")#{@register[')p']}"].value
+    @register[')p'].decr if @register[')p'] > 1
 
     if @current_block.immutable?
       @current_block = blockproto
       @current_block.style.css[:margin_top] = '0'
       @document << @current_block
     end
-    indent(@state[:base_indent] + @register[')R'].value)
+    indent(@state[:base_indent] + @register[')R'])
   end
 end

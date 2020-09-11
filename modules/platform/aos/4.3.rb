@@ -11,6 +11,11 @@ module AOS_4_3
 
   def init_rewrites
     case File.basename(@source.filename)
+    when 'fpr.1'	# there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
+      newsrc = @source.lines
+      (28..37).each { |i| newsrc[i].sub!(/^\.\\"\s/, '') }
+      (40..156).each { |i| newsrc[i] = '..' }
+      @lines = newsrc.each
     when 'ftp.1c'
       newsrc = @source.lines
       newsrc[210].sub!(/f$/, 'fP')
@@ -23,11 +28,6 @@ module AOS_4_3
     end
   end
 
-  #def parse ( lines = @source.lines )
-  #  super
-  #  self.apply { @current_block.text << Text.new(:text => "super.", :style => Style.new(:grated => true)) }
-  #end
-  #
 =begin
 
   # NOTES

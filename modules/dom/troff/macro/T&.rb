@@ -11,7 +11,7 @@ module Troff
   def req_TAmp
     formats_terminator = Regexp.new('\.\s*$')
     @state[:tbl_formats] = Troff.tbl_formats(@lines.collect_through do |l|
-                             @register['.c'].value += 1
+                             @register['.c'].incr
                              l.match(formats_terminator)
                            end)
   end

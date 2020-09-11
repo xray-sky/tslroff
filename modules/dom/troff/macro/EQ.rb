@@ -13,7 +13,7 @@
 module Troff
   def req_EQ(*)
     @lines.collect_through { |l| l.match(/^.EN/) }[0..-2].each do |line|
-      @register['.c'].value += 1
+      @register['.c'].incr
       parse_eqn(line)
     end
   end

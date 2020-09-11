@@ -69,7 +69,7 @@ module Troff
       #.T                                                                 # 1 if -T option used; otherwise 0.
       #.V                                                                 # avail vertical resolution in u.
       #.a                                                                 # post-line extra line-space most recently utilized using \x'N'
-      '.c' => Register.new(0, :ro => true),                               # number of lines read from current input file.
+      '.c' => Register.new(0, 1, :ro => true),                            # number of lines read from current input file.
       #.d                                                                 # current vertical place in current diversion. == nl if no diversion
       '.f' => Register.new(1, :ro => true),                               # current font position.
       #.h                                                                 # text baseline high-water mark on current page or diversion (?)
@@ -94,7 +94,7 @@ module Troff
     # c. is supposed to be the same as read-only variable .c
     # REVIEW: but then why isn't it in the list of read-only registers?
 
-    @register['c.'] = @register['.c'].__id__
+    @register['c.'] = @register['.c']
 
     true
   end
@@ -102,10 +102,10 @@ module Troff
   class Register
     extend Forwardable
 
-    attr_accessor :format, :increment
-    def_delegators :@value, :zero?
+    attr_accessor :value, :format, :increment
+    def_delegators :@value, :zero?, :>, :<, :==, :-@, :to_f, :to_i, :to_int
 
-    @@alpha_map = [0,('a'..'z').to_a,('aa'..'zz').to_a,('aaa'..'zzz').to_a].flatten
+    @@alpha_map = [0] + ('a'..'z').to_a + ('aa'..'zz').to_a + ('aaa'..'zzz').to_a
     @@roman_map = [ [ '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix' ],
                     [ '', 'x', 'xx', 'xxx', 'xl', 'l', 'lx', 'lxx', 'lxxx', 'xc' ],
                     [ '', 'c', 'cc', 'ccc', 'cd', 'd', 'dc', 'dcc', 'dccc', 'cm' ],
@@ -118,13 +118,39 @@ module Troff
       @read_only = ro
     end
 
+    def incrementing?
+      !@increment.zero?
+    end
+
+    def incr
+      @value += @increment
+    end
+
+    def decr
+      @value -= @increment
+    end
+
     def read_only?
       @read_only
     end
 
-    def value
+    def value=(x)
+      raise RuntimeError "register sets only Integer value, not #{x.class.name}" unless x.respond_to?(:to_i)
+      @value = x.to_i
+    end
+
+    def coerce(other)
+    #  case other
+    #  when String        then [ other, self.to_str ]
+    #  when Fixnum, Float then [ other, self.to_int ]
+    #  else raise RuntimeError "referencing Register in #{other.class} context is not allowed."
+    #  end
+      [ Register.new(other), self ]
+    end
+
+    def to_str
       case @format
-      when '1'     then @value
+      when '1'     then @value.to_s
       when /(\d+)/ then sprintf("%0#{Regexp.last_match(1).length}d", @value)
       when /(a)/i
         Regexp.last_match(1) == 'A' ? @@alpha_map[@value].upcase : @@alpha_map[@value]
@@ -146,26 +172,19 @@ module Troff
       end
     end
 
-    def value=(val)
-      case val
-      when String  then @value = val.to_i
-      when Integer then @value = val
-      else         raise RuntimeError, "register sets only Integer value, not #{val.class.name}"
+    def ambidextrous_methods(other)
+      case other
+      when Fixnum, Float, Register then other.send(__callee__, @value)
+      when String                  then other.send(__callee__, @value.to_str)
+      else raise TypeError, "can't use #{__callee__} on Register type"
       end
     end
 
-    def incrementing?
-      !@increment.zero?
-    end
-
-    def +
-      @value += @increment
-    end
-
-    def -
-      @value -= @increment
-    end
+    alias to_s to_str
+    alias + ambidextrous_methods
+    alias * ambidextrous_methods
+    alias - ambidextrous_methods
+    alias / ambidextrous_methods
 
   end
-
 end

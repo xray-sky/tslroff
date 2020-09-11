@@ -50,7 +50,7 @@ module Troff
     @document << @current_block
     loop do
       begin
-        l = @lines.tap { @register['.c'].value += 1 }.next
+        l = @lines.tap { @register['.c'].incr }.next
         parse(l)
       rescue StopIteration
         # TODO: perform end-of-input trap macros from .em;
@@ -85,11 +85,11 @@ module Troff
     break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will REVIEW is this working??
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]
-    block.style.css[:margin_top] = "#{to_em(@register[')P'].value.to_s + 'u')}em" unless @register[')P'].value == @state[:default_pd]
+    block.style.css[:margin_top] = "#{to_em(@register[')P'].to_s)}em" unless @register[')P'] == @state[:default_pd]
     block.style.css[:margin_top] = '0' if nospace? #if nofill? or nospace?
-    block.style.css[:margin_left] = "#{to_em(@register['.i'].value.to_s + 'u')}em"
-    block.style.css.delete(:margin_left) if @register['.i'].value == @state[:base_indent]
-    block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j'].value] unless @register['.j'].value == 1
+    block.style.css[:margin_left] = "#{to_em(@register['.i'].to_s)}em"
+    block.style.css.delete(:margin_left) if @register['.i'] == @state[:base_indent]
+    block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j']] unless @register['.j'] == 1
     block.style.css[:text_align] = 'left' if noadj?		# .na sets left adjust without changing .j
     @current_tabstop = block.text.last
     @current_tabstop[:tab_stop] = 0

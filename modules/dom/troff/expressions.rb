@@ -88,8 +88,8 @@ module Troff
   end
 
   def to_em(str)
-    warn "absurd font size #{@register['.s'].value} converting units to em" if @register['.s'].value < 1
-    to_u(str).to_f * 72 / ( @@units_per_inch * @register['.s'].value )
+    warn "absurd font size #{@register['.s']} converting units to em" if @register['.s'] < 1
+    to_u(str).to_f * 72 / ( @@units_per_inch * @register['.s'] )
   end
 
   def to_u(str, default_unit: 'u')
@@ -125,9 +125,9 @@ module Troff
     when 'c'  then magnitude.to_f * @@units_per_inch * 50 / 127
     when 'P'  then magnitude.to_f * @@units_per_inch / 6
     when 'p'  then magnitude.to_f * @@units_per_inch / 72
-    when 'm'  then magnitude.to_f * @register['.s'].value * @@units_per_inch / 72
-    when 'n'  then magnitude.to_f * @register['.s'].value * @@units_per_inch / 144
-    when 'v'  then magnitude.to_f * @register['.v'].value
+    when 'm'  then magnitude.to_f * @register['.s'] * @@units_per_inch / 72
+    when 'n'  then magnitude.to_f * @register['.s'] * @@units_per_inch / 144
+    when 'v'  then magnitude.to_f * @register['.v']
     # non-Troff unit for use with Selenium results -- must be accessed with :default_unit
     when 'px' then magnitude.to_f * @@units_per_inch / @@pixels_per_inch
     end.to_i

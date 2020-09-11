@@ -36,7 +36,7 @@ module Troff
     options_terminator = Regexp.new(';\s*$')
 
     if @lines.peek.match(options_terminator)
-      @lines.tap { @register['.c'].value += 1 }.next.sub(options_terminator, '').split(options_separator).each do |option|
+      @lines.tap { @register['.c'].incr }.next.sub(options_terminator, '').split(options_separator).each do |option|
         case option
         when 'center'    then tbl.style.css[:margin] = 'auto'
         when 'expand'    then tbl.style.css[:width]  = '100%' # REVIEW: this was 85% in old version
@@ -73,7 +73,7 @@ module Troff
           top_borders[column] = fmt if fmt.match(/[_=]/)
         end
       end
-      @lines.tap { @register['.c'].value += 1 }.next
+      @lines.tap { @register['.c'].incr }.next
     end
 
     #row = 0
@@ -83,12 +83,12 @@ module Troff
     # table data. terminated by .TE macro
     while @document.last.type == :table do
 
-      line = @lines.tap { @register['.c'].value += 1 } .next.chomp
+      line = @lines.tap { @register['.c'].incr } .next.chomp
 
       # includes a text block?
       if line.sub!(/T{$/, '')
         additional = @lines.collect_through do |l|
-                       @register['.c'].value += 1
+                       @register['.c'].incr
                        l.start_with?('T}')
                      end
         additional[-1].sub!(/^T}/, '')
@@ -131,7 +131,7 @@ module Troff
           end
           # if there's rowspan characters in the text, there'll be a line for this row in formats. skip it.
           @state[:tbl_formats].next_row if line.match(/\\\^/)
-          @lines.tap { @register['.c'].value += 1 }.next
+          @lines.tap { @register['.c'].incr }.next
         end
       rescue StopIteration => e
         # ignore it.

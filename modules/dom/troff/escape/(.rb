@@ -22,7 +22,8 @@ module Troff
       'rg'  => '&reg;',
       'tm'  => '&trade;',
       'OK'  => '&#10003;',  # check mark
-      'bs'  => '&roffctl_unsupp;TO DO: (BELL LABS LOGO)&roffctl_endspan;',  # TODO: bell labs logo, not used in groff (cute.)
+      #'bs'  => '&roffctl_unsupp;TO DO: (BELL LABS LOGO)&roffctl_endspan;',  # TODO: bell labs logo, not used in groff (cute.)
+      'bs'  => '&roffctl_bell;',
       'Do'  => '\$',
       'ct'  => '&cent;',
       'eu'  => '&euro;',

@@ -36,6 +36,7 @@
 # TODO special table macros
 # TODO special .TH for intro
 # TODO maybe an override for .SS, since it wants to use font escapes to emulate multiple levels of subhead - adb(1), ex(1), etc.
+# TODO tbl crazy in sed(1)!
 
 module SunOS_5_5_1
 

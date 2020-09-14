@@ -71,7 +71,7 @@ module Troff
   end
 
   def input_line_number
-    @register['.c'].value
+    @register['.c']&.value || 0
   end
 
   def debug(line, *msg)

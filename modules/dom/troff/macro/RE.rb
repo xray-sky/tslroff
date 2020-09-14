@@ -14,6 +14,7 @@
 
 module Troff
   def req_RE(k = nil)
+    return if @register[')p'].zero?		# never .RS'd.
     case k
     when nil then true
     when '0' then @register[')p'] = Register.new(1, 1)

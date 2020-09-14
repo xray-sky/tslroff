@@ -125,9 +125,9 @@ module Troff
     when 'c'  then magnitude.to_f * @@units_per_inch * 50 / 127
     when 'P'  then magnitude.to_f * @@units_per_inch / 6
     when 'p'  then magnitude.to_f * @@units_per_inch / 72
-    when 'm'  then magnitude.to_f * @register['.s'] * @@units_per_inch / 72
-    when 'n'  then magnitude.to_f * @register['.s'] * @@units_per_inch / 144
-    when 'v'  then magnitude.to_f * @register['.v']
+    when 'm'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 72
+    when 'n'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 144
+    when 'v'  then magnitude.to_f * @register['.v'].to_f
     # non-Troff unit for use with Selenium results -- must be accessed with :default_unit
     when 'px' then magnitude.to_f * @@units_per_inch / @@pixels_per_inch
     end.to_i

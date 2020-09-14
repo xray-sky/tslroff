@@ -31,7 +31,8 @@
 #
 
 module Troff
-  def req_br
+  def req_br(*_args)
+    warn "pointlessly received arguments to .br #{_args.inspect} -- why?" if _args.any?
     unless nofill? or broke?
       @current_block << LineBreak.new
       @current_tabstop = @current_block.text.last

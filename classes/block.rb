@@ -70,6 +70,10 @@ class Block
     (immutable! and @output_indicator = true) unless t.empty?
   end
 
+  def coerce(obj)
+    [ Block.new(text: obj), self ]
+  end
+
   def to_s
     text.collect(&:to_s).join
   end
@@ -92,6 +96,7 @@ class Block
     when :subhead then %(<p class="subhead">#{t}</p>\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
+    when :cs      then "<pre>#{t}</pre>\n"
     when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
     when :cell
       t.gsub!(/&tblctl_\S+?;/) do |e|

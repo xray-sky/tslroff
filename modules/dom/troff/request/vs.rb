@@ -8,7 +8,12 @@
 # Request  Initial  If no     Notes   Explanation
 #  form     value   argument
 #
-# .vs N  1/6in;12pt previous  E,p     Vertical base line spacing (V).
+# .vs N  1/6in;12pt previous  E,p     Set vertical base-line spacing size V. Transient
+#                                     extra vertical space available with \x'N'.
+#
+# default unit: points
+#
+# TODO: everything.
 #
 
 module Troff

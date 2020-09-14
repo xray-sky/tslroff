@@ -76,7 +76,7 @@ module Troff
       #.i' => Register.new(@state[:base_indent], :ro => true),            # current indent. - circular dependency referencing @base_indent here - see xinit_in
       '.j' => Register.new(1, :ro => true),                               # current adj mode and type. can be saved for use with .ad to restore
       #.k                                                                 # horizontal size of text (minus indent) of current partially collected output line, if any, in current env.
-      #.l                                                                 # current line length.
+      '.l' => Register.new(to_u('7.5i'), :ro => true),                    # current line length. TODO connect this to some future implementation of .ll ??
       #.n                                                                 # length of text portion on previous output line.
       '.o' => Register.new(0, :ro => true),                               # current page offset (left margin). separate from indents. REVIEW: how does changing this interact with css ('0' provides 1in margin)
       #.p                                                                 # current page length.

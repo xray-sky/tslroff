@@ -18,6 +18,8 @@
 # Blank text line   -         B       Causes a break and outputs a blank line exactly
 #                                     like .sp 1.
 #
+# .sp 0 is effectively a .br
+#
 # TODO: negative motion, traps, no-space mode, unit scaling, etc.
 # TODO: for some reason (probably to reserve page height) a.out(4) [GL2-W2.5] has
 #           .sp 1i
@@ -30,7 +32,8 @@ module Troff
   def req_sp(n = '1')  # TODO: everything is wrong?
     return if nospace?
     v = to_em(to_u(n, default_unit: 'v')) # TODO: hardcoding 1.2 em line height is bogus
-    warn "useless output of .sp #{v}em" and return if v<=0
+    (warn "pathological output of .sp #{v}em" ; return) if v < 0
+    (req_br ; return) if v == 0
     @current_block << "&roffctl_vs:#{v}em;"
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
     @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)

@@ -1,6 +1,6 @@
 /* needs more research. http://nicewebtype.com/notes/2009/10/30/how-to-use-css-font-face/ */
 /* https://stackoverflow.com/questions/6476351/how-to-use-the-computer-modern-font-in-webpages */
-/* still hinky - gives bold when not desired, either for roman or for italic. WHY. */
+/* still hinky - gives bold when not desired, either for roman or for italic. WHY. -- SAFARI 9 */
 /*
 @font-face {
     font-family: "CMU Typewriter";
@@ -178,13 +178,13 @@ body {
 
 #man .clash {
     display: inline-block;
-    width: 0.5em;
+    width: 0.6em;
 	color: red;
 }
 
 #man .pile {
     position: relative;
-    left: -0.5em;
+    left: -0.6em;
 }
 
 #man .ul {
@@ -198,7 +198,10 @@ body {
 	background: none;
 	border-spacing: 0;
 	padding: 0;
-	margin-left: 3em;
+	margin-left: 2em; /* TODO align this and padding with <p> */
+	margin-right: 2em;
+	padding-left: 2em;
+	padding-right: 2em;
     font-size: inherit;
 }
 

@@ -35,15 +35,15 @@ module Troff
     options_separator  = Regexp.new('(?:,\s*|\s+)')
     options_terminator = Regexp.new(';\s*$')
 
-    if @lines.peek.match(options_terminator)
-      @lines.tap { @register['.c'].incr }.next.sub(options_terminator, '').split(options_separator).each do |option|
+    if @lines.peek.match(options_terminator)	# some of these options may take parameters that could be separated by whitespace - like tab()
+      @lines.tap { @register['.c'].incr }.next.gsub(/(tab)\s+\(/, "\\1(").sub(options_terminator, '').split(options_separator).each do |option|
         case option
         when 'center'    then tbl.style.css[:margin] = 'auto'
         when 'expand'    then tbl.style.css[:width]  = '100%' # REVIEW: this was 85% in old version
         when 'box'       then tbl.style.css[:border] = '1px solid black'
         when 'doublebox' then tbl.style.css[:border] = '3px double black'
         when 'allbox'    then tbl.style.css[:border_collapse] = 'collapse' and tbl.style[:allbox] = true
-        when /^tab\s*\((.)\)/   then cell_delim = Regexp.last_match(1)
+        when /^tab\((.)\)/   then cell_delim = Regexp.last_match(1)	# TODO not going to see this if there's a space between, because it's been split already
         #when /^delim\s*\((..)\)/     then # TODO: -- recognizes . and . as eqn delimiters
         #when /^linesize\s*\((\d+)\)/ then # TODO: -- sets lines or rules in n point type
         else warn "unimplemented tbl global #{option.inspect}"

@@ -19,7 +19,8 @@
 #      the position of the current font is available in the read-only number
 #      register, .f
 #
-
+#      \f(BI (bold-italic) in scsiformat(8c) [AOS 4.3]
+#
 module Troff
   def esc_f(s)
     esc = Regexp.quote(@state[:escape_char])   # handle \f\P wart in ftp.1c [GL2-W2.5]

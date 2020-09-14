@@ -83,6 +83,7 @@ module Troff
   # prototype a new block with whatever necessary styles carried forward.
   def blockproto(type = :p)
     break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will REVIEW is this working??
+    type = :cs if @state[:cs]
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]
     block.style.css[:margin_top] = "#{to_em(@register[')P'].to_s)}em" unless @register[')P'] == @state[:default_pd]

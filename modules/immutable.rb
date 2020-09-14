@@ -43,6 +43,13 @@ module Immutable
     self.class.new(prototype)
   end
 
+  def ==(obj)
+    return false unless keys.sort == obj.keys.sort
+    keys.each do |k|
+      return false unless self[k] == obj[k]
+    end
+  end
+
   def each(&block)
     return enum_for(__callee__) unless block_given?
     keys.each do |k|

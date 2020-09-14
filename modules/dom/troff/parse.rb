@@ -35,6 +35,7 @@ module Troff
     else
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3 - also in nofill mode
+      # TODO: hm, I'm getting an extra .br (because of a space adjustment??) on consecutive blank text lines. - hesinfo(1) [AOS-4.3]
 
       if line.match(/^\s*$/)
         req_br

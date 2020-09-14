@@ -40,6 +40,10 @@ class Text
     end
   end
 
+  def coerce(obj)
+    [ Text.new(text: obj), self ]
+  end
+
   def inspect
     <<~MSG
 
@@ -78,6 +82,7 @@ class Text
         when :baseline         then %(<span style="position:relative;top:#{v}em;line-height:0;">)
         when :horizontal_shift then %(<span style="position:relative;left:#{v}em;">)
         when :word_spacing     then %(<span style="word-spacing:#{v}em;">) # REVIEW this seems to give wider spaces than I'd expect - jot(1) [AOS-4.3]
+        when :eqn              then %(<span style="color:steelblue;">)
         when :unsupported      then %(<span class="u">Unsupported request =&gt; )
         else                        %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
         end

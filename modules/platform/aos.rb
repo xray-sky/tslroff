@@ -27,7 +27,7 @@
 module AOS
 
   def self.extended(klasse)
-    klasse.send(:instance_eval, 'alias req_LP req_PP')
+    klasse.send(:instance_eval, 'alias req_LP req_PP') if klasse.methods.include?(:req_PP)
   end
 
   def init_aos
@@ -91,6 +91,10 @@ module AOS
                  else '7th Edition'
                  end
           )
+  end
+
+  def req_VE
+    warn "can't yet draw margin characters (.mc)"
   end
 
   # tmac.an.new

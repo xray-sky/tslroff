@@ -14,6 +14,7 @@ module Troff
     when '"'  then 'quot'
     when '*'  then 'star'
     when '('  then 'lparen'
+    when '}'  then 'rcurl'
     when '\"' then 'BsQuot'
     when 'T&' then 'TAmp'
     else           reqstr

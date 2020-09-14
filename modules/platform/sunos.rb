@@ -9,15 +9,15 @@
 
 module SunOS
 
-  def parse(l)
-    # TODO: this is just a test of the modular bug rewrite capability.
-    #       it is working; this is an FSF (linux) bug though.
-    case File.basename(@source.filename)
-    when "man.1"
-      l.sub!(/^'html'/, "\\\\&'html'")
-    end
-    super
-  end
+  #def parse(l)
+  #  # TODO: this is just a test of the modular bug rewrite capability.
+  #  #       it is working; this is an FSF (linux) bug though.
+  #  case File.basename(@source.filename)
+  #  when "man.1"
+  #    l.sub!(/^'html'/, "\\\\&'html'")
+  #  end
+  #  super
+  #end
 
   # TODO: these aren't sunos named strings, just samples for testing
   def init_ds

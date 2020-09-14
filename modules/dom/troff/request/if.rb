@@ -55,28 +55,29 @@ module Troff
     esc = Regexp.quote(@state[:escape_char])
     test = args.shift
     predicate = (test.sub!(/^!/, '') ? false : true)
-    condition = case test
+    condition = case test[0]
                 when 'e', 'E' then warn 'can\'t test for even page number'
                 when 'o', 'O' then warn 'can\'t test for odd page number'
-                when 't', 'T' then true			# troff - TODO: this needn't be followed by a space!
-                when 'n', 'N' then false		# nroff - TODO: this needn't be followed by a space!
-                when /^([#{@@delim}])(.*?)\1(.*?)\1$/, /^([^@@delim].*?)"(.*?)$/
+                when 't', 'T', 'n', 'N'
+                  pred = test[0]
+                  args = [test[1..-1]] + args if test[1]
+                  test = pred.downcase
+                  test == 't'
+                when /\d/
+                  # try to evaluate it as an expression
+                  # REVIEW: are we going to get expressions not starting with digits?
+                  # \n and \w should already be processed by the time we get here.
+                  expr = to_u(test).to_f
+                  expr > 0
+                else
+                  warn "evaluating condition #{test.inspect} as string comparison"
+                  # TODO some joker's used a special character as a delim in mwm(1), saber(1) [AOS 4.3]
+                  # .if \(ts\n(.z\(ts\(ts - good grief. sigma?! I guess that is going to take a rewrite rule.
+                  #test.sub!("\\(ts", '"') - do this as a reusable method that will interpret the next char as an escape - we need it for all esc processing (e.g. \n(\f1, \f\P)
+                  test.match(/^([#{@@delim}])(.*?)\1(.*?)\1$/) or test.match(/^([^@@delim].*?)"(.*?)$/) # TODO: _any_ delimiter
                   (str1, str2) = Regexp.last_match[-2..-1]
                   #warn "don't know how to compare strings #{str1.inspect} and #{str2.inspect}"
-                  str1 == str2  # TODO this needs to expand named strings without interfering with output - mhook(1) [AOS 4.3]
-                else
-                  # try to evaluate it as an expression
-                  begin
-                    expr = to_u(test).to_f
-                    case expr
-                    #when 'true'        then true -- maybe don't need case anymore, just the > test?
-                    #when 'false'       then false -- these oughtn't happen anymore as they are coerced in to_u
-                    when Fixnum, Float then expr > 0 ? true : false
-                    else warn "unexpected return from evaluation of expression #{expr.inspect} #{expr.class}"
-                    end
-                  rescue => e
-                    warn "failed to evaluate conditional expression #{test.inspect} => #{e}"
-                  end
+                  __unesc_star(str1) == __unesc_star(str2)  # TODO this needs to expand named strings without interfering with output - mhook(1) [AOS 4.3]
                 end
 
     # multi-line input
@@ -101,7 +102,7 @@ module Troff
       input.each { |line| parse(line) }
       true
     else
-      warn "rejected condition #{test.inspect}" unless test == 'n'
+      warn "rejected condition #{predicate ? '' : '!'}#{test.inspect}" unless test == 'n'
       false
     end
   end

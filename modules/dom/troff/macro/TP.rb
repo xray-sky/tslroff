@@ -14,11 +14,14 @@
 #   text...
 #
 # TODO: what does ".TP &" mean? (see: machid.1 [GL2-W2.5])
-# TODO: tabs interacting with indents?
+# TODO: AOS likes passing invalid expressions to .TP (and .IP) - nroff seems to ignore
+#       them and keep previous indents, instead of changing them to 0 (as the expression evaluates)
+#       ...how?? restore.tape(8), xlogin(8), etc.
 #
 
 module Troff
-  def req_TP(indent = nil)
+  def req_TP(indent = nil, *_args)
+    warn "pointlessly received extra arguments to .TP #{_args.inspect} - why??" unless _args.empty?
     indent = nil if indent == '&'	# TODO: ???
     req_it('1', :finalize_TP, indent)
     @document << blockproto

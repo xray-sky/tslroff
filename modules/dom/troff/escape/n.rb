@@ -16,7 +16,7 @@ module Troff
       @register[reg].send(incr) if incr
       s.sub(/#{Regexp.quote(req)}/, @register[reg].to_s)
     else
-      warn "unselected number register #{s[0..1]} from #{s[2..-1]} (#{Regexp.last_match.inspect}) - using 0"
+      warn "unselected number register #{reg} from #{s} - using 0"
       s.sub(/#{Regexp.quote(req)}/, '0')
     end
   end

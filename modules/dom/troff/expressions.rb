@@ -96,14 +96,14 @@ module Troff
 
     # troff issues a warning for any characters not allowed in a numeric expression
     # (like ',') and disregards everything after one. not sure what to return though
-    # if the entire expression is disregarded. REVIEW: zero?
+    # if the entire expression is disregarded. REVIEWED. zero? - yes.
     str.sub!(%r{[^-+()\d\.cimnPpuv/*%<>=&:].*$}, '') and warn "disregarding extra chars in numeric expression #{Regexp.last_match[0].inspect}"
-    return 0 if str.empty?
+    return '0' if str.empty?
 
     # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
     # in order to avoid having to differentiate between '-' as subtraction vs. negation
     str = str.prepend('0u') if str.match(/^[+-]/)
-    str = str.gsub('+-', '-').gsub('--', '+').gsub('++', '+')
+    str = str.gsub('+-', '-').gsub('--', '+').gsub('++', '+').gsub(/=-([\.\dcimnPpuv]+?)/, "=(-\\1)")
 
     # try to break down the expression
     # start with parens; work inside -> out

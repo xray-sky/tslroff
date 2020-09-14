@@ -71,6 +71,17 @@ module Troff
         # various types of parameters.
 
         formats[row] = fmts.scan(/\|?[#{key_letters}][^#{key_letters}]*/)
+        # try to split extra column space between each adjacent column
+        # h4x - prefix right column space with '000' so it can be identified in format_row()
+        # this works but tbl(1) centers text in the unpadded space, in an unpadded cell
+        # and in html, all centering will happen in the largest padded space
+        # REVIEW so maybe we don't accept extra column space at all.
+        # formats[row].each_with_index do |fmts, col|
+        #   if formats[row][col+1] and fmts.sub!(/(?<![wf])(\d+)/) { $1.start_with?('000') ? $1 : ($1.to_f / 2) }
+        #     formats[row][col+1] << "000#{Regexp.last_match[1].to_f / 2}"
+        #   end
+        # end
+
         columns = formats[row].count if formats[row].count > columns   # TODO: don't allow this to change after initial format (i.e. during subsequent .T&)
 
         # In order to apply the row (^) and column (S) spans more easily in HTML context,
@@ -196,9 +207,18 @@ module Troff
       until format.empty? do
         case format
         # sizing
-        when /^(\d+)/ then warn "tbl wants to change space between columns to #{Regexp.last_match[1]}"	# TODO? see tbl: tech discussion p.8
+        when /^([\.\d]+)/
+          warn "tbl wants to change space between columns to #{Regexp.last_match[1]}"	# TODO? see tbl: tech discussion p.8
+          # if Regexp.last_match[1].start_with?('000')
+          #   cell.style.css[:padding_left] = to_em(to_u(Regexp.last_match[1], default_unit: 'n')).to_s + "em" # the default is 3n. REVIEW account for that somehow? - TODO: also appears when there's borders that it splits the space to either side. that's a mood.
+          # else
+          #   cell.style.css[:padding_right] = to_em(to_u(Regexp.last_match[1], default_unit: 'n')).to_s + "em" # the default is 3n. REVIEW account for that somehow? - TODO: also appears when there's borders that it splits the space to either side. that's a mood.
+          # end
         when /^(w\(?([\d.]+(?:[uicpmnv]\))?))/i		# minimum column width
-         cell.style.css[:min_width] = to_em(to_u(Regexp.last_match[2], default_unit: 'n'))
+         cell.style.css[:min_width] = to_em(to_u(Regexp.last_match[2], default_unit: 'n')).to_s + "em"
+        when /^e/
+          warn "tbl wants equal width columns"
+          cell.style.css[:width] = "#{1.0 / @state[:tbl_formats].columns}%"
 
         # alignments
         when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML?? how is it different in practice from L?
@@ -210,18 +230,22 @@ module Troff
         # font changes
         when /^(b)/i  then cell.text.last.font.face      = :bold
         when /^(i)/i  then cell.text.last.font.face      = :italic
-        when /^(f\d{1,2})/
+        when /^(f(?:\d{1,2}|.))/
           # unescape wants to work on @current_block
           # this manipulation should be safe as we haven't frozen any of these blocks, yet
           cur_blk = @current_block
           @current_block = cell
           unescape(@state[:escape_char] + Regexp.last_match[1])
+          @current_block = Block.new(type: :nil)
+          unescape(@state[:escape_char] + 'fP')	# prevent font change from leaking beyond this cell
           @current_block = cur_blk
 
         when /^(p([-+123]?\d))/ #then req_ps(Regexp.last_match[2])
           cur_blk = @current_block
           @current_block = cell
           unescape(@state[:escape_char] + 's' + Regexp.last_match[2])
+          @current_block = Block.new(type: :nil)
+          unescape(@state[:escape_char] + 's0')	# prevent size change from leaking beyond this cell
           @current_block = cur_blk
 
         # spans
@@ -282,8 +306,8 @@ module Troff
       cell
     end
 
-    # reset font and size to default
     req_ft('R')
+    # reset font and size to default - this didn't seem to be working in all circumstances? sysconf(3c) [SunOS 5.5.1]
     req_ps(Font.defaultsize)
 
     @state[:tbl_formats].next_row

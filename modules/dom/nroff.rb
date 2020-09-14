@@ -14,9 +14,6 @@ module Nroff
       require i
     end
 
-    require "modules/platform/#{self.platform.downcase}.rb"
-    self.extend Kernel.const_get(self.platform.to_sym)
-
     @tab_width = 8
     @lines_per_page = 66
     # watch for alphabetic text starting in first column, which would be a title or section head
@@ -25,6 +22,7 @@ module Nroff
 
     @input_line_number = 0
 
+    load_platform_overrides
     load_version_overrides
 
   end
@@ -75,6 +73,8 @@ module Nroff
           platen_position % 2 == 0 ? text.up! : text.down!
 
           # REVIEW I wonder if these control characters ought to be programmable
+          #        not if col(1) is involved - VT(\013), SI (\016), SO (\017), and ESC-7, 8, and 9 only
+          # TODO support VT as alternate form of full reverse linefeed
           case char
           when ' '   then printhead_position += 1
           when "\n"  then platen_position += 2 and printhead_position = 0

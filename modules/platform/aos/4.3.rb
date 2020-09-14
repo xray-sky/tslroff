@@ -11,6 +11,10 @@ module AOS_4_3
 
   def init_rewrites
     case File.basename(@source.filename)
+    when 'f77.1'
+      newsrc = @source.lines
+      newsrc[227].sub!(/^/, "\\&")	# non-macro line starts with .
+      @lines = newsrc.each
     when 'fpr.1'	# there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
       newsrc = @source.lines
       (28..37).each { |i| newsrc[i].sub!(/^\.\\"\s/, '') }
@@ -20,16 +24,48 @@ module AOS_4_3
       newsrc = @source.lines
       newsrc[210].sub!(/f$/, 'fP')
       @lines = newsrc.each
+    when 'help.1'	# also in olh.1 but uses .so
+      newsrc = @source.lines
+      newsrc[20].sub!(/^/, "\\&")	# non-macro line starts with '
+      @lines = newsrc.each
     when 'mdtar.1'
       newsrc = @source.lines
-      newsrc[96].sub!(/\\\*$/, '')
-      newsrc[102].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
+      newsrc[96].sub!(/\\\*\s+$/, '*')
+      newsrc[102].sub!(/\\\*$/, '*') # nroff ignores these, but they are intended to output
       @lines = newsrc.each
     end
   end
 
+  # zwgc(1) wants to call this directly, from local .TQ:
+  # TODO: implement .di for this to work.
+  #
+  # .de TQ
+  # .if !"\\$1"" .nr )I \\$1n
+  # .ne 1.1v
+  # .in \\n()Ru
+  # .nr )E 1
+  # .ns
+  # .it 1 }N
+  # .di ]B
+  # ..
+  #
+  # handle end of 1-line features
+  # .de }N
+  # .if \\n()E .br
+  # .di
+  # .if "\\n()E"0" .}f
+  # .if "\\n()E"1" .}1
+  # .if "\\n()E"2" .}2
+  # .nr )E 0
+  # ..
+
+  def req_rcurlN
+    # TODO: ugh.
+  end
+
 =begin
 aliases(5) has "SEE&nbsp; ALSO"
+mh-chart(1) wants special attention!
   # NOTES
   #
   # bitmap.1 has \fP wart in summary line 14

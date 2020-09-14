@@ -151,8 +151,9 @@ class Line
       end
     end.join
 
-    line.gsub!(/((<.+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)/,
-        %(<a href="../man\\7/\\3.\\6.html">\\1</a>)) if @section == Manual.related_info_heading # TODO the regexp should be reusable in Block context instead of copied & pasted
+    line.gsub!(%r{((<[^<]+?>)*(\S+?)(<.+?>)*\((<.+?>)*((\d.*?)(-.*?)*)(<.+?>)*\)(<.+?>)*)}) {
+      %(<a href="../man#{$7.downcase}/#{$3}.#{$6.downcase}.html">#{$1}</a>)
+    } if @section == Manual.related_info_heading # TODO the regexp should be reusable in Block context instead of copied & pasted
     line + close_styles.call
   end
 

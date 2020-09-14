@@ -20,7 +20,8 @@ module Troff
          end
     ds = @state[:named_string][ns].to_s
     warn "unselected named string #{ns} from #{s.inspect}" if ds.empty?
-    ds + s[2*(ns.length)..-1]	# tricky - one char ns removes *x
-                             	#          two char ns removes *(xx
+    ds + s[2*(ns.length)..-1].to_s	# tricky - one char ns removes *x
+                             	  	#          two char ns removes *(xx
+                             	  	#          to_s covers us in case nothing's left
   end
 end

@@ -31,7 +31,7 @@ module Troff
     apply do
       @current_block.type = :th
     end
-    unescape(heading || "#{args[0]}\\^(\\^#{args[1]}\\^)")
+    unescape(heading || "#{args[0]}\\^(\\^#{args[1]}\\^)") # TODO delay this until first output, somehow, because of macros that expect to rewrite this
     @current_block = blockproto
     @document << @current_block
   end

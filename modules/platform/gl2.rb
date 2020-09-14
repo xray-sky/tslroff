@@ -53,7 +53,7 @@
 module GL2
 
   def self.extended(klasse)
-    klasse.send(:instance_eval, 'alias req_LP req_PP')
+    klasse.send(:instance_eval, 'alias req_LP req_PP') if klasse.methods.include?(:req_PP)
   end
 
   def init_gl2
@@ -112,7 +112,7 @@ module GL2
   def init_PD
     super
     @register['PD'] = @register[')P']
-    @register['IN'] = @state[:base_indent]
+    @register['IN'] = Troff::Register.new(@state[:base_indent])
   end
 
 end

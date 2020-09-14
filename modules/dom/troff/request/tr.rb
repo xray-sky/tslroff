@@ -32,6 +32,7 @@
 
 module Troff
   def req_tr(str)
+    warn "enabling .tr for #{str.inspect}"
     begin
       a = str.slice!(0)
       b = str.slice!(0)

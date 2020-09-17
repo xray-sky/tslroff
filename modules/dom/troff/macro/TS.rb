@@ -10,8 +10,8 @@
 
 module Troff
   def req_TS(*args)
+    warn "processing tbl -"
     cell_delim = "\t"
-
     tbl = blockproto(:table)
     tbl.text = Array.new
     @document << tbl
@@ -91,7 +91,7 @@ module Troff
                        @register['.c'].incr
                        l.start_with?('T}')
                      end
-        additional[-1].sub!(/^T}/, '')
+        additional[-1].sub!(/^T}/, '') # TODO also we may encounter back-to-back T{ T} (e.g. T}\tT{)
         line << additional.join		# TODO wrong, because the lines may contain requests! - boot(8) [GL2-W2.5]
       end
 
@@ -111,10 +111,15 @@ module Troff
       #
       # if .TE is the last line of the file, we'll get a StopIteration from peek
       # and it won't actually get processed.
+      #
+      #  TODO inline border/span detection is failing if there are intervening troff requests. what do we do then? I think maybe they're not allowed for text rows? unless it's in a T{ T} perhaps? yes, they can appear there.
+
       begin
         if @lines.peek.chop.match(/^(\s|\\\^|_|=)+$/)	# TODO: allow changed field separator
           line = Regexp.last_match(0)
+          warn "format/bottom border change line #{line.inspect}"
           if line.match(/^([_=])$/)
+            warn "whole row"
             current_row.text.each do |cell|
               cell.style.css[:border_bottom] = case Regexp.last_match(1)
                                                when '_' then '1px solid black'
@@ -122,7 +127,9 @@ module Troff
                                                end
             end
           else
+            warn "partial row"
             line.split(cell_delim).each_with_index do |fmt, column|
+              warn "column #{column} format: #{fmt.inspect}"
               current_row.text[column].style.css[:border_bottom] = case Regexp.last_match(1)
                                                                    when '_' then '1px solid black'
                                                                    when '=' then '3px double black'
@@ -182,7 +189,7 @@ module Troff
         # must appear as a cell - stbl1) and a row with one column's worth of text that's
         # spanned to the end of the row (which must not appear as cells - stbl3)
 
-        unless text.nil?
+        unless text.nil? # TODO looks like blank lines are still meant to output a row - history(1) [SunOS 5.5.1] - but be careful of lines that were input blank vs. lines we made blank?
           unescape(text)
 
           if @current_block.style[:numeric_align]

@@ -28,7 +28,7 @@
 # .	fp 1 PA
 # .	fp 2 PI
 # .	fp 3 PB
-# .	fp 4 PB
+# .	fp 4 PB -- fp 4 is BI
 # .	fp 5 PA
 # .	fp 6 PB
 # .\}
@@ -36,12 +36,23 @@
 # TODO special table macros
 # TODO special .TH for intro
 # TODO maybe an override for .SS, since it wants to use font escapes to emulate multiple levels of subhead - adb(1), ex(1), etc.
-# TODO tbl crazy in sed(1)!
+# TODO tbl needs blank rows in fc(1)
+# TODO sccs(1) double quote appears in line 289, but not in postscript - argparsing wtf
+# TODO many problems in ar(4)
+# TODO allocb(9f), dupb(9f), linkb(9f) has box drawing - with raw postscript inclusion??
 
 module SunOS_5_5_1
 
   def self.extended(klasse)
     klasse.send(:instance_eval, 'alias req_LP req_PP') if klasse.methods.include?(:req_PP)
+  end
+
+  def init_fp
+    super
+    @state[:fpmap]['BI'] = 4
+    @state[:fpmap]['H'] = :helv
+    @state[:fonts][4] = :boldit
+    @state[:fonts][:helv] = :sans
   end
 
   def init_sunos551

@@ -23,7 +23,7 @@ module Troff
 
     @register[')I'].value = @register["]#{@register[')p']}"].value
     @register[')R'].value = @register[")#{@register[')p']}"].value
-    @register[')p'].decr if @register[')p'] > 1
+    @register[')p'].decr if @register[')p'] > 0
 
     if @current_block.immutable?
       @current_block = blockproto

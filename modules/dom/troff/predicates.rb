@@ -12,7 +12,7 @@ module Troff
     return true if @current_block.empty?
     return true if @current_block.text.last.text.is_a?(LineBreak)
     if @current_block.text[-2]&.text and !@current_block.text[-2].text.is_a?(LineBreak)
-      return true if @current_block.text[-2].text.start_with?('&roffctl_vs')
+      return true if @current_block.text.last.text.empty? and @current_block.text[-2].text.start_with?('&roffctl_vs')
     end
     false
   end

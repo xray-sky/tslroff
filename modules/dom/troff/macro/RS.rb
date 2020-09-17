@@ -23,7 +23,8 @@ module Troff
 
   def req_RS(indent = nil)
     # troff won't tolerate more than 9 levels of indent even though theoretically we could
-    raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'] == 9
+    #raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'] == 9
+    # It doesn't fail though, it just does the simple thing of only using the first digit of )p, and the second digit goes uninterpreted
 
     # push old values onto stack
     @register[')p'].incr

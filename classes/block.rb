@@ -88,7 +88,7 @@ class Block
     when :nil     then '' # suppress. used for placeholding in tbl.
     when :bare    then t
     when :nroff   then %(<div class="body"><div id="man"><pre class="n">#{t}</pre></div></div>) # TODO maybe something with a gutter instead of breaking html with multiple id=man
-    when :comment then %(<!--#{t} -->\n)
+    when :comment then %(<!--#{t} -->\n)	# TODO as a block, this is breaking up blocks that shouldn't be broke up! as(1) [SunOS 5.5.1]
     when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
     when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
     when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
@@ -96,6 +96,7 @@ class Block
     when :subhead then %(<p class="subhead">#{t}</p>\n)
     when :sh      then "<h2>#{t}</h2>\n"
     when :ss      then "<h3>#{t}</h3>\n"
+    when :ss_alt  then "<h4>#{t}</h4>\n"
     when :cs      then "<pre>#{t}</pre>\n"
     when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
     when :cell

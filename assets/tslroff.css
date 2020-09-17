@@ -3,83 +3,83 @@
 /* still hinky - gives bold when not desired, either for roman or for italic. WHY. -- SAFARI 9 */
 /*
 @font-face {
-    font-family: "CMU Typewriter";
-    src: url("./fonts/cmu/cmuntt.otf");
-    src: local("CMU Typewriter Text"), local("Typewriter"), url("./fonts/cmu/cmuntt.otf") format("opentype");
+	font-family: "CMU Typewriter";
+	src: url("./fonts/cmu/cmuntt.otf");
+	src: local("CMU Typewriter Text"), local("Typewriter"), url("./fonts/cmu/cmuntt.otf") format("opentype");
 }
 
 @font-face {
-    font-family: "CMU Serif";
-    src: url("./fonts/cmu/cmunrm.otf");
-    src: local("CMU Serif"), local("Serif"), url("./fonts/cmu/cmunrm.otf") format("opentype");
+	font-family: "CMU Serif";
+	src: url("./fonts/cmu/cmunrm.otf");
+	src: local("CMU Serif"), local("Serif"), url("./fonts/cmu/cmunrm.otf") format("opentype");
 }
 
 @font-face {
-    font-family: "CMU Serif";
-    font-weight: bold;
-    src: url("./fonts/cmu/cmunbx.otf");
-    src: local("CMU Serif Bold Extended Roman"), local("Serif Bold"), url("./fonts/cmu/cmunbx.otf") format("opentype");
+	font-family: "CMU Serif";
+	font-weight: bold;
+	src: url("./fonts/cmu/cmunbx.otf");
+	src: local("CMU Serif Bold Extended Roman"), local("Serif Bold"), url("./fonts/cmu/cmunbx.otf") format("opentype");
 }
 
 @font-face {
-    font-family: "CMU Serif";
-    font-style: italic;
-    src: url("./fonts/cmu/cmuni.otf");
-    src: local("CMU Serif Italic"), local("Serif Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
+	font-family: "CMU Serif";
+	font-style: italic;
+	src: url("./fonts/cmu/cmuni.otf");
+	src: local("CMU Serif Italic"), local("Serif Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
 
 @font-face {
-    font-family: "CMU Serif";
-    font-weight: bold;
-    font-style: italic;
-    src: url("./fonts/cmu/cmunbi.otf");
-    src: local("CMU Serif Bold Extended Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
+	font-family: "CMU Serif";
+	font-weight: bold;
+	font-style: italic;
+	src: url("./fonts/cmu/cmunbi.otf");
+	src: local("CMU Serif Bold Extended Italic"), local("Serif Bold Italic"), url("./fonts/cmu/cmunbi.otf") format("opentype");
 }
 */
 /*
 @font-face {
-    font-family: "Computer Modern Serif";
-    src: url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.eot');
-    src: url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.eot?#iefix') format('embedded-opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunrm.otf') format('opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.woff') format('woff'),
-    url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.ttf') format('truetype'),
-    url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.svg#cmu_serifroman') format('svg');
-    font-weight: normal;
-    font-style: normal;
+	font-family: "Computer Modern Serif";
+	src: url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.eot');
+	src: url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.eot?#iefix') format('embedded-opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunrm.otf') format('opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.woff') format('woff'),
+	url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.ttf') format('truetype'),
+	url('http://spratt.github.io/Computer-Modern/cmunrm-webfont.svg#cmu_serifroman') format('svg');
+	font-weight: normal;
+	font-style: normal;
 }
 @font-face {
-    font-family: "Computer Modern Serif";
-    src: url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.eot');
-    src: url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.eot?#iefix') format('embedded-opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunsl.otf') format('opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.woff') format('woff'),
-    url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.ttf') format('truetype'),
-    url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.svg#cmu_serif_extraromanslanted') format('svg');
-    font-weight: normal;
-    font-style: italic;
+	font-family: "Computer Modern Serif";
+	src: url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.eot');
+	src: url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.eot?#iefix') format('embedded-opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunsl.otf') format('opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.woff') format('woff'),
+	url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.ttf') format('truetype'),
+	url('http://spratt.github.io/Computer-Modern/cmunsl-webfont.svg#cmu_serif_extraromanslanted') format('svg');
+	font-weight: normal;
+	font-style: italic;
 }
 @font-face {
-    font-family: "Computer Modern Serif";
-    src: url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.eot');
-    src: url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.eot?#iefix') format('embedded-opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunbl.otf') format('opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.woff') format('woff'),
-    url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.ttf') format('truetype'),
-    url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.svg#cmu_serif_extraboldslanted') format('svg');
-    font-weight: bold;
-    font-style: italic;
+	font-family: "Computer Modern Serif";
+	src: url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.eot');
+	src: url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.eot?#iefix') format('embedded-opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunbl.otf') format('opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.woff') format('woff'),
+	url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.ttf') format('truetype'),
+	url('http://spratt.github.io/Computer-Modern/cmunbl-webfont.svg#cmu_serif_extraboldslanted') format('svg');
+	font-weight: bold;
+	font-style: italic;
 }
 @font-face {
-    font-family: "Computer Modern Serif";
-    src: url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.eot');
-    src: url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.eot?#iefix') format('embedded-opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunbx.otf') format('opentype'),
-    url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.woff') format('woff'),
-    url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.ttf') format('truetype'),
-    url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.svg#cmu_serifbold') format('svg');
-    font-weight: bold;
-    font-style: normal;
+	font-family: "Computer Modern Serif";
+	src: url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.eot');
+	src: url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.eot?#iefix') format('embedded-opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunbx.otf') format('opentype'),
+	url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.woff') format('woff'),
+	url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.ttf') format('truetype'),
+	url('http://spratt.github.io/Computer-Modern/cmunbx-webfont.svg#cmu_serifbold') format('svg');
+	font-weight: bold;
+	font-style: normal;
 }
 */
 
@@ -94,8 +94,8 @@ body {
 }
 
 #selenium {
-    margin: 0;
-    padding: 0;
+	margin: 0;
+	padding: 0;
 }
 
 #man {
@@ -111,13 +111,13 @@ body {
 	background-repeat: no-repeat;
 	background-position: center;
 	background-attachment: fixed;
-    zoom: 1;        /* I hate IE */
-    /* min-width: 8.5in; */
+	zoom: 1;		/* I hate IE */
+	/* min-width: 8.5in; */
 }
 
 
 #man h2 { /* safari won't override this unless .body is explicitly specified here. why? */
-    font-style: normal;
+	font-style: normal;
 }
 
 #man h3 {
@@ -128,10 +128,20 @@ body {
 	border-bottom: 1px solid gray;
 	padding: 0.25em 1em 0.25em 0em;
 	margin: 1em 4em 1em 3em;
+	width: 35%;
+}
+
+#man h4 {		/* alternate h3 */
+	font-size: 12pt;
+	background: white;
+	font-weight: bold;
+	border-bottom: 0;
+	/*padding: 0.25em 1em 0.25em 0em; */
+	margin: 1em 4em 0em 3.25em;
 }
 
 #man p {
-    margin-bottom: 0;
+	margin-bottom: 0;
 }
 
 #man pre {
@@ -145,8 +155,8 @@ body {
 	-moz-border-radius: 0;
 	margin: 1em 4em 1em 6em;
 	padding: 0em 0em 0em 0em;
-    overflow: visible;
-    font-family: "CMU Typewriter Text", "Courier New", Courier, monospace;
+	overflow: visible;
+	font-family: "CMU Typewriter Text", "Courier New", Courier, monospace;
 	line-height: 1.2em;
 }
 
@@ -157,18 +167,18 @@ body {
 
 #man pre em {
 	/*color: darkslateblue;*/
-    color: midnightblue;
+	color: midnightblue;
 	/*font-style: italic;*/
-    font-style: normal;
-    font-weight: bold;
+	font-style: normal;
+	font-weight: bold;
 }
 
 #man tt {
-    font-family: monospace;
+	font-family: monospace;
 }
 
 #man .halfline {
-    margin: 0;
+	margin: 0;
 	line-height: 50%;
 }
 
@@ -177,20 +187,20 @@ body {
 }
 
 #man .clash {
-    display: inline-block;
-    width: 0.6em;
+	display: inline-block;
+	width: 0.6em;
 	color: red;
 }
 
 #man .pile {
-    position: relative;
-    left: -0.6em;
+	position: relative;
+	left: -0.6em;
 }
 
 #man .ul {
-    color: black;
-    font-weight: normal;
-    text-decoration: underline;
+	color: black;
+	font-weight: normal;
+	text-decoration: underline;
 }
 
 #man table {
@@ -199,15 +209,16 @@ body {
 	border-spacing: 0;
 	padding: 0;
 	margin-left: 2em; /* TODO align this and padding with <p> */
-	margin-right: 2em;
-	padding-left: 2em;
-	padding-right: 2em;
-    font-size: inherit;
+	margin-right: 4em;
+	/* padding-left: 2em;
+	padding-right: 2em; */ /* this padding is no good, it goes inside the table border and rules don't extend through it. TODO redo <p> without padding, just margin. and update the margin calculations in tslroff */
+	font-size: inherit;
+	empty-cells: show;	/* man Safari 9 has a lot of rendering bugs */
 }
 
 #man td {
 	padding: 0.1em 0.75em 0.1em 0.75em;
-    vertical-align: top;
+	vertical-align: top;
 }
 
 #man tr:nth-child(even) td {
@@ -219,13 +230,13 @@ body {
 }
 
 #man .synopsis {
-    word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
+	word-spacing: 0.4em;  /* Safari 9 fucks this up?! */
 }
 
 #man .foot {
-    margin: 4em 0 0 0;
-    text-align: center;
-    color: silver;
+	margin: 4em 0 0 0;
+	text-align: center;
+	color: silver;
 }
 
 #man .vs {		/* troff vertical motion */
@@ -233,37 +244,37 @@ body {
 	width: 100%;
 }
 
-.nrs {     /* troff 1/6em narrow space */
-    display: inline-block;
-    width: 0.167em;
+.nrs {		/* troff 1/6em narrow space */
+	display: inline-block;
+	width: 0.167em;
 }
 
-.hns {     /* troff 1/12em half-narrow space */
-    display: inline-block;
-    width: 0.083em;
+.hns {		/* troff 1/12em half-narrow space */
+	display: inline-block;
+	width: 0.083em;
 }
 
-#man .tab {     /* also used for horizontal motion - REVIEW be careful if it starts to look like more than just inline-block */
-    display: inline-block;
-    text-indent: 0;		/* this is inheriting from <p> */
-    /* this is only good if the element is a direct child of a block.
-       breaks again if it's in, say, <strong>, or another <span> */
-    /*margin-left: inherit;  /* look at this more closely. I think it's wrong in tar.1 - where was it I did this for? bc.? bs.1? */
+#man .tab {		/* also used for horizontal motion - REVIEW be careful if it starts to look like more than just inline-block */
+	display: inline-block;
+	text-indent: 0;		/* this is inheriting from <p> */
+	/* this is only good if the element is a direct child of a block.
+	breaks again if it's in, say, <strong>, or another <span> */
+	/*margin-left: inherit;  /* look at this more closely. I think it's wrong in tar.1 - where was it I did this for? bc.? bs.1? */
 }
 
-#man tbl .nalign {	/* tbl numerical column alignment  */
+#man table .nalign {	/* tbl numerical column alignment  */
 	width: 50%;
 	display: inline-block;
 }
 
 #man .sub {
-    position: relative;
-    top: 0.5em;
+	position: relative;
+	top: 0.5em;
 }
 
 #man .sup {
-    position: relative;
-    bottom: 0.5em;
+	position: relative;
+	bottom: 0.5em;
 }
 
 a:link {
@@ -298,19 +309,19 @@ p {
 }
 
 kbd {
-    -webkit-box-shadow: 0.1em 0.1em 0.2em #888;
-    -moz-box-shadow: 0.1em 0.1em 0.2em #888;
-    -moz-border-radius: 0.25em;
-    box-shadow: 0.1em 0.1em 0.2em #888;
-    border-radius: 0.25em;
-    border: 1px solid black;
-    padding-left: 0.2em;
-    padding-right: 0.2em;
-    font-size: 0.8em;
-    font-weight: bold;
-    text-transform: uppercase;
-    background: #e0e0e0;
-    color: black;
+	-webkit-box-shadow: 0.1em 0.1em 0.2em #888;
+	-moz-box-shadow: 0.1em 0.1em 0.2em #888;
+	-moz-border-radius: 0.25em;
+	box-shadow: 0.1em 0.1em 0.2em #888;
+	border-radius: 0.25em;
+	border: 1px solid black;
+	padding-left: 0.2em;
+	padding-right: 0.2em;
+	font-size: 0.8em;
+	font-weight: bold;
+	text-transform: uppercase;
+	background: #e0e0e0;
+	color: black;
 }
 
 .title {
@@ -468,34 +479,34 @@ kbd {
 }
 
 .body p.note {
-    margin: 2em 4em 2em 2em;
+	margin: 2em 4em 2em 2em;
 }
 
 .body p.qv {
-    margin: 2em 1em 0em 0em;
+	margin: 2em 1em 0em 0em;
 }
 
 .body p.update {
-    margin: 2em 4em 2em 4em;
-    padding-top: 1em;
-    padding-left: 3.75em;
-    text-indent: -3.75em;
-    border-top: 1px dotted silver;
-    font-style: italic;
+	margin: 2em 4em 2em 4em;
+	padding-top: 1em;
+	padding-left: 3.75em;
+	text-indent: -3.75em;
+	border-top: 1px dotted silver;
+	font-style: italic;
 }
 
 .body p.note span, p.qv span, p.update span {
-    font-style: italic;
-    font-weight: bold;
+	font-style: italic;
+	font-weight: bold;
 }
 
 .body ul, ol {
 	margin-left: 3em;
-    margin-right: 3em;
+	margin-right: 3em;
 }
 
 .body ol.contents {
-    padding-bottom: 2em;
+	padding-bottom: 2em;
 }
 
 .body ul ul, ol ol, ul ol, ol ul {
@@ -511,8 +522,8 @@ kbd {
 	-moz-box-shadow: -0.1em -0.1em 0.5em #888;
 	-moz-border-radius: 1.5em;
 	box-shadow: -0.1em -0.1em 0.5em #888;
-    border: 2px inset silver;
-    border-radius: 1.5em;
+	border: 2px inset silver;
+	border-radius: 1.5em;
 	margin: 2em 4em 2em 4em;
 	padding: 1em 1em 2em 2em;
 	font-family: cmu-mono, monospace;
@@ -535,19 +546,19 @@ kbd {
 }
 
 .body pre kbd {
-    border: 1px solid white;
-    background: #444444;
-    color: white;
-    font-weight: normal;
+	border: 1px solid white;
+	background: #444444;
+	color: white;
+	font-weight: normal;
 }
 
 table {
 	border: 1px outset gray;
-    border-spacing: 0.3em;
+	border-spacing: 0.3em;
 	background: #e0e0e0;
 	padding: 0.5em;
 	margin: 1em 2em 1em 4em;
-    empty-cells: hide;
+	empty-cells: hide;
 }
 
 table th {
@@ -556,9 +567,9 @@ table th {
 	margin: 1em;
 	padding: 0.2em 1em 0.2em 1em;
 	border: 1px groove black;
-    text-align: center;
-    font-style: italic;
-    font-weight: bold;
+	text-align: center;
+	font-style: italic;
+	font-weight: bold;
 }
 
 table td {
@@ -566,7 +577,7 @@ table td {
 	background: white;
 	margin: 1em;
 	padding: 0.5em 1em 0.5em 1em;
-    text-align: left;
+	text-align: left;
 }
 
 .body table tr:nth-child(odd) td {
@@ -579,15 +590,15 @@ table td {
 
 table.tab {
 	border: 0;
-    border-spacing: 0;
-    padding: 0;
+	border-spacing: 0;
+	padding: 0;
 	background: none;
 }
 
 table.tab td {
-    background: none;
-    margin: 0;
-    padding: 0.1em 1em;
+	background: none;
+	margin: 0;
+	padding: 0.1em 1em;
 }
 
 table.tab tr:nth-child(odd) td {
@@ -599,8 +610,8 @@ table.tab tr:nth-child(even) td {
 }
 
 table.inv {
-    border-spacing: 0.2em;
-    padding: 0.3em;
+	border-spacing: 0.2em;
+	padding: 0.3em;
 	font-size: 0.75em;
 }
 
@@ -611,7 +622,7 @@ table.inv td {
 
 table.exhibit {
 	background: none;
-    border: 0px;
+	border: 0px;
 	margin: 1.5em 2em 1.5em 2.5em;
 }
 
@@ -640,26 +651,26 @@ table.exhibit td.thumb {
 	background: none;
 	font-size: 0.75em;
 	text-align: center;
-    padding-top: 1em;
-    padding-right: 1em;
+	padding-top: 1em;
+	padding-right: 1em;
 }
 
 table.exhibit td.thumb img {
 	-webkit-box-shadow: 0.25em 0.25em 1em #888;
 	-moz-box-shadow: 0.25em 0.25em 1em #888;
 	box-shadow: 0.25em 0.25em 1em #888;
-    border: 0em;
+	border: 0em;
 }
 
 table.exhibit p.item {
-    font-weight: bold;
+	font-weight: bold;
 	margin-bottom: 2em;
 }
 
 table.exhibit p.cardcat {
-    font-family: "American Typewriter", "Courier New", "Courier", "monospace";
-    font-size: 0.75em;
-    margin-left: 6em;
+	font-family: "American Typewriter", "Courier New", "Courier", "monospace";
+	font-size: 0.75em;
+	margin-left: 6em;
 }
 
 .logo {
@@ -736,7 +747,7 @@ table.exhibit p.cardcat {
 	border-left: 1px solid #cccccc;
 	border-bottom: 1px solid black;
 	margin: 0;
-    text-align: center;
+	text-align: center;
 }
 
 #menu .menu h3 {
@@ -747,14 +758,14 @@ table.exhibit p.cardcat {
 	border: 1px solid dimgrey;
 	border-left: 1px solid #cccccc;
 	border-bottom: 1px solid black;
-    text-align: center;
+	text-align: center;
 	padding: 0.2em 0.5em 0.2em 0.5em;
 	margin: 0;
 }
 
 #menu item {
 	text-align: left;
-    text-indent: -1em;
+	text-indent: -1em;
 	margin: 0;
 	padding: 0.25em 1em 0.25em 2em;
 	background: #cccccc;
@@ -772,7 +783,7 @@ table.exhibit p.cardcat {
 
 #menu p.here {
 	text-align: left;
-    text-indent: -1em;
+	text-indent: -1em;
 	margin: 0;
 	padding: 0.25em 1em 0.25em 2em;
 	background: #e0e0e0;
@@ -784,7 +795,7 @@ table.exhibit p.cardcat {
 #menu ol {
 	padding-right: 1em;
 	font-size: 0.75em;
-    margin: 0em;
+	margin: 0em;
 }
 
 #menu li {

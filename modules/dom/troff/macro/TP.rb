@@ -49,6 +49,11 @@ module Troff
       @@webdriver.get(Block.new(type: :bare, text: @current_block.text).to_selenium)
       tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
 
+      # reset the font (in case it wasn't reverted cleanly in the tag - nis+(1) [SunOS 5.5.1])
+      # so our unit conversions aren't affected.
+      req_ft('1')
+      req_ps(Font.defaultsize)
+
       # is the tag wider than 3 points less than the indent?
       if @register[')I'] < tag_width + @state[:tag_padding]
         req_br
@@ -71,7 +76,6 @@ module Troff
         @current_tabstop = @current_block.text.last
       end
       @current_tabstop.instance_variable_set(:@no_space_adj, true)
-      req_ft('1')
     end
   end
 

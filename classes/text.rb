@@ -72,6 +72,8 @@ class Text
     tags << case font.face
             when :bold    then '<strong>'
             when :italic  then '<em>'
+            when :boldit  then '<strong style="font-style:italic;">'
+            when :sans    then '<span style="font-family:Optima,Helvetica,Geneva,Arial,sans-serif;">'	# TODO something useful
             when :regular then ''
             else %(<span class="u">unknown font face #{font.face.inspect} =&gt; )
             end
@@ -84,6 +86,7 @@ class Text
         when :word_spacing     then %(<span style="word-spacing:#{v}em;">) # REVIEW this seems to give wider spaces than I'd expect - jot(1) [AOS-4.3]
         when :eqn              then %(<span style="color:steelblue;">)
         when :unsupported      then %(<span class="u">Unsupported request =&gt; )
+        when :comment          then return %(<!--\n   #{@text}\n-->)
         else                        %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
         end
       end

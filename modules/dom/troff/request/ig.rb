@@ -17,14 +17,14 @@
 #                                           be affected.
 
 module Troff
-  def req_ig(term_str = '..', *_args)
+  def req_ig(term_str = '.', *_args)
     save_block = @current_block
     @current_block = blockproto
     begin
       @lines.collect_through do |l|
         @register['.c'].incr
         unescape(l, copymode: true)
-        l.start_with?(term_str)
+        l.start_with?('.' + term_str)
       end
     rescue StopIteration
       warn "end of input during .ig looking for #{term_str.inspect})!"

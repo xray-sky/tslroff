@@ -98,7 +98,7 @@ module Troff
     # (like ',') and disregards everything after one. not sure what to return though
     # if the entire expression is disregarded. REVIEWED. zero? - yes.
     str.sub!(%r{[^-+()\d\.cimnPpuv/*%<>=&:].*$}, '') and warn "disregarding extra chars in numeric expression #{Regexp.last_match[0].inspect}"
-    return '0' if str.empty?
+    return '0' if str.empty? # everything was rejected as invalid
 
     # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
     # in order to avoid having to differentiate between '-' as subtraction vs. negation

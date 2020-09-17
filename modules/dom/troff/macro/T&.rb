@@ -69,8 +69,9 @@ module Troff
         # key letters (of which only one may appear per cell) may be followed by one or more
         # other format characters (e.g. f, s, w, etc.) each of which may be followed by
         # various types of parameters.
+        # special case to prevent collecting the fR from a font request as an R primary format - sccs-prs(1) [SunOS 5.5.1]
 
-        formats[row] = fmts.scan(/\|?[#{key_letters}][^#{key_letters}]*/)
+        formats[row] = fmts.scan(/\|?[#{key_letters}](?:fR|[^#{key_letters}])*/)
         # try to split extra column space between each adjacent column
         # h4x - prefix right column space with '000' so it can be identified in format_row()
         # this works but tbl(1) centers text in the unpadded space, in an unpadded cell
@@ -216,9 +217,9 @@ module Troff
           # end
         when /^(w\(?([\d.]+(?:[uicpmnv]\))?))/i		# minimum column width
          cell.style.css[:min_width] = to_em(to_u(Regexp.last_match[2], default_unit: 'n')).to_s + "em"
-        when /^e/
+        when /^(e)/	# TODO this doesn't really work, since e only works on columns marked e, and not all may be
           warn "tbl wants equal width columns"
-          cell.style.css[:width] = "#{1.0 / @state[:tbl_formats].columns}%"
+          #cell.style.css[:width] = "#{1.0 / @state[:tbl_formats].columns}%"
 
         # alignments
         when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML?? how is it different in practice from L?
@@ -230,7 +231,7 @@ module Troff
         # font changes
         when /^(b)/i  then cell.text.last.font.face      = :bold
         when /^(i)/i  then cell.text.last.font.face      = :italic
-        when /^(f(?:\d{1,2}|.))/
+        when /^(f.[A-Z]?)/ # REVIEW why were we accepting two digits? a font position I think is only one.
           # unescape wants to work on @current_block
           # this manipulation should be safe as we haven't frozen any of these blocks, yet
           cur_blk = @current_block

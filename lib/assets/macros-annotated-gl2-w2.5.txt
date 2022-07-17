@@ -1,0 +1,110 @@
+)M set to 3.6m (0.5i) and never changes
+IN set to )M in .TH and never changes
+
+)I stores indent arg to .TP, .HP (initialized to )M in .TH; reset to )M in }2, PP, RS (after being saved))
+)R accumulates indent arg to .RS & current actual right margin (initialized to 0 in TH; reset to 0 in }X (from .SH, .SS))
+
+[ .HP ]
+
+	.sp\\n(PDu					output \n(PD vertical space
+	.ne1.1v
+	.if!\\$1 .nr )I \\$1n		set \n()I = $1 if given
+	.ll\\n(LLu					change line length to \n(LL
+	.in\\n()Ru+\\n(INu+\\n()Iu	change indent to \n()R + \n(IN + \n()I
+	.ti\\n()Ru+\\n(INu			set temporary indent to \n()R + \n(IN
+	.}f							call }f macro
+		.ift .vs \\n()Vp			change vertical baseline spacing to \n()V points (troff only)
+		.ps\\n()S					change point size to \n()S (default)
+		.ft1						change font to 1 (Roman)
+
+
+[ .IP ]
+[ .TP ]
+
+	.if!\\$1 .nr )I \\$1n		set \n()I = $1 if given
+	.sp\\n(PDu					output \n(PD vertical space
+	.ne1.1v
+	.in\\n()Ru					change indent to \n()R
+	.lg0						no ligatures
+	.ns							no spacing
+	.it1 }N						input trap for the next line (get tag)
+	.nr)E 1						set \n()E = 1
+	.di]B						divert output to macro ]B (for collecting tag)
+
+}N
+	.if\\n()E .br				if \n()E > 0 then break
+	.di							end diversion
+	.if\\n()E0 .}f				if \n()E==0 then .}f	(from .}1, .}2)
+		.ift .vs \\n()Vp			change vertical baseline spacing to \n()V points (troff only)
+		.ps\\n()S					change point size to \n()S (default)
+		.ft1						change font to 1 (Roman)
+
+	.if\\n()E1 .}1				if \n()E==1 then .}1	(from .IP, .TP)
+		.ds]X \&\\*(]B\\			define string ]X as \*(]B\e (from diversion in .TP)
+		.rm]B						remove macro ]B
+		.nr)E 0						set \n()E = 0
+		.if!\\$1 .nr )I \\$1n		set \n()I = $1 if given
+		.}f							call macro }f
+		.ll\\n(LLu					change line length to \n(LL
+		.in\\n()Ru+\\n(INu+\\n()Iu	change indent to \n()R + \n(IN + \n()I
+		.ti\\n(INu					set temporary indent to \n(IN
+		.ie!\\n()Iu+\\n()Ru-\w\\*(]Xu-3p \{\\*(]X
+									if \n()I + \n()R - width of ]X - 3 points > 0 then output ]X plus break
+		.el\\*(]X\h|\\n()Iu+\\n()Ru\c
+									otherwise, output ]X, move to \n()I + \n()R, and continue without breaking
+		.}f							call macro }f
+			.ift .vs \\n()Vp			change vertical baseline spacing to \n()V points (troff only)
+			.ps\\n()S					change point size to \n()S (default)
+			.ft1						change font to 1 (Roman)
+		.lg							enable ligatures
+
+	.if\\n()E2 .}2				if \n()E==2 then .}2	(from .SH, .SS)
+		.nr)E 0						set \n()E = 0
+		.}E							call }E
+			.}f						call }f macro
+				.ift .vs \\n()Vp		change vertical baseline spacing to \n()V points (troff only)
+				.ps\\n()S				change point size to \n()S (default)
+				.ft1					change font to 1 (Roman)
+			.in\\n()Ru+\\n(INu		change indent to \n()R + \n(IN
+			.ll\\n(LLu				change line length to \n(LL
+			.lt\\n(LLu				change title length ton \n(LL
+			.pl\\n()Lu				set page length to \n()L
+		.nr)I \\n()Mu				set \n()I to \n()M
+		.ns							no spacing
+		.bd1						turn off any emboldening of font 1 (Roman)
+
+
+
+[ .PP ]
+
+	.sp\\n(PDu				output \n(PD vertical space
+	.ne1.1v
+	.}E						call }E macro
+		.}f						call }f macro
+			.ift .vs \\n()Vp		change vertical baseline spacing to \n()V points (troff only)
+			.ps\\n()S				change point size to \n()S (default)
+			.ft1					change font to 1 (Roman)
+		.in\\n()Ru+\\n(INu		change indent to \n()R + \n(IN
+		.ll\\n(LLu				change line length to \n(LL
+		.lt\\n(LLu				change title length ton \n(LL
+		.pl\\n()Lu				set page length to \n()L
+	.nr)I \\n()Mu				set \n()I to \n()M
+	.ns						no spacing
+
+
+[ .RS ]
+
+	.nr]\\n+()p \\n()I			increment \n()p and store \n()I in \n(]**)p**
+	.nr)\\n()p \\n()R			store \n()R in \n()**)p**
+	.ie!\\$1 .nr )R +\\$1n		add $1 to \n()R if given
+	.el.nr )R +\\n()I			otherwise add \n()I to \()R
+	.nr)I \\n()Mu				set \n()I = \()M
+	.}E							call }E macro
+		.}f						call }f macro
+			.ift .vs \\n()Vp		change vertical baseline spacing to \n()V points (troff only)
+			.ps\\n()S				change point size to \n()S (default)
+			.ft1					change font to 1 (Roman)
+		.in\\n()Ru+\\n(INu		change indent to \n()R + \n(IN
+		.ll\\n(LLu				change line length to \n(LL
+		.lt\\n(LLu				change title length ton \n(LL
+		.pl\\n()Lu				set page length to \n()L

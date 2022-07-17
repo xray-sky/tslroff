@@ -1,0 +1,16 @@
+		<div class="menu_title">
+			<h1>Related Articles</h1>
+		</div>
+		<div class="menu">
+<%
+  hold_text = ''
+  related.each do |link|
+    (hold_text << " #{link.text}" and next) if link.text.end_with?(',')
+    text = hold_text.empty? ? link.text : "#{hold_text} #{link.text}"
+%>
+          	<p><a href="<%= link['href'] %>">
+          	    <item><tt><%= text %></tt></item></a></p><% hold_text = '' ; end %>
+
+		</div>
+
+		<!-- other manuals placeholder -->

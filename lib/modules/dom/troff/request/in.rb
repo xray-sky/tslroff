@@ -21,7 +21,7 @@
 #
 
 module Troff
-  def req_in(indent = nil)
+  def req_in(indent = nil, *_args) # should ignore extra args. probably all requests. sttydefs(1m) [SunOS 5.5.1]
     previous = @state[:previous_indent]
     @state[:previous_indent] = @register['.i'].value
 

@@ -26,9 +26,23 @@
 #    WTF
 #
 
-#module Troff
-#  def esc_l(s)
-#    esc = Regexp.quote(@state[:escape_char])
-#    s.match(/(^w([#{@@delim}])(.+?(#{esc}\2)*)\2)/)
-#    (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
-
+module Troff
+  def esc_l(s)
+    quotechar = Regexp.quote(get_char(s))
+    req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
+    warn "\\l trying to draw lines from #{req_str.inspect}"
+    unescape(req_str)
+  end
+  def esc_L(s)
+    quotechar = Regexp.quote(get_char(s))
+    req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
+    warn "\\L trying to draw lines from #{req_str.inspect}"
+    unescape(req_str)
+  end
+  def esc_D(s)
+    quotechar = Regexp.quote(get_char(s))
+    req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
+    warn "\\D trying to draw lines from #{req_str.inspect}"
+    unescape(req_str)
+  end
+end

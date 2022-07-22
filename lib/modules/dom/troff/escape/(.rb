@@ -274,19 +274,34 @@ module Troff
       '+e'  => '&upsih;',
       # there is a whole class of non-spacing glyphs for accenting characters starting \(a.
       # implement them using the Unicode "combining accent" characters (U0300--) - Safari seems to do the right thing with them.
-      'a"'  => '&#779;',  # hungarian umlaut, U030B (U02DD non combining)
-      'a-'  => '&#772;',  # macron, U0304 (U00AF)
-      'a.'  => '&#775;',  # dot, U0307 (U02D9)
-      'a^'  => '&#770;',  # circumflex, U0302 (U005E)
+      #'a"'  => '&#779;',  # hungarian umlaut, U030B (U02DD non combining)
+      #'a-'  => '&#772;',  # macron, U0304 (U00AF)
+      #'a.'  => '&#775;',  # dot, U0307 (U02D9)
+      #'a^'  => '&#770;',  # circumflex, U0302 (U005E)
+      #'aa'  => '&acute;',  # acute, U0301 (U00B4)
+      #'ga'  => '&#768;',  # grave, U0300 (U0060) -- this is actually giving me a combining accent, and at least on AOS this is wrong. \(ga is spacing -- also on solaris
+      #'ab'  => '&#774;',  # breve, U0306 (U02D8)
+      #'ac'  => '&#807;',  # cedilla, U0327 (U00B8)
+      #'ad'  => '&#776;',  # dieresis, U0308 (U00A8)
+      #'ah'  => '&#780;',  # caron, U030C (U02C7)
+      #'ao'  => '&#778;',  # ring, U0306 (U02DA)
+      #'a~'  => '&#771;',  # tilde, U0303 (U007E)
+      #'ho'  => '&#809;',  # ogonek, U0328 (U02DB)
+      # - but it looks like maybe they're meant to be non-combining. Several pages on
+      # - AOS and Solaris indicate this to be the case
+      'a"'  => '&dblac;',  # hungarian umlaut, U030B (U02DD non combining)
+      'a-'  => '&macr;',  # macron, U0304 (U00AF)
+      'a.'  => '&dot;',  # dot, U0307 (U02D9)
+      'a^'  => '&circ;',  # circumflex, U0302 (U005E)
       'aa'  => '&acute;',  # acute, U0301 (U00B4)
-      'ga'  => '&#768;',  # grave, U0300 (U0060) -- this is actually giving me a combining accent, and at least on AOS this is wrong. \(ga is spacing
-      'ab'  => '&#774;',  # breve, U0306 (U02D8)
-      'ac'  => '&#807;',  # cedilla, U0327 (U00B8)
-      'ad'  => '&#776;',  # dieresis, U0308 (U00A8)
-      'ah'  => '&#780;',  # caron, U030C (U02C7)
-      'ao'  => '&#778;',  # ring, U0306 (U02DA)
-      'a~'  => '&#771;',  # tilde, U0303 (U007E)
-      'ho'  => '&#809;',  # ogonek, U0328 (U02DB)
+      'ga'  => '&grave;',  # grave, U0300 (U0060) -- this is actually giving me a combining accent, and at least on AOS this is wrong. \(ga is spacing -- also on solaris
+      'ab'  => '&breve;',  # breve, U0306 (U02D8)
+      'ac'  => '&cedil;',  # cedilla, U0327 (U00B8)
+      'ad'  => '&die;',  # dieresis, U0308 (U00A8)
+      'ah'  => '&caron;',  # caron, U030C (U02C7)
+      'ao'  => '&ring;',  # ring, U0306 (U02DA)
+      'a~'  => '&tilde;',  # tilde, U0303 (U007E)
+      'ho'  => '&ogon;',  # ogonek, U0328 (U02DB)
       # these are explicitly spacing variants
       'ti'  => '~',      # REVIEW: nroff treats ~ as small for diacritic, possibly the 'normal' appearance of ~ should be replaced by &tilde; and leave this def as-is
       'ha'  => '^',

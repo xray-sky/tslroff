@@ -16,7 +16,7 @@
 # TODO: what does ".TP &" mean? (see: machid.1 [GL2-W2.5])
 # TODO: AOS likes passing invalid expressions to .TP (and .IP) - nroff seems to ignore
 #       them and keep previous indents, instead of changing them to 0 (as the expression evaluates)
-#       ...how?? restore.tape(8), xlogin(8), etc.
+#       ...how?? restore.tape(8), xlogin(8), etc. -- also ffbconfig(1m) [SunOS 5.5.1]
 #
 
 module Troff
@@ -77,6 +77,7 @@ module Troff
       end
       @current_tabstop.instance_variable_set(:@no_space_adj, true)
     end
+    @state[:break_suppress] = true # suppress break between tag and para when in nofill mode -- prtdiag(1m) [SunOS 5.5.1]
   end
 
 end

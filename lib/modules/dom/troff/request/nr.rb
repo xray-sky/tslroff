@@ -28,11 +28,12 @@ require 'forwardable'
 
 module Troff
 
-  def req_nr(register, value = '0', increment = nil)
-    @register[register] ||= Register.new
-    unless @register[register].read_only?
-      @register[register].value = value.to_i
-      @register[register].increment = increment.to_i if increment
+  def req_nr(reg, value = '0', increment = nil)
+    #warn "assigning register #{reg.inspect} value #{value.inspect}"
+    @register[reg] = Register.new unless @register.has_key?(reg)
+    unless @register[reg].read_only?
+      @register[reg].value = value.to_i
+      @register[reg].increment = increment.to_i if increment
     end
   end
 
@@ -117,6 +118,10 @@ module Troff
       @format    = '1'
       @increment = increment
       @read_only = ro
+    end
+
+    def dup
+      Register.new(value, increment)
     end
 
     def incrementing?

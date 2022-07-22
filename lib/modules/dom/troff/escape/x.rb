@@ -26,21 +26,21 @@
 
 module Troff
   def esc_x(s)
-    warn "not yet tokenized - #{__callee__}"
-    esc = Regexp.quote(@state[:escape_char])
-    s.sub!(/(^x([#{@@delim}])(.+?(#{esc}\2)*)\2)/, '')
-    (_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
+    #warn "not yet tokenized - #{__callee__}"
+    quotechar = Regexp.quote(get_char(s))
+    req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
+    #(_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
 
     space = to_u(req_str).to_i	# REVIEW: default unit??
     unless space.zero?
-      warn "trying to \\x#{space} - (\\#{full_esc.inspect})"
+      warn "trying to \\x#{space} - (\\#{req_str.inspect})"
       container = Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
       container.style.css[ space > 0 ? :padding_top : :padding_bottom] = to_em("#{space}u") + 'em'
       container.text << s[0]
       @current_block << container
       @current_block << Text.new(font: @current_block.text[-2].font.dup, style: @current_block.text[-2].style.dup)
-      s[1..-1]
+      #s[1..-1]
     end
-
+    ''
   end
 end

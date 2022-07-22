@@ -7,7 +7,8 @@
 #
 #     Generate metadata for permuted index
 #
-#  REVIEW what is even sensible to do with this suff?
+#  REVIEW what is even sensible to do with this stuff?
+#         SunOS is full of it
 #
 
 module Troff

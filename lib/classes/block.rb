@@ -67,7 +67,7 @@ class Block
       # don't leave the last text object open, or else you'll start writing into the named string definition.
       @text << Text.new(font: text.last.font.dup, style: text.last.style.dup)
     end
-    (immutable! and @output_indicator = true) unless t.empty?
+    (immutable! and @output_indicator = true) unless t.empty? # @output_indicator also manipulated in parse, for suppression after comment
   end
 
   def coerce(obj)
@@ -89,7 +89,7 @@ class Block
     # REVIEW: am I going to need to make overrides to this regexp?
     # <br /> tags will be detected along with other styles we intend to include,
     # so we'll try to get the ones up front, so they can end up outside the <a>
-    t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<.+?>)*\((?:<.+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<.+?>)*\)(?:<.+?>)*)}) do |_m|
+    t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
       caps = Regexp.last_match
       entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
       %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)

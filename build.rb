@@ -876,6 +876,7 @@ collections = {
       }
     },
     'GL1': {
+      module_override: 'GL2',
       'W2.1': {
         basedir: 'sgi/gl1/w2.1',
         srcdirs: %w[man/?_man/man[1-8]]
@@ -1149,13 +1150,13 @@ loop do
     when '-os'
       os = args.next.to_sym
       collections = collections.select { |k,v| v.has_key?(os) }
-      vendor = collections.keys.first
-      collections[vendor].reject! { |k,v| k != os }
+      vendor = collections.select { |k,v| v.is_a?(Hash) }.keys.first
+      collections[vendor].reject! { |k,v| (k != os && v.is_a?(Hash)) || (k == :disabled) }
     when '-ver' # let's just assume we already filtered on an os
       ver = args.next.to_sym
       vendor = collections.keys.first
-      os = collections[vendor].keys.first
-      collections[vendor][os].reject! { |k,v| k != ver }
+      os = collections[vendor].select { |k,v| v.is_a?(Hash) }.keys.first
+      collections[vendor][os].reject! { |k,v| (k != ver && v.is_a?(Hash)) || (k == :disabled)}
     else
       file = arg
     end

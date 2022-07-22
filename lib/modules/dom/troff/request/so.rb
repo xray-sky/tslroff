@@ -54,12 +54,12 @@ module Troff
 
     # REVIEW this is a bit suspect; makes rewrites look ugly
     # might benefit from a full Manual.new & subsequent merge? maybe.
+
     ofile = @lines
     @lines = File.read(localfile).lines.each
     loop do
       begin
-        l = @lines.tap { @register['.c'].incr }.next
-        parse(l)
+        parse(next_line)
       rescue StopIteration
         break
       end

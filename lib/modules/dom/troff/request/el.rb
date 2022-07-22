@@ -15,8 +15,9 @@
 
 module Troff
   def req_el(*args)
-    esc = Regexp.quote(@state[:escape_char])
+    resc = Regexp.quote(@state[:escape_char])
 
+=begin
     # multi-line input
     input = if args[0].sub!(/^#{esc}{/, '')
       @lines.collect_through do |line|
@@ -36,5 +37,17 @@ module Troff
     if @state[:else]
       input.each { |line| parse(line) }
     end
+=end
+
+    argstr = args.shift.strip
+    if argstr.sub!(/^#{resc}{/, '')
+      loop do
+        parse(argstr)
+        argstr = next_line
+        break if argstr.sub!(/#{resc}}$/, '')
+      end #until argstr.sub!(/#{resc}}$/, '') somehow this never happens; looks like argstr outside of loop context isn't updating
+    end
+    parse(argstr)
+
   end
 end

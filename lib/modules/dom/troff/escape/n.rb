@@ -15,7 +15,7 @@ module Troff
     s.slice!(0) if s.start_with?('(')
     # I think we can get away with relying on the @register default value
     # but let's keep the diagnostic for now.
-    warn "unselected number register #{s} - using 0" unless @register.has_key?(s)
+    warn "unselected number register #{s.inspect} from set #{@register.keys.inspect} - using 0" unless @register.has_key?(s)
     @register[s].send(incr) if incr
     @register[s].to_s
   end

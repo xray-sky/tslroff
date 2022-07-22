@@ -45,7 +45,8 @@ module Troff
     args = Array.new
     #argstr = __unesc_w(__unesc_nr(str.sub(%r{\s*\\".*$}, '')))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
     #argstr = reduce(str.sub(%r{\s*\\".*$}, ''))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
-    argstr = __unesc_cm(__unesc_w(str.sub(%r{\s*\\".*$}, '')))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
+    #argstr = __unesc_cm(__unesc_w(str.sub(%r{\s*\\".*$}, '')))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
+    argstr = __unesc_w(__unesc_n(str.sub(%r{\s*\\".*$}, '')))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
     #warn "argstr - #{argstr.inspect}"
     until argstr.empty?
     #warn "quoting argstr #{argstr.inspect}"

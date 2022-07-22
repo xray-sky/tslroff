@@ -8,6 +8,8 @@
 # it is not necessary to change to the Special Font; characters on that font are handled
 # automatically.
 #
+# \s >39 are not possible. \s40 is parsed as \s4 and 0 is copied.
+#
 # TODO \f(xx
 #      a request for a named but not mounted font causes it to be mounted on fp 0
 #      fp 0 is otherwise inaccessible
@@ -32,7 +34,8 @@ module Troff
   #end
 
   def req_ft(pos = 'P')
-    font = case reduce(pos)
+    #font = case reduce(pos) -- turns out \f\P is atually illegal, copies 'P', doesn't change font
+    font = case pos
            when 'P'          then @register[:prev_fp].value
            when /[A-Z]{1,2}/ then @state[:fpmap][pos]
            else              pos.to_i
@@ -44,7 +47,8 @@ module Troff
   end
 
   def req_ps(ps = '0')
-    size = case reduce(ps.to_s) # tolerate receiving Integer argument
+    #size = case reduce(ps.to_s) # tolerate receiving Integer argument
+    size = case ps.to_s # tolerate receiving Integer argument
            when '0'                then @register[:prev_ps].value
            when /^([-+])(\d{1,2})/ then @register['.s'].value.send(Regexp.last_match(1), Regexp.last_match(2).to_i)
            else                    ps.to_i

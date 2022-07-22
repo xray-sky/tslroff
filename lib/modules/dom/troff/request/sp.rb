@@ -36,6 +36,8 @@ module Troff
     (req_br ; return) if v == 0
     @current_block << "&roffctl_vs:#{v}em;"
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
+    # REVIEW .sp in tbl (.TS) context w/rt @current_block, etc.
+    #        is it worth special casing to give row (bottom-)padding? I think it might be
     @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
     @current_block.reset_output_indicator
     @current_tabstop = @current_block.text.last

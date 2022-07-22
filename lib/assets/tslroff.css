@@ -230,12 +230,19 @@
 	margin-right: 4em; */
 	/* padding-left: 2em;
 	padding-right: 2em; */ /* this padding is no good, it goes inside the table border and rules don't extend through it. TODO redo <p> without padding, just margin. and update the margin calculations in tslroff */
+	margin-top: 0; /* bottom 0 too? */
 	font-size: inherit;
 	empty-cells: show;	/* man Safari 9 has a lot of rendering bugs */
 }
 
 #man td {
 	padding: 0.1em 0.75em 0.1em 0.75em;
+	vertical-align: top;
+}
+
+#man .flushleft td:first-child {
+    /* top right bottom left */
+	padding: 0.1em 0.75em 0.1em 0em;
 	vertical-align: top;
 }
 

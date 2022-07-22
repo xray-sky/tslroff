@@ -40,6 +40,9 @@ module Troff
     end
 
     parse_title unless titled # I'll want to re-init after looking for the title
+    # TODO is this even necessary? I'm parsing stuff too many times, including
+    # everything twice for every .so (.so parses everything once, looking for title, then again processing the doc)
+    # perhaps this can be combined with the improvement for delaying <h1> for .ds, etc.
   end
 
   def to_html
@@ -75,12 +78,15 @@ module Troff
   end
 
   def next_line
-    @line = @lines.tap { @register['.c'].incr }.next
+    @line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
+    #@line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
   end
 
   # prototype a new block with whatever necessary styles carried forward.
   def blockproto(type = :p)
     break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will REVIEW is this working??
+              # - no, it's eating the final break in a nofill, when we go to .ig! but we don't need blockproto in .ig
+              #   so that is the solution for now. but watch this.
     type = :cs if @state[:cs]
     block = Block.new(type: type)
     block.style[:section] = @state[:section] if @state[:section]

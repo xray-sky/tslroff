@@ -21,8 +21,11 @@ module Troff
     end
   end
 
+  # this is used by .if
   def __unesc_star(str)	# want this in .if for testing string equality; this is the only escape that would need processing
-    return str unless @state[:escape_char]	# REVIEW how does this interact with copymode?
+    esc = @state[:escape_char]
+    return str unless esc	# REVIEW how does this interact with copymode?
+=begin
     copy = String.new # TODO deal with escaped escape characters? e.g. \\n should not translate
     begin
       esc   = @state[:escape_char]
@@ -40,10 +43,21 @@ module Troff
 
     end until str.empty?
     copy
-  end # TODO: this is the same as _nr and I think _w even. consolidate them.
+=end
+    resc = Regexp.escape(esc)
+    while star = str.index(/(?<!#{resc})#{resc}\*/) do
+    #warn "star! #{star.inspect}"
+      req_str = get_def_str(str[(star+2)..-1])
+      str.sub!(/#{resc}\*#{Regexp.quote(req_str)}/, esc_star(req_str))
+    end
+    str
+  end # TODO: this is the same as _n and I think _w even. consolidate them.
 
-  def __unesc_nr(str)
-    return str unless @state[:escape_char]	# REVIEW how does this interact with copymode?
+  # this is used by getargs and .if
+  def __unesc_n(str)
+    esc = @state[:escape_char]
+    return str unless esc	# REVIEW how does this interact with copymode?
+=begin
     copy = String.new # TODO deal with escaped escape characters? e.g. \\n should not translate
     begin
       esc   = @state[:escape_char]
@@ -61,8 +75,17 @@ module Troff
 
     end until str.empty?
     copy
+=end
+    resc = Regexp.escape(esc)
+    while n = str.index(/(?<!#{resc})#{resc}n/) do
+    #warn "n! #{n.inspect}"
+      req_str = get_def_str(str[(n+2)..-1])
+      str.sub!(/#{resc}n#{Regexp.quote(req_str)}/, esc_n(req_str))
+    end
+    str
   end
 
+  # this is used by getargs and .if
   def __unesc_w(str)
     esc = @state[:escape_char]
     # TODO this is trying to parse \\w (which shouldn't, as it's a _printing_ escape) - zwgc(1) [AOS 4.3]
@@ -284,7 +307,7 @@ module Troff
     end until str.empty?
 =end
 
-    until str.empty?
+    until __unesc_star(str).empty?
       c = get_char str
       case c
       when "\t"
@@ -318,6 +341,7 @@ module Troff
           @current_block << send(esc_method, esc[1..-1])#.tap { |n| warn "appending #{n.inspect} from #{esc_method.inspect}(#{esc.inspect})" }
         else
           @current_block << case esc
+                            when 'a', 't' then ''                  # always ignored during output mode
                             when '_' then '_'                      # underrule, equivalent to \(ul
                             when '-' then '&minus;'                # "minus sign in current font"
                             when ' ' then '&nbsp;'                 # "unpaddable space-sized character"

@@ -14,8 +14,10 @@ module Troff
     # This was done as a block, but then it was breaking up a block it was
     # encountered during. So now it's inline.
     apply { @current_block.text.last.style[:comment] = true }
-    @current_block << args.join(' ')
+    @current_block << args.join#(' ')
     apply { @current_block.text.last.style.delete(:comment) }
+    # and this was interfering with comments inserted between .TP macro and tag - ex(1) [SunOS 5.5.1]
+    @current_block.reset_output_indicator
   end
 
   def esc_quot(s)

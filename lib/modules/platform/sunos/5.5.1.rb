@@ -36,10 +36,32 @@
 # TODO: special table macros
 # TODO: special .TH for intro
 # TODO: maybe an override for .SS, since it wants to use font escapes to emulate multiple levels of subhead - adb(1), ex(1), etc.
-# TODO: tbl needs blank rows in fc(1)
 # TODO: sccs(1) double quote appears in line 289, but not in postscript - argparsing wtf
 # TODO: many problems in ar(4)
 # TODO: allocb(9f), dupb(9f), linkb(9f) has box drawing - with raw postscript inclusion??
+# TODO  maybe link commands list in column one of Intro(*), § "LIST OF ..."
+#   LIST OF COMMANDS also occurs in other pages which themselves contain proper SEE ALSOs, so... ?
+#   consider blacklisting List(*)
+#   fnattr(1) :: [174] replace \t with ' '
+# √ sccs-get(1) :: tbl \^ row spans
+#   ld(1) :: [768] \hex - but we are currently bug compatible with psroff
+#   pcmapkeys(1) :: wants to overstrike é and è but I think we can reasonably rewrite these not to overstrike
+#   pvs(1) :: [112,113] '.if .n' / '.if .t'
+#   shell_builtins(1) :: the likely case for possibly implementing tbl change space between columns.
+# √ spline(1) :: looks like it was preprocessed by eqn. psroff handles it, we don't very well. adequately, as of 20220718
+#   ffbconfig(1m) :: [304] psroff doesn't care about this non-numeric argument to .TP, which seems odd. rewrite with \w.
+#                          actually it does, the psroff output is not correct either. dunno where it gets \fB from
+#   mount_cachefs(1m) :: [240] what made psroff break after the previous line without .nf?
+#                              this error is probably a fat hint: <standard input>:240: warning [p 1, 0.0i]: cannot adjust line
+#                              but, what does it MEAN. I'm not sure I'll be able to emulate it, whatever it is.
+#   netstat(1m) :: [297] looks like the same problem as mount_cachefs(1m)
+#   nslookup(1m) :: same problem as ffbconfig (non-numeric arg to .TP)
+#   syncloop(1m) :: assorted cosmetic vertical spacing bugs (in tbl/after tbl? - looks like the in-tbl '.sp 4p's all happened at once, immediately post-tbl)
+#   vmstat(1m) :: [105] expects to set _all_ cells in row \s-1 without explicit cell format.
+#   sysconf(3c) :: [125] same as vmstat(1m)
+#   a.out(4) :: [55,59,61] needs rewrite to give &nbsp outside \u...\d in order to avoid the cell collapsing (\u gives line-height:0 for correct results in non-table text)
+#   ar(4) :: [289] too many tabs after format change
+#
 
 module SunOS_5_5_1
 
@@ -52,6 +74,7 @@ module SunOS_5_5_1
     @state[:fpmap]['BI'] = 4
     @state[:fpmap]['H'] = :helv
     @state[:fonts][4] = :boldit
+    @state[:fonts][5] = :cw
     @state[:fonts][:helv] = :sans
   end
 
@@ -367,6 +390,22 @@ module SunOS_5_5_1
     unescape("\\fI\\*(Hc\\f1#{args[1]}")
   end
 
+  def req_TX(*args)
+    #‍.TX t p	no	-	Resolve the title abbreviation t; join to punctuation mark (or text) p.
+    warn "can't yet .TX #{args.inspect}"
+  end
 end
 
-
+=begin
+Checked against .ps
+§1
+Intro awk csh dump
+NIS+ nis+ (√ extra chars in numeric expression \s0)
+alias (√ no .DG)
+as (√ rejected string conditions)
+audioconvert (√ pointless esc)
+basename (√ horizontal motion)
+col eject gencat (√ tbl)
+diff3 (√ pathological use of negative \v is ignorable)
+find (√ pointless esc)
+=end

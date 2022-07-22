@@ -34,7 +34,9 @@ module Troff
     # returned named string might include escapes that need processed before copy
     # REVIEW: did this because of cw(1) [GL2-W2.5] - but is it _ALWAYS CORRECT_ to unescape it??
     # REVIEW: I think so, because we read the string in .ds with copymode
-    unescape(@state[:named_string][s] || ''.tap { warn "undefined named string #{s}" })
-    ''
+    #warn "\\* processing #{@state[:named_string][s].inspect}"
+    #unescape(@state[:named_string][s] || ''.tap { warn "undefined named string #{s}" })
+    #''
+    @state[:named_string][s] || ''.tap { warn "undefined named string #{s}" }
   end
 end

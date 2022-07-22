@@ -10,10 +10,16 @@ module Troff
 
   def req_TAmp
     formats_terminator = Regexp.new('\.\s*$')
-    @state[:tbl_formats] = Troff.tbl_formats(@lines.collect_through do |l|
-                             @register['.c'].incr
-                             l.match(formats_terminator)
-                           end)
+    format_lines = []
+    loop do
+      break if @line.match?(formats_terminator)
+      format_lines << next_line
+    end
+    #@state[:tbl_formats] = Troff.tbl_formats(@lines.collect_through do |l|
+    #                         @register['.c'].incr
+    #                         l.match(formats_terminator)
+    #                       end)
+    @state[:tbl_formats] = Troff.tbl_formats(format_lines)
   end
 
   # The format section specifies the layout of the columns. Each line in the format
@@ -70,8 +76,14 @@ module Troff
         # other format characters (e.g. f, s, w, etc.) each of which may be followed by
         # various types of parameters.
         # special case to prevent collecting the fR from a font request as an R primary format - sccs-prs(1) [SunOS 5.5.1]
+        #              or the n unit from a minimum width (appearing in parentheses) as a numeric alignment - prtdiag(1m) [SunOS 5.5.1]
 
-        formats[row] = fmts.scan(/\|?[#{key_letters}](?:fR|[^#{key_letters}])*/)
+        fmts.sub!(/^(\|{0,2})(.+)/, '\2')
+        border_left = Regexp.last_match(1)
+
+        formats[row] = fmts.scan(/\|?[#{key_letters}](?:fR|n\)|[^#{key_letters}])*/)
+        formats[row][0] = "#{border_left}#{formats[row][0]}"
+
         # try to split extra column space between each adjacent column
         # h4x - prefix right column space with '000' so it can be identified in format_row()
         # this works but tbl(1) centers text in the unpadded space, in an unpadded cell
@@ -89,15 +101,20 @@ module Troff
         # however, we deal with these key letters differently, by shifting an S leftward,
         # and an ^ upward.
 
-        while pos = formats[row].index { |cell| cell.downcase.strip == 's' } do
+        #while pos = formats[row].index { |cell| cell.downcase.strip == 's' } do
+        # we might get extra formats with the 's'! -- tbl(1) [SunOS 5.5.1]
+        while pos = formats[row].index { |cell| cell.downcase.strip.start_with?('s') } do
           # S formats in prior columns ought to result in an empty (but present) cell,
           # as they will already have been merged left.
-          formats[row][pos].sub!(/[Ss]/, '')
+          #formats[row][pos].sub!(/[Ss]/, '')
           merge_column = pos - 1
           while formats[row][merge_column].empty? do
             merge_column -= 1
           end
-          formats[row][merge_column] << 's'
+          #formats[row][merge_column] << 's'
+          formats[row][merge_column] << formats[row][pos]
+          formats[row][pos] = ''
+          #formats[row].delete_at(pos)
         end
 
         while pos = formats[row].index { |cell| cell.match('\^') } do
@@ -115,11 +132,12 @@ module Troff
             # REVIEW: short format rows may cause NoMethodErrors? (nil.empty?)
           end
           formats[merge_row][pos] << '^'
-          unless residual.empty?
-            #warn "spanned row residual format: #{residual.inspect} (merged/cleared)"
-            formats[merge_row][pos] << residual unless formats[merge_row][pos].include?(residual)
-            formats[row][pos] = '&nil;'
-          end
+          #unless residual.empty?
+          #  #warn "spanned row residual format: #{residual.inspect} (merged/cleared)"
+          #  formats[merge_row][pos] << residual unless formats[merge_row][pos].include?(residual)
+          #end
+          formats[merge_row][pos] << residual unless residual.empty? or formats[merge_row][pos].include?(residual)
+          formats[row][pos] = '&nil;'
         end
 
         # move some | to get clean box extends, if necessary
@@ -136,11 +154,14 @@ module Troff
             column
           end
         end
-
       end
       row += 1
     end
 
+    # these methods assume the formats array includes placeholders for spanned cells.
+    # all span format manipulations must be deferred to format_row, or we'll get into
+    # trouble with out-of-bounds accesses, and the "adjust" columns we're tacking on
+    # out past the "maximum" column index.
     formats.instance_variable_set(:@tbl_rows, formats.count)
     formats.instance_variable_set(:@tbl_cols, columns)
     formats.instance_variable_set(:@cursor, [ 0, 0 ])
@@ -180,33 +201,51 @@ module Troff
       end
       extended
     end
-
     formats
-
   end
 
   private
 
   def format_row
-    row = Array.new(@state[:tbl_formats].columns)
-    row.collect! do
-
+    row = Array.new#(@state[:tbl_formats].columns)
+    #row = @state[:tbl_formats].columns.collect {
+    #row.collect! do
+    loop do
+#warn "started row.collect with #{row.inspect}"
+      break unless fmt = @state[:tbl_formats].get.dup
       cell = Block.new(type: :cell)
-      break unless @state[:tbl_formats].get
-      format = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
+      #fmt = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
+      if fmt.empty? # we receive empty formats for column-spanned cells. I think we should never otherwise have an empty format?
+        @state[:tbl_formats].next_col
+        next
+      end
+
       # hack to get a border_left (for box extend case; does it ever also appear for real-world tbl formatting?)
       # the way the formats are parsed means we'll never get this unless it's the first character on the line, or I've moved it there
-      if format == '&nil;'
+      if fmt == '&nil;' # REVIEW what is this doing, now?
         cell.type = :nil
-        format = ''
+        fmt = ''
       end
       cell.style.css[:border_left] = case Regexp.last_match(1)
                                      when '|'  then '1px solid black'
                                      when '||' then '3px double black'
-                                     end if format.sub!(/^(\|{1,2})/, '')
+                                     end if fmt.sub!(/^(\|{1,2})/, '')
+
+      # standard format: whatever was in effect at the time of .TS -- chrtbl(1m) [SunOS 5.5.1]
+      # this will get overridden by this cell's format, if warranted
+      # prevent font changes from leaking outside the cell
+      cur_blk = @current_block
+      @current_block = cell
+      # sysconf(3c) [SunOS 5.5.1] suggests the size doesn't actually get reset cell-to-cell,
+      #                           ..._if there's no size format specified_?
+      #unescape("#{@state[:escape_char]}f#{@register[:tbl_dfont]}#{@state[:escape_char]}s#{@register[:tbl_dsize]}")
+      unescape("#{@state[:escape_char]}f#{@register[:tbl_dfont]}") #.tap{ warn "resetting cell font to default based on #{fmt.inspect}" } if fmt.match?(/[fbi]/) ## I think the font face always resets.
+      unescape("#{@state[:escape_char]}s#{@register[:tbl_dsize]}").tap{ warn "resetting cell size to default based on #{fmt.inspect}" } if fmt.include?('p')
+      @current_block = cur_blk
+
       # continue with normal formatting, per documentation
-      until format.empty? do
-        case format
+      until fmt.empty? do
+        case fmt
         # sizing
         when /^([\.\d]+)/
           warn "tbl wants to change space between columns to #{Regexp.last_match[1]}"	# TODO? see tbl: tech discussion p.8
@@ -215,9 +254,10 @@ module Troff
           # else
           #   cell.style.css[:padding_right] = to_em(to_u(Regexp.last_match[1], default_unit: 'n')).to_s + "em" # the default is 3n. REVIEW account for that somehow? - TODO: also appears when there's borders that it splits the space to either side. that's a mood.
           # end
-        when /^(w\(?([\d.]+(?:[uicpmnv]\))?))/i		# minimum column width
+        when /^(w\(?([\d.]+(?:[uicpmnv])?)\)?)/i		# minimum column width TODO this is not picking up the trailing )
          cell.style.css[:min_width] = to_em(to_u(Regexp.last_match[2], default_unit: 'n')).to_s + "em"
         when /^(e)/	# TODO this doesn't really work, since e only works on columns marked e, and not all may be
+          # TODO (maybe): all columns marked 'e' get equal width - gethitcode(3g) [GL2-W2.5]
           warn "tbl wants equal width columns"
           #cell.style.css[:width] = "#{1.0 / @state[:tbl_formats].columns}%"
 
@@ -228,31 +268,41 @@ module Troff
         when /^(l)/i  then nil # I think this could be considered the default. => cell.style.css[:text_align]   = 'left'
         when /^(r)/i  then cell.style.css[:text_align]   = 'right'
 
-        # font changes
-        when /^(b)/i  then cell.text.last.font.face      = :bold
-        when /^(i)/i  then cell.text.last.font.face      = :italic
+        # font changes - the font registers need manipulating so \fP and \s0 work correctly in cell context
+        when /^(b)/i
+          cell.text.last.font.face      = :bold
+          @register['.f'].value = @state[:fpmap]['B']
+        when /^(i)/i
+          cell.text.last.font.face      = :italic
+          @register['.f'].value = @state[:fpmap]['I']
         when /^(f.[A-Z]?)/ # REVIEW why were we accepting two digits? a font position I think is only one.
           # unescape wants to work on @current_block
           # this manipulation should be safe as we haven't frozen any of these blocks, yet
+          # REVIEW I think this (correctly) sets \n(.f as a side effect -- it doesn't?
           cur_blk = @current_block
           @current_block = cell
           unescape(@state[:escape_char] + Regexp.last_match[1])
-          @current_block = Block.new(type: :nil)
-          unescape(@state[:escape_char] + 'fP')	# prevent font change from leaking beyond this cell
+          #@current_block = Block.new(type: :nil)
+          #unescape(@state[:escape_char] + 'fP')	# prevent font change from leaking beyond this cell
           @current_block = cur_blk
 
         when /^(p([-+123]?\d))/ #then req_ps(Regexp.last_match[2])
+          # sysconf(3c) [SunOS 5.5.1] has bare 'p' with no number following. tbl doc suggests this
+          # is invalid, does nothing. REVIEW does it?
           cur_blk = @current_block
           @current_block = cell
           unescape(@state[:escape_char] + 's' + Regexp.last_match[2])
-          @current_block = Block.new(type: :nil)
-          unescape(@state[:escape_char] + 's0')	# prevent size change from leaking beyond this cell
+          #@current_block = Block.new(type: :nil)
+          #unescape(@state[:escape_char] + 's0')	# prevent size change from leaking beyond this cell
           @current_block = cur_blk
 
         # spans
         when /^(s)/i
-          row.pop      # REVIEW: is modifying iterable inside loop like this reliable?? seems to work.
+          #row.pop      # REVIEW: is modifying iterable inside loop like this reliable?? seems to work. maybe because of the !
+                       # REVIEW  might not work so well, somehow we're getting 'nil' inserted into the row when extra formats on s (e.g. s1 -- prtdiag(1m) [SunOS 5.5.1]
+                       # TODO    remove the final .compact if we ever sort this out properly
           cell.style.attributes[:colspan] ? cell.style.attributes[:colspan] += 1 : cell.style.attributes[:colspan] = 2
+
         when /^(\^)/
           cell.style.attributes[:rowspan] ? cell.style.attributes[:rowspan] += 1 : cell.style.attributes[:rowspan] = 2
 
@@ -270,7 +320,7 @@ module Troff
           end
         when /^(_|=)/
           cell.style[:box_rule] = true
-          if row.last.nil? or row.last.text.last.type != :row_adj
+          if row.last.nil? or row.last.text.last.type != :row_adj # REVIEW is this still working after all the various format parse/apply changes
             row << Block.new(type: :row_adj, text: Block.new(type: :cell, text: LineBreak.new))
           else
             row.last.text << Block.new(type: :cell, text: LineBreak.new)
@@ -297,22 +347,23 @@ module Troff
         # otherwise
         when /^(\s+)/ then nil  # spaces that haven't been claimed by above are ignored
         when /^(.)/             # this serves as an 'else' clause
-          # TODO (maybe): all columns marked 'e' get equal width - gethitcode(3g) [GL2-W2.5]
-          warn "unimplemented tbl format #{format}"
+          warn "unimplemented tbl format #{fmt}"
           nil
         end
-        format.sub!(Regexp.last_match(1), '')
+        fmt.sub!(Regexp.last_match(1), '')
       end
       @state[:tbl_formats].next_col
-      cell
+      row << cell
     end
 
-    req_ft('R')
+    #req_ft('R')
     # reset font and size to default - this didn't seem to be working in all circumstances? sysconf(3c) [SunOS 5.5.1]
-    req_ps(Font.defaultsize)
+    #req_ps(Font.defaultsize)
 
     @state[:tbl_formats].next_row
-    row
+    #row.compact # we might get some nils (from warn?) if there were extra formats present on a horizontally spanned cell -- prtdiag(1m) [SunOS 5.5.1]
+                # REVIEW something else might happen if those extra formats actually apply.
+    row # REVIEW maybe we can get away with this now
   end
 
 end

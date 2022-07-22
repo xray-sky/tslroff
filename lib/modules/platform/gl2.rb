@@ -49,6 +49,14 @@
 #
 # What the hell are \(Dy and \(Dn ?? - section 3G
 #
+# GL1 W2.3 has 29 Sep 2021 as footer date. probably want to address that.
+# GL1 W2.3 some of the entries are longer than an enforced 11 character filename limit;
+#   presumably these should be renamed for the actual entry, not based on the filename.
+#   because of the extensive use of .so we shouldn't use 'title' but maybe just provide a rewrite table
+#   look especially in man3g, but we should audit for any others. (audit shows all in man3g.)
+# GL2 W2.5 same problem, plus man1d/zshadeabstr, man1m/mklost+foun
+# GL1 W2.1 is clean
+#
 
 module GL2
 

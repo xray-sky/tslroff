@@ -74,8 +74,9 @@ class Text
             when :italic  then '<em>'
             when :boldit  then '<strong style="font-style:italic;">'
             when :sans    then '<span style="font-family:Optima,Helvetica,Geneva,Arial,sans-serif;">'	# TODO something useful
+            when :cw      then '<tt>'
             when :regular then ''
-            else %(<span class="u">unknown font face #{font.face.inspect} =&gt; )
+            else %(<span class="u">unknown font face #{font.face.inspect} =&gt; ).tap { warn "text module selecting unknown font face #{font.face.inspect}" }
             end
     tags << %(<span style="font-size:#{font.size}pt;">) unless font.size.to_i == Font.defaultsize
     if @style.keys.any?
@@ -85,9 +86,9 @@ class Text
         when :horizontal_shift then %(<span style="position:relative;left:#{v}em;">)
         when :word_spacing     then %(<span style="word-spacing:#{v}em;">) # REVIEW this seems to give wider spaces than I'd expect - jot(1) [AOS-4.3]
         when :eqn              then %(<span style="color:steelblue;">)
-        when :unsupported      then %(<span class="u">Unsupported request =&gt; )
+        when :unsupported      then %(<span class="u">Unsupported request =&gt; ).tap { warn "text module unknown request #{t.inspect} => #{v.inspect}" }
         when :comment          then return %(<!--\n   #{@text}\n-->)
-        else                        %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; )
+        else                        %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; ).tap { warn "text module WTF oops #{t.inspect} => #{v.inspect}" }
         end
       end
     end
@@ -123,6 +124,10 @@ class Text
       when '&roffctl_bell;'     then %(<img src="../../../../bell_logo.svg" style="height:1em;vertical-align:-0.2em;" />)
       when /&roffctl_hs:(.+?);/ then %(<span class="tab" style="width:#{Regexp.last_match(1)};"></span>)
       when /&roffctl_vs:(.+?);/ then %(<span class="vs" style="height:#{Regexp.last_match(1)};"></span>)
+      when /&roffctl_overstrike\((.+)\);/
+        chars = Regexp.last_match(1).split("\017")
+        pile = chars[1..-1].collect { |c| %(<span class="pile">#{c}</span>) }.join
+        %(<span class="clash">#{chars[0]}#{pile}</span>) # REVIEW: this visual effect only works for two-character clashes
       when /&roffctl_.+;/       then '' # ignore any other roffctl code
       else warn "unimplemented #{e}"
       end

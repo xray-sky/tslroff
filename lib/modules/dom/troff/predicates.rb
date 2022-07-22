@@ -31,7 +31,7 @@ module Troff
   end
 
   def fill?
-    @register['.u'] == 1
+    @register['.u'] > 0
   end
 
   def nofill?

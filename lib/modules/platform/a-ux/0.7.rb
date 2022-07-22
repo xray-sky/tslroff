@@ -6,6 +6,9 @@
 #
 # Apple A/UX 0.7 Version Overrides
 #
+# TODO
+#    postscript pages have RCSID text?
+#
 
 module A_UX_0_7
 

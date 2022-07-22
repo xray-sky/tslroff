@@ -1,6 +1,8 @@
 # unknown.rb
 #
+# unknown source magic
 # defer to platform overrides
+#
 
 module Unknown
   def source_init

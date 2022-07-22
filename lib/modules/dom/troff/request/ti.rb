@@ -22,6 +22,8 @@
 #  so an absolute position is relative to the page, and in html context needs to be
 #  relative to the current indent. but a relative position (starts with ±) needs nothing.
 #
+#  looks like it's meant to cause a break too. mount_cachefs(1m) [SunOS 5.5.1]
+#
 
 module Troff
   def req_ti(indent = nil)

@@ -9,6 +9,7 @@
 # TODO:
 #   cw.1 has '\" ct preprocessor mark?? and apparently %^H^H&dagg;% to be interpreted, somehow?
 #   ar.4 wants to include /usr/include/ar.h
+#   greset.3 has something going on with the colormap table?
 #
 
 module GL2_W2_5

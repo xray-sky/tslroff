@@ -59,7 +59,7 @@ module Troff
     while args.any? do
       stop = args.shift
       stop.prepend("#{@state[:tabs].last || 0}u") if stop.start_with?('+')
-      @state[:tabs].push(to_u(stop).to_i)
+      @state[:tabs].push(to_u(stop, default_unit: 'm').to_i)
     end
   end
 

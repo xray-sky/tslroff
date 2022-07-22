@@ -45,7 +45,7 @@ module Troff
 
     macro = []
     until @line.start_with? ".#{delim}" do
-      macro << unescape(next_line, copymode: true)
+      macro << unescape(next_line, copymode: true).tap { |n| warn "sketchy use of .if/.ie with args in .de => #{n.inspect}" if n.match?(%r{^.\s*i[e].*\$[1-9]}) }
     end
 
     # TODO: this fails badly when the macro includes things that want to collect_through
@@ -60,6 +60,6 @@ module Troff
     singleton_class.send(:remove_method, terminating_method)
   end
 
-  def req_dot(*_args) ; end
+  #def req_dot(*_args) ; end  ---- aaaaah hah. putting this here made it _not_ a singleton method. it was defined, but couldn't be removed with singleton_class.send
 end
 

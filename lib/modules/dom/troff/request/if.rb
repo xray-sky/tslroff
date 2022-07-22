@@ -52,43 +52,79 @@
 
 module Troff
   def req_if(*args)
-    esc = Regexp.quote(@state[:escape_char])
-    test = args.shift
-    predicate = (test.sub!(/^!/, '') ? false : true)
-    condition = case test[0]
+    #test = args.shift
+    resc = Regexp.quote(@state[:escape_char])
+    #warn ".if #{args.inspect}"
+    argstr = args.shift
+    test = argstr.slice!(0, get_char(argstr).length)
+    #predicate = (test.sub!(/^!/, '') ? false : true)
+    predicate = if test == '!'
+                  test = argstr.slice!(0, get_char(argstr).length)
+                  false
+                else
+                  true
+                end
+
+    # get the full escape, if that's what we're on the road to
+    test << argstr.slice!(0, get_escape(argstr).length) if test == @state[:escape_char]
+
+    #condition = case test[0]
+    condition = case test
                 when 'e', 'E' then warn 'can\'t test for even page number'
                 when 'o', 'O' then warn 'can\'t test for odd page number'
-                when 't', 'T', 'n', 'N'
-                  pred = test[0]
-                  args = [test[1..-1]] + args if test[1]
-                  test = pred.downcase
-                  test == 't'
-                when /\d/
-                  # try to evaluate it as an expression
-                  # REVIEW: are we going to get expressions not starting with digits?
-                  # \n and \w should already be processed by the time we get here.
-                  expr = to_u(test).to_f
-                  expr > 0
+                when 'n', 't', 'N', 'T'
+                  test.downcase == 't'
+#                when /\d/
+#                  # try to evaluate it as an expression - will certainly go wrong if it includes number registers
+#                  rest = argstr.slice!(0, get_expression(args).length)
+#                  expr = to_u(test + rest).to_f
+#                  expr > 0
+                when /^[-(0-9]/, /^#{resc}[wn]/  # this is going to be a numeric expression REVIEW is this condition complete?
+                  expr = test
+                  until argstr.start_with?(' ')
+                    expr << argstr.slice!(0, get_char(argstr).length)
+                  end
+                  warn ".if evaluating numeric expression #{expr.inspect}"
+                  to_u(__unesc_w(__unesc_n(expr))).to_f > 0
                 else
-                  warn "evaluating condition #{test.inspect} as string comparison"
-                  # TODO some joker's used a special character as a delim in mwm(1), saber(1) [AOS 4.3]
-                  # .if \(ts\n(.z\(ts\(ts - good grief. sigma?! I guess that is going to take a rewrite rule.
-                  #test.sub!("\\(ts", '"') - do this as a reusable method that will interpret the next char as an escape - we need it for all esc processing (e.g. \n(\f1, \f\P)
-                  test.match(/^([#{@@delim}])(.*?)\1(.*?)\1$/) or test.match(/^([^@@delim].*?)"(.*?)$/) # TODO: _any_ delimiter
-                  (str1, str2) = Regexp.last_match[-2..-1]
-                  #warn "don't know how to compare strings #{str1.inspect} and #{str2.inspect}"
-                  __unesc_star(str1) == __unesc_star(str2)  # TODO this needs to expand named strings without interfering with output - mhook(1) [AOS 4.3]
+                  quote_char = Regexp.escape test
+                  argstr.sub!(%r{(?<lhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}(?<rhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}}, '')
+                  (lhs, rhs) = [Regexp.last_match(:lhs), Regexp.last_match(:rhs)]
+                  warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect}"
+                   # REVIEW is it really true that the only relevant escape processing is \* ?
+                   __unesc_star(lhs) == __unesc_star(rhs)
+#                else
+#                  warn "evaluating condition #{test.inspect} as string comparison"
+#                  # TODO some joker's used a special character as a delim in mwm(1), saber(1) [AOS 4.3]
+#                  # .if \(ts\n(.z\(ts\(ts - good grief. sigma?! I guess that is going to take a rewrite rule.
+#                  #test.sub!("\\(ts", '"') - do this as a reusable method that will interpret the next char as an escape - we need it for all esc processing (e.g. \n(\f1, \f\P)
+#                  test.match(/^([#{@@delim}])(.*?)\1(.*?)\1$/) or test.match(/^([^@@delim].*?)"(.*?)$/) # TODO: _any_ delimiter
+#                  (str1, str2) = Regexp.last_match[-2..-1]
+#                  #warn "don't know how to compare strings #{str1.inspect} and #{str2.inspect}"
+#                  __unesc_star(str1) == __unesc_star(str2)  # TODO this needs to expand named strings without interfering with output - mhook(1) [AOS 4.3]
                 end
 
     # multi-line input
-    input = if args[0].sub!(/^#{esc}{/, '')
-      @lines.collect_through do |line|
-        @register['.c'].incr # TODO oops, this will go nuts if we have multiple collect_through (e.g., .de inside .if)
-        line.sub!(/#{esc}}\s*$/, '')  # comb(1), delta(1) [GL2-W2.5]
-      end
-    else
-      Array.new
+    #input = if argstr.sub!(/^#{esc}{/, '')
+    #  @lines.collect_through do |line|
+    #    @register['.c'].incr # TODO oops, this will go nuts if we have multiple collect_through (e.g., .de inside .if)
+    #    line.sub!(/#{esc}}\s*$/, '')  # comb(1), delta(1) [GL2-W2.5]
+    #  end
+    #else
+    #  Array.new
+    #end
+
+    warn "rejecting condition #{predicate ? '' : '!'} #{condition.inspect}" unless condition == predicate or test == 'n'
+
+    argstr.strip!
+    if argstr.sub!(/^#{resc}{/, '')
+      loop do
+        parse(argstr) if condition == predicate
+        argstr = next_line
+        break if argstr.sub!(/#{resc}}$/, '')
+      end #until argstr.sub!(/#{resc}}$/, '') somehow this never happens; looks like argstr outside of loop context isn't updating
     end
+    parse(argstr) if condition == predicate
 
     # there's a strange case here if the first line of input is a command, since
     # the args have already been parsed.
@@ -97,13 +133,16 @@ module Troff
     #       .if n if then else elif fi case esac for while until do done { }
     #       .if t if  then  else  elif  f\|i  case  esac  for  while  until  do  done  {  }
     #
-    input.unshift(Troff.req?(args[0]) ? "#{args.shift} #{args.map { |arg| %("#{arg}") }.join(' ')}" : args.join(' '))
-    if condition == predicate
-      input.each { |line| parse(line) }
-      true
-    else
-      warn "rejected condition #{predicate ? '' : '!'}#{test.inspect}" unless test == 'n'
-      false
-    end
+    #input.unshift(Troff.req?(args[0]) ? "#{args.shift} #{args.map { |arg| %("#{arg}") }.join(' ')}" : args.join(' '))
+    #if condition == predicate
+    #  input.each { |line| parse(line) }
+    #  true
+    #else
+    #  warn "rejected condition #{predicate ? '' : '!'}#{test.inspect}" unless test == 'n'
+    #  false
+    #end
+
+    # .if needs to return its evaluated condition, so .ie can work
+    condition == predicate
   end
 end

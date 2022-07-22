@@ -40,6 +40,7 @@ module Troff
   # the same, whether .B or .I
   def finalize_B
     unescape('\f1')
+    req_ps(Font.defaultsize)
   end
 
 end

@@ -11,18 +11,29 @@ module Troff
     if escapes?	# the escape mechanism may be disabled
       # hidden newlines -- REVIEW: does this need to be any more sophisticated?
       # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
-      while line.end_with?("#{@state[:escape_char]}\n") and line[-3] != @state[:escape_char]
-        line.chop!.chop! << @lines.next.tap { @register['.c'].incr }
+      #while line.end_with?("#{@state[:escape_char]}\n") and line[-3] != @state[:escape_char]
+      #  line.chop!.chop! << @lines.next.tap { @register['.c'].incr }
+      # TODO the new-line at the end of a comment cannot be concealed.
+      while line.end_with?("#{@state[:escape_char]}") and line[-2] != @state[:escape_char]
+        line.chop! << next_line
       end
       # Multiple inter-word space characters found in the input are retained except for
       # trailing spaces. §4.1
       line.rstrip! unless line.match(/#{Regexp.quote(@state[:escape_char])}\s+$/)
+      # lines starting with \! are read in copy mode and transparently output
+      if line.sub!(/^#{Regexp.escape(@state[:escape_char])}!/, '')
+        warn "transparent throughput? #{line.inspect}"
+        @output_block << unescape(line, copymode: true)
+        @current_block.reset_output_indicator # REVIEW
+        return true
+      end
     end
 
     if line.match(/^([\.\'])\s*(\S[^\s\\]?)\s*(\S.*|$)/)
       (_, cmd, req, args) = Regexp.last_match.to_a
       begin
-        send("req_#{Troff.quote_method(req)}", *getargs(args))
+        # \", ie, and if do their own special-case arg parsing
+        send("req_#{Troff.quote_method(req)}", *(%w(\" el ie if).include?(req) ? args : getargs(args)))
       rescue NoMethodError => e
         # Control lines with unrecognized names are ignored. §1.1
         if e.message.match(/^undefined method `req_/)
@@ -54,14 +65,14 @@ module Troff
       if @state[:eqn_start] and line.include?(@state[:eqn_start])
         parse_eqn(line)
       else
-        unescape(line)
+        unescape(__unesc_w(__unesc_n(line))) # we actually want to do this in a better order than l->r because of ar(4) [SunOS 5.5.1] :: [30-31]
       end
 
     end
 
     if @current_block.output_indicator?
       process_input_traps
-      if nofill?
+      if nofill? and !@state[:break_suppress] # suppress break between tag & para in .TP, etc.
         @current_block << LineBreak.new	# this duplicates .br, but if that is guarded on nofill...
         @current_tabstop = @current_block.text.last
       else
@@ -71,6 +82,7 @@ module Troff
       req_rs if nospace?
     end
 
+    @state.delete(:break_suppress)
     @current_block.reset_output_indicator
 
   end

@@ -10,7 +10,6 @@
 
 module Troff
   def esc_n(s)
-    #nr = get_def_str(s[1..-1])
     incr = s.slice!(0) if s =~ /^[-+]/
     s.slice!(0) if s.start_with?('(')
     # I think we can get away with relying on the @register default value

@@ -6,17 +6,17 @@
 # REVIEW: add anchors menu for .SH ?
 
 require 'selenium-webdriver'
+%w[. request escape macro].each do |t|
+  Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
+    require_relative i
+  end
+end
 
 module Troff
 
   @@delim = %(\002\003\005\006\007"')
 
   def source_init(titled: false)
-    %w[. request escape macro].each do |t|
-      Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
-        require_relative i
-      end
-    end
 
     @register = {}
     @state    = {}

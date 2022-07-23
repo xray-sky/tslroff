@@ -42,22 +42,16 @@
 #   (\{\), escaping the newline, yields an equivalent arrangement.
 #
 #
-# TODO: I guess the string comparison delimiters are less restrictive than I expected.
-#       tmac.an gives examples of both ^G (BEL) and " as delimiters (GL2-W2.5, SunOS 5.5)
-#       and \(ts is used in mwm(1) [AOS 4.3], so "any" really does mean _any_.
-#
-# REVIEW: I might get into trouble with getargs() losing outer double-quotes,
-#         telling the difference between string comparison and a numeric expression
+# I guess the string comparison delimiters are less restrictive than I expected.
+# tmac.an gives examples of both ^G (BEL) and " as delimiters (GL2-W2.5, SunOS 5.5)
+# and \(ts is used in mwm(1) [AOS 4.3], so "any" really does mean _any_.
 #
 
 module Troff
   def req_if(*args)
-    #test = args.shift
     resc = Regexp.quote(@state[:escape_char])
-    #warn ".if #{args.inspect}"
     argstr = args.shift
     test = argstr.slice!(0, get_char(argstr).length)
-    #predicate = (test.sub!(/^!/, '') ? false : true)
     predicate = if test == '!'
                   test = argstr.slice!(0, get_char(argstr).length)
                   false
@@ -67,18 +61,11 @@ module Troff
 
     # get the full escape, if that's what we're on the road to
     test << argstr.slice!(0, get_escape(argstr).length) if test == @state[:escape_char]
-
-    #condition = case test[0]
     condition = case test
                 when 'e', 'E' then warn 'can\'t test for even page number'
                 when 'o', 'O' then warn 'can\'t test for odd page number'
                 when 'n', 't', 'N', 'T'
                   test.downcase == 't'
-#                when /\d/
-#                  # try to evaluate it as an expression - will certainly go wrong if it includes number registers
-#                  rest = argstr.slice!(0, get_expression(args).length)
-#                  expr = to_u(test + rest).to_f
-#                  expr > 0
                 when /^[-(0-9]/, /^#{resc}[wn]/  # this is going to be a numeric expression REVIEW is this condition complete?
                   expr = test
                   until argstr.start_with?(' ')
@@ -93,26 +80,7 @@ module Troff
                   warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect}"
                    # REVIEW is it really true that the only relevant escape processing is \* ?
                    __unesc_star(lhs) == __unesc_star(rhs)
-#                else
-#                  warn "evaluating condition #{test.inspect} as string comparison"
-#                  # TODO some joker's used a special character as a delim in mwm(1), saber(1) [AOS 4.3]
-#                  # .if \(ts\n(.z\(ts\(ts - good grief. sigma?! I guess that is going to take a rewrite rule.
-#                  #test.sub!("\\(ts", '"') - do this as a reusable method that will interpret the next char as an escape - we need it for all esc processing (e.g. \n(\f1, \f\P)
-#                  test.match(/^([#{@@delim}])(.*?)\1(.*?)\1$/) or test.match(/^([^@@delim].*?)"(.*?)$/) # TODO: _any_ delimiter
-#                  (str1, str2) = Regexp.last_match[-2..-1]
-#                  #warn "don't know how to compare strings #{str1.inspect} and #{str2.inspect}"
-#                  __unesc_star(str1) == __unesc_star(str2)  # TODO this needs to expand named strings without interfering with output - mhook(1) [AOS 4.3]
                 end
-
-    # multi-line input
-    #input = if argstr.sub!(/^#{esc}{/, '')
-    #  @lines.collect_through do |line|
-    #    @register['.c'].incr # TODO oops, this will go nuts if we have multiple collect_through (e.g., .de inside .if)
-    #    line.sub!(/#{esc}}\s*$/, '')  # comb(1), delta(1) [GL2-W2.5]
-    #  end
-    #else
-    #  Array.new
-    #end
 
     warn "rejecting condition #{predicate ? '' : '!'} #{condition.inspect}" unless condition == predicate or test == 'n'
 
@@ -125,22 +93,6 @@ module Troff
       end #until argstr.sub!(/#{resc}}$/, '') somehow this never happens; looks like argstr outside of loop context isn't updating
     end
     parse(argstr) if condition == predicate
-
-    # there's a strange case here if the first line of input is a command, since
-    # the args have already been parsed.
-    #
-    # TODO: actually this is not good, because of things like this -- sh(1) [GL2-W2.5]
-    #       .if n if then else elif fi case esac for while until do done { }
-    #       .if t if  then  else  elif  f\|i  case  esac  for  while  until  do  done  {  }
-    #
-    #input.unshift(Troff.req?(args[0]) ? "#{args.shift} #{args.map { |arg| %("#{arg}") }.join(' ')}" : args.join(' '))
-    #if condition == predicate
-    #  input.each { |line| parse(line) }
-    #  true
-    #else
-    #  warn "rejected condition #{predicate ? '' : '!'}#{test.inspect}" unless test == 'n'
-    #  false
-    #end
 
     # .if needs to return its evaluated condition, so .ie can work
     condition == predicate

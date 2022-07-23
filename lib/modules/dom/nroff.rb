@@ -5,13 +5,14 @@
 #
 # REVIEW: add anchors menu for detected headings ?
 
+Dir.glob("#{File.dirname(__FILE__)}/nroff/*.rb").each do |i|
+  require i
+end
+
 module Nroff
   attr_reader :input_line_number
 
   def source_init
-    Dir.glob("#{File.dirname(__FILE__)}/nroff/*.rb").each do |i|
-      require i
-    end
 
     @tab_width = 8
     @lines_per_page = 66

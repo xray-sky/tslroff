@@ -22,9 +22,7 @@
 
 module Troff
   def esc_h(s)
-    #warn "not yet tokenized - #{__callee__}"
     quotechar = Regexp.quote(get_char(s))
-    #req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
     req_str = __unesc_w(__unesc_n(s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1'))) # we may have come here without having getargsed
     if req_str.match?(/^[-\w\.]+/)
       warn "horizontal motion: #{req_str.inspect}"
@@ -36,7 +34,6 @@ module Troff
       else
         apply { @current_block.text.last.style[:horizontal_shift] = new_shift }
       end
-      #s.sub(/#{Regexp.quote(full_esc)}/, '')
       ''
     elsif req_str.start_with?('|')
       req_str.slice!(0)
@@ -50,8 +47,6 @@ module Troff
       end
       ''
     else
-      #warn "don't know how to #{s.inspect}"
-      #s
       warn "don't know how to \\h #{req_str.inspect}"
       ''
     end

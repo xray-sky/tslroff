@@ -40,18 +40,6 @@ module Troff
       b = str.slice!(0, get_char(str)&.length || 0) #str.slice!(0)
       case b
       when a then @state[:translate].delete(a)
-      #when '\\'
-      #  b << str.slice!(0)
-      #  case b[1]
-      #  when '('
-      #    b << str.slice!(0..1)
-      #    @state[:translate][a] = b
-      #  when '*'
-      #    b << str.slice(0)
-      #    b[2] == '(' and b << str.slice!(0..1)
-      #    @state[:translate][a] = b
-      #  else @state[:translate][a] = b
-      #  end
       when '' then @state[:translate][a] = ' '
       else @state[:translate][a] = b
       end

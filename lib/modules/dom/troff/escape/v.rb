@@ -10,8 +10,6 @@
 
 module Troff
   def esc_v(s)
-    #warn "not yet tokenized - #{__callee__}"
-    #warn "arrived in \\v with #{s.inspect}"
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
     if req_str.match?(/^([-\w\.]+)/)
@@ -23,11 +21,8 @@ module Troff
       else
         apply { @current_block.text.last.style[:baseline] = new_baseline }
       end
-      #s.sub(/#{Regexp.quote(full_esc)}/, '')
       ''
     else
-      #warn "don't know how to #{s.inspect}"
-      #s
       warn "don't know how to \\v #{req_str.inspect}"
       ''
     end

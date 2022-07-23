@@ -43,19 +43,10 @@ module Troff
   def getargs(str)
     resc  = Regexp.quote(@state[:escape_char].to_s)	# escape mechanism may be disabled
     args = Array.new
-    #argstr = __unesc_w(__unesc_nr(str.sub(%r{\s*\\".*$}, '')))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
-    #argstr = reduce(str.sub(%r{\s*\\".*$}, ''))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
-    #argstr = __unesc_cm(__unesc_w(str.sub(%r{\s*\\".*$}, '')))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
     argstr = __unesc_w(__unesc_n(str.sub(%r{\s*\\".*$}, '')))	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
-    #warn "argstr - #{argstr.inspect}"
     until argstr.empty?
-    #warn "quoting argstr #{argstr.inspect}"
-      #argstr.sub!(/^(?:"(.*?)(?:(?<!#{resc})"(?: +|$)|$)|(.+?)(?:(?<!#{resc}) +|$))/, '') # fails when chars follow closing quote - acctcom.1m [GL2-W2.5]
       argstr.sub!(/^(?:"(.*?)(?:(?<!#{resc})"(\S*)(?: +|$)|$)|(.+?)(?:(?<!#{resc}) +|$))/, '')
-    #warn "quoted with #{Regexp.last_match.inspect}"
-      #args << Regexp.last_match[1..2].compact.first
       args << Regexp.last_match[1..3].join
-    #warn "args now #{args.inspect}"
     end
     args#.tap {|n| warn "giving args #{n.inspect}" }
   end

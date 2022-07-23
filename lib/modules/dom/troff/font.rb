@@ -20,21 +20,8 @@
 #      \f(BI (bold-italic) in scsiformat(8c) [AOS 4.3]
 #
 module Troff
-  #def esc_f(s)
-  #  esc = Regexp.quote(@state[:escape_char])   # handle \f\P wart in ftp.1c [GL2-W2.5]
-  #  #if s.match(/^f#{esc}?([1-9BIPRS])/)
-  #  if s.match(/^f#{esc}?([1-9BIPR])/)
-  #    (esc_seq, font_req) = Regexp.last_match.to_a
-  #    req_ft(font_req)
-  #    s.sub(/#{Regexp.quote(esc_seq)}/, '')
-  #  else
-  #    warn "unselected font face #{s[0..1]} from #{s[2..-1]}"
-  #    s[2..-1]
-  #  end
-  #end
 
   def req_ft(pos = 'P')
-    #font = case reduce(pos) -- turns out \f\P is atually illegal, copies 'P', doesn't change font
     font = case pos
            when 'P'          then @register[:prev_fp].value
            when /[A-Z]{1,2}/ then @state[:fpmap][pos]
@@ -47,7 +34,6 @@ module Troff
   end
 
   def req_ps(ps = '0')
-    #size = case reduce(ps.to_s) # tolerate receiving Integer argument
     size = case ps.to_s # tolerate receiving Integer argument
            when '0'                then @register[:prev_ps].value
            when /^([-+])(\d{1,2})/ then @register['.s'].value.send(Regexp.last_match(1), Regexp.last_match(2).to_i)

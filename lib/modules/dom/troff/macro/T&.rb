@@ -15,10 +15,6 @@ module Troff
       break if @line.match?(formats_terminator)
       format_lines << next_line
     end
-    #@state[:tbl_formats] = Troff.tbl_formats(@lines.collect_through do |l|
-    #                         @register['.c'].incr
-    #                         l.match(formats_terminator)
-    #                       end)
     @state[:tbl_formats] = Troff.tbl_formats(format_lines)
   end
 
@@ -132,24 +128,13 @@ module Troff
             # REVIEW: short format rows may cause NoMethodErrors? (nil.empty?)
           end
           formats[merge_row][pos] << '^'
-          #unless residual.empty?
-          #  #warn "spanned row residual format: #{residual.inspect} (merged/cleared)"
-          #  formats[merge_row][pos] << residual unless formats[merge_row][pos].include?(residual)
-          #end
           formats[merge_row][pos] << residual unless residual.empty? or formats[merge_row][pos].include?(residual)
           formats[row][pos] = '&nil;'
         end
 
-        # move some | to get clean box extends, if necessary
-        #if @formats[row].include?('_') or formats[row].include?('=')
-
         # hack in some extra row spans to accomodate _ and =
         if formats[row].include?('_') or formats[row].include?('=')
           formats[row].collect! do |column|
-          #  if formats[row-1][column-1].include?('|')
-          #    formats[row-1][column-1].sub!('|', '')
-          #    formats[row-1][column] = '|' + formats[row-1][column]
-          #  end
             column << '^' unless column == '_' or column == '='
             column
           end
@@ -207,11 +192,8 @@ module Troff
   private
 
   def format_row
-    row = Array.new#(@state[:tbl_formats].columns)
-    #row = @state[:tbl_formats].columns.collect {
-    #row.collect! do
+    row = Array.new
     loop do
-#warn "started row.collect with #{row.inspect}"
       break unless fmt = @state[:tbl_formats].get.dup
       cell = Block.new(type: :cell)
       #fmt = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
@@ -238,7 +220,6 @@ module Troff
       @current_block = cell
       # sysconf(3c) [SunOS 5.5.1] suggests the size doesn't actually get reset cell-to-cell,
       #                           ..._if there's no size format specified_?
-      #unescape("#{@state[:escape_char]}f#{@register[:tbl_dfont]}#{@state[:escape_char]}s#{@register[:tbl_dsize]}")
       unescape("#{@state[:escape_char]}f#{@register[:tbl_dfont]}") #.tap{ warn "resetting cell font to default based on #{fmt.inspect}" } if fmt.match?(/[fbi]/) ## I think the font face always resets.
       unescape("#{@state[:escape_char]}s#{@register[:tbl_dsize]}").tap{ warn "resetting cell size to default based on #{fmt.inspect}" } if fmt.include?('p')
       @current_block = cur_blk
@@ -298,9 +279,6 @@ module Troff
 
         # spans
         when /^(s)/i
-          #row.pop      # REVIEW: is modifying iterable inside loop like this reliable?? seems to work. maybe because of the !
-                       # REVIEW  might not work so well, somehow we're getting 'nil' inserted into the row when extra formats on s (e.g. s1 -- prtdiag(1m) [SunOS 5.5.1]
-                       # TODO    remove the final .compact if we ever sort this out properly
           cell.style.attributes[:colspan] ? cell.style.attributes[:colspan] += 1 : cell.style.attributes[:colspan] = 2
 
         when /^(\^)/

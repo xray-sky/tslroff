@@ -8,8 +8,6 @@
 
 module Troff
   def req_TE
-    #@current_block = blockproto
-    #@document << @current_block
     raise EndOfTable
   end
 end

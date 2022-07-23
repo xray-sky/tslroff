@@ -7,7 +7,6 @@
 #
 
 require 'pathname'
-require_relative 'enumerator/collect_through.rb'
 require_relative 'source.rb'
 require_relative 'block.rb'
 require_relative 'break.rb'

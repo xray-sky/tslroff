@@ -19,7 +19,7 @@
 
 module Troff
   def req_fi(*_args)
-    warn "received pointless argument #{_args.inspect} to .fi - why??" unless _args.empty?
+    #warn "received pointless argument #{_args.inspect} to .fi - why??" unless _args.empty?
     @register['.u'].value = 1
     # do we need to break? or is this already a brand new block.
     if @current_block.immutable?

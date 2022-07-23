@@ -7,8 +7,6 @@
 module Troff
   def esc_k(s)
     s.slice!(0) if s.start_with?('(')
-    #register = s[1]
-    #warn "not yet tokenized - #{__callee__}"
     warn "using \\k to store a horizontal position in #{s}..."
     position = 0
     block = Block.new(type: :se, style: @current_block.style.dup)

@@ -9,19 +9,22 @@ module Troff
   def parse(line)
 
     if escapes?	# the escape mechanism may be disabled
+      esc = @state[:escape_char]
+      resc = Regexp.quote esc
+
       # hidden newlines -- REVIEW: does this need to be any more sophisticated?
       # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
       #while line.end_with?("#{@state[:escape_char]}\n") and line[-3] != @state[:escape_char]
       #  line.chop!.chop! << @lines.next.tap { @register['.c'].incr }
       # TODO the new-line at the end of a comment cannot be concealed.
-      while line.end_with?("#{@state[:escape_char]}") and line[-2] != @state[:escape_char]
+      while line.end_with?(esc) and line[-2] != esc
         line.chop! << next_line
       end
       # Multiple inter-word space characters found in the input are retained except for
       # trailing spaces. §4.1
-      line.rstrip! unless line.match(/#{Regexp.quote(@state[:escape_char])}\s+$/)
+      line.rstrip! unless line.match(/#{resc}\s+$/)
       # lines starting with \! are read in copy mode and transparently output
-      if line.sub!(/^#{Regexp.escape(@state[:escape_char])}!/, '')
+      if line.sub!(/^#{resc}!/, '')
         warn "transparent throughput? #{line.inspect}"
         @output_block << unescape(line, copymode: true)
         @current_block.reset_output_indicator # REVIEW
@@ -62,8 +65,9 @@ module Troff
         req_br
       end
 
-      if @state[:eqn_start] and line.include?(@state[:eqn_start])
-        parse_eqn(line)
+      # eqn delims can be hidden by escaping them
+      if @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
+        parse_eqn line
       else
         unescape(__unesc_w(__unesc_n(line))) # we actually want to do this in a better order than l->r because of ar(4) [SunOS 5.5.1] :: [30-31]
       end

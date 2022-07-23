@@ -22,6 +22,9 @@
 
 require 'date'
 require 'nokogiri'
+#require 'ruby-prof'
+#RubyProf.start
+
 require_relative '../lib/classes/manual.rb'
 
 assets = File.realpath("#{__dir__}/../lib/assets")
@@ -52,6 +55,7 @@ loop do
 end
 
 raise ArgumentError, 'need an input file!' if filelist.empty?
+template = File.read("#{assets}/manual.erb")
 
 files = filelist.sort.each
 loop do
@@ -86,16 +90,18 @@ loop do
     # for "performance"
     pid = fork do
       # whoa hoss, why does requiring this at the top break my string parsing?!
-      # this needs resolving before we can deal with multiple files per invokation
       require 'erb'
-      #out = ERB.new(File.read("#{assets}/manual.erb")).result(loopcontext)
       File.open(ofile, File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
-        file.write(ERB.new(File.read("#{assets}/manual.erb")).result(loopcontext))
+        file.write(ERB.new(template).result(loopcontext))
       end
       exit
     end
     Process.detach(pid)
   end
+
+  #result = RubyProf.stop
+  #RubyProf::FlatPrinter.new(result).print(STDOUT)
+  #RubyProf::GraphPrinter.new(result).print(STDOUT, {})
 
   rescue ManualIsBlacklisted => e
     warn "#{ifile}: skipping (blacklist) -- #{e.message}"

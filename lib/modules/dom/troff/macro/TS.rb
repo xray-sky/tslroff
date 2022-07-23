@@ -290,7 +290,7 @@ module Troff
       parse line
       next_line_tbl
     when /^(\s*#{resc}?\^|\s*#{resc}?_|\s*=)+$/   # TODO allow changed field separator - prtdiag(1m) [SunOS 5.5.1] has \_ \_ \_ that is accepted
-      rules = Regexp.last_match(0).tap { |n| warn "format/bottom border change line #{n.inspect}" }
+      rules = Regexp.last_match(0)#.tap { |n| warn "format/bottom border change line #{n.inspect}" }
       @state[:tbl_top_rules] = rules.split(@state[:tbl_cell_delim])
       @state[:tbl_formats].next_row if @state[:tbl_top_rules].length > 1 # ditch the format given for this row... _if it has tabs_
       next_line_tbl

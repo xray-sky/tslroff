@@ -33,12 +33,14 @@ module Troff
     warn "\\l trying to draw lines from #{req_str.inspect}"
     unescape(req_str)
   end
+
   def esc_L(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
     warn "\\L trying to draw lines from #{req_str.inspect}"
     unescape(req_str)
   end
+
   def esc_D(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')

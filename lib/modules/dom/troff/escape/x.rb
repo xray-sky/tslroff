@@ -26,10 +26,8 @@
 
 module Troff
   def esc_x(s)
-    #warn "not yet tokenized - #{__callee__}"
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
-    #(_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
 
     space = to_u(req_str).to_i	# REVIEW: default unit??
     unless space.zero?
@@ -39,7 +37,6 @@ module Troff
       container.text << s[0]
       @current_block << container
       @current_block << Text.new(font: @current_block.text[-2].font.dup, style: @current_block.text[-2].style.dup)
-      #s[1..-1]
     end
     ''
   end

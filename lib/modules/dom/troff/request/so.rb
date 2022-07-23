@@ -23,23 +23,6 @@
 
 module Troff
   def req_so(name)
-=begin
- no bueno now we're not running in pwd
-    # TODO only works with paths relative to pwd. Some systems include absolute
-    # path references to .so; these will have to be rewritten somehow.
-    # e.g. AOS-4.3 includes /usr/athena/etc/tmac.h
-    localfile = './' + name    # force relative path
-    unless File.readable?(localfile)
-      @state[:path_translations].each do |path, xlate|
-        break if localfile.sub!(path, xlate) and File.readable?(localfile)
-      end
-    end
-    unless File.readable?(localfile)
-      warn ".so can't read #{localfile}"
-      return nil
-    end
-=end
-
     # make this relative by trying to find file working backward
     # REVIEW will we ever see a non-absolute path here, that we could maybe use directly?
     file = File.basename name

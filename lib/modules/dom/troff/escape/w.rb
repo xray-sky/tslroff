@@ -45,15 +45,8 @@
 
 module Troff
   def esc_w(s)
-    #warn "not yet tokenized - #{__callee__}"
-    #warn "entered esc_w with #{s.inspect}"
-    #esc = Regexp.quote(@state[:escape_char])
-    #s.match(/(^w([#{@@delim}#@`])(.+?(#{esc}\2)*)\2)/)
-    #(_, full_esc, quote_char, req_str) = Regexp.last_match.to_a
-    #s.slice!(0)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
-    #warn "measuring #{req_str.inspect}"
 
     # get a manipulable block that can be rendered without leaving anything in the output stream
     # TODO: make this reusable (here, next_tab, etc)
@@ -63,7 +56,7 @@ module Troff
     @@webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
     #@@webdriver.execute_cdp('CSS.enable', {}) it does nothing
     begin
-    #warn "element css font #{@@webdriver.find_element(id: 'selenium').css_value('font-family')}"
+      #warn "element css font #{@@webdriver.find_element(id: 'selenium').css_value('font-family')}"
       width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px')#.to_i
       #(width.to_s<<'u')#.tap {|x| warn "measured #{req_str.inspect} as #{x.inspect}" } #+ s.slice(full_esc.length..-1)
       # do i really need to append 'u' here? there was a place. nroff? tbl? REVIEW what happened

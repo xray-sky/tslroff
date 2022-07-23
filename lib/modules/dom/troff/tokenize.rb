@@ -17,21 +17,15 @@ module Troff
 # \P counts as one character, as does \*(xx.
 
   def get_char(s, count:  1)
-    #chars = ''
-    #chars << s[0]
     chars = s[0]
-    #warn "get_char chars == #{chars.inspect} (from #{s.inspect})"
     while count > 1
       chars << if chars.end_with?(@state[:escape_char])
                  get_escape(s[(chars.length)..-1])#.tap {
-    #warn "get_char chars(esc) == #{chars.inspect} (from #{s.inspect})" }
                else
                  get_char(s[(chars.length)..-1])#.tap {
-    #warn "get_char chars(more) == #{chars.inspect} (from #{s.inspect})" }
                end
       count -= 1
     end
-    #warn "get_char returning #{chars.inspect}"
     chars
   end
 
@@ -40,7 +34,6 @@ module Troff
 
   def get_escape(s)
    esc = get_char(s)
-   #warn "get_escape getting #{esc.inspect} from #{s.inspect}"
    esc << case esc
           when '"'                     then s[1..-1]
           when 'z'                     then get_char(s[1..-1])
@@ -51,7 +44,6 @@ module Troff
                'v', 'w', 'x', 'L', 'D' then get_quot_str(s[1..-1])#.tap {|n| warn "returned #{n.inspect} from get_quot_str" }
           else ''
           end
-    #warn "get_escape returning #{esc.inspect} from #{s.inspect}"
     esc
   end
 
@@ -62,12 +54,9 @@ module Troff
 
   def get_def_str(s)
     req = get_char(s)
-    #warn "get_def_str req == #{req.inspect} (from #{s.inspect})"
     n = 1
     req << get_char(s[n]) and n = 2 if req =~ /[-+]/
-    #warn "get_def_str req(2) == #{req.inspect} (from #{s.inspect})"
     req << get_char(s[n..-1], count: 2) if req.end_with? '('
-    #warn "get_def_str returning req == #{req.inspect} (from #{s.inspect})"
     req
   end
 
@@ -104,14 +93,8 @@ module Troff
       nextchar = get_char(s.slice(n..-1)) # REVIEW is .slice redundant
       n += nextchar.length
       req << nextchar
-    #end until req.end_with? req[0] # REVIEW: fails with escaped quote?
     end until nextchar == endchar
-    req#.tap {|n| warn "returning quot_str #{n.inspect}" }
+    req
   end
 
-  # used by .if
-  # REVIEW are unit characters valid here?
-  #def get_expression(s)
-  #  s.match(%r{^(?<expr>[^-+()\d\.cimnPpuv/*%<>=&:]*)}) ? Regexp.last_match(:expr) : ''
-  #end
 end

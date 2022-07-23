@@ -24,16 +24,13 @@
 module Troff
   def req_ig(delim = '.', *_args)
     terminating_method = "req_#{Troff.quote_method delim}"
-    define_singleton_method(terminating_method) { |*_args| true } #{ |*_args| unescape(' ') } # REVIEW unintended side effects?
+    define_singleton_method(terminating_method) { |*_args| true }
 
     save_block = @current_block
-    #warn "--- #{save_block.text.last.inspect}"
-    #@current_block = blockproto
     # break_adj in blockproto is incorrectly eating terminal breaks in nofill mode
     @current_block = Block.new(type: :p)
 
     until @line.start_with? ".#{delim}" do
-      #@current_block << unescape(next_line, copymode: true)
       # actually we don't want to process this at all! the lines are ignored
       # no font changes, no register changes, etc.
       next_line
@@ -43,6 +40,5 @@ module Troff
     singleton_class.send(:remove_method, terminating_method)
 
     @current_block = save_block
-    #warn "--- #{@current_block.text.last.inspect}"
   end
 end

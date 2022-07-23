@@ -23,11 +23,12 @@
 #                  (avoids some extraneous \n with .to_s on output)
 #
 
+#Dir.glob("#{File.dirname(__FILE__)}/html/*.rb").each do |i|
+#  require i
+#end
+
 module HTML
   def source_init
-    #Dir.glob("#{File.dirname(__FILE__)}/nroff/*.rb").each do |i|
-    #  require i
-    #end
 
     # might need to re-encode based on input charset; save this so that is possible
     @source_lines = @source.lines

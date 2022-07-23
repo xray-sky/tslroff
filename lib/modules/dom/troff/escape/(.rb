@@ -9,15 +9,6 @@
 
 module Troff
   def esc_lparen(s)
-#warn "enter lparen with #{s.inspect}"
-#    sc = s[1..2]
-#    chr = @state[:special_char][sc].to_s
-#    warn "unselected special character #{sc} from #{s.inspect}" if chr.empty?
-#    chr + s[3..-1]
-# I think we will end up here with the escape already got, no need to get_char again
-    #sc = get_char(s, count: 2)
-#warn "esc_lparen got sc=##{sc.inspect}"
-    #@state[:special_char][sc] || ''.tap { warn "undefined special character #{sc}" }
     @state[:special_char][s] || ''.tap { warn "undefined special character #{s}" }
   end
 
@@ -353,11 +344,6 @@ module Troff
       'HE'  => '&hearts;',
       'DI'  => '&diams;'
     }
-    # this doesn't work, I never get #{key}
-    #h.default_proc = proc do |_hash, key|
-    #  "<span style=\"color:green;\">#{key}</span>"
-    #end
-    #h
     true
   end
 end

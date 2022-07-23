@@ -33,23 +33,19 @@
 
 module Troff
   def req_de(name, delim = '.', *) # REVIEW: why is this * here?
-    #macro = @lines.collect_through do |l|
-    #  @register['.c'].incr
-    #  l.match(/^\.#{Regexp.escape delim}/)
-    #end.collect do |l|
-    #  unescape(l, copymode: true)
-    #end
+
+    # .EQ/.EN and I think .CW can be defined as macros _in addition_
+    # to their meanings to the preprocessor. REVIEW is someone doing this?
+    warn ".de wants to change .#{name}!" if %w[CW EN EQ].include?(name)
 
     terminating_method = "req_#{Troff.quote_method delim}"
-    define_singleton_method(terminating_method) { |*_args| true } #unless respond_to?(terminating_method) # REVIEW why does this unless always prevent the define?? -- uh oh, is it because we've implemented a "method missing"? ..we haven't?
+    define_singleton_method(terminating_method) { |*_args| true }
 
     macro = []
     until @line.start_with? ".#{delim}" do
       macro << unescape(next_line, copymode: true).tap { |n| warn "sketchy use of .if/.ie with args in .de => #{n.inspect}" if n.match?(%r{^.\s*i[e].*\$[1-9]}) }
     end
 
-    # TODO: this fails badly when the macro includes things that want to collect_through
-    #       e.g. conditional input blocks (.if \{ \}) -- comb(1) [GL2-W2.5]
     define_singleton_method("req_#{name}") do |*args|
       macro.each do |l|  # only args 0-9 allowed
         parse(l.gsub(/#{Regexp.quote(@state[:escape_char])}\$(\d)/) { args[$1.to_i - 1] })
@@ -60,6 +56,5 @@ module Troff
     singleton_class.send(:remove_method, terminating_method)
   end
 
-  #def req_dot(*_args) ; end  ---- aaaaah hah. putting this here made it _not_ a singleton method. it was defined, but couldn't be removed with singleton_class.send
 end
 

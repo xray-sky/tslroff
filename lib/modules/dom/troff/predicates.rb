@@ -9,7 +9,7 @@ module Troff
   private
 
   def broke?
-    return false if @current_block.is_a? String # we are trying to reduce() an escape
+    #return false if @current_block.is_a? String # we are trying to reduce() an escape
     return true if @current_block.empty?
     return true if @current_block.text.last.text.is_a?(LineBreak)
     if @current_block.text[-2]&.text and !@current_block.text[-2].text.is_a?(LineBreak)

@@ -391,7 +391,7 @@ module SunOS_5_5_1
   end
 
   def req_TX(*args)
-    #‍.TX t p	no	-	Resolve the title abbreviation t; join to punctuation mark (or text) p.
+    # .TX t p	no	-	Resolve the title abbreviation t; join to punctuation mark (or text) p.
     warn "can't yet .TX #{args.inspect}"
   end
 end

@@ -12,10 +12,8 @@ module Troff
       esc = @state[:escape_char]
       resc = Regexp.quote esc
 
-      # hidden newlines -- REVIEW: does this need to be any more sophisticated?
+      # hidden newlines -- REVIEW does this need to be any more sophisticated?
       # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
-      #while line.end_with?("#{@state[:escape_char]}\n") and line[-3] != @state[:escape_char]
-      #  line.chop!.chop! << @lines.next.tap { @register['.c'].incr }
       # TODO the new-line at the end of a comment cannot be concealed.
       while line.end_with?(esc) and line[-2] != esc
         line.chop! << next_line
@@ -49,7 +47,7 @@ module Troff
     else
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3 - also in nofill mode
-      # TODO: hm, I'm getting an extra .br (because of a space adjustment??) on consecutive blank text lines. - hesinfo(1) [AOS-4.3]
+      # TODO hm, I'm getting an extra .br (because of a space adjustment??) on consecutive blank text lines. - hesinfo(1) [AOS-4.3]
 
       if line.match(/^\s*$/)
         req_br
@@ -59,11 +57,21 @@ module Troff
 
       # initial spaces also cause a break. §4.1
       # -- but don't break again unnecessarily (i.e. in nofill mode).
-      # -- REVIEW: I think tabs don't count for this (...based on??)
+      # -- REVIEW I think tabs don't count for this (...based on??)
       if line.start_with?(' ')
         line.prepend("\\")    # force this initial space to appear in the output
         req_br
       end
+
+      # TODO
+      # move eqn to prior to argparse since delims can appear in macro args
+      # not doing it now because we'll need to remove unescape call from parse_eqn
+      # to achieve it (have parse_eqn just return string, and have it work like an
+      # actual preprocessor) and that'll lose me the .eqn class style that I want to
+      # keep for now (it calls attention to text that's been sent through parse_eqn,
+      # which is handy while developing). Gotta make it work during tbl too.
+      # does that suggest we are putting it in next_line?? maybe we are making some
+      # preprocessing methods to enable/disable/rewrite as needed.
 
       # eqn delims can be hidden by escaping them
       if @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)

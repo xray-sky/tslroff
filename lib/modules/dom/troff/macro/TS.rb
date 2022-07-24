@@ -40,6 +40,11 @@ module Troff
     # but table padding goes _inside_ the border.
     #
     # <table> is 4em currently, based on <p> 2em + 2em padding - change this if the css changes.
+    #
+    # TODO there's a sad interaction here with .TP -- getconf(1) [SunOS 5.5.1] -- where we are
+    # getting the left margin instead of the paragraph indent, on path_var (Operands). system_var
+    # is correctly at the left margin. is this reasonable to resolve?
+
     tbl.style.css[:margin_left] = "#{to_em(@register['.i'].to_s + '+2m')}em"
     tbl.style.css.delete(:margin_left) if @register['.i'] == (@state[:base_indent] + to_u('2m').to_f)
 
@@ -75,8 +80,11 @@ module Troff
     # the format section is mandatory
     req_TAmp
 
-    # initialize numeric alignment data before block gets frozen
+    # initialize numeric alignment and data before block gets frozen
     tbl[:nalign] = Array.new(@state[:tbl_formats].columns) { Array.new(2,0) }
+
+    # initialize array to track column spacing (default, 3n)
+    @state[:tbl_colspc] = Array.new(@state[:tbl_formats].columns, nil)
 
     #row = 0
     rowspan_active = Array.new(@state[:tbl_formats].columns, nil)
@@ -91,28 +99,28 @@ module Troff
 
       if @state[:tbl_bottom_rules]
         tbl.text.last.text.each_with_index do |cell, column|
+          # if we've been spanned up, we need to search up to find the cell
+          # which should receive the bottom border.
+          if cell.type == :nil
+            row = -2
+            loop do
+              break unless tbl.text[row].text[column].type == :nil
+              row = row - 1
+            end
+            cell = tbl.text[row].text[column]
+          end
           cell.style.css[:border_bottom] = case @state[:tbl_bottom_rules][column] || @state[:tbl_bottom_rules][0]
-                                           when ''  then next
+                                           when '', "\\^"  then next # bottom border. no upward row spanning involved.
                                            when '_', "\\_" then '1px solid black'
                                            when '=', "\\=" then '3px double black'
-                                           when "\\^"
-                                             # eh?
-                                             warn "spanning column #{column} up"
-                                             rowspan_active[column] ||= true
-                                             rowspan_hold[column] ||= tbl.text.last.text[column] # this is why there's a special Block type :row_adj for box rules, rather than inserting those rows directly
-                                             rowspan_hold[column].style.attributes[:rowspan] ? rowspan_hold[column].style.attributes[:rowspan] += 1 : rowspan_hold[column].style.attributes[:rowspan] = 2 unless cell.type == :nil
-                                             rowspan_hold[column].style.css[:vertical_align] = 'middle'
-                                             cell.type = :nil
-                                             next
                                            else warn "applying invalid rule from #{@state[:tbl_bottom_rules].inspect}"
                                            end
         end
-        @state[:tbl_bottom_rules] = nil
+        @state.delete(:tbl_bottom_rules)
       end
 
-
+      # format the new row
       current_row = Block.new(type: :row, text: format_row)
-
 
       if @state[:tbl_top_rules]
         current_row.text.each_with_index do |cell, column|
@@ -121,9 +129,8 @@ module Troff
                                         when '_', "\\_" then '1px solid black'
                                         when '=', "\\=" then '3px double black'
                                         when "\\^"
-                                          # eh?
                                           rowspan_active[column] ||= true
-                                          rowspan_hold[column] ||= tbl.text.last.text[column] # this is why there's a special Block type :row_adj for box rules, rather than inserting those rows directly
+                                          rowspan_hold[column] ||= tbl.text.last.text[column].tap{|n| warn "hold col #{n.inspect}\n#{tbl.text.last.inspect}"} # this is why there's a special Block type :row_adj for box rules, rather than inserting those rows directly
                                           rowspan_hold[column].style.attributes[:rowspan] ? rowspan_hold[column].style.attributes[:rowspan] += 1 : rowspan_hold[column].style.attributes[:rowspan] = 2 unless cell.type == :nil
                                           rowspan_hold[column].style.css[:vertical_align] = 'middle'
                                           cell.type = :nil
@@ -131,22 +138,27 @@ module Troff
                                         else warn "applying invalid rule from #{@state[:tbl_top_rules].inspect}"
                                         end
         end
-        @state[:tbl_top_rules] = nil
+        @state.delete(:tbl_top_rules)
       end
 
       # row data
       cells = line.split(@state[:tbl_cell_delim]) # we will get [] if we have input a blank line (see history(1) note, below)
       current_row.text.each_with_index do |cell, column|
-        break if cell.type == :row_adj # past the normal cells and into :row_adj
+        case cell.type
+        when :row_adj      then break # past the normal cells and into :row_adj
+        when :colspan_hold then next
+        end
 
         @current_block = cell
         text = cells.shift # TODO we will get nil if we have input a blank line (see history(1) note, below)
 
         # we need to set the font registers based on the cell's format, because otherwise
         # :last_xx is going to be whatever happened in format_row for the rightmost cell
-        # REVIEW in trouble here if the standard font positions get rearranged
+        # REVIEW not going to cut it here if the standard font positions get rearranged
+
         @register['.s'].value = cell.text.last.font.size # TODO this is where size is being reset between cells for sysconf(3c) [SunOS 5.5.1] :: [125]
                                                          # -- what can be done?? perhaps just a rewrite. but then how to detect it's happened on other pages?
+
         @register['.f'].value = case cell.text.last.font.face
                                 when :sans then 5
                                 when :boldit then 4
@@ -176,10 +188,6 @@ module Troff
           @current_block.type = :nil
         end
 
-        # looks like row-spanned cells still exist, and need to be tabbed past.
-        # we did something to how the cells come back from format_row, so row-spanned
-        # cells no longer exist once we get this far.
-
         # REVIEW there is a fundamental conflict between the _ that draws a rule (which
         # must appear as a cell - stbl1) and a row with one column's worth of text that's
         # spanned to the end of the row (which must not appear as cells - stbl3)
@@ -200,7 +208,7 @@ module Troff
             end
             cells = (text.split(@state[:tbl_cell_delim])[1..-1] || []).tap {|n| warn "replacing cells #{cells.inspect} after blockmode with #{n.inspect}" }
           else
-            unescape(text)
+            unescape(text) # TODO tbl adds \R (repeated character, to fill cell width). Watch for this; hopefully we don't need to implement it.
           end
 
           if @current_block.style[:numeric_align]
@@ -248,14 +256,28 @@ module Troff
     if @state[:tbl_top_rules]
       tbl.text.last.text.each_with_index do |cell, column|
         cell.style.css[:border_bottom] = case @state[:tbl_top_rules][column] || @state[:tbl_top_rules][0]
-                                         when ''  then next
+                                         when '', "\\^"  then next # bottom border. no upward row spanning involved.
                                          when '_' then '1px solid black'
                                          when '=' then '3px double black'
-                                         # REVIEW no code path here for \^ -- does it matter?
-                                         else warn "applying invalid rule from #{@state[:tbl_bottom_rules]}"
+                                         else warn "applying invalid rule from #{@state[:tbl_top_rules]}"
                                          end
       end
-      @state[:tbl_top_rules] = nil
+      @state.delete(:tbl_top_rules)
+    end
+
+    # apply non-standard column spacing, if there was any
+    if @state[:tbl_colspc].compact.any?
+      tbl.text.each do |row|
+        row.text.each_with_index do |cell, column|
+          space = @state[:tbl_colspc][column]
+          next unless space
+          pad = to_em(to_u("#{space/2}", default_unit: 'n'))
+          cell.style.css[:padding_right] = "#{pad}em"
+          # some joker might've tried to set the column spacing on the rightmost
+          # column. like in sysV-make(1) [SunOS 5.5.1]
+          row.text[column+1].style.css[:padding_left] = "#{pad}em" if row.text[column+1]
+        end
+      end
     end
 
     @current_block = blockproto
@@ -289,10 +311,17 @@ module Troff
     when /^\./           # is a request. process it. do over.
       parse line
       next_line_tbl
-    when /^(\s*#{resc}?\^|\s*#{resc}?_|\s*=)+$/   # TODO allow changed field separator - prtdiag(1m) [SunOS 5.5.1] has \_ \_ \_ that is accepted
-      rules = Regexp.last_match(0)#.tap { |n| warn "format/bottom border change line #{n.inspect}" }
-      @state[:tbl_top_rules] = rules.split(@state[:tbl_cell_delim])
-      @state[:tbl_formats].next_row if @state[:tbl_top_rules].length > 1 # ditch the format given for this row... _if it has tabs_
+    when /^(\s*#{resc}\^|\s*#{resc}?_|\s*=)+$/   # TODO allow changed field separator - prtdiag(1m) [SunOS 5.5.1] has \_ \_ \_ that is accepted
+      # TODO _ or = followed by a space (before the tab) are literal _ or =, not borders
+      rules = Regexp.last_match(0).split(@state[:tbl_cell_delim])
+      @state[:tbl_formats].next_row if rules.length > 1 # ditch the format given for this row... _if it has tabs_
+      # based on Documenter's Workbench sample table 3 maybe we want bottom borders if there was a row span
+      # REVIEW this is arbitrary, and probably we'll find out there's no correct decision.
+      if rules.detect { |r| r.match? /^(\s*#{resc}\^)/ }
+        @state[:tbl_bottom_rules] = rules.tap { |n| warn "bottom border change line #{n.inspect}" }
+      else
+        @state[:tbl_top_rules] = rules.tap { |n| warn "top border change line #{n.inspect}" }
+      end
       next_line_tbl
     else
       line

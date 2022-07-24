@@ -25,6 +25,15 @@ collections = {
       }
     }
   },
+  '_internal': {
+    disabled: true,
+    '_test': {
+      '_tbl': {
+        basedir: '_test',
+        srcdirs: %w[./stbl*]
+      }
+    }
+  },
   'Acorn': {
     disabled: true,
     'RISCiX': {

@@ -30,6 +30,7 @@ class Manual
     #@manual_entry     = String.new
     #@manual_section   = String.new
     #@output_directory = String.new
+    @manual_entry     = @input_filename
 
     @document = []
     @related  = []

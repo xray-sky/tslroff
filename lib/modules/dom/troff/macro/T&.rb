@@ -80,37 +80,33 @@ module Troff
         formats[row] = fmts.scan(/\|?[#{key_letters}](?:fR|n\)|[^#{key_letters}])*/)
         formats[row][0] = "#{border_left}#{formats[row][0]}"
 
-        # try to split extra column space between each adjacent column
-        # h4x - prefix right column space with '000' so it can be identified in format_row()
-        # this works but tbl(1) centers text in the unpadded space, in an unpadded cell
-        # and in html, all centering will happen in the largest padded space
-        # REVIEW so maybe we don't accept extra column space at all.
-        # formats[row].each_with_index do |fmts, col|
-        #   if formats[row][col+1] and fmts.sub!(/(?<![wf])(\d+)/) { $1.start_with?('000') ? $1 : ($1.to_f / 2) }
-        #     formats[row][col+1] << "000#{Regexp.last_match[1].to_f / 2}"
-        #   end
-        # end
+        # TODO don't allow this to change after initial format (i.e. during subsequent .T&)
+        columns = formats[row].count if formats[row].count > columns
 
-        columns = formats[row].count if formats[row].count > columns   # TODO: don't allow this to change after initial format (i.e. during subsequent .T&)
+        # create an object to hold the column spacing information. It's not cell-by-cell;
+        # if it gets changed "the widest space prevails", so all rows have the same spacing.
+        # accomplish this by assigning references to these cells, and being careful to
+        # .replace when re-assigning.
+        #
+        # the space still has to be split half for the right-padding and half for the next
+        # column's left padding. tbl gives in en; the css uses em.
+
+
 
         # In order to apply the row (^) and column (S) spans more easily in HTML context,
         # however, we deal with these key letters differently, by shifting an S leftward,
         # and an ^ upward.
 
-        #while pos = formats[row].index { |cell| cell.downcase.strip == 's' } do
         # we might get extra formats with the 's'! -- tbl(1) [SunOS 5.5.1]
         while pos = formats[row].index { |cell| cell.downcase.strip.start_with?('s') } do
           # S formats in prior columns ought to result in an empty (but present) cell,
           # as they will already have been merged left.
-          #formats[row][pos].sub!(/[Ss]/, '')
           merge_column = pos - 1
           while formats[row][merge_column].empty? do
             merge_column -= 1
           end
-          #formats[row][merge_column] << 's'
-          formats[row][merge_column] << formats[row][pos]
+          formats[row][merge_column] << " #{formats[row][pos]}" # REVIEW these formats may contradict formats already on the merge cell.
           formats[row][pos] = ''
-          #formats[row].delete_at(pos)
         end
 
         while pos = formats[row].index { |cell| cell.match('\^') } do
@@ -120,7 +116,8 @@ module Troff
           residual = formats[row][pos]		# it's possible some format remains (e.g. |)
           merge_row = row - 1
           begin
-            while formats[merge_row][pos].empty? do
+            #while formats[merge_row][pos].empty? do # not empty, surely? '&nil;' instead?
+            while formats[merge_row][pos] == '&nil;' do
               # keep going up, past emptied cells
               merge_row -= 1
             end
@@ -129,10 +126,11 @@ module Troff
           end
           formats[merge_row][pos] << '^'
           formats[merge_row][pos] << residual unless residual.empty? or formats[merge_row][pos].include?(residual)
-          formats[row][pos] = '&nil;'
+          formats[row][pos] = '&nil;' # don't make it totally empty; row spanned cells still have to be tabbed past
         end
 
         # hack in some extra row spans to accomodate _ and =
+        # REVIEW these will be turned into :row_adj ? is that how I made it work?
         if formats[row].include?('_') or formats[row].include?('=')
           formats[row].collect! do |column|
             column << '^' unless column == '_' or column == '='
@@ -193,21 +191,18 @@ module Troff
 
   def format_row
     row = Array.new
+    row_adj = Block.new(type: :row_adj, text: Array.new)
     loop do
-      break unless fmt = @state[:tbl_formats].get.dup
-      cell = Block.new(type: :cell)
-      #fmt = @state[:tbl_formats].get.dup # the .sub! call will erase the formats right out of @state!
-      if fmt.empty? # we receive empty formats for column-spanned cells. I think we should never otherwise have an empty format?
-        @state[:tbl_formats].next_col
-        next
-      end
+      cell = case fmt = @state[:tbl_formats].get.dup
+             when nil     then break
+             when ''      then Block.new(type: :colspan_hold)
+             when '&nil;' then fmt = '' and Block.new(type: :nil)
+             else Block.new(type: :cell)
+             end
 
-      # hack to get a border_left (for box extend case; does it ever also appear for real-world tbl formatting?)
-      # the way the formats are parsed means we'll never get this unless it's the first character on the line, or I've moved it there
-      if fmt == '&nil;' # REVIEW what is this doing, now?
-        cell.type = :nil
-        fmt = ''
-      end
+      # hack to get a border_left (for box extend case; does it ever also appear for
+      # real-world tbl formatting?) the way the formats are parsed means we'll never
+      # get this unless it's the first character on the line, or I've moved it there
       cell.style.css[:border_left] = case Regexp.last_match(1)
                                      when '|'  then '1px solid black'
                                      when '||' then '3px double black'
@@ -229,18 +224,17 @@ module Troff
         case fmt
         # sizing
         when /^([\.\d]+)/
-          warn "tbl wants to change space between columns to #{Regexp.last_match[1]}"	# TODO? see tbl: tech discussion p.8
-          # if Regexp.last_match[1].start_with?('000')
-          #   cell.style.css[:padding_left] = to_em(to_u(Regexp.last_match[1], default_unit: 'n')).to_s + "em" # the default is 3n. REVIEW account for that somehow? - TODO: also appears when there's borders that it splits the space to either side. that's a mood.
-          # else
-          #   cell.style.css[:padding_right] = to_em(to_u(Regexp.last_match[1], default_unit: 'n')).to_s + "em" # the default is 3n. REVIEW account for that somehow? - TODO: also appears when there's borders that it splits the space to either side. that's a mood.
-          # end
-        when /^(w\(?([\d.]+(?:[uicpmnv])?)\)?)/i		# minimum column width TODO this is not picking up the trailing )
+          #warn "tbl wants to change space between columns to #{Regexp.last_match[1]}"	# TODO? see tbl: tech discussion p.8
+          col = row.length
+          spc = Regexp.last_match[1].to_f
+          @state[:tbl_colspc][col] ||= spc
+          @state[:tbl_colspc][col] = spc if spc > @state[:tbl_colspc][col]
+        when /^(w\(?([\d.]+(?:[uicpmnv])?)\)?)/i		# minimum column width
          cell.style.css[:min_width] = to_em(to_u(Regexp.last_match[2], default_unit: 'n')).to_s + "em"
         when /^(e)/	# TODO this doesn't really work, since e only works on columns marked e, and not all may be
           # TODO (maybe): all columns marked 'e' get equal width - gethitcode(3g) [GL2-W2.5]
           warn "tbl wants equal width columns"
-          #cell.style.css[:width] = "#{1.0 / @state[:tbl_formats].columns}%"
+          #cell.style.css[:width] = "#{1.0 / @state[:tbl_formats].columns]}%"
 
         # alignments
         when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML?? how is it different in practice from L?
@@ -298,23 +292,22 @@ module Troff
           end
         when /^(_|=)/
           cell.style[:box_rule] = true
-          if row.last.nil? or row.last.text.last.type != :row_adj # REVIEW is this still working after all the various format parse/apply changes
-            row << Block.new(type: :row_adj, text: Block.new(type: :cell, text: LineBreak.new))
-          else
-            row.last.text << Block.new(type: :cell, text: LineBreak.new)
-          end
-          cell.style.css[:line_height]   = '50%'
-          row.last.text.last.style.css[:line_height]  = '50%'
+          row_adj.text << Block.new(type: :cell, text: LineBreak.new)
+          # the odd line height split seems to avoid some kind of rendering bug
+          # in Safari 15 where rows with a box rule are slightly taller than the
+          # other rows?
+          cell.style.css[:line_height]   = '49%'
+          row_adj.text.last.style.css[:line_height]  = '51%'
           @state[:tbl_formats].box_extend?.each do |corner|
             case corner
             when :nw  then cell.style.css[:border_left]  = '1px solid black'
             when :nw2 then cell.style.css[:border_left]  = '3px double black'
             when :ne  then cell.style.css[:border_right] = '1px solid black'
             when :ne2 then cell.style.css[:border_right] = '3px double black'
-            when :sw  then row.last.text.last.style.css[:border_left]  = '1px solid black'
-            when :sw2 then row.last.text.last.style.css[:border_left]  = '3px double black'
-            when :se  then row.last.text.last.style.css[:border_right] = '1px solid black'
-            when :se2 then row.last.text.last.style.css[:border_right] = '3px double black'
+            when :sw  then row_adj.text.last.style.css[:border_left]  = '1px solid black'
+            when :sw2 then row_adj.text.last.style.css[:border_left]  = '3px double black'
+            when :se  then row_adj.text.last.style.css[:border_right] = '1px solid black'
+            when :se2 then row_adj.text.last.style.css[:border_right] = '3px double black'
             end
           end
           cell.style.css[:border_bottom] = case Regexp.last_match(1)
@@ -339,9 +332,9 @@ module Troff
     #req_ps(Font.defaultsize)
 
     @state[:tbl_formats].next_row
-    #row.compact # we might get some nils (from warn?) if there were extra formats present on a horizontally spanned cell -- prtdiag(1m) [SunOS 5.5.1]
-                # REVIEW something else might happen if those extra formats actually apply.
-    row # REVIEW maybe we can get away with this now
+
+    row << row_adj if row_adj.text.any?
+    row
   end
 
 end

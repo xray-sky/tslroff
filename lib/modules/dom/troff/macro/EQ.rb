@@ -144,44 +144,6 @@ module Troff
       end
       warn "eqn built up for unescape #{eqnline.inspect}"
 
-=begin
-      loop do # look for
-        break if line.empty?
-        #if line.start_with? '{'
-          # do something
-        #elsif line.start_with? '"'
-        if line.start_with? '"'
-          word = line.slice!(0, get_quot_str(line).length)
-          line << word.sub(/^\"(.*)\"$/, '\1')
-        else
-          #word = line.slice!(/^(\s*)(\S+)(\s+|$)/)
-          #(asep, word, bsep) = Regexp.last_match.to_a[1..3]
-          #eqchar = @state[:eqnchars][word] || ''.tap { warn "eqn has no character definition for #{word.inspect}" }
-          #words = line.slice!(/^[^"]*/).gsub(/(?<=^|\s)(?:#{@state[:eqnchars].keys.collect{|c|Regexp.quote c}.join('|')})(?=\s|$)/) { |c| @state[:eqnchars][c] }
-          #apply { @current_block.text.last.style[:eqn] = true }
-          #unescape asep + eqchar + bsep
-          #unescape words
-          #apply { @current_block.text.last.style.delete(:eqn) }
-        #loop do
-        #  break if line.empty?
-          # this seems to be the magic to match an unescaped eqn_start
-          # while not being fooled by an escaped escape
-          mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rbeg}|(?<!#{resc})#{rbeg}/)
-          if mark
-            # eqn throws away the whole line if the delims are unbalanced.
-            # we emit partial lines so pay attention to the complaints log.
-            # don't spit out a blank if delim is the first thing on the line
-            head = line.slice!(0..mark).chop
-            parse head unless head.empty?
-            tail = line.index(/(?<!#{resc})#{resc}#{resc}#{rend}|(?<!#{resc})#{rend}/)
-            warn "eqn unterminated delim #{@state[:eqn_end].inspect}!" and break unless tail
-            eqnline << line.slice!(0..tail).chop
-          end
-        end
-
-        end
-      end
-=end
       apply { @current_block.text.last.style[:eqn] = true }
       unescape eqnline
       apply { @current_block.text.last.style.delete(:eqn) }
@@ -219,7 +181,9 @@ this isn't going to work as a bunch of .sub calls
                 when /^"/ then tok.sub(/^"(.*)"$/, '\1') # pass through
                 when /^{/ then gen_eqn(tok.sub(/^\{(.*)\}/, '\1')) # "block"
                 when 'sub' then "\\v@0.33m@\\s-3#{gen_eqn(str.slice!(0, get_eqn_token(str).length))}\\s0\\v@-0.33m@" # REVIEW recursive.. is this too destructive of str?
-                when 'sup' then "\\v@-0.33m@\\s-3#{gen_eqn(str.slice!(0, get_eqn_token(str).length))}\\s0\\v@0.33m@" # REVIEW recursive.. is this too destructive of str?
+                when 'sup' then "\\v@-0.33m@\\s-3#{gen_eqn(str.slice!(0, get_eqn_token(str).length))}\\s0\\v@0.33m@" # REVIEW recursive.. is this too destructive of str? doesn't seem to be
+                #when 'roman' then "\\f1#{gen_eqn(str.slice!(0, get_eqn_token(str).length))}\\fP" # TODO this doesn't result in roman font, because of how the recursive call to gen_eqn does its own font changes
+                when 'roman' then "\\f1#{str.slice!(0, get_eqn_token(str).length)}\\fP" # REVIEW probably this is wrong too since it won't cause replacements from eqnchars. but it works in practice for drand48(3c) [SunOS 5.5.1]
                 # TODO eqn(1) [SunOS 5.5.1] has some of these as "shorthands" with no space
                 #      separating them from () - they are recognized, but we don't.
                 #      should ( and ) be their own tokens? - I think probably not?
@@ -304,8 +268,8 @@ this isn't going to work as a bunch of .sub calls
       '<<'       => '&Lt;',
       '>>'       => '&Gt;',
       '!='       => '&ne;',
-      '+-'       => '&plusmn;'
-      '=='       => '&equiv;'
+      '+-'       => '&plusmn;',
+      '=='       => '&equiv;',
       '==<'      => '&lE;',
       '==>'      => '&gE;',
       '...'      => '&ctdot;',      # REVIEW (center?) possible &hellip;
@@ -402,7 +366,6 @@ this isn't going to work as a bunch of .sub calls
       'PI'       => '&Pi;',
       'RHO'      => '&Rho;',
       'SIGMA'    => '&Sigma;',
-      'sum'      => '&Sigma;',
       'TAU'      => '&Tau;',
       'PHI'      => '&Phi;',
       'PSI'      => '&Psi;',

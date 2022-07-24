@@ -96,13 +96,9 @@ class Block
     end if style[:linkify]
 
     case type
-    when :nil     then '' # suppress. used for placeholding in tbl.
     when :bare    then t
     when :nroff   then %(<div class="body"><div id="man"><pre class="n">#{t}</pre></div></div>) # TODO maybe something with a gutter instead of breaking html with multiple id=man
     when :comment then %(<!--#{t} -->\n)	# TODO: as a block, this is breaking up blocks that shouldn't be broke up! as(1) [SunOS 5.5.1]
-    when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
-    when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
-    when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
     when :th      then %(<div class="title"><h1>#{t}</h1></div>\n<div class="body">\n    <div id="man">\n)
     when :subhead then %(<p class="subhead">#{t}</p>\n)
     when :sh      then "<h2>#{t}</h2>\n"
@@ -110,7 +106,16 @@ class Block
     when :ss_alt  then "<h4>#{t}</h4>\n"
     when :cs      then "<pre>#{t}</pre>\n"
     when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
+    when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
+    when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
+    when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
+    when :nil, :colspan_hold then '' # suppress. used for placeholding in tbl.
     when :cell
+      # clear left/right padding that is equal to the default from css.
+      # doing it here because of the whole-column effect of the w() and the
+      # cell-by-cell processing we do in .TS/.T&
+      style.css.delete(:padding_left) if style.css[:padding_left] == "0.75em"
+      style.css.delete(:padding_right) if style.css[:padding_right] == "0.75em"
       t.gsub!(/&tblctl_\S+?;/) do |e|
         case e
         when '&tblctl_nl;'  then %(<span style="width:#{style[:numeric_align][:left].call}em;text-align:right;display:inline-block;">)

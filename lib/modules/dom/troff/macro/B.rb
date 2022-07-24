@@ -40,6 +40,10 @@ module Troff
   # the same, whether .B or .I
   def finalize_B
     unescape('\f1')
+    # evidence size reset is not right. wish I'd left a note why I thought it needed doing.
+    # SunOS 5.5.1 tmac.an does it, that's why. REVIEW do they all? GL1 W2.1 does.
+    # that's probably good enough to say, "yes".
+    # but it is NOT correct in sample table 7 (which perhaps doesn't use tmac.an)
     req_ps(Font.defaultsize)
   end
 

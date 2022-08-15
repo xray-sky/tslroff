@@ -19,11 +19,6 @@
 # one character is tall (like "H"); and 3 means that both tall characters and characters
 # with descenders are present.
 #
-# TODO: "will not affect the current environment"
-# TODO: set number registers
-# REVIEW: is it necessary? (is it used in practice)
-# REVIEW: i'm in big trouble if I ever get a \w with a tab in it
-#
 # observed variations
 # \w'\fB/usr/share/groff/font/devps/download'u+2n
 # \w'\f(CWdelete array[expression]'u
@@ -31,7 +26,7 @@
 # \w'\(bu'u+1n
 # \w'.SM KRB5CCNAME\ \ 'u      <- REVIEW what up with this
 # \w'.eh \'x\'y\'z\'  'u       <- REVIEW ...or this?
-# \w^B\\$1\\*(s1\\$2\\*(s2^Bu	 <- TODO: this might cause problems - where was it from?? was a .tr in effect?
+# \w^B\\$1\\*(s1\\$2\\*(s2^Bu	 <- TODO this might cause problems - where was it from?? was a .tr in effect?
 #                                       the manual suggests this might be illegal somehow?
 #                                       -- the answer is in §10.1 -- "In addition, STX, ETX, ENQ, ACK, and BEL
 #                                       may be used as delimiters or translated into a graphic with .tr. [...]
@@ -42,6 +37,17 @@
 #                                          and so does bcopy(1m) - so I'll add @ to the delims? REVIEW
 #                                          and hp(1) uses `; mv(5) uses #
 #
+# Tried a bunch of stuff to get faster results through selenium.
+#  * specify user profile, instead of letting it generate one every time
+#  * explicitly set various browser cache options
+#  * get doc once, use javascript to replace element (to prevent repeated download/parse of css)
+#  * find element with css selector instead of by id
+#  ...nothing helped.
+#
+# TODO "will not affect the current environment"
+# TODO set number registers -- REVIEW is it necessary? (is it used in practice)
+# REVIEW i'm in big trouble if I ever get a \w with a tab in it
+#
 
 module Troff
   def esc_w(s)
@@ -49,27 +55,42 @@ module Troff
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
 
     # get a manipulable block that can be rendered without leaving anything in the output stream
-    # TODO: make this reusable (here, next_tab, etc)
-    hold_block = @current_block
-    @current_block = Block.new(type: :se)
-    unescape(req_str)
-    @@webdriver.get("data:text/html;charset=utf-8,#{@current_block.to_html}")
+    selenium = Block::Selenium.new
+    unescape(req_str, output: selenium)
+    @@webdriver.get selenium.to_html
     #@@webdriver.execute_cdp('CSS.enable', {}) it does nothing
     begin
-      #warn "element css font #{@@webdriver.find_element(id: 'selenium').css_value('font-family')}"
       width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px')#.to_i
-      #(width.to_s<<'u')#.tap {|x| warn "measured #{req_str.inspect} as #{x.inspect}" } #+ s.slice(full_esc.length..-1)
       # do i really need to append 'u' here? there was a place. nroff? tbl? REVIEW what happened
     rescue Selenium::WebDriver::Error::NoSuchElementError => e
       warn e
       'NaN' # REVIEW: side effects - returning nil - but what string makes sense?
-    ensure
-      # restore normal output
-      @current_block = hold_block
     end
   end
 
-  def xinit_selenium
+  # TODO I want a way to instantiate these, but with a warning so I can note
+  #      the use of unimplemented features vs. garbage input
+  #def init_w
+  #  @register['st'] = Troff::Register.new()
+  #  @register['sb'] = Troff::Register.new()
+  #  @register['ct'] = Troff::Register.new()
+  #end
+
+  # safari can't run headless and is about 3x slower than headless chromedriver
+  # otherwise the reults appear identical (at first glance)
+  def xinit_selenium_safari
+    unless defined? @@webdriver
+      safari_opts = Selenium::WebDriver::Safari::Options.new
+      #safari_opts.add_argument('--headless')
+      @@webdriver = Selenium::WebDriver.for(:safari, options: safari_opts)
+      # calibrate Selenium (dimension results are in px)
+      @@webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')
+      @@pixels_per_inch = @@webdriver.find_element(id: 'calibrate').size.width
+    end
+  end
+
+  # chromedriver without --headless is ~20% slower than safari
+  def xinit_selenium_chrome
     unless defined? @@webdriver
       chrome_opts = Selenium::WebDriver::Chrome::Options.new
       chrome_opts.add_argument('--headless')
@@ -85,4 +106,5 @@ module Troff
     end
   end
 
+  alias_method :xinit_selenium, :xinit_selenium_chrome
 end

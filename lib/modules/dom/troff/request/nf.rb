@@ -8,7 +8,7 @@
 # Request  Initial  If no     Notes   Explanation
 #  form     value   argument
 #
-# .nf      fill on  -         B,E     No-fill. Subsequent output lines are neither filled
+# .nf      fill on  -         B,‡,E   No-fill. Subsequent output lines are neither filled
 #                                     nor adjusted. Input text lines are copied directly
 #                                     to output text lines without regard for the current
 #                                     line length.
@@ -23,6 +23,9 @@
 #        .PP followed by .nf shouldn't margin_top: 0 -- ascii(5) [GL2-W2.5]
 #        .br followed by .nf; the browser swallows the <br /> before the </p>, and
 #            we get an incorrect margin_top:0 on the next <p>? -- a.out(5) [AOS 4.3]
+#
+# breaks. TODO can be suppressed with '
+#
 
 module Troff
   def req_nf

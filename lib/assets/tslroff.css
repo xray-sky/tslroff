@@ -205,13 +205,10 @@
 
 #man .clash {
 	display: inline-block;
-	width: 0.6em;
+	text-align: center;
+	line-height: 0;
 	color: red;
-}
-
-#man .pile {
-	position: relative;
-	left: -0.6em;
+	width: 0.6em; /* keeps selenium from measuring width: 100% owing to <br />s */
 }
 
 #man .ul {
@@ -275,6 +272,7 @@
 	/* this is only good if the element is a direct child of a block.
 	breaks again if it's in, say, <strong>, or another <span> */
 	/*margin-left: inherit;  /* look at this more closely. I think it's wrong in tar.1 - where was it I did this for? bc.? bs.1? */
+	white-space: nowrap;
 }
 
 #man table .nalign {	/* tbl numerical column alignment  */
@@ -290,6 +288,76 @@
 #man .sup {
 	position: relative;
 	bottom: 0.5em;
+}
+
+.eqn-column { /* for piles, matrix columns */
+	display: inline-block;
+	text-indent: 0;
+	padding-right: 1em;
+	/* line-height: 1.5em; /* this for matrix only */
+}
+
+.eqn-subscript {
+	display: inline-block;
+	position: relative;
+	text-indent: 0;
+	line-height: 0;
+	top: 0.25em;
+}
+
+.eqn-superscript {
+	display: inline-block;
+	position: relative;
+	text-indent: 0;
+	line-height: 0;
+	top: -0.4em;
+}
+
+.eqn-radical-xtnd {
+	display: inline-block;
+	border-top: 1px solid;
+	margin: 0;
+	position: relative;
+	/* this is exact position to extend palatino 12 &radic; on safari */
+	padding-top: 0.1em;
+	top: 0.15em;
+}
+
+/* cribbed these fraction styles from wikipedia */
+.eqn-fraction {
+	display: inline-block;
+	vertical-align: -0.5em;
+	/* font-size: 85%; */
+	text-align: center;
+	text-indent: 0;
+	white-space: nowrap;
+}
+
+.eqn-fraction .eqn-denominator {
+	border-top: 1px solid;
+	display: block;
+	/* line-height: 1em; */
+	margin: 0 0.1em;
+	/*padding-top: 0.25em; /* border-top gap */
+	padding-top: 0.1em; /* border-top gap */
+}
+
+.eqn-fraction .eqn-numerator {
+	display: block;
+	/* line-height: 1em; */
+	margin: 0 0.1em;
+	/*padding-bottom: 0.1em; */
+}
+
+.eqn-fraction .eqn-fraction-rule {
+	border: 0;
+	height: 1px;
+	width: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	clip: rect(0,0,0,0);
 }
 
 .nrs {		/* troff 1/6em narrow space */

@@ -23,25 +23,21 @@
 #   put }H at top of page
 #   put }F an inch from bottom
 #
+# TODO
+#   we definitely have to delay header/footer processing until end of processing
+#
 
 module AOS
 
   def self.extended(k)
     k.define_singleton_method(:req_LP, k.method(:req_PP)) if k.methods.include?(:req_PP)
+    k.instance_variable_set '@manual_entry',
+       k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_section', Regexp.last_match[1]
+    k.instance_variable_set '@output_directory', "man#{k.instance_variable_get '@manual_section'}"
+    #k.instance_variable_get('@state')[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
   end
 
-  def init_aos
-    @manual_entry     = @input_filename.sub(/\.(\d\S?)$/, '')
-    @manual_section   = Regexp.last_match[1]
-    @output_directory = "man#{@manual_section}"
-    @state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
-  end
-
-#  def init_so
-#    @state[:path_translations] = {
-#      %r{/usr}     => '..',
-#    }
-#  end
 
   def init_sc
     super
@@ -65,20 +61,6 @@ module AOS
     })
   end
 
-  def req_TH(*args)
-    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-    if args[4]
-      req_ds(']D', args[4])
-      @state[:footer] = "\\*(]W" if args[4].strip.empty?
-    end
-    req_ds(']W', args[3]) if args[3]
-    if args[2]
-      req_ds(']L', args[2])
-      @state[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless args[2].strip.empty?
-    end
-    super(heading: heading)
-  end
-
   def req_AC(*args)
     req_ds(']W', 'IBM ACIS')	# REVIEW where the hell is this defined?
   end
@@ -91,6 +73,27 @@ module AOS
                  else '7th Edition'
                  end
           )
+  end
+
+  def req_DS
+    req_fi
+    req_RE
+    req_sp('.5')
+  end
+
+  def req_TH(*args)
+    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+    if args[4]
+      req_ds(']D', args[4])
+      #@state[:footer] = "\\*(]W" if args[4].strip.empty?
+      unescape((args[4].strip.empty? ? "\\*(]W" : "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"), output: @state[:footer])
+    end
+    req_ds(']W', args[3]) if args[3]
+    if args[2]
+      req_ds(']L', args[2])
+      unescape('\\0\\0\\(em\\0\\0\\*(]L', output: @state[:footer]) unless args[2].strip.empty?
+    end
+    super(heading: heading)
   end
 
   def req_VE
@@ -107,11 +110,4 @@ module AOS
                  end
           )
   end
-
-  def req_DS
-    req_fi
-    req_RE
-    req_sp('.5')
-  end
-
 end

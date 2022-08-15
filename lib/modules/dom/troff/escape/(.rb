@@ -4,11 +4,14 @@
 # -------------
 #
 #   basic definitions of the \( (special character) escape
-#  most of these are groff-only (man groff_chars) -- REVIEW: should they be separated?
+#  most of these are groff-only (man groff_chars) -- REVIEW should they be separated?
+#
+#  special case for translating special characters, if one is in effect.
 #
 
 module Troff
   def esc_lparen(s)
+    translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @state[:translate].has_key? "#{@state[:escape_char]}(#{s}"
     @state[:special_char][s] || ''.tap { warn "undefined special character #{s}" }
   end
 
@@ -20,7 +23,8 @@ module Troff
       'tm'  => '&trade;',
       'OK'  => '&#10003;',  # check mark
       #'bs'  => '&roffctl_unsupp;TO DO: (BELL LABS LOGO)&roffctl_endspan;',  # TODO: bell labs logo, not used in groff (cute.)
-      'bs'  => '&roffctl_bell;',
+      #'bs'  => '&roffctl_bell;',
+      'bs'  => BellLogo.new, # TODO inserting this in unescape will actually fail because it's not a string
       'Do'  => '\$',
       'ct'  => '&cent;',
       'eu'  => '&euro;',
@@ -278,21 +282,20 @@ module Troff
       #'ao'  => '&#778;',  # ring, U0306 (U02DA)
       #'a~'  => '&#771;',  # tilde, U0303 (U007E)
       #'ho'  => '&#809;',  # ogonek, U0328 (U02DB)
-      # - but it looks like maybe they're meant to be non-combining. Several pages on
-      # - AOS and Solaris indicate this to be the case
-      'a"'  => '&dblac;',  # hungarian umlaut, U030B (U02DD non combining)
-      'a-'  => '&macr;',  # macron, U0304 (U00AF)
-      'a.'  => '&dot;',  # dot, U0307 (U02D9)
-      'a^'  => '&circ;',  # circumflex, U0302 (U005E)
-      'aa'  => '&acute;',  # acute, U0301 (U00B4)
-      'ga'  => '&grave;',  # grave, U0300 (U0060) -- this is actually giving me a combining accent, and at least on AOS this is wrong. \(ga is spacing -- also on solaris
-      'ab'  => '&breve;',  # breve, U0306 (U02D8)
-      'ac'  => '&cedil;',  # cedilla, U0327 (U00B8)
-      'ad'  => '&die;',  # dieresis, U0308 (U00A8)
-      'ah'  => '&caron;',  # caron, U030C (U02C7)
-      'ao'  => '&ring;',  # ring, U0306 (U02DA)
-      'a~'  => '&tilde;',  # tilde, U0303 (U007E)
-      'ho'  => '&ogon;',  # ogonek, U0328 (U02DB)
+      # - but it looks like maybe they're meant to be non-combining. Several pages on AOS and Solaris indicate this to be the case
+      'a"'  => '&dblac;',  # hungarian umlaut
+      'a-'  => '&macr;',   # macron
+      'a.'  => '&dot;',    # dot
+      'a^'  => '&circ;',   # circumflex
+      'aa'  => '&acute;',  # acute
+      'ga'  => '&grave;',  # grave
+      'ab'  => '&breve;',  # breve
+      'ac'  => '&cedil;',  # cedilla
+      'ad'  => '&die;',    # dieresis
+      'ah'  => '&caron;',  # caron
+      'ao'  => '&ring;',   # ring
+      'a~'  => '&tilde;',  # tilde
+      'ho'  => '&ogon;',   # ogonek
       # these are explicitly spacing variants
       'ti'  => '~',      # REVIEW: nroff treats ~ as small for diacritic, possibly the 'normal' appearance of ~ should be replaced by &tilde; and leave this def as-is
       'ha'  => '^',
@@ -322,7 +325,8 @@ module Troff
       'la'  => '&lang;',
       'ra'  => '&rang;',
       # 'bv'  => '&#9134;',  # approximate vertical extension, used in GL2-W2.5 fcntl(5)
-      'bv'  => '|',        # unfortunately this is used extensively in GL2-W2.5 to give a vertical bar, and #9134 doesn't exist in the 'normal' font.
+      #'bv'  => '|',        # unfortunately this is used extensively in GL2-W2.5 to give a vertical bar, and #9134 doesn't exist in the 'normal' font.
+      'bv'  => '&boxv;',   # we need this for eqn. this character works together with the curly bracket parts. manual calls it "the bold vertical", distinguished from \(br, the vertical box rule
       'lt'  => '&#9127;',  # brace left top
       'lk'  => '&#9128;',  # brace left mid
       'lb'  => '&#9129;',  # brace left bot

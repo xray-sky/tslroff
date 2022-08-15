@@ -21,6 +21,15 @@
 #                                           be concealed as "\\.." which will copy as
 #                                           "\.." and be reread as "..".
 #
+#
+#   TODO  Request, macro, and string names share the same name list.
+#         Macro and string names may be one or two characters long and may
+#         usurp previously defined request, macro, or string names. Any
+#         of these entities may be renamed with .rn or removed with .rm
+#
+#   Arguments are copied in copy mode onto a stack were they are available for reference.
+#
+#
 # wow. this works. go ruby!
 #
 # NOTE: despite the description, the default macro is a single dot. ('yy=.')
@@ -42,8 +51,10 @@ module Troff
     define_singleton_method(terminating_method) { |*_args| true }
 
     macro = []
-    until @line.start_with? ".#{delim}" do
-      macro << unescape(next_line, copymode: true).tap { |n| warn "sketchy use of .if/.ie with args in .de => #{n.inspect}" if n.match?(%r{^.\s*i[e].*\$[1-9]}) }
+    loop do
+      next_line
+      break if @line.start_with? ".#{delim}"
+      macro << unescape(@line, copymode: true).tap { |n| warn "sketchy use of .if/.ie with args in .de => #{n.inspect}" if n.match?(%r{^.\s*i[e].*\$[1-9]}) } # REVIEW seems fine based on monop(6) [SunOS 1.0]
     end
 
     define_singleton_method("req_#{name}") do |*args|

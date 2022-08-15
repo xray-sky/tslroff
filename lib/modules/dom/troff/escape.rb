@@ -3,22 +3,47 @@
 #    Troff.escapes source
 # ---------------
 #
-# TODO: not happy about the proliferation of basically identical methods
+# TODO not happy about the proliferation of basically identical methods
 #
 
 module Troff
 
   private
 
-  def unescape(str, copymode: nil)
-    if @state[:escape_char]	# REVIEW how does this interact with copymode?
-      # we might go through some parts of the document twice, and some of
-      # the methods used by unescape are destructive of str. so dup it, to
-      # protect the Source.
-      copymode ? __unesc_cm(str.dup) : __unesc(str.dup)
-    else
-      @current_block << str
+  def unescape(str, copymode: nil, output: nil)
+    # REVIEW how does @state[:escape_char] interact with copymode?
+    # we might go through some parts of the document twice, and some of
+    # the methods used by unescape are destructive of str. so dup it, to
+    # protect the Source.
+    #
+    # TODO output translations are still in effect even if escapes are disabled
+    #      (including translations to escapes)
+
+    if copymode
+      return @state[:escape_char] ? __unesc_cm(str.dup) : str
     end
+
+    if output
+      hold_block = @current_block
+      @current_block = output
+    end
+
+    # eqn delims can be hidden by escaping them
+    resc = Regexp.quote @state[:escape_char] || ''
+    if @state[:eqn_start] and str.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
+      parse_eqn str
+    else
+      if @state[:escape_char]
+        __unesc(str.dup)
+      else
+        # need to apply translations to str
+        until str.empty? do
+          translate str.slice!(0)
+        end
+      end
+    end
+
+    @current_block = hold_block if output
   end
 
   # these __unesc_ methods were rewritten to avoid the use of .sub! because
@@ -26,8 +51,12 @@ module Troff
   # meanings to Regexp, e.g. \', that would need special escaping.
   # split on regex followed by join with replacement seems a reasonable
   # way to avoid this complication.
+  #
+  # but the split/join algorithm fails to replace an end-of-string escape
+  #
+  # _n and _w will only ever return numeric values so probably were always safe
 
-  # this is used by .if
+  # this is used by .if, __unesc
   def __unesc_star(str)	# want this in .if for testing string equality; this is the only escape that would need processing
     esc = @state[:escape_char]
     return str unless esc	# REVIEW how does this interact with copymode?
@@ -35,7 +64,11 @@ module Troff
     loop do
       break unless star = str.index(/(?<!#{resc})#{resc}\*/)
       req_str = get_def_str(str[(star+2)..-1])
-      str = str.split(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/).join(esc_star(req_str))
+      # this fails if the string ends with an \* escape, since there won't be something to join
+      #str = str.split(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/).join(esc_star(req_str))
+      # doing replacement in a block appears to prevent characters in the replacement string
+      # with special meaning to Regexp from being interpreted
+      str.gsub!(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/) { |_x| esc_star(req_str) }
     end
     str
   end # TODO is there a sensible way to make this reusable with _n and _w ?
@@ -48,7 +81,7 @@ module Troff
     loop do
       break unless n = str.index(/(?<!#{resc})#{resc}n/)
       req_str = get_def_str(str[(n+2)..-1])
-      str = str.split(/(?<!#{resc})#{resc}n#{Regexp.quote(req_str)}/).join(esc_n(req_str))
+      str.gsub!(/(?<!#{resc})#{resc}n#{Regexp.quote(req_str)}/, esc_n(req_str))
     end
     str
   end
@@ -62,7 +95,7 @@ module Troff
     loop do
       break unless w = str.index(/(?<!#{resc})#{resc}w/)
       req_str = get_quot_str(str[(w+2)..-1])
-      str = str.split(/(?<!#{resc})#{resc}w#{Regexp.quote(req_str)}/).join(esc_w(req_str))
+      str.gsub!(/(?<!#{resc})#{resc}w#{Regexp.quote(req_str)}/, esc_w(req_str))
     end
     str
   end
@@ -89,22 +122,22 @@ module Troff
     copy = String.new
     until str.empty?
       c = get_char str
-      case c
+      # we got the full escape back from get_char, as c
+      case c[0]
       when @state[:escape_char]
-        esc = get_escape str[1..-1]
-        esc_method = "esc_#{Troff.quote_method(esc[0])}"
+        esc_method = "esc_#{Troff.quote_method(c[1])}"
         if %w[esc_n esc_star].include? esc_method
-          copy << send(esc_method, esc[1..-1])
+          copy << send(esc_method, c[2..-1])
         else
-          copy << case esc
+          copy << case c[1]
                   when '.' then '.'
                   when 't' then "\t"
                   when 'a' then "\a"
                   when @state[:escape_char] then @state[:escape_char]
-                  else "\\#{esc}"
+                  else c
                   end
         end
-        str.slice! 0..esc.length  # remove processed esc from str
+        str.slice! 0, c.length    # remove processed esc from str
       else
         copy << str.slice!(0)     # remove processed chr from str
       end
@@ -131,11 +164,11 @@ module Troff
     #       that's going to be hard as long as we are spitting e.g. font changes out
     #       directly into the document, instead of returning
 
-    if broke?
-      @current_block << String.new
-      @current_tabstop = @current_block.text.last
-      @current_tabstop[:tab_stop] = 0
-    end
+    #if broke?
+    #  @current_block << String.new
+    #  @current_tabstop = @current_block.text.last
+    #  @current_tabstop[:tab_stop] = 0
+    #end
 
     # start by breaking up fields, then re-entering for each field part, if fields are enabled
     # skip entirely if all field markers are preceeded by single escape.
@@ -159,19 +192,15 @@ module Troff
           warn "out of fields with tabs=#{@state[:tabs].inspect}! (field: #{field.inspect})"
           @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
         else
-          @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((fpos - @current_tabstop[:tab_stop]).to_s)}em")
-          @current_block << '&roffctl_endspan;'
-          apply {
-            @current_block.text.last[:tab_stop] = stop
-          }
-          @current_tabstop = @current_block.text.last
+          insert_tab(width: to_em(fpos - @current_block.last_tab_position), stop: stop)
         end
       end
     end
 
-    until __unesc_star(str).empty?
+    str = __unesc_star(str)
+    until str.empty?
       c = get_char str
-      case c
+      case c[0]
       when "\t"
         # collect however many sequential tabs there might be
         count = 1
@@ -183,26 +212,23 @@ module Troff
         end
         stop = next_tab(count)
         if stop
-          @current_tabstop.instance_variable_set(:@tab_width, "#{to_em((stop - @current_tabstop[:tab_stop]).to_s)}em")
-          @current_block << '&roffctl_endspan;'
-          apply {
-            @current_block.text.last[:tab_stop] = stop
-          }
-          @current_tabstop = @current_block.text.last
+          insert_tab(width: to_em(stop - @current_block.last_tab_position), stop: stop)
         else # next_tab returns nil when we run out of tabs
           # prevent exception on running out of tabs - happening all the time, because... why?
           warn "out of tabs after #{@current_block.text.last.text.inspect} with tabs=#{@state[:tabs].inspect}! (rest: #{str.inspect})"
-          @current_block << ''	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
+          @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
+                                # I choose to insert the space because of rogue tabs in e.g. fnattr(1) [SunOS 5.5.1]
         end
       when @state[:escape_char]
-        esc = get_escape str[1..-1]
-        esc_method = "esc_#{Troff.quote_method(esc[0])}"
+        return '&shy;' if c == @state[:hyphenation_character]
+        # we got the full escape back from get_char, as c
+        esc_method = "esc_#{Troff.quote_method(c[1])}"
         if respond_to? esc_method
           # TODO: \* returns insead of outputting - I made this awful complex
           #       perhaps I should just make all esc_ methods return String, empty or otherwise
-          @current_block << send(esc_method, esc[1..-1])#.tap { |n| warn "appending #{n.inspect} from #{esc_method.inspect}(#{esc.inspect})" }
+          @current_block << send(esc_method, c[2..-1])
         else
-          @current_block << case esc
+          @current_block << case c[1] #esc
                             when 'a', 't' then ''                  # always ignored during output mode
                             when '_' then '_'                      # underrule, equivalent to \(ul
                             when '-' then '&minus;'                # "minus sign in current font"
@@ -213,31 +239,55 @@ module Troff
                             #when '&' then ''                      # "non-printing, zero-width character" - more useful as '' except we need &zwj; for numeric align in tbl
                             when "'" then '&acute;'                # "typographically equivalent to \(aa" §23.
                             when '`' then '&#96;'                  # "typographically equivalent to \(ga" §23.
-                            when '|' then '&roffctl_nrs;'          # 1/6 em      narrow space char
-                            when '^' then '&roffctl_hns;'          # 1/12em half-narrow space char
-                            when 'c' then '&roffctl_continuation;' # continuation (shouldn't have been space-adjusted)
+                            when '|' then NarrowSpace.new(font: @current_block.text.last.font.dup,
+                                                         style: @current_block.text.last.style.dup)          # 1/6 em      narrow space char
+                            when '^' then HalfNarrowSpace.new(font: @current_block.text.last.font.dup,
+                                                             style: @current_block.text.last.style.dup)      # 1/12em half-narrow space char
+                            when 'c' then Continuation.new(font: @current_block.text.last.font.dup,
+                                                          style: @current_block.text.last.style.dup)         # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
                             when 'e' then @state[:escape_char].dup # printable escape char - don't push a reference, or << may modify it!
+                            when 'p'
+                              if fill?
+                                warn "uncertain use of \\p (fill break)" # p.29
+                                # TODO this breaks at _end of word_, which might not be where the \p is
+                                # REVIEW should also cause the line to be justified normally
+                                LineBreak.new(font: @current_block.text.last.font.dup,
+                                             style: @current_block.text.last.style.dup)
+                              else
+                                ''
+                              end
+                            when 'H'
+                              warn "uncertain use of \\H (char height)" # p.24 - default unit 'p'
+                              ''
+                            when 'S'
+                              warn "uncertain use of \\S (char slant)" # p.26
+                              ''
                             when @state[:escape_char] then @state[:escape_char]
                             else
-                              warn "pointless escape #{esc.inspect}"
-                              esc                                  # REVIEW: subject this to .tr, or not?
+                              warn "pointless escape #{c.inspect}"
+                              c[1..-1]                             # REVIEW: subject this to .tr, or not?
                             end
         end
-        str.slice! 0..esc.length                                   # remove processed esc from str
+        str.slice! 0, c.length             # remove processed esc from str
       else
-        translate(str.slice! 0)                                    # remove processed chr from str
+        translate str.slice!(0)            # remove processed chr from str
       end
     end
   end
 
+  # REVIEW does this correctly fail to translate _input_ escapes if escapes
+  #        are turned off, or the escape character has changed? I think so,
+  #        since it won't be read as an escape by get_char.
+
   def translate(chr = '')
-    #  I probably have to protect stuff that was unescaped into an entity or anything
-    #  else that was left on parts[2] from the last iteration
-    #    - yes, you do. ms(5) [GL2-W2.5]
-    # TODO: special chars ('\(mu') allowed in both .tr and .hc - see req_hc
     return '&shy;' if chr == @state[:hyphenation_character]
     xlc = @state[:translate][chr]
-    xlc ? unescape(xlc) : (@current_block << chr)
+    return @current_block << chr unless xlc
+    return __unesc(xlc.dup) unless xlc.start_with?("\e")
+    oesc = @state[:escape_char]
+    req_ec "\e"
+    __unesc(xlc.dup)
+    req_ec oesc
   end
 
 end

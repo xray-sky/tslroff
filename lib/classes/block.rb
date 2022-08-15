@@ -14,7 +14,7 @@ class Block
   include Immutable
   extend Forwardable
 
-  attr_reader   :text, :type
+  attr_reader   :text, :type, :last_tab_position, :last_tab_stop
   attr_accessor :style
   def_delegators :@style, :immutable?, :immutable!
 
@@ -22,6 +22,8 @@ class Block
     self.style = (arg[:style] or Style.new({}, get_object_exception_class))
     self.type  = (arg[:type]  or :p)
     self.text  = (arg[:text]  or Text.new)
+    @last_tab_position = 0
+    @last_tab_stop = 0
   end
 
   def output_indicator?
@@ -46,21 +48,32 @@ class Block
 
   def <<(t)
     case t
+    when Tab # insert_tab does its own hold/append, since it changes @text.last
+      @text << t
+      @last_tab_position = t.stop
+      @last_tab_stop = @text.count
+    when RoffControl, EqnBlock # don't leave this as the last bit of text, or it'll eat appends to @text
+      # we might be at the very start of Block when @text is still [] - TODO some smarter strategy
+      # TODO also I think this broke Continuation?
+      #hold = Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
+      @text << t
+      if t.is_a? LineBreak or t.is_a? VerticalSpace
+        @last_tab_position = 0
+        @last_tab_stop = @text.count
+      end
+      @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
     when Text   then @text << t
     when String
-      if text.last.text.respond_to?(:<<)
+      if @text.last.text.respond_to?(:<<)
         @text.last << t
       else
-       brk = Text.new(font: text.last.font.dup, style: text.last.style.dup)
-       brk[:tab_stop] = 0
-       brk.text = t
-       @text << brk
+        # REVIEW why was this case here? it duplicates LineBreak
+        warn "we are in a degenerate part of the code - block.rb line 72"
+        brk = Text.new(font: text.last.font.dup, style: text.last.style.dup)
+        brk[:tab_stop] = 0
+        brk.text = t
+        @text << brk
       end
-    when LineBreak
-      brk = Text.new(font: text.last.font.dup, style: text.last.style.dup)
-      brk[:tab_stop] = 0
-      brk.text = t
-      @text << brk
     when Block  # this is primarily meant for handling named strings, which may include typesetter escapes
       raise RuntimeError "appending non-bare block #{t.inspect}" unless t.type == :bare
       @text += t.text
@@ -105,7 +118,7 @@ class Block
     when :ss      then "<h3>#{t}</h3>\n"
     when :ss_alt  then "<h4>#{t}</h4>\n"
     when :cs      then "<pre>#{t}</pre>\n"
-    when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t}</span></div></body></html>)
+    when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t.gsub(/#/, '&num;')}</span></div></body></html>)
     when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
     when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
     when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
@@ -150,7 +163,7 @@ class Block
   def inspect
     <<~MSG
 
-      +- Block (#{__id__}) type: #{@type.inspect}
+      +- Block (#{__id__}) type: #{@type.inspect} (#{self.class.name})
       |
       |  style: #{@style.inspect.each_line.collect { |l| l }.join('|         ')}
       |  text:  #{@text.inspect.each_line.collect { |l| l }.join('|         ')}
@@ -160,4 +173,13 @@ class Block
 
   alias concat <<
   alias type= immutable_setter
+
+  private
+
+  # override this from Immutable so that our subclasses
+  # don't all try to dispatch their own unique exceptions
+  def get_object_exception_class
+    Kernel.const_get("ImmutableBlockError")
+  end
+
 end

@@ -15,6 +15,7 @@
 
 module Troff
   def req_el(*args)
+    return '' unless @state[:else]
     resc = Regexp.quote(@state[:escape_char])
     argstr = args.shift.strip
     if argstr.sub!(/^#{resc}{/, '')
@@ -25,6 +26,5 @@ module Troff
       end
     end
     parse(argstr)
-
   end
 end

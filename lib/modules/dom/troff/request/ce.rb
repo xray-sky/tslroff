@@ -8,13 +8,15 @@
 # Request  Initial  If no     Notes   Explanation
 #  form     value   argument
 #
-# .ce N     off     N=1       B,E     Center the next N input text lines within the
+# .ce N     off     N=1       B,‡,E   Center the next N input text lines within the
 #                                     current (line-length minus indent). If N=0,
 #                                     any residual count is cleared. A break occurs after
 #                                     each of the N input lines. If the input line is too
 #                                     long, it will be left adjusted.
 #
 #  TODO N=0
+#
+# breaks. TODO can be suppressed with ' REVIEW what happens if break suppressed??
 #
 
 module Troff

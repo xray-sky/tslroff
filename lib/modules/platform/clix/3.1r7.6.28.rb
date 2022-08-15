@@ -11,7 +11,7 @@ module CLIX_3_1r7_6_28
 
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
-    when 'index.hlp'
+    when 'index.3'
       k.instance_variable_set '@manual_entry', '_index'
     when 'browse.1.Z', 'genmenu.1.Z', 'mrgpanel.1.Z' # REVIEW: should this be unbundled (IFORMS/S product)
       k.instance_variable_set '@heading_detection', %r(^\s{4}(?<section>[A-Z][A-Za-z\s]+)$)

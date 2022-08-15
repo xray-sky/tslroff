@@ -6,48 +6,23 @@
 #
 # Solaris 2.5.1 Platform Overrides
 #
-#   TODO this is bogus placeholding for the purposes of checking formatted output
-#        against pstroff
-#
-#  == page header
-#
-# .if t .if !\\nD .tl \\*(]W\\*(]D\\*(]H
-# .if t .if  \\nD .if o .tl \\*(]W\\*(]D\\*(]H
-# .if t .if  \\nD .if e .tl \\*(]H\\*(]D\\*(]W
-#
-#  == page footer
-#
-# .if t .if !\\nD .tl \\*(]L\\*(]C\\*(PN%
-# .if t .if  \\nD .if o .tl \\*(]L\\*(]C\\*(PN%
-# .if t .if  \\nD .if e .tl \\*(]C\\*(PN%\\*(]L
-#
-# .\" set fonts to Palatino
-# .if '\*(.T'psc' .nr PA 1
-# .if '\*(.T'post' .nr PA 1
-# .if \n(PA \{\
-# .	fp 1 PA
-# .	fp 2 PI
-# .	fp 3 PB
-# .	fp 4 PB -- fp 4 is BI
-# .	fp 5 PA
-# .	fp 6 PB
-# .\}
-#
-# TODO: special table macros
-# TODO: special .TH for intro
-# TODO: maybe an override for .SS, since it wants to use font escapes to emulate multiple levels of subhead - adb(1), ex(1), etc.
-# TODO: sccs(1) double quote appears in line 289, but not in postscript - argparsing wtf
-# TODO: many problems in ar(4)
-# TODO: allocb(9f), dupb(9f), linkb(9f) has box drawing - with raw postscript inclusion??
-# TODO  maybe link commands list in column one of Intro(*), § "LIST OF ..."
+# TODO special table macros (REVIEW what did I mean by this, tables look fine actually)
+# TODO special .TH for intro
+# TODO maybe an override for .SS, since it wants to use font escapes to emulate multiple levels of subhead - adb(1), ex(1), etc.
+# TODO sccs(1) double quote appears in line 289, but not in postscript - argparsing wtf
+# TODO many problems in ar(4)
+# TODO allocb(9f), dupb(9f), linkb(9f) has box drawing - with raw postscript inclusion??
+# TODO
+#   maybe link commands list in column one of Intro(*), § "LIST OF ..."
 #   LIST OF COMMANDS also occurs in other pages which themselves contain proper SEE ALSOs, so... ?
 #   consider blacklisting List(*)
 #   fnattr(1) :: [174] replace \t with ' '
+#   if(1) :: [876,879] extra <br> in output after having messed with .TP
 # √ sccs-get(1) :: tbl \^ row spans
-#   ld(1) :: [768] \hex - but we are currently bug compatible with psroff
-#   pcmapkeys(1) :: wants to overstrike é and è but I think we can reasonably rewrite these not to overstrike
-#   pvs(1) :: [112,113] '.if .n' / '.if .t'
-#   shell_builtins(1) :: the likely case for possibly implementing tbl change space between columns.
+# √ ld(1) :: [768] \hex - but we are currently bug compatible with psroff
+# √ pcmapkeys(1) :: wants to overstrike é and è but I think we can reasonably rewrite these not to overstrike
+# √ pvs(1) :: [112,113] '.if .n' / '.if .t'
+# √ shell_builtins(1) :: the likely case for possibly implementing tbl change space between columns.
 # √ spline(1) :: looks like it was preprocessed by eqn. psroff handles it, we don't very well. adequately, as of 20220718
 #   ffbconfig(1m) :: [304] psroff doesn't care about this non-numeric argument to .TP, which seems odd. rewrite with \w.
 #                          actually it does, the psroff output is not correct either. dunno where it gets \fB from
@@ -59,30 +34,34 @@
 #   syncloop(1m) :: assorted cosmetic vertical spacing bugs (in tbl/after tbl? - looks like the in-tbl '.sp 4p's all happened at once, immediately post-tbl)
 #   vmstat(1m) :: [105] expects to set _all_ cells in row \s-1 without explicit cell format.
 #   sysconf(3c) :: [125] same as vmstat(1m)
+#   sched_get_priority_max(3r) :: [26] .ta +8n +8n + 35n" -- figure out what is supposed to happen with this bad input. fix .ta so it doesn't nil.sub! (expressions.rb:102)
+#   form_field_just(3x) :: [56] .ta 20n + 5n" -- same
 #   a.out(4) :: [55,59,61] needs rewrite to give &nbsp outside \u...\d in order to avoid the cell collapsing (\u gives line-height:0 for correct results in non-table text)
 #   ar(4) :: [289] too many tabs after format change
+#   terminfo(4) :: tables have "B" echoed into header rows?
 #
 
 module SunOS_5_5_1
 
   def self.extended(k)
     k.define_singleton_method(:req_LP, k.method(:req_PP)) if k.methods.include?(:req_PP)
+    case k.instance_variable_get '@input_filename'
+    when 'ld.1'
+      k.instance_variable_get('@source').lines[767].sub!(/\\h/, 'h')
+    end
   end
 
   def init_fp
     super
-    @state[:fpmap]['BI'] = 4
-    @state[:fpmap]['H'] = :helv
-    @state[:fonts][4] = :boldit
-    @state[:fonts][5] = :cw
-    @state[:fonts][:helv] = :sans
+    #@state[:fpmap]['BI'] = 4
+    #@state[:fpmap]['CW'] = 5
+    #@state[:fpmap]['H'] = :helv
+    @state[:fonts][4] = 'BI'
+    @state[:fonts][5] = 'CW'
+    #@state[:fonts][:helv] = :sans
   end
 
   def init_sunos551
-    @manual_entry     = @input_filename.sub(/\.(\d\S*?)$/, '')
-    @manual_section   = Regexp.last_match[1]
-    @output_directory = "man#{@manual_section}"
-    @state[:footer] = '\\*(]W'
     @state[:sections] = {
       '1'  => 'User Commands',
       '1b' => 'SunOS/BSD Compatibility Package Commands',
@@ -133,14 +112,7 @@ module SunOS_5_5_1
   def init_ds
     super
     @state[:named_string].merge!({
-      'R'  => '&reg;',
-      'S'  => "\\s#{Font.defaultsize}",
-      'Tm' => '&trade;',
-      'lq' => '&ldquo;',
-      'rq' => '&rdquo;',
-      #']D' => 'Silicon Graphics',
-      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      ']W' => 'SunOS 5.5.1',  # actually this is set by .TH in case it's not already set. REVIEW
+      ']W' => 'SunOS 5.5.1',
       '||' => '/usr/share/lib/tmac'
     })
   end
@@ -148,10 +120,13 @@ module SunOS_5_5_1
   def req_TH(*args)
     heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
     req_ds(']D', @state[:sections][args[1].downcase]) if args[1]
+
+    unescape("\\*(]W", output: @state[:footer])
     if args[2]
-      req_ds(']L', "Last change: #{args[2]}")
-      @state[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless args[2].strip.empty?
+      req_ds ']L', "Last change: #{args[2]}"
+      unescape '\\0\\0\\(em\\0\\0\\*(]L', output: @state[:footer]
     end
+
     req_ds(']W', args[3]) if args[3]
     req_ds(']D', args[4]) if args[4]
     heading << '\\0\\0\\(em\\0\\0\\*(]D' if @state[:named_string][']D'] and !@state[:named_string][']D'].empty?
@@ -390,10 +365,11 @@ module SunOS_5_5_1
     unescape("\\fI\\*(Hc\\f1#{args[1]}")
   end
 
-  def req_TX(*args)
-    # .TX t p	no	-	Resolve the title abbreviation t; join to punctuation mark (or text) p.
-    warn "can't yet .TX #{args.inspect}"
-  end
+  # no .TX in 5.5.1 macros
+  #def req_TX(*args)
+  #  # .TX t p	no	-	Resolve the title abbreviation t; join to punctuation mark (or text) p.
+  #  warn "can't yet .TX #{args.inspect}"
+  #end
 end
 
 =begin

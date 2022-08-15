@@ -22,12 +22,10 @@
 module Troff
   def req_TP(indent = nil, *_args)
     warn "pointlessly received extra arguments to .TP #{_args.inspect} - why??" unless _args.empty?
-    indent = nil if indent == '&'	# TODO: ???
+    indent = nil if indent == '&'	# TODO: ??? -- this isn't a special case, it's just an invalid expression. REVIEW does our expression handling cover it now?
     req_it('1', :finalize_TP, indent)
     @document << blockproto
     @current_block = Block.new(type: :bare)
-    @current_tabstop = @current_block.text.last
-    @current_tabstop[:tab_stop] = 0
 
   end
 
@@ -40,19 +38,18 @@ module Troff
 
   def tagpara(tag)
     indent(@state[:base_indent] + @register[')R'] + @register[')I'])
-
     unless tag.empty?
       temp_indent(-@register[')I'])
       tag.class == String ? unescape(tag) : @current_block.text = tag
 
       # get the width
-      @@webdriver.get(Block.new(type: :bare, text: @current_block.text).to_selenium)
+      @@webdriver.get(Block::Selenium.new(text: @current_block.text).to_html)
       tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
 
       # reset the font (in case it wasn't reverted cleanly in the tag - nis+(1) [SunOS 5.5.1])
       # so our unit conversions aren't affected.
-      req_ft('1')
-      req_ps(Font.defaultsize)
+      req_ft '1'
+      req_ps Font.defaultsize
 
       # is the tag wider than 3 points less than the indent?
       if @register[')I'] < tag_width + @state[:tag_padding]
@@ -60,22 +57,9 @@ module Troff
       else
         tab_width = to_em("#{@register[')I']}u")
 
-        # The odd insertion is so we don't clobber tags which themselves include tabs.
-        # - adb(1) [GL2-W2.5]
-        #
-        # The "control character" is so the Text object holding the inserted tab
-        # isn't skipped for being "empty". it'll translate to nothing (an empty string)
-        # during output processing. Otherwise, it's as if there had been a tab.
-
-        tab = Text.new(text: "&roffctl_nil;")
-        tab.instance_variable_set(:@tab_width, "#{tab_width}em")
-        @current_block.text = @current_block.text.insert(0, tab)
-
-        @current_block << '&roffctl_endspan;'
-        apply { @current_block.text.last[:tab_stop] = 0 }
-        @current_tabstop = @current_block.text.last
+        insert_tab(width: tab_width, stop: @register[')I'])
       end
-      @current_tabstop.instance_variable_set(:@no_space_adj, true)
+      @current_block.text.last.instance_variable_set(:@no_space_adj, true)
     end
     @state[:break_suppress] = true # suppress break between tag and para when in nofill mode -- prtdiag(1m) [SunOS 5.5.1]
   end

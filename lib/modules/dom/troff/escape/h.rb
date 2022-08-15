@@ -7,8 +7,13 @@
 #
 #   negative values shift carriage toward left margin
 #
-#   REVIEW is \h'|...' to move to an absolute horizontal position? it's not documented
-#          that I found but ar(4) and lex(1) [SunOS 5.5.1] seem to indicate it is.
+#   The absolute position indicator | may be prepended to a number N to generate the
+#   distance to the vertical or horizontal place N. (§1.3, p.21)
+#
+#   => apparently this applies to all horizontal and vertical requests. (UGH)
+#      .ll, .in, .ti, .ta, .lt, .p, .mc, \h, \l
+#      .pl, .wh, .ch, .dt, .sp, .sv, .ne, .rt, \v, \x, \L
+#
 #
 #   TODO trying to \w a lonely \h fails, as there's no text component and
 #        selenium considers it unrenderable -- spline(1g) [GL2 W2.5]
@@ -19,6 +24,8 @@
 #       - solve this by differentiating leftward and rightward shifts; making
 #      rightward motion insert an empty span (like a thin space) and a
 #      leftward motion by putting an explicit (narrower) width on the span? - collect examples
+#
+# TODO default unit 'm'
 
 module Troff
   def esc_h(s)

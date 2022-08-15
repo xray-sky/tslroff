@@ -15,8 +15,12 @@
 # TODO anything?
 # REVIEW ar(1) [GL2-W2.5] for use in practice
 #
+# breaks. TODO can be suppressed with '
+#
 
 module Troff
   def req_bp(*)
+    warn 'explicit page break. check paragraph fill.'
+    ''
   end
 end

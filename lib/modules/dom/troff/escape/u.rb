@@ -3,7 +3,7 @@
 #   troff
 # -------------
 #
-#   reverse (up) 1/2 em veritcal motion
+#   reverse (up) 1/2 em vertical motion
 #
 
 module Troff

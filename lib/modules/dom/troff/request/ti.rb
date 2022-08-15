@@ -8,7 +8,7 @@
 # Request       Initial   If no     Notes   Explanation
 #  form          value    argument
 #
-# .ti ±N        -         ignored   B,E,m   Temporary indent. The next output text line
+# .ti ±N        -         ignored   B,‡,E,m Temporary indent. The next output text line
 #                                           will be indented a distance ±N with respect
 #                                           to the current indent. The resulting total
 #                                           indent may be zero (equal to the current
@@ -23,6 +23,8 @@
 #  relative to the current indent. but a relative position (starts with ±) needs nothing.
 #
 #  looks like it's meant to cause a break too. mount_cachefs(1m) [SunOS 5.5.1]
+#
+# breaks. TODO can be suppressed with '
 #
 
 module Troff

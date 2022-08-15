@@ -29,15 +29,18 @@ module Troff
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
 
-    space = to_u(req_str).to_i	# REVIEW: default unit??
+    space = to_u(req_str, default_unit: 'v').to_i
     unless space.zero?
       warn "trying to \\x#{space} - (\\#{req_str.inspect})"
-      container = Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
-      container.style.css[ space > 0 ? :padding_top : :padding_bottom] = to_em("#{space}u") + 'em'
-      container.text << s[0]
-      @current_block << container
-      @current_block << Text.new(font: @current_block.text[-2].font.dup, style: @current_block.text[-2].style.dup)
+      #container = Text.new(font: output.text.last.font.dup, style: output.text.last.style.dup)
+      #container.style.css[ space > 0 ? :padding_top : :padding_bottom] = to_em("#{space}u") + 'em'
+      #container.text << s[0]
+      #output << container
+      #output << Text.new(font: output.text[-2].font.dup, style: output.text[-2].style.dup)
+      ExtraLineSpace.new(height: space, font: @current_block.text.last.font.dup,
+                                       style: @current_block.text.last.style.dup)
+    else
+      ''
     end
-    ''
   end
 end

@@ -9,30 +9,29 @@
 
 module AOS_4_3
 
-  def init_rewrites
-    case File.basename(@source.filename)
+  def self.extended(k)
+    case k.instance_variable_get '@input_filename'
+    # REVIEW maybe this kind of thing should be left alone?
     when 'f77.1'
-      newsrc = @source.lines
-      newsrc[227].sub!(/^/, "\\&")	# non-macro line starts with .
-      @lines = newsrc.each
-    when 'fpr.1'	# there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
-      newsrc = @source.lines
+      k.instance_variable_get('@source').lines[277].sub!(/^/, "\\&")	# non-macro line starts with .
+    when 'fpr.1'  # there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
+      newsrc = k.instance_variable_get('@source').lines
       (28..37).each { |i| newsrc[i].sub!(/^\.\\"\s/, '') }
-      (40..156).each { |i| newsrc[i] = '..' }
-      @lines = newsrc.each
+      (40..156).each { |i| newsrc[i] = '\"' }
+    # REVIEW maybe this kind of thing should be left alone?
     when 'ftp.1c'
-      newsrc = @source.lines
-      newsrc[210].sub!(/f$/, 'fP')
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[210].sub!(/f$/, 'fP')
     when 'help.1'	# also in olh.1 but uses .so
-      newsrc = @source.lines
-      newsrc[20].sub!(/^/, "\\&")	# non-macro line starts with '
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[20].sub!(/^/, "\\&")	# non-macro line starts with '
     when 'mdtar.1'
-      newsrc = @source.lines
-      newsrc[96].sub!(/\\\*\s+$/, '*')
-      newsrc[102].sub!(/\\\*$/, '*') # nroff ignores these, but they are intended to output
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[96].sub!(/\\\*\s+$/, '*')
+      k.instance_variable_get('@source').lines[102].sub!(/\\\*$/, '*') # nroff ignores these, but they are intended to output
+    when 'mouse.4'  # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead
+      newsrc = k.instance_variable_get('@source').lines
+      (122..140).each { |i| newsrc[i].sub!(/^\.\\"/, '') }
+      newsrc[254].sub!(/t/, 'n')
+    #when 'Script', 'Scrit'
+    #  raise ManualIsBlacklisted, 'not a manual entry'
     end
   end
 

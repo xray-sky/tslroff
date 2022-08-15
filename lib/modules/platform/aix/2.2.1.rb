@@ -6,7 +6,6 @@
 #
 # IBM AIX RT 2.2.1 Platform Overrides
 #
-# TODO:
 #  non-ascii characters:            CP437     Printed doc
 #     adb.1      0x8c (≤ ??)        î         ≤
 #     ctab.1     0x90 (é ??)        É         é
@@ -35,17 +34,15 @@ module AIX_2_2_1
     k.instance_variable_set '@lines_per_page', nil
     k.instance_variable_set '@base_indent', 5
 
-    ##k.instance_variable_set '@encoding', 'IBM437'
     src = k.instance_variable_get '@source'
     ## this is working to set the input encoding and avoid the invalid character exception,
     ## but I'm getting nonsense characters out.
     ##src.lines.collect! { |k| k.force_encoding Encoding::IBM437 }
     ## this generates the correct translations of CP437 -> UTF-8 (with <meta charset="UTF-8">)
-    ## REVIEW: but compare to what actually shows on the RT, both on the console and in aixterm
+    ## but compare to what actually shows on the RT, both on the console and in aixterm
     ##  - printed doc matches our guesses, but not description of RT CP0 from `data stream`(4)
     #src.lines.collect! { |k| k.force_encoding(Encoding::IBM437).encode!(Encoding::UTF_8) }
     src.lines.collect! do |l|
-      #l.force_encoding Encoding::IBM437
       l.force_encoding Encoding::ASCII_8BIT
       l.sub(%r{(\214|\220|\272|\275)}) do |_cx|
         case Regexp.last_match[1]
@@ -57,7 +54,6 @@ module AIX_2_2_1
         end
       end
     end
-    k.instance_variable_set '@lines', src.lines.each
 
     if k.instance_variable_get('@manual_section') == '1'
       k.instance_variable_set '@heading_detection', %r(^(?<section>[A-Z][A-Z\s]+)$)
@@ -95,15 +91,15 @@ module AIX_2_2_1
     title
   end
 
-  # manual references are degenerate in aix ps/2
+  # manual references are degenerate in aix rt
   # - no section reference, just an inconclusive "book" reference (e.g. "in this book")
-  # - REVIEW: 450(1g) has 'troff' refs twice on one line, might need to do something so both get linked?
+  # - REVIEW 450(1g) has 'troff' refs twice on one line, might need to do something so both get linked?
   # - RPC(5) has 'The rpcinfo command in the...'
   # - System.Netid(5) has 'The rdrdaemon, uvcp, and vuvp commands in the...'
   # - a.out(5) has both types, plus "commands" at the start of the next line
   #
-  # REVIEW: might need to parse command|file|program|procedure (+ "miscellaneous facility"??) to guess at section
-  #         if we end up needing to get it closer (e.g. greek(1) vs greek(5))
+  # REVIEW might need to parse command|file|program|procedure (+ "miscellaneous facility"??) to guess at section
+  #        if we end up needing to get it closer (e.g. greek(1) vs greek(5))
 
   def detect_links(line)
     @refs_continue = nil if line.match?(/^\s*$/) # new paragraph, no links split across lines

@@ -24,6 +24,7 @@
 module Troff
   def req_so(name)
     # make this relative by trying to find file working backward
+    # NOTE this is relative _to the man page directory_ (@source_dir)
     # REVIEW will we ever see a non-absolute path here, that we could maybe use directly?
     file = File.basename name
     searchdir = ''
@@ -38,8 +39,15 @@ module Troff
     # REVIEW this is a bit suspect; makes rewrites look ugly
     # might benefit from a full Manual.new & subsequent merge? maybe.
 
-    ofile = @lines
-    @lines = File.read(localfile).lines.each
+    olines = @lines
+    ofile = @input_filename.dup
+    opos = @register['.c'].dup
+    @input_filename << " => #{file}"
+    @register['.c'] = Register.new(0, 1, :ro => true)
+    newsrc = File.read(localfile).lines
+    newsrc = yield newsrc if block_given? # give a chance to perform processing on the sourced file
+    @lines = newsrc.each
+
     loop do
       begin
         parse(next_line)
@@ -47,13 +55,9 @@ module Troff
         break
       end
     end
-    @lines = ofile
-  end
 
-=begin
-  def init_so
-    @state[:path_translations] = Hash.new
-    true
+    @lines = olines
+    @input_filename = ofile
+    @register['.c'] = opos
   end
-=end
 end

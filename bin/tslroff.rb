@@ -29,7 +29,7 @@ require_relative '../lib/classes/manual.rb'
 
 assets = File.realpath("#{__dir__}/../lib/assets")
 #$CSS   = File.realpath("#{assets}/tslroff.css")
-# chrome won't load css from a file under chomedriver control??!
+# chrome won't load css from a file under chomedriver control??! REVIEW somehow - defo doesn't
 $CSS = "http://dev.online.typewritten.org/Manual/tslroff.css"
 filelist = []
 outdir = '.'
@@ -62,6 +62,10 @@ loop do
   file = files.next
   ifile = File.basename(file)
   src = Manual.new(file, os, ver)
+
+  # TODO defining this here, after just a Manual.new, means I can't override odir/manual_entry
+  #      and that I'm married to parse_title in source_init. I want to delay this until after
+  #      to_html has parsed everything.
 
   odir = "#{outdir}/#{src.output_directory}"
   #ofile = "#{odir}/#{src.manual_entry}.#{src.manual_section}.html" # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).

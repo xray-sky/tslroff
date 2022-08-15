@@ -12,23 +12,21 @@ end
 module Nroff
   attr_reader :input_line_number
 
-  def source_init
-
-    @tab_width = 8
-    @lines_per_page = 66
-    @related_info_heading = 'SEE ALSO'
+  def self.extended(k)
+    k.instance_variable_set '@tab_width', 8
+    k.instance_variable_set '@lines_per_page', 66
+    k.instance_variable_set '@related_info_heading', 'SEE ALSO'
 
     # watch for alphabetic text starting in first column, which would be a title or section head
-    @heading_detection = %r{^(?<section>[A-Z][A-Za-z\s]+)$}
-    #@title_detection   = %r{^((\S+?)\(((\S+?)(-\S+)*)\))}		# TODO: supposedly this doesn't always match correctly. rrestore.ffs(1) [RISC/os 4.52]
-    @title_detection   = %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}		# REVIEW: now what?
-    @summary_heading   = %r{^NAME$}  # REVIEW: works for UNIX manual entries.
+    k.instance_variable_set '@heading_detection', %r{^(?<section>[A-Z][A-Za-z\s]+)$}
+    #k.instance_variable_set '@title_detection', %r{^((\S+?)\(((\S+?)(-\S+)*)\))}		# TODO supposedly this doesn't always match correctly. rrestore.ffs(1) [RISC/os 4.52]
+    k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}		# REVIEW now what?
+    k.instance_variable_set '@summary_heading', %r{^NAME$}  # REVIEW works for UNIX manual entries.
 
-    @input_line_number = 0
+    k.instance_variable_set '@input_line_number', 0
+  end
 
-    load_platform_overrides
-    load_version_overrides
-
+  def source_init
     parse_title
   end
 
@@ -44,7 +42,7 @@ module Nroff
       @input_line_number += 1
 
       plaintext = unformat(input_line.chomp)
-      #@summary << plaintext.strip if section =~ (@summary_heading) # REVIEW: too simple? - yes. unix style find NAME section & use text from following lines; aegis style no section to detect, use first line to match pattern directly
+      #@summary << plaintext.strip if section =~ (@summary_heading) # REVIEW too simple? - yes. unix style find NAME section & use text from following lines; aegis style no section to detect, use first line to match pattern directly
       section = plaintext.match(@heading_detection) { |head| head[:section] } || section unless input_line == @title_line
 
       input_line.each_char do |char|
@@ -58,18 +56,18 @@ module Nroff
         text = @document[page].text[line]
         text.section = section
         # bit lame to do this every character, but this is where the Line is
-        # TODO: incorrectly detecting links in title line - chgrp(1) [UTek W2.3]
+        # TODO incorrectly detecting links in title line - chgrp(1) [UTek W2.3]
         if section == @related_info_heading and !text.links
           text.links = detect_links(plaintext)
         end
 
         platen_position % 2 == 0 ? text.up! : text.down!
 
-        # REVIEW: I wonder if these control characters ought to be programmable
-        #         not if col(1) is involved - VT(\013), SI (\016), SO (\017), and ESC-7, 8, and 9 only
-        #   TODO: but Aegis makes use of its own escape sequences for pad font selection;
-        #         and presumably we'll have to deal with color codes in VM/ESA online help?
-        # TODO: support VT as alternate form of full reverse linefeed
+        # REVIEW I wonder if these control characters ought to be programmable
+        #        not if col(1) is involved - VT(\013), SI (\016), SO (\017), and ESC-7, 8, and 9 only
+        #   TODO but Aegis makes use of its own escape sequences for pad font selection;
+        #        and presumably we'll have to deal with color codes in VM/ESA online help?
+        # TODO support VT as alternate form of full reverse linefeed
         case char
         when ' '   then printhead_position += 1
         when "\n"  then platen_position += 2 and printhead_position = 0
@@ -106,8 +104,8 @@ module Nroff
     # kill carriage control, underlining (where _ is printed first),
     # bold and other character overstrike effects, and line-at-a-time overstrike effects
     # assumes normal text printed first in line-at-a-time overstrike, which may not be true (DG/UX 4.30)
-    # REVIEW: might need to be done one at a time, in sequence, to be properly effective.
-    # TODO: make this return sensible english text no matter the order overstrikes occur
+    # REVIEW might need to be done one at a time, in sequence, to be properly effective.
+    # TODO make this return sensible english text no matter the order overstrikes occur
     line.gsub(%r((\e.|_\cH|\cH.|\cM.*)), '')
   end
 
@@ -123,15 +121,9 @@ module Nroff
     loop do
       @title_line = @lines.next
       plaintext = unformat(@title_line)
-      #warn "title matching #{plaintext.inspect} against #{@title_detection.inspect}"
       break if plaintext.match(@title_detection)
     end
     Regexp.last_match
-  # REVIEW: loop here prevents us from ever receiving StopIteration?!
-  #rescue StopIteration
-  #  warn "reached end of document without finding title!"
-  #  @title_line = nil
-  #  {}
   ensure
     @lines.rewind
   end

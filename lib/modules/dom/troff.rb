@@ -6,7 +6,7 @@
 # REVIEW: add anchors menu for .SH ?
 
 require 'selenium-webdriver'
-%w[. request escape macro].each do |t|
+%w[. request escape macro eqn].each do |t|
   Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
     require_relative i
   end
@@ -16,15 +16,18 @@ module Troff
 
   @@delim = %(\002\003\005\006\007"')
 
+  def self.webdriver
+    @@webdriver
+  end
+
+  def self.extended(k)
+    k.extend ::Eqn
+    k.instance_variable_set '@register', {}
+    k.instance_variable_set '@state', { :footer => Block::Footer.new }
+    k.instance_variable_set '@related_info_heading', %r{SEE(?: |&nbsp;)+ALSO}
+  end
+
   def source_init(titled: false)
-
-    @register = {}
-    @state    = {}
-    @related_info_heading = %r{SEE(?: |&nbsp;)+ALSO}
-
-    load_platform_overrides
-    load_version_overrides
-
     # call any initialization methods for .nr, .ds, etc.
     # may be supplemented or overridden by version-specific methods
     # REVIEW do this in a grown up way - these need ordered to succeed
@@ -43,6 +46,7 @@ module Troff
     # TODO is this even necessary? I'm parsing stuff too many times, including
     # everything twice for every .so (.so parses everything once, looking for title, then again processing the doc)
     # perhaps this can be combined with the improvement for delaying <h1> for .ds, etc.
+    # TODO always output a header even if we don't know what to put in it. the divs get hosed without it.
   end
 
   def to_html
@@ -52,12 +56,13 @@ module Troff
       parse(next_line)
     rescue StopIteration
       # TODO: perform end-of-input trap macros from .em;
-      @current_block = Block.new
-      @document << @current_block
-      @current_block.style.attributes[:class] = 'foot'
+      #@current_block = Block.new
+      #@document << @current_block
+      #@current_block.style.attributes[:class] = 'foot'
       #@current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
-      unescape(@state[:footer] || '') # may not have got a footer (esp. if parse_title didn't find one)
+      #unescape(@state[:footer].tap{|n| warn "footer: #{n.inspect}"} || '') # may not have got a footer (esp. if parse_title didn't find one)
       #@current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
+      @document << @state[:footer]
       # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
       return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs start ed by :th
     rescue => e
@@ -78,9 +83,13 @@ module Troff
   end
 
   def next_line
-    @line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
     #@line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
+    @line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
   end
+
+  # TODO find where we're inserting paragraphs (with and without margin-top:0) containing only
+  #      a single space. these are being output but are apparently irrelevant/invisible.
+  #      might have to do an a/b comparison to be sure. e.g. eqn(1) [SunOS 5.5.1]
 
   # prototype a new block with whatever necessary styles carried forward.
   def blockproto(type = :p)
@@ -97,8 +106,8 @@ module Troff
     block.style.css.delete(:margin_left) if @register['.i'] == @state[:base_indent]
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j']] unless @register['.j'] == 1
     block.style.css[:text_align] = 'left' if noadj?		# .na sets left adjust without changing .j
-    @current_tabstop = block.text.last
-    @current_tabstop[:tab_stop] = 0
+    #@current_tabstop = block.text.last
+    #@current_tabstop[:tab_stop] = 0
     block
   end
 
@@ -110,18 +119,25 @@ module Troff
       break if @manual_section
     end
     true if @manual_section
-  ensure
-    @lines.rewind
+  #ensure
+    #@lines.rewind
   end
 
   def parse_title
     get_title or warn "reached end of document without finding title!"
     @output_directory = "man#{@manual_section.downcase}" if @manual_section
-    @state[:title_parsed] = true
+    #@state[:title_parsed] = true
 
     # try to reset document state, in case we had some monkey business
     # before finding .TH
-    @document = []
-    source_init(titled: true)
+    #@document = []
+    #source_init(titled: true)
+    # I don't think it's necessary any more to rewind/reset, and avoiding it
+    # saves a _lot_ of time when there are many pages which .so (causing the
+    # source file to be parsed in full, twice)
+    #
+    # parse as far as the title, so we can have the odir immediately after
+    # a Manual.new, then if we want to continue (aren't just figuring out
+    # a symlink target), then just continue on.
   end
 end

@@ -17,13 +17,11 @@ module Troff
 # \P counts as one character, as does \*(xx.
 
   def get_char(s, count:  1)
-    chars = s[0]
-    while count > 1
-      chars << if chars.end_with?(@state[:escape_char])
-                 get_escape(s[(chars.length)..-1])#.tap {
-               else
-                 get_char(s[(chars.length)..-1])#.tap {
-               end
+    chars = ''
+    loop do
+      break if count < 1 or s.empty?
+      chars << s[chars.length]
+      chars << get_escape(s[(chars.length)..-1]) if chars.end_with?(@state[:escape_char]) and chars.length < s.length # might end with an escape char
       count -= 1
     end
     chars
@@ -33,15 +31,15 @@ module Troff
 # may be \P, \fP, \*n, \*(nn, \h'|\n(xx+\w'this sucks..'u+3m', etc.
 
   def get_escape(s)
-   esc = get_char(s)
+   esc = s[0]
    esc << case esc
           when '"'                     then s[1..-1]
-          when 'z'                     then get_char(s[1..-1])
-          when '('                     then get_char(s[1..-1], count: 2)#.tap {|n| warn "returned #{n.inspect} for \\( " }
-          when 'f', 'g', 'k', 'n', '*' then get_def_str(s[1..-1])#.tap {|n| warn "returned #{n.inspect} from get_def_str" }
-          when 's'                     then get_size_str(s[1..-1])#.tap {|n| warn "returned #{n.inspect} from get_size_str" }
-          when 'b', 'h', 'l', 'o',
-               'v', 'w', 'x', 'L', 'D' then get_quot_str(s[1..-1])#.tap {|n| warn "returned #{n.inspect} from get_quot_str" }
+          when 'z'                     then get_printing_char(s[1..-1])
+          when '('                     then get_char(s[1..-1], count: 2)
+          when 'f', 'g', 'k', 'n', '*' then get_def_str(s[1..-1])
+          when 's'                     then get_size_str(s[1..-1])
+          when 'b', 'h', 'l', 'o', 'v', 'w', 'x',
+               'D', 'H', 'L', 'S'      then get_quot_str(s[1..-1])
           else ''
           end
     esc
@@ -91,10 +89,38 @@ module Troff
     n = req.length
     begin
       nextchar = get_char(s.slice(n..-1)) # REVIEW is .slice redundant
+      if nextchar == '' # we ran out of characters, probably due to a defect in the source (e.g. ex(1) [GL2-W2.3])
+        warn "get_quot_str ran out of characters in #{s.inspect} looking for matching quote"
+        return req
+      end
       n += nextchar.length
       req << nextchar
     end until nextchar == endchar
     req
   end
 
+# get one printing character
+# used for \z to collect font changes, vertical shifts, whatever,
+# plus the one printing character that will be output as non-spacing
+
+  def get_printing_char(s)
+    req = ''
+    loop do
+      c = get_char s
+      if c.start_with?(@state[:escape_char]) and %w[d f k r s u v x].include?(c[1])
+        req << s.slice!(0, c.length)
+      else
+        break
+      end
+    end
+    req << s.slice!(0, get_char(s).length)
+  end
 end
+
+# get one expression
+# used for \l to read a width
+
+  def get_expression(s)
+    #s.scan(/^[-|]?[\d.]+[cimnPpuv]?/).first
+    s.scan(%r(^[-|]?[\d\.cimnPpuv]+|[-+/*%<>=&:]+)).first
+  end

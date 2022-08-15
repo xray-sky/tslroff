@@ -170,9 +170,10 @@ class Line
       rescue TypeClashError => e
         key = e.pile
         warn "#{@input_filename}: #{e.message} #{key.inspect}"
-        base = key[0]
-        pile = key[1..-1].collect { |c| %(<span class="pile">#{c}</span>) }.join
-        out << %(<span class="clash">#{base}#{pile}</span>) # REVIEW: this visual effect only works for two-character clashes
+        #base = key[0]
+        #pile = key[1..-1].collect { |c| %(<span class="pile">#{c}</span>) }.join
+        #out << %(<span class="clash">#{base}#{pile}</span>) # REVIEW: this visual effect only works for two-character clashes
+        out << %(<span class="clash">#{key.join('<br />')}</span>)
       end
       out
     end.join

@@ -4,12 +4,10 @@
 # Copyright 2014 Typewritten Software. All rights reserved.
 #
 #
-# SGI GL2-W2.5 Platform Overrides
+# SGI GL2-W3.6 Platform Overrides
 #
 
 module GL2_W3_6
-
-  def req_UC(*); end
 
   def init_rewrites
     case File.basename(@source.filename)

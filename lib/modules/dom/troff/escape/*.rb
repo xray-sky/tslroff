@@ -15,6 +15,7 @@
 module Troff
   def esc_star(s)
     s.slice!(0) if s.start_with?('(')
+    #warn "returning #{@state[:named_string][s].inspect} for named string #{s.inspect}"
     @state[:named_string][s] || ''.tap { warn "undefined named string #{s}" }
   end
 end

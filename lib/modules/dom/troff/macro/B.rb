@@ -16,7 +16,8 @@
 module Troff
   %w[B I].each do |a|
     define_method "req_#{a}".to_sym do |*args|
-      unescape('\f' + @state[:fpmap][a].to_s)
+      #unescape('\f' + @state[:fpmap][a].to_s)
+      unescape('\f' + @state[:fonts].index(a).to_s)
       if args.any?
         unescape(args.join(' '))
         finalize_B
@@ -28,7 +29,8 @@ module Troff
 
   %w[B I R].permutation(2).each do |a, b|
     define_method "req_#{a + b}".to_sym do |*args|
-      styles = [@state[:fpmap][a], @state[:fpmap][b]]
+      #styles = [@state[:fpmap][a], @state[:fpmap][b]]
+      styles = [@state[:fonts].index(a), @state[:fonts].index(b)]
       unescape(args.each_with_index.map do |arg, i|
                  p = styles[i % 2].to_s
                  '\f' + p + arg + "#{'\^' if p == 'I' and !peek[0].empty?}"

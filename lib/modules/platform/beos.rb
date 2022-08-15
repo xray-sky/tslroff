@@ -22,6 +22,7 @@
 # √     can we use roman (don't italic) <a> without href= ? metroworks body text is all <a name=>
 #       malicious compliance from nokogiri on metrowerks pages, which can't as easily be
 #         rewritten prior to parsing, as we did in plan9
+#       <title> correctly, not unix manual style "index()". <h1> is fine.
 # REVIEW: also interesting use of <p class="body"> which could be considered to interfere with our CSS
 #         ...but where is it defined in their manual? no css I can see.
 #

@@ -28,6 +28,10 @@
 module Troff
   def req_TH(*args, heading: nil)
     @manual_section ||= args[1]
+    # I want the section inferred from the filename to be a default
+    # in case we don't get or can't parse the one from .TH
+    #@manual_section = args[1] unless args[1].empty?   # REVIEW ...do I?
+    @output_directory = "man#{@manual_section.downcase}" if @manual_section
     req_DT
     apply { @current_block.type = :th }
     unescape(heading || "#{args[0]}\\^(\\^#{args[1]}\\^)") # TODO: delay this until first output, somehow, because of macros that expect to rewrite this

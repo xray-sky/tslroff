@@ -7,6 +7,9 @@
 #
 # this is some hairy ish.
 #
+# TODO
+#   bail somehow if we have a .TE with table already processed through tbl (NEWS-os, AOS)
+#
 
 EndOfTable = Class.new(RuntimeError)
 
@@ -160,11 +163,18 @@ module Troff
                                                          # -- what can be done?? perhaps just a rewrite. but then how to detect it's happened on other pages?
 
         @register['.f'].value = case cell.text.last.font.face
-                                when :sans then 5
-                                when :boldit then 4
-                                when :bold then 3
-                                when :italic then 2
-                                when :regular then 1
+                                #when :sans then 5
+                                #when :boldit then 4
+                                #when :bold then 3
+                                #when :italic then 2
+                                #when :regular then 1
+                                # TODO this is still bogus
+                                when 'Font::CW' then 5
+                                when 'Font::BI' then 4
+                                when 'Font::B' then 3
+                                when 'Font::I' then 2
+                                when 'Font::R' then 1
+                                when 'Font::H' then 0
                                 else warn "trouble setting \\n(.f based on table cell style #{cell.text.last.font.face.inspect}"
                                 end
 
@@ -239,9 +249,20 @@ module Troff
             end
 
             if right == :noalign
-              @current_block.text.last.text = "&tblctl_ctr;#{left}&roffctl_endspan;"
+              # why was this assigning, instead of appending?
+              #@current_block.text.last.text = "&tblctl_ctr;#{left}&roffctl_endspan;"
+              @current_block.text.last.text = "&tblctl_ctr;#{left}"
+              @current_block << EndSpan.new(font: @current_block.text.last.font.dup,
+                                           style: @current_block.text.last.style.dup)
             else
-              @current_block.text.last.text = "&tblctl_nl;#{left}&roffctl_endspan;&tblctl_nr;#{right}&roffctl_endspan;"
+              # ditto?
+              #@current_block.text.last.text = "&tblctl_nl;#{left}&roffctl_endspan;&tblctl_nr;#{right}&roffctl_endspan;"
+              @current_block.text.last.text = "&tblctl_nl;#{left}"
+              @current_block << EndSpan.new(font: @current_block.text.last.font.dup,
+                                           style: @current_block.text.last.style.dup)
+              @current_block << "&tblctl_nr;#{right}"
+              @current_block << EndSpan.new(font: @current_block.text.last.font.dup,
+                                           style: @current_block.text.last.style.dup)
             end
 
           end
@@ -289,7 +310,7 @@ module Troff
   end
 
   def next_line_tbl
-    resc = Regexp.escape @state[:escape_char]
+    resc = Regexp.escape @state[:escape_char] || '' # escapes might be disabled; in which case we needn't bother matching them
     line = next_line
 
     # we can have gotten one of three things:

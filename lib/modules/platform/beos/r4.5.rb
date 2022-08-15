@@ -56,16 +56,25 @@ module BeOS_R4_5
       k.instance_variable_set '@content_end', source_lines.index { |l| l.match? %r{<a name="Bottom">} }
       k.define_singleton_method :to_html, k.method(:to_html_metrowerks)
     else
-      source_lines = k.instance_variable_get('@source_lines')
-      source_lines.each do |l|
-        case k.instance_variable_get('@source_dir')
-        when /French/ then l.force_encoding Encoding::ISO_8859_1
+      encoding = nil
+      case k.instance_variable_get '@source_dir'
+      when /German/
+        k.instance_variable_set '@language', 'de'
+      when /French/
+        k.instance_variable_set '@language', 'fr'
+        encoding = Encoding::ISO_8859_1
+      when /Japan/
+        k.instance_variable_set '@language', 'ja'
         # TODO this is way wrong
         # but at least it causes Nokogiri to bail and give us a more or less blank page
         # (that is a valid link), and isn't full of absolute garbage. I can't find
-        # a working encoding and I wonder if it was mojibaked before it went on the disc
-        when /Japan/  then l.force_encoding Encoding::EUC_JP
-        end
+        # a working encoding, not here, not on classic Mac, and not on BeOS itself,
+        # and I wonder if it was mojibaked before it went on the disc
+        encoding = Encoding::EUC_JP
+      end
+      source_lines = k.instance_variable_get('@source_lines')
+      source_lines.each do |l|
+        l.force_encoding encoding if encoding
         l.gsub!(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;')
       end
       k.instance_variable_set('@source', Nokogiri::HTML(source_lines.join))

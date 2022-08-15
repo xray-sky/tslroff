@@ -10,7 +10,12 @@ module Immutable
 
   def self.included(baseclass)
     # Create an ImmutableObject exception class for the class that's been extended
-    Object.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
+    #begin
+      Object.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
+    #rescue NameError
+      # search parent classes
+
+    #end
   end
 
   def [](key)

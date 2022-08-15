@@ -32,15 +32,12 @@ module AIX_1_2_1
       k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>XDR \(EXTERNAL DATA REPRESENTION\))\((?<section>\S+?),(?<book>[CLF])\))}
     when '3270keys.5', 'cshrc.5', 'netrc.5', 'rhosts.5'
       # incorrectly recognized as troff source as the first character is '.'
-      # ugly, but seems to work?
       require_relative '../../dom/nroff.rb'
       Dir.glob("#{File.dirname(__FILE__)}/../../dom/nroff/*.rb").each { |i| require i }
       # save a ref to our :detect_links method, before it gets smashed by the extend
       k.define_singleton_method :_detect_links, k.method(:detect_links)
       k.extend ::Nroff
       k.define_singleton_method :detect_links, k.method(:_detect_links)
-      k.instance_variable_set '@input_line_number', 0
-      k.instance_variable_set '@lines_per_page', 66
     when 'acctdir.8'
       k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>acct/\*)\((?<section>\S+?),(?<book>[CLF])\))}
     end

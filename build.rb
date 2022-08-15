@@ -959,7 +959,7 @@ collections = {
     disabled: true,
     'NEWS-os': {
       '4.2.1R/ja_JP': {
-        basedir: 'sony/news-os/4.2.1R',
+        basedir: 'sony/news-os/4.2.1R/man',
         srcdirs: %w[
           ja_JP.SJIS/man[1-8nop]
           Motif1.0/ja_JP.SJIS/man3
@@ -986,6 +986,14 @@ collections = {
           man/u_man/man[1-8]
         ]
       }
+    },
+    'unbundled': {
+      module_override: 'SunOS',
+      'SunCompilers_1.0': { # is this right? there's c and f77 in here
+        version_override: '4.0',
+        basedir: 'sun/sunos/4.0',
+        srcdirs: %w[unbundled/SC0.0/man/man[135]] # SC0.0 overwrites several pages from 4.0
+      } # TODO probably I shouldn't have mixed the C and F77 products here.
     },
     'SunOS': {
       '0.3': {
@@ -1038,10 +1046,7 @@ collections = {
       },
       '4.0': {
         basedir: 'sun/sunos/4.0',
-        srcdirs: %w[
-          share/man/man[1-8]
-          unbundled/SC0.0/man/man[135]
-        ]
+        srcdirs: %w[share/man/man[1-8]]
       },
       '4.0.2': {
         basedir: 'sun/sunos/4.0.2',
@@ -1051,7 +1056,7 @@ collections = {
         basedir: 'sun/sunos/4.0.3',
         srcdirs: %w[68020/share/man/man[1-8]]
       },
-      '4.0.3/sun4': {
+      '4.0.3/sun4': { # 35 more pages than sun3? REVIEW other differences?
         basedir: 'sun/sunos/4.0.3',
         srcdirs: %w[sun4/share/man/man[1-8]]
       },

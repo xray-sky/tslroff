@@ -8,16 +8,18 @@
 # Request       Initial   If no     Notes   Explanation
 #  form          value    argument
 #
-# .in ±N        N=0       previous  B,E,m   Indent is set to ±N. The indent is prepended
+# .in ±N        N=0       previous  B,‡,E,m Indent is set to ±N. The indent is prepended
 #                                           to each output line.
 #
 # sets register .i
 #
-# REVIEW: seems troff starts with .i = 0; but our css starts with '2m'. so all
-#         calculations are base that?
+# REVIEW seems troff starts with .i = 0; but our css starts with '2m'. so all
+#        calculations are base that?
 #
-# TODO: The effect of .ll, .in, or .ti is delayed, if a partially collected line exists,
-#       until after that line is output. (how? - does it matter?)
+# TODO The effect of .ll, .in, or .ti is delayed, if a partially collected line exists,
+#      until after that line is output. (how? - does it matter?)
+#
+# breaks. TODO can be suppressed with '
 #
 
 module Troff

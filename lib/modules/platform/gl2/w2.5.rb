@@ -14,8 +14,6 @@
 
 module GL2_W2_5
 
-  def req_UC(*); end
-
   def init_rewrites
     case File.basename(@source.filename)
     # TODO: this fails because checkeq.1 only contains .so eqn.1. now what?
@@ -59,13 +57,6 @@ module GL2_W2_5
     end
   end
 
-  #def parse(l)
-  #  case File.basename(@source.filename)
-  #  when 'intro.2'
-  #    l.sub!(/\\x-1/, "\\s-1") if input_line_number == 317
-  #  end
-  #  super
-  #end
 end
 
 =begin

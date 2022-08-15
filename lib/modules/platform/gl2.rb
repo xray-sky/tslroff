@@ -62,18 +62,10 @@ module GL2
 
   def self.extended(k)
     k.define_singleton_method(:req_LP, k.method(:req_PP)) if k.methods.include?(:req_PP)
+    k.instance_variable_set '@manual_entry',
+      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_section', Regexp.last_match[1]
   end
-
-  def init_gl2
-    @manual_entry     = @input_filename.sub(/\.(\d\S?)$/, '')
-    @manual_section   = Regexp.last_match[1]
-    @output_directory = "man#{@manual_section}"
-    @state[:footer] = "\\*(]W"
-  end
-
-#  def init_so
-#    @state[:path_translations] = { %r{/usr} => '' }
-#  end
 
   def init_ds
     super
@@ -90,7 +82,7 @@ module GL2
 
   def init_nr
     @register[')t'] = Troff::Register.new(1)	# 8.5" x 11" format (notionally enable) - used in ascii(5)
-    @register[')s'] = Troff::Register.new(1)	# 6" x 9" format (notionally disable)
+    @register[')s'] = Troff::Register.new(0)	# 6" x 9" format (notionally disable)
   end
 
   def init_sc
@@ -106,7 +98,14 @@ module GL2
     true
   end
 
+  def init_PD
+    super
+    @register['PD'] = @register[')P']
+    @register['IN'] = Troff::Register.new(@state[:base_indent])
+  end
+
   def req_TH(*args)
+    unescape("\\*(]W", output: @state[:footer])
     heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
     if args[2]
       req_ds(']L', args[2]) # "(\\^#{args[2]}\\^)") <= this is how it was in the perl version
@@ -117,11 +116,7 @@ module GL2
     super(*args, heading: heading)
   end
 
-  def init_PD
-    super
-    @register['PD'] = @register[')P']
-    @register['IN'] = Troff::Register.new(@state[:base_indent])
-  end
+  def req_UC(*); end
 
 end
 

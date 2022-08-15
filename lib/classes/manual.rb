@@ -7,43 +7,51 @@
 #
 
 require 'pathname'
-require_relative 'source.rb'
 require_relative 'block.rb'
-require_relative 'break.rb'
+require_relative 'source.rb'
 require_relative 'text.rb'
+require_relative 'styles/block.rb'
+require_relative 'styles/control.rb'
+require_relative 'styles/eqntext.rb'
+require_relative 'styles/tab.rb'
 
 ManualIsBlacklisted = Class.new(RuntimeError)
 
 class Manual
 
-  attr_accessor :blocks # REVIEW: blocks, lines? where am I using those outside the class?
+  attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
   attr_reader   :platform, :version, :magic,
                 :manual_entry, :manual_section, :output_directory,
-                :lines, :links
+                :language, :lines, :links
 
   def initialize(file, os, ver)
     @platform = os
     @version  = ver
     @input_filename   = File.basename(file)
     @source_dir       = File.dirname(file)
-    # REVIEW: why did I stop initializing these?
+    # REVIEW why did I stop initializing these? - because I wanted them to happen in parse_title
     #@manual_entry     = String.new
     #@manual_section   = String.new
     #@output_directory = String.new
     @manual_entry     = @input_filename
+    @language         = 'en' # English
 
     @document = []
     @related  = []
 
     @symlink = File.readlink(file) if File.symlink?(file)
     @source = Source.new(file)
-    @lines = @source.lines.each
     @current_block = Block.new
 
     @magic = @source.magic
     require_relative "../modules/dom/#{@magic.downcase}"
     extend Kernel.const_get(@magic)
 
+    load_platform_overrides
+    load_version_overrides
+
+    # give us a chance to do platform/version specific rewrites on @source
+    @lines = @source.lines.each
     source_init
   rescue Errno::ENOENT, Errno::EISDIR
     # these things should still be exceptions, if we aren't dealing with a symlink
@@ -59,6 +67,10 @@ class Manual
   def symlink?
     !@symlink.nil?
   end
+
+  #def last_tabstop
+  #  @current_block.text.reverse.detect { |t| t.text.is_a? Tab or t.text.is_a? LineBreak } || @current_block.text[0]
+  #end
 
   def apply(&block)
     yield
@@ -80,14 +92,14 @@ class Manual
     platform_const = "X#{platform_const}" if platform_const.match?(/^[0-9]/)
     extend Kernel.const_get(platform_const.gsub(/[^0-9A-Za-z]/, '_').to_sym)
   rescue LoadError => e
-    nil
+    nil # there isn't one. not catastrophic.
   end
 
   def load_version_overrides
     require_relative "../modules/platform/#{self.platform.downcase}/#{self.version}.rb"
     extend Kernel.const_get("#{self.platform}_#{self.version}".gsub(/[^0-9A-Za-z]/, '_').to_sym)
   rescue LoadError => e
-    nil
+    nil # there isn't one. not catastrophic.
   end
 
   def warn(m)

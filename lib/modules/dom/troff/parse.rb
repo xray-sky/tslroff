@@ -57,36 +57,21 @@ module Troff
 
       # initial spaces also cause a break. §4.1
       # -- but don't break again unnecessarily (i.e. in nofill mode).
-      # -- REVIEW I think tabs don't count for this (...based on??)
+      # -- tabs don't count for this
       if line.start_with?(' ')
         line.prepend("\\")    # force this initial space to appear in the output
         req_br
       end
 
-      # TODO
-      # move eqn to prior to argparse since delims can appear in macro args
-      # not doing it now because we'll need to remove unescape call from parse_eqn
-      # to achieve it (have parse_eqn just return string, and have it work like an
-      # actual preprocessor) and that'll lose me the .eqn class style that I want to
-      # keep for now (it calls attention to text that's been sent through parse_eqn,
-      # which is handy while developing). Gotta make it work during tbl too.
-      # does that suggest we are putting it in next_line?? maybe we are making some
-      # preprocessing methods to enable/disable/rewrite as needed.
-
-      # eqn delims can be hidden by escaping them
-      if @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
-        parse_eqn line
-      else
-        unescape(__unesc_w(__unesc_n(line))) # we actually want to do this in a better order than l->r because of ar(4) [SunOS 5.5.1] :: [30-31]
-      end
-
+      unescape(__unesc_w(__unesc_n(line))) # we actually want to do this in a better order than l->r because of ar(4) [SunOS 5.5.1] :: [30-31]
     end
 
     if @current_block.output_indicator?
       process_input_traps
       if nofill? and !@state[:break_suppress] # suppress break between tag & para in .TP, etc.
-        @current_block << LineBreak.new	# this duplicates .br, but if that is guarded on nofill...
-        @current_tabstop = @current_block.text.last
+        @current_block << LineBreak.new(font: @current_block.text.last.font.dup,
+                                       style: @current_block.text.last.style.dup)	# this duplicates .br, but if that is guarded on nofill...
+        #@current_tabstop = @current_block.text.last
       else
         space_adj
       end

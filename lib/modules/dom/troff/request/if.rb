@@ -74,12 +74,20 @@ module Troff
                   warn ".if evaluating numeric expression #{expr.inspect}"
                   to_u(__unesc_w(__unesc_n(expr))).to_f > 0
                 else
+                  # TODO this is getting parsed oddly. maybe the results are ok, but we should figure out the correct deal
+                  #      see pvs(1) [SunOS 5.5.1] lines 112, 113
                   quote_char = Regexp.escape test
                   argstr.sub!(%r{(?<lhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}(?<rhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}}, '')
                   (lhs, rhs) = [Regexp.last_match(:lhs), Regexp.last_match(:rhs)]
-                  warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect}"
-                   # REVIEW is it really true that the only relevant escape processing is \* ?
-                   __unesc_star(lhs) == __unesc_star(rhs)
+                  if lhs.nil? and rhs.nil?
+                    # we probably got an invalid condition, which is ignored
+                    warn "invalid condition to .if? #{(test+argstr).inspect} - evaluating as false"
+                    false
+                  else
+                    warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect}"
+                     # REVIEW is it really true that the only relevant escape processing is \* ?
+                     __unesc_star(lhs) == __unesc_star(rhs)
+                  end
                 end
 
     warn "rejecting condition #{predicate ? '' : '!'} #{condition.inspect}" unless condition == predicate or test == 'n'

@@ -23,25 +23,37 @@
 # (stand-in) character which appears to have the width of the final character. The
 # graphic translation occurs at the moment of output (including diversions).
 #
-# Unfortunately this is not a strict one-to-one arrangement. Constructs like \& and \(**
-# are allowed for the substituted "character". See csh(1) [GL2-W2.5] for example.
+# This is not a strict one-to-one arrangement. Constructs like \& and \(**
+# are allowed for the either the given or substituted character.
 #
-# TODO: apparently they're also allowed for the input character. .tr \(ts" appears in
-#       eqn(1) [Rhapsody DR2]
+# See csh(1) [GL2-W2.5], eqn(1) [Rhapsody DR2] for examples.
 #
-# TODO: redo with get_char
+#
+# based on an infinite loop in ar(5) [SunOS 0.3] resulting from the combination of
+# .tr *\(** and .ec % I infer (and observe from troff itself) that the escape is
+# considered to have been processed at the moment of .tr and needn't still be active
+# for the translation to be effective.
+#
+# This does _not_ extend to escapes in named strings however, nor the _input_ part
+# of the equation. given .tr \(ts", no translation occurs if the escape char is
+# changed, or escapes disabled entirely. (e.g. the "special character" \(ts is not
+# the same thing as the four-character string "\(ts")
+#
+# To facilitate this behavior, we will use ASCII ESC to indicate a "permanent" escape
+# for the output side. We should (SHOULD) never see an \x1B (\e) in legit input.
 #
 
 module Troff
   def req_tr(str)
     warn "enabling .tr for #{str.inspect}"
     begin
-      a = str.slice!(0, get_char(str).length) #str.slice!(0)
-      b = str.slice!(0, get_char(str)&.length || 0) #str.slice!(0)
+      a = str.slice!(0, get_char(str).length)
+      b = str.slice!(0, get_char(str)&.length || 0)
       case b
       when a then @state[:translate].delete(a)
       when '' then @state[:translate][a] = ' '
-      else @state[:translate][a] = b
+      else
+        @state[:translate][a] = (@state[:escape_char] ? b.sub(/^#{Regexp.quote @state[:escape_char]}/, "\e") : b)
       end
     end until str.empty?
   end

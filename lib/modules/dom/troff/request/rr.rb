@@ -18,8 +18,9 @@
 
 module Troff
 
-  def req_rr(reg)
-    return if reg.nil? or reg.empty?
+  def req_rr(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    reg = reqstr.slice(0, 2).strip
     @register.delete(reg)
   end
 

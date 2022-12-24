@@ -7,24 +7,17 @@
 #
 # TODO: move this to whatever platform this is defined for; it's not a SysV macro
 #
-
+=begin
 module Troff
-  def req_SB(*args)
-    req_ps(Font.defaultsize)
-    req_ps('-1')
+  define_method 'SB' do |*args|
+    req_ps("#{Font.defaultsize - 1}")
     req_ft('B')
-
-    if args.any?
-      unescape(args.join(' '))
-      send(:finalize_SB)
+    unless args[0].empty?
+      parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+      send('}f')
     else
-      req_it('1', :finalize_SB)
+      req_it('1 }f')
     end
   end
-
-  def finalize_SB
-    req_ft
-    req_ps
-  end
-
 end
+=end

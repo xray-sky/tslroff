@@ -11,7 +11,7 @@
 #
 
 module Troff
-  def req_CD(*)
+  define_method 'CD' do |*_args|
     warn "requires preprocessing by cw(1)"
   end
 end

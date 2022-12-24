@@ -48,7 +48,7 @@ module Nroff
       input_line.each_char do |char|
 
         page = @lines_per_page ? platen_position / (2 * @lines_per_page) : 0
-        @document[page] ||= Block.new(type: :nroff, text: [])
+        @document[page] ||= Block::Nroff.new(text: [])
 
         line = (platen_position - 2 * (@lines_per_page || 0) * page) / 2
         @document[page].text[line] ||= Line.new(source: @input_filename)
@@ -87,6 +87,7 @@ module Nroff
             end
             escape_shift = false
           else
+            warn "processing unknown control character #{char.inspect}" if char.bytes.detect { |b| b<32 }
             text.print_at(printhead_position, char)
             text.print_at(printhead_position, "\cN") if alt_typebox_shift
             printhead_position += 1
@@ -107,6 +108,12 @@ module Nroff
     # REVIEW might need to be done one at a time, in sequence, to be properly effective.
     # TODO make this return sensible english text no matter the order overstrikes occur
     line.gsub(%r((\e.|_\cH|\cH.|\cM.*)), '')
+    rescue ArgumentError => e
+      if e.message.match?(/invalid byte sequence/)
+        warn "#{e.message} parsing #{line.inspect}"
+      else
+        raise
+      end
   end
 
   def detect_links(line)

@@ -19,8 +19,7 @@
 #
 
 module Troff
-  def req_bp(*)
+  def req_bp(_argstr = '', breaking: true)
     warn 'explicit page break. check paragraph fill.'
-    ''
   end
 end

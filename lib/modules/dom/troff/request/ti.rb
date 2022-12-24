@@ -24,12 +24,16 @@
 #
 #  looks like it's meant to cause a break too. mount_cachefs(1m) [SunOS 5.5.1]
 #
-# breaks. TODO can be suppressed with '
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#
 #
 
 module Troff
-  def req_ti(indent = nil)
-    return unless indent
+  def req_ti(argstr = '', breaking: true)
+    return nil if argstr.empty?
+    indent = argstr.split.first
+    warn ".ti invoked with nobreak - how to?" unless breaking
     @current_block = blockproto
     @current_block.style.css[:margin_top] = '0'
     @document << @current_block

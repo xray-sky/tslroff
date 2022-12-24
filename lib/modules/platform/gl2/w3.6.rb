@@ -9,35 +9,24 @@
 
 module GL2_W3_6
 
-  def init_rewrites
-    case File.basename(@source.filename)
-    # TODO: this fails because checkeq.1 only contains .so eqn.1. now what?
-    #when 'checkeq.1'
-    #  newsrc = @source.lines
-    #  newsrc[47].sub!(/\\\*$/, '')
-    #  @lines = newsrc.each
-    when 'eqn.1'
-      newsrc = @source.lines
-      newsrc[46].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
-      @lines = newsrc.each
-    when 'ftp.1c'
-      newsrc = @source.lines
-      newsrc[210].sub!(/f$/, 'fP')
-      @lines = newsrc.each
-    when 'ls.1'
-      newsrc = @source.lines
-      newsrc[189].sub!(/4em$/, '4m')
-      @lines = newsrc.each
+  def self.extended(k)
+    case k.instance_variable_get '@input_filename'
+    # REVIEW still necessary?
+    #when 'eqn.1'
+    #  k.instance_variable_get('@source').lines[46].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
+    #when 'ftp.1c'
+    #  k.instance_variable_get('@source').lines[210].sub!(/f$/, 'fP')
+    #when 'ls.1'
+    #  k.instance_variable_get('@source').lines[189].sub!(/4em$/, '4m')
     when 'intro.2'
-      newsrc = @source.lines
-      newsrc[317].sub!(/\\x-1/, "\\s-1")
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[317].sub!(/\\x-1/, "\\s-1")
     when 'tz.4'
-      newsrc = @source.lines
-      newsrc[45].sub!(/center\./, 'center')
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[45].sub!(/center\./, 'center;')
+    when 'regexp.5'
+      k.instance_variable_get('@source').lines[419].sub!(/^\.in/, '.if')
     end
   end
+
 end
 
 =begin <- bootstrap from W2.5

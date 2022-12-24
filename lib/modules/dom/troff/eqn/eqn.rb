@@ -6,6 +6,100 @@ end
 
 module Eqn
 
+  def eqn_setup
+    @state[:eqn_active] = true
+    @eqnhold = @current_block
+    @current_block = EqnBlock.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    # save and set fonts
+    @register['98'] = @register['.f'].dup
+    @register['99'] = @register['.s'].dup
+    req_ft "#{@state[:eqn_gfont]}"
+    req_ps "#{@state[:eqn_gsize]}"
+  end
+
+  def eqn_restore
+    @state[:eqn_active] = false
+    @eqnhold << @current_block
+    @current_block = @eqnhold
+    # restore fonts
+    # seems to happen two or more times, through various strategies
+    # I guess to make sure that \s0 and \fP get cleared?
+    req_ft @register['98'].to_s
+    req_ft @register['98'].to_s
+    req_ps @register['99'].to_s
+    req_ps @register['99'].to_s
+  end
+
+  def parse_eqn(line, inline: true)
+    # this is a desultory first draft just to get something happening
+    # and clean the no request warnings out of stderr.
+    # TODO probably gonna have to disregard escaped delims. maybe mid-word delims? (or is this handled already from parse())
+
+    # "Set apart keywords recognized by eqn with spaces, tabs, new-lines, braces, double quotes, tildes, and circumflexes."
+    # "Use braces for grouping; generally speaking, anywhere you can use a single character such as x, you may use a complicated constrution enclosed in braces instead."
+    # "Tilde (~) represents a full space in the output, circumflex (^) half as much."
+    words = line.split
+    if !inline and respond_to? "eqn_#{words[0]}" # avoid sending input lines with inline eqn, which start with e.g. 'from' to eqn_bounds
+      send "eqn_#{words[0]}", line[words[0].length + 1..-1]
+    else
+      case words[0]
+      #when '.EN'
+      #  raise EndOfEqn
+      when /^[\.']/ # is request
+        parse line
+      else
+        warn "eqn parsing #{line.inspect}"
+        # I think we will want to do the delim processing outside of here, and only send
+        # whatever's inside delim to parse_eqn. leave this to just doing eqn and nothing else.
+        #
+        # we don't, because piece-mealing the calls to unescape results in extraneous breaks
+        # we can assume, however, that if we got here, there is definitely eqn to parse.
+        #
+        # so, if there are no delimiters, then we are in .EQ/.EN and the whole line goes
+
+        resc = Regexp.quote @state[:escape_char]
+        eqnline = ''
+
+        unless @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
+          # we are parsing .EQ/.EN
+          #warn ".EQ parse_tree built #{eqn_parse_tree(line.dup).inspect}"
+
+          eqn_setup
+          gen_eqn eqn_parse_tree(line)
+          eqn_restore
+
+        else
+          ## need to temporarily suppress :nofill
+          fill = @register['.u'].value
+          # req_fi breaks, has block-related side effects
+          @register['.u'].value = 1
+          loop do
+            break if line.empty?
+            rbeg = Regexp.escape @state[:eqn_start]
+            rend = Regexp.escape @state[:eqn_end]
+            mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rbeg}|(?<!#{resc})#{rbeg}/)
+            if mark
+              head = line.slice!(0..mark).chop
+              mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rend}|(?<!#{resc})#{rend}/)
+              #warn "eqn unterminated delim #{@state[:eqn_end].inspect}!" and break unless mark
+              unless mark
+                warn "eqn unterminated delim #{@state[:eqn_end].inspect}! -- pulling next line"
+                line << next_line
+              end
+              unescape head
+              eqn_setup
+              gen_eqn eqn_parse_tree(line.slice!(0..mark).chop)
+              eqn_restore
+            else
+              unescape line.slice!(0..-1)
+            end
+          end
+          @register['.u'].value = fill
+        end
+      end
+    end
+  end
+
   def gen_eqn(parse_tree, output: nil)
     #warn "entered gen_eqn with #{parse_tree.inspect}"
     if output
@@ -34,9 +128,12 @@ module Eqn
         when 'dotdot' then @current_block << '&#776;'
         when 'hat'    then @current_block << '&#770;'
         when 'tilde'  then @current_block << '&#771;'
-        when 'fat', 'back', 'fwd', 'up', 'down'
+        when 'fat'
           warn "eqn no support yet for keyword '#{elem}'"
           unescape elem
+        when 'back', 'fwd', 'up', 'down'
+          warn "eqn no support yet for keyword '#{elem} #{parse_tree.shift.inspect}'"
+          gen_eqn [ parse_tree.shift ]
         when /^(?:#{@state[:eqnchars].keys.collect{|c|Regexp.quote c}.join('|')})$/
           unescape "\\|" if @register['.f'].value == 2 and !@current_block.empty?
           unescape "\\f1#{@state[:eqnchars][elem]}\\fP"
@@ -95,10 +192,10 @@ module Eqn
         eqn << [ eqn.pop, [ tok, eqn_parse_tree(str, limit: 1) ] ]
       when 'over'
         eqn << [ tok, eqn.pop, eqn_parse_tree(str, limit: 1) ]
-      when 'sqrt', 'roman', 'bold', 'italic' #'lim', 'sqrt'
+      when 'sqrt', 'roman', 'bold', 'italic', 'fat' #'lim', 'sqrt'
         eqn << [ tok, eqn_parse_tree(str, limit: 1) ]
-      #when 'sum'
-      #  eqn << [ tok, eqn_parse_tree(str, limit: 2) ]
+      when 'fwd', 'back', 'up', 'down'
+        eqn << [ tok, eqn_parse_tree(str, limit: 1), eqn_parse_tree(str, limit: 1) ]
       else
         eqn << tok
       end

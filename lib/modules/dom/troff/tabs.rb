@@ -21,7 +21,7 @@ module Troff
 
   private
 
-  def insert_tab(width: 0, stop: 0)
+  def insert_tab(width: 0, stop: 0) # width in em
     hold_style = Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
     tabtext = @current_block.text.slice!(@current_block.last_tab_stop..-1)
     @current_block << Tab.new(text: tabtext, width: width, stop: stop,

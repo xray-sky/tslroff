@@ -6,14 +6,33 @@
 #
 # IBM AOS 4.3 Platform Overrides
 #
+# TODO
+#   tbl.1 :: postprocessed tbl
+#   L.aliases.5 :: [54] .nr with no args?
+#   a.out.5 :: REVIEW use of \p
+#   restore.tape.8 :: REVIEW nil class exceptions
+#   kbdemul.4 has tabs way off in the left margin? (20220828)
+#   several X11 pages named ___.man
+#
+#   bits4216.1 [1]: .so can't read man1/showps.1_ca
+#   endgrent.3 => getgrent.3 [36]: .so can't read /usr/include/grp.h
+#   endpwent.3 => getpwent.3 [38]: .so can't read /usr/include/pwd.h
+#   getdiskbyname.3 => getdisk.3 [33]: .so can't read /usr/include/disktab.h
+#   getttynam.3 => getttyent.3 [35]: .so can't read /usr/include/ttyent.h
+#   rint.3m => ieee.3 [270]: .so can't read /usr/include/ieee.h
+#   acct.5 [19]: .so can't read /usr/include/sys/acct.h
+#   ar.5 [27]: .so can't read /usr/include/ar.h
 
 module AOS_4_3
 
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
+    when 'bf77.1'
+      k.instance_variable_get('@source').lines[239].sub!(/^/, '\\\\&')	# non-macro line starts with .
     # REVIEW maybe this kind of thing should be left alone?
-    when 'f77.1'
-      k.instance_variable_get('@source').lines[277].sub!(/^/, "\\&")	# non-macro line starts with .
+    # -- this appears to have been specific to the aek distrib
+    #when 'f77.1'
+    #  k.instance_variable_get('@source').lines[277].sub!(/^/, "\\&")	# non-macro line starts with .
     when 'fpr.1'  # there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
       newsrc = k.instance_variable_get('@source').lines
       (28..37).each { |i| newsrc[i].sub!(/^\.\\"\s/, '') }
@@ -26,6 +45,22 @@ module AOS_4_3
     when 'mdtar.1'
       k.instance_variable_get('@source').lines[96].sub!(/\\\*\s+$/, '*')
       k.instance_variable_get('@source').lines[102].sub!(/\\\*$/, '*') # nroff ignores these, but they are intended to output
+    when 'async_daemon.2', 'setdomainname.2',
+         'yp_all.3n', 'yp_bind.3n', 'yp_match.3n', 'yp_next.3n', 'yp_order.3n', 'yp_unbind.3n', 'yperr_string.3n', 'ypprot_err.3n'
+      # incorrectly recognized as nroff source as the first character is '#'
+      k.instance_variable_get('@source').lines[0].sub!(/^#/, '.\\"')
+      k.instance_variable_get('@source').lines[1].sub!(/^#/, '.\\"')
+      k.instance_variable_get('@source').lines[2].sub!(/^#/, '.\\"')
+      require_relative '../../dom/troff.rb'
+      # save a ref to our :init_ds and :req_TH methods, before they get smashed by the extend
+      # processing doesn't require .so, .AT, etc., so they don't need saving
+      #k.define_singleton_method :_init_ds, k.method(:init_ds)
+      #k.define_singleton_method :_req_TH, k.method(:req_TH)
+      k.extend ::Troff
+      #k.define_singleton_method :init_ds, k.method(:_init_ds)
+      #k.define_singleton_method :req_TH, k.method(:_req_TH)
+    when 'index.3'
+      k.instance_variable_set '@manual_entry', '_index'
     when 'mouse.4'  # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead
       newsrc = k.instance_variable_get('@source').lines
       (122..140).each { |i| newsrc[i].sub!(/^\.\\"/, '') }
@@ -58,9 +93,9 @@ module AOS_4_3
   # .nr )E 0
   # ..
 
-  def req_rcurlN
-    # TODO: ugh.
-  end
+  #define_method '}N' do |*args|
+  #  # TODO: ugh.
+  #end
 end
 
 =begin

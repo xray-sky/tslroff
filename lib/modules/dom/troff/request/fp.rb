@@ -16,7 +16,10 @@
 #                                           argument, file, which is an alternate version
 #                                           of the font F.
 #
-# mounts, but does not select
+#  mounts, but does not select
+#
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
 #
 # REVIEW TODO
 # solaris 10 troff mounts these fonts:
@@ -34,29 +37,21 @@
 #
 
 module Troff
-  def req_fp(pos, font, file = nil)
-    #warn "don't know how to load #{font} on position #{pos}"
-    if pos.zero?
-      warn "illegal load of font position 0"
-      return nil
-    end
+  def req_fp(argstr = '', breaking: nil)
+    (pos, font, file) = argstr.split
+    return nil unless pos and font
+    return nil.tap { warn "illegal load of font position 0" } if pos == '0'
     warn "loading font #{font} on position #{pos} (file: #{file.inspect})"
-    #@state[:font][pos] = # TODO: something.
     @state[:font][pos.to_i] = font
   end
 
   def init_fp
-    #@state[:fpmap] = { 'R' => 1, 'I' => 2, 'B' => 3 }
     @state[:fonts] = {
       0   => nil,
-      #1   => :regular,
-      #2   => :italic,
-      #3   => :bold,
       1   => 'R',
       2   => 'I',
       3   => 'B',
-      #4   => :symbol, # TODO: output REVIEW: necessary? correct?
-      #:cs => :mono		# h4x for .cs - REVIEW: is it useful?
+      #4   => :symbol, # REVIEW necessary? correct?
     }
   end
 end

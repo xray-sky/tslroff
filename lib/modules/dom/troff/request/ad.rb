@@ -8,6 +8,11 @@
 # Request  Initial  If no     Notes   Explanation
 #  form     value   argument
 #
+# .na      adjust   -         E       No-adjust. Adjustment is turned off; the right
+#                                     margin will be ragged. The adjustment type for .ad
+#                                     is not changed. Output line filling still occurs if
+#                                     fill mode is on.
+#
 # .ad c    adj,both adjust    E       Line adjustment is begun. If fill mode is not on,
 #                                     adjustment will be deferred until fill mode is back
 #                                     on. If the type indicator c is present, the adjustment
@@ -27,14 +32,25 @@
 #
 # [ :left, :both, nil, :center, nil, :right ]
 #
-#  REVIEW: proper interaction with fill mode
+#  REVIEW proper interaction with fill mode
 #
 
 module Troff
-  def req_ad(adj = nil)
+  def req_na(_argstr = '', breaking: nil)
+    @state[:adjust] = false
+    # REVIEW this should keep .P followed by .na from collapsing margin_top
+    if !nofill? and @current_block.immutable?
+      @current_block = blockproto
+      @current_block.style.css[:margin_top] = 0
+      @document << @current_block
+    end
+  end
+
+  def req_ad(argstr = '', breaking: nil)
     init_ad
+    adj = argstr.split.first
+    return nil unless adj
     @register['.j'].value = case adj
-                            when nil        then @register['.j'].value
                             when /^[0135]$/ then adj
                             when 'l'        then 0
                             when 'r'        then 5

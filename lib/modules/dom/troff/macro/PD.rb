@@ -21,7 +21,7 @@
 
 module Troff
 
-  def req_PD(v = nil)
+  define_method 'PD' do |v = nil, *_args|
     v ? @register[')P'].value = to_u(v, default_unit: 'v') : init_PD
   end
 

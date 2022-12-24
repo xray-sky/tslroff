@@ -7,13 +7,17 @@
 #
 #     Place sub-subhead text, for example, Options, here.
 #
+# REVIEW .ti \n()Ru+\n(INu - sunos tmac.an
 
 module Troff
-  def req_SS(*args)
+  define_method 'SS' do |*args|
     req_fi
-    apply { @current_block.type = :ss }
+    req_nr(')R 0')
+    xinit_in
+    #apply { @current_block.type = :ss }
+    @current_block = blockproto Block::SubHead
+    @document << @current_block
     unescape(args.join(' '))
-    req_nr(')R', '0')
-    req_P
+    send 'P'
   end
 end

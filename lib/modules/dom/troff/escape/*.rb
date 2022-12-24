@@ -13,9 +13,9 @@
 #
 
 module Troff
-  def esc_star(s)
+  define_method 'esc_*' do |s|
     s.slice!(0) if s.start_with?('(')
-    #warn "returning #{@state[:named_string][s].inspect} for named string #{s.inspect}"
+    s = __unesc_star(__unesc_n(s))
     @state[:named_string][s] || ''.tap { warn "undefined named string #{s}" }
   end
 end

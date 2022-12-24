@@ -9,7 +9,6 @@ module Troff
   private
 
   def process_input_traps
-
     # decrement the line counters
     @state[:input_trap] = Hash[ @state[:input_trap].collect do |trap, macros|
                                   [ trap -= 1 , macros ]
@@ -20,10 +19,9 @@ module Troff
 
     if macros
       macros.reverse.each do |macro|
-        self.send(macro[0], *macro[1])
+        send macro[0]
       end
     end
-
   end
 
 end

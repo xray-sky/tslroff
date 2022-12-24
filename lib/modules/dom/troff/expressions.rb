@@ -65,11 +65,6 @@
 # nroff/troff expressions do not recognize decimal multipliers or divisors; a high
 # level of precision may be achieved by mixing scales within expressions.
 #
-#
-# TODO: make sure the .c register is updated for every source line advance code path
-# TODO: make sure the .f register is updated for every font position change code path
-# TODO: make sure the .s register is updated for every font size change code path
-#
 
 module Troff
 
@@ -118,7 +113,12 @@ module Troff
     # tokenize the result
     operands = str.scan(%r([\d\.cimnPpuv]+|[-+/*%<>=&:]+)) # TODO: somewhere in here I'm getting ==- as an operator (as in 10==-1 - end result works as it throws an exception and is rejected by if)
 
-    (magnitude, unit) = operands.shift.match(/^([\d.]+)([cimnPpuv]?)/)[1..2]
+    # we need to be tolerant of garbage in - e.g. text passed as indent to .IP which may look a little like an expression
+    # example - hpterm(1) [HPUX 10.20] line 733
+    operand = operands.shift.match(/^([\d.]+)([cimnPpuv]?)/)
+    return '0'.tap { warn "garbage in evaluating expression #{str.inspect}" } unless operand
+
+    (magnitude, unit) = operand[1..2]
     unit = default_unit if unit.empty?
 
     lhs = case unit
@@ -135,10 +135,16 @@ module Troff
     end.to_i
 
     while operands.any?
-      op = operands.shift.tr(':', '|')
-      rhs = operands.shift
-      op = '==' if op == '='
-      lhs = lhs.send(op, to_u(rhs, default_unit: default_unit).to_i)
+      op = case o = operands.shift
+           when '=' then '=='
+           when ':' then '||'
+           when '&' then '&&'
+           else o
+           end
+      rhs = to_u(operands.shift, default_unit: default_unit).to_i
+      # can't just send logical and/or - ruby doesn't have c-style numeric truth
+      # also && and || are not methods!
+      lhs = %w[|| &&].include?(op) ? eval("#{lhs > 0} #{op} #{rhs > 0}") : lhs.send(op, rhs)
       lhs = 1 if lhs == true
       lhs = 0 if lhs == false
     end

@@ -18,13 +18,18 @@
 #   listres(1) :: [39, 41] \f-, \fi, \fp
 # √ jctype(3j) :: has postprocessed tbl (sigh) -- just need \l, tbl(1) is worse
 # √ XArc(3X11) :: appears to have an eqn split across two input lines?  (skewed-angle... etc)
+# √ ypwhich(8) :: use of refer -- .[  .]
+#                 not actually. looks like mistake in synopsis section
 #
 #   mh-chart(n) :: needs /usr/new/lib/mh/tmac.h -- also \b bracket drawing
 #
 
+require_relative './en_us.rb'
+
 module NEWS_os_4_2_1R_ja_JP
 
   def self.extended(k)
+    k.extend NEWS_os_4_2_1R_en_US
     k.instance_variable_set '@language', 'ja'
     k.instance_variable_get('@source').lines.collect! { |k| k.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
     k.instance_variable_set '@related_info_heading', %r{関連事項}u
@@ -40,63 +45,20 @@ module NEWS_os_4_2_1R_ja_JP
       # incorrectly recognized as nroff source as the first character is '@'
       k.instance_variable_get('@source').lines[0].sub!(/^/, '.')
       require_relative '../../../dom/troff.rb'
-      # save a ref to our :init_ds and :req_TH methods, before they get smashed by the extend
+      # save a ref to our :init_ds method, before it gets smashed by the extend
       # processing doesn't require .so, .AT, etc., so they don't need saving
       k.define_singleton_method :_init_ds, k.method(:init_ds)
-      k.define_singleton_method :_req_TH, k.method(:req_TH)
+      k.define_singleton_method :_TH, k.method(:TH)
       k.extend ::Troff
       k.define_singleton_method :init_ds, k.method(:_init_ds)
-      k.define_singleton_method :req_TH, k.method(:_req_TH)
+      k.define_singleton_method :TH, k.method(:_TH)
     end
   end
 
-  def init_ds
-    super
-    @state[:named_string].merge!({
-      ']D' => "NEWS-OS Programmer's Manual",
-      ']W' => "7th Edition"
-    })
-  end
-
-  def req_so(name)
+  def req_so(name, breaking: nil)
     super(name) { |lines| lines.collect! { |k| k.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) } }
   end
 
-  # doesn't matter, ]W not used in header or footer
-  def req_AT(*args)
-    req_ds ']W', case args[0]
-                 when '3' then '7th Edition'
-                 when '4' then 'System III'
-                 when '5'
-                   if args[1] and !args[1].empty?
-                     "System V Release #{args[1]}"
-                   else
-                     'System V'
-                   end
-                 else '7th Edition'
-                 end
-  end
-
-  def req_TH(*args)
-    unescape "NEWS-OS\t\\s-2Release 4.2.1R\\s+2", output: @state[:footer]
-    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-    req_ds(']L', args[2])
-    req_ds(']W', args[3]) if args[3] and !args[3].empty?
-    req_ds(']D', args[4]) if args[4] and !args[4].empty?
-    heading << '\\0\\0\\(em\\0\\0\\*(]D'
-    super(*args, heading: heading)
-  end
-
-  # doesn't matter, ]W not used in header or footer
-  def req_UC(*args)
-    req_ds ']W', case args[0]
-                 when '3' then '3rd Berkeley Distribution'
-                 when '4' then '4th Berkeley Distribution'
-                 when '5' then '4.2 Berkeley Distribution'
-                 when '6' then '4.3 Berkeley Distribution'
-                 else '3rd Berkeley Distribution'
-                 end
-  end
 end
 
 

@@ -15,38 +15,51 @@
 
 module Troff
   %w[B I].each do |a|
-    define_method "req_#{a}".to_sym do |*args|
-      #unescape('\f' + @state[:fpmap][a].to_s)
-      unescape('\f' + @state[:fonts].index(a).to_s)
+    define_method a do |*args|
       if args.any?
-        unescape(args.join(' '))
-        finalize_B
+        req_ft "#{@state[:fonts].index(a)}"
+        parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+        #send '}N' # see note re: \n()E below
+        send '}f'
       else
-        req_it('1', :finalize_B)
+        #req_it('1', '}N')
+        req_it '1 }f'
       end
     end
   end
 
   %w[B I R].permutation(2).each do |a, b|
-    define_method "req_#{a + b}".to_sym do |*args|
-      #styles = [@state[:fpmap][a], @state[:fpmap][b]]
-      styles = [@state[:fonts].index(a), @state[:fonts].index(b)]
-      unescape(args.each_with_index.map do |arg, i|
-                 p = styles[i % 2].to_s
-                 '\f' + p + arg + "#{'\^' if p == 'I' and !peek[0].empty?}"
-               end.join)
-      finalize_B
+    define_method "#{a + b}" do |*args|
+      parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
     end
   end
 
+  define_method '}S' do |*args|
+    # special case for shift out of italic
+    req_ds "]F #{(args[0] == '2' and !args[4].empty?) ? '\\^' : ''}"
+    if !args[3].empty?
+      parse %(.}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}")
+    else
+      parse args[2]
+    end
+    send '}f'
+  end
+
   # the same, whether .B or .I
-  def finalize_B
-    unescape('\f1')
-    # evidence size reset is not right. wish I'd left a note why I thought it needed doing.
-    # SunOS 5.5.1 tmac.an does it, that's why. REVIEW do they all? GL1 W2.1 does.
-    # that's probably good enough to say, "yes".
-    # but it is NOT correct in sample table 7 (which perhaps doesn't use tmac.an)
-    req_ps(Font.defaultsize)
+  # "handle end of 1-line features"
+  # uses \n()E, set by .SH, .SS, .TP, etc.
+  # REVIEW do we _need_ to use )E?
+  define_method '}N' do |*_args|
+    req_br if @register[')E'] > 0
+    req_di
+    send '}f' if @register[')E'].zero? # .}S
+    send '}1' if @register[')E'] == 1 # .TP
+    send '}2' if @register[')E'] == 2 # .SH, .SS
+  end
+
+  define_method '}f' do |*_args|
+    req_ps "#{Font.defaultsize}"
+    req_ft '1'
   end
 
 end

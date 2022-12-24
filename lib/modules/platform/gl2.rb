@@ -49,6 +49,7 @@
 #
 # What the hell are \(Dy and \(Dn ?? - section 3G
 #
+# Alias/1 v2.1 has wrong mod. dates
 # GL1 W2.3 has 29 Sep 2021 as footer date. probably want to address that.
 # GL1 W2.3 some of the entries are longer than an enforced 11 character filename limit;
 #   presumably these should be renamed for the actual entry, not based on the filename.
@@ -56,27 +57,27 @@
 #   look especially in man3g, but we should audit for any others. (audit shows all in man3g.)
 # GL2 W2.5 same problem, plus man1d/zshadeabstr, man1m/mklost+foun
 # GL1 W2.1 is clean
+# W2.1 and W2.3 Mail(1) want to use font T (times?)
 #
 
 module GL2
 
   def self.extended(k)
-    k.define_singleton_method(:req_LP, k.method(:req_PP)) if k.methods.include?(:req_PP)
+    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
+    # the Alias manual pages are *.man
     k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+      k.instance_variable_get('@input_filename').sub(/\.(\d\S?|man)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1]
   end
 
   def init_ds
     super
     @state[:named_string].merge!({
-      'R'  => '&reg;',
-      'S'  => "\\s#{Font.defaultsize}",
       'Tm' => '&trade;',
-      'lq' => '&ldquo;',
-      'rq' => '&rdquo;',
       ']D' => 'Silicon Graphics',
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y")
+      ']L' => '', # explicitly blanked in .TH before being conditionally redefined
+      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+      :footer => "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W"
     })
   end
 
@@ -104,15 +105,17 @@ module GL2
     @register['IN'] = Troff::Register.new(@state[:base_indent])
   end
 
-  def req_TH(*args)
-    unescape("\\*(]W", output: @state[:footer])
-    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-    if args[2]
-      req_ds(']L', args[2]) # "(\\^#{args[2]}\\^)") <= this is how it was in the perl version
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless args[2].strip.empty?
-    end
-    req_ds(']D', args[3]) if args[3]
-    heading << '\\0\\0\\(em\\0\\0\\*(]D'
+  # index info - what even makes sense to do with this
+  # probably nothing, as it seems to be for bound manuals (absolute page number)
+  define_method 'IX' do |*args| ; end
+
+  define_method 'TH' do |*args|
+    req_ds "]L #{args[2]}" if args[2] and !args[3].strip.empty?
+    req_ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
+
+    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"
+    heading << ' \\|\\*(]L' unless @state[:named_string][']L'].empty?
+
     super(*args, heading: heading)
   end
 

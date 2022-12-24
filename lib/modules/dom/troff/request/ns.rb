@@ -13,10 +13,15 @@
 #                                     a next page number. The no-space mode is turned off
 #                                     when a line of output occurs, or with .rs
 #
+# .rs      space    -         D       Restore spacing. The no-space mode is turned off.
+#
 
 module Troff
-  def req_ns(*_args)
-    #warn ".ns pointlessly received args #{_args.inspect} - why?" if _args.any?
+  def req_ns(_argstr = '', breaking: nil)
     @state[:nospace] = true
+  end
+
+  def req_rs(_argstr = '', breaking: nil)
+    @state.delete(:nospace)
   end
 end

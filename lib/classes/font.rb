@@ -26,7 +26,7 @@ class Font
   def css_style ; nil ; end
 
   def face
-    self.class.name
+    self.class.name[6..-1] # strip off the 'Font::' part, to match what goes in @state[:fonts]
   end
 
   def style

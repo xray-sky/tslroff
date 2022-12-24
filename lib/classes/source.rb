@@ -13,27 +13,22 @@ class Source
 
   def initialize(file)
     @filename = file
-    begin
-      case File.magic(file)
-      when 'tar'
-        raise ArgumentError, "Input file is tape archive: #{file}"
-        # TODO:
-        #
-        # this might be useful later for dealing productively with tar files.
-        # https://gist.github.com/sinisterchipmunk/1335041
-        #
-        # also I need to re-enter in case of a gzipped tar file.
-        # is this even worth doing?
-      when 'gz'
-        @lines = IO.readlines("|gzip -dc #{file}")	# gzip does it all, even if zlib won't.
-      when 'ogz'
-        @lines = IO.readlines("|gzip_old -dc #{file}")	# 10.6 gzip does it all, even if zlib won't.
-      else
-        @lines = IO.readlines(file)
-      end
-    #rescue
-    #  warn $!   # TODO we are catching FileIsLinkError _right here_ instead of letting it get up to top level
-    #  exit(1)   # TODO don't exit, move to next file.
+    case File.magic(file)
+    when 'tar'
+      raise ArgumentError, "Input file is tape archive: #{file}"
+      # TODO:
+      #
+      # this might be useful later for dealing productively with tar files.
+      # https://gist.github.com/sinisterchipmunk/1335041
+      #
+      # also I need to re-enter in case of a gzipped tar file.
+      # is this even worth doing?
+    when 'gz'
+      @lines = IO.readlines("|gzip -dc #{file}")	# gzip does it all, even if zlib won't.
+    when 'ogz'
+      @lines = IO.readlines("|gzip_old -dc #{file}")	# 10.6 gzip does it all, even if zlib won't.
+    else
+      @lines = IO.readlines(file)
     end
 
     begin

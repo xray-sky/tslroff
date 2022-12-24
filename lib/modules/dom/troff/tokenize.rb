@@ -53,7 +53,7 @@ module Troff
   def get_def_str(s)
     req = get_char(s)
     n = 1
-    req << get_char(s[n]) and n = 2 if req =~ /[-+]/
+    req << get_char(s[n]) and n = 2 if %[- +].include? req
     req << get_char(s[n..-1], count: 2) if req.end_with? '('
     req
   end

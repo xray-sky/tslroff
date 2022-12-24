@@ -17,7 +17,7 @@
 #
 
 module Troff
-  def req_vs(*height)
-    warn "don't know how to .vs #{height.inspect}"
+  def req_vs(argstr = '', breaking: nil)
+    warn "don't know how to .vs #{argstr.inspect}"
   end
 end

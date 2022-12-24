@@ -23,6 +23,8 @@
 #     select.2   ½    (0xbd ??)
 #     (--more--)
 #
+#  greek(7) has a hilarious bug (how did that happen??) and wants a couple characters translated too
+#
 
 module AIX_2_2_1
 

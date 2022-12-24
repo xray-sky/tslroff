@@ -22,7 +22,10 @@
 #
 
 module Troff
-  def req_so(name)
+  def req_so(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    name = argstr.split.first
+
     # make this relative by trying to find file working backward
     # NOTE this is relative _to the man page directory_ (@source_dir)
     # REVIEW will we ever see a non-absolute path here, that we could maybe use directly?
@@ -42,7 +45,7 @@ module Troff
     olines = @lines
     ofile = @input_filename.dup
     opos = @register['.c'].dup
-    @input_filename << " => #{file}"
+    @input_filename << " [#{opos}] => .so #{file}"
     @register['.c'] = Register.new(0, 1, :ro => true)
     newsrc = File.read(localfile).lines
     newsrc = yield newsrc if block_given? # give a chance to perform processing on the sourced file

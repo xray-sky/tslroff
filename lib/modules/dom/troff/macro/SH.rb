@@ -10,12 +10,15 @@
 #  turns fill mode on, if it's off (at least on GL2-W2.5 - REVIEW)
 
 module Troff
-  def req_SH(*args)
+  define_method 'SH' do |*args|
     req_fi
-    apply { @current_block.type = :sh }
+    req_nr(')R 0')
+    xinit_in
+    #apply { @current_block.type = :sh }
+    @current_block = blockproto Block::Head
+    @document << @current_block
     unescape(args.join(' '))
     @state[:section] = @current_block.to_s
-    req_nr(')R', '0')
-    req_P
+    send 'P'
   end
 end

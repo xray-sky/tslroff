@@ -43,7 +43,7 @@
 module GDT_UNX
 
   def self.extended(k)
-    k.define_singleton_method(:req_LP, k.method(:req_PP)) if k.methods.include?(:req_PP)
+    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     k.instance_variable_set '@manual_entry',
       k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1]
@@ -60,11 +60,12 @@ module GDT_UNX
   def init_ds
     super
     @state[:named_string].merge!({
-      'R'  => '&reg;',
-      'S'  => "\\s#{Font.defaultsize}",
-      'lq' => '&ldquo;',
-      'rq' => '&rdquo;',
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y")
+      ']D' => "UNIX Programmer's Manual",
+      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+      # REVIEW ]W is overridden with '7th Edition' in .TH, but the manuals in cat*/
+      # have the date. among other things that don't quite match tmac.an ..?
+      #']W' => '7th Edition',
+      :footer => "\\*(]W"
     })
   end
 
@@ -81,42 +82,35 @@ module GDT_UNX
   # REVIEW
   # this is used seemingly to prevent processing the next line
   # as a request. but, it's not in tmac.an or the DWB manual.
-  def req_li(*args)
+  def li(*args)
     parse("\\&" + next_line)
   end
 
   # .so with absolute path, headers in /usr/include
-  def req_so(name)
+  def req_so(name, breaking: nil)
     osdir = @source_dir.dup
     @source_dir << '/../..'
     super(name)
     @source_dir = osdir
   end
 
-  def req_TH(*args)
-    unescape("\\*(]W", output: @state[:footer])
-    if args[2]
-      req_ds(']L', args[2]) # "(\\^#{args[2]}\\^)") <= this is how it was in the perl version
-      unescape('\\0\\0\\(em\\0\\0\\*(]L', output: @state[:footer]) unless args[2].strip.empty?
-    end
-    req_ds(']H', "#{args[0]}\\|(\\|#{args[1]}\\|)")
-    req_ds(']D', "UNIX Programmer's Manual")
-    heading = "\\*(]H"
-    heading << '\\0\\0\\(em\\0\\0\\*(]D'
-    # the date ]W gets read into the footer before setting this. apparently.
-    # see source/formatted versions of me(7)
-    req_ds(']W', "7th Edition")
+  define_method 'TH' do |*args|
+    req_ds "]L #{args[2]}"
+
+    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
     super(*args, heading: heading)
   end
 
   # tmac.an.new
-  def req_UC(v = '')
-    req_ds(']W', v.empty? ? '3rd Berkeley Distribution' : "#{v}th Berkeley Distribution")
+  define_method 'UC' do |v = '', *_args|
+    req_ds(']W ' + v.empty? ? '3rd Berkeley Distribution' : "#{v}th Berkeley Distribution")
   end
 
   # .NOP - does nothing but I would like to insert this text as a comment
-  def req_NO(*args)
+  define_method 'NO' do |*args|
     comment = *args.join(' ').slice(1..-1) # kill the initial P (from .NOP)
-    req_BsQuot(comment)
+    send 'req_\\"', comment
   end
 end

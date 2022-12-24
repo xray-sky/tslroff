@@ -15,11 +15,15 @@
 #                                          inhibited for request, macro, string, or file
 #                                          names, and in copy mode. No effect in nroff.
 #
-#   TODO: implement something
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#
+#  TODO implement something (...?)
+#
 
 module Troff
-  def req_lg(*n)
+  def req_lg(_argstr = '', breaking: nil)
     # TODO: whoops
-    warn "unimplemented ligature mode #{n.inspect}"
+    warn "unimplemented ligature mode #{_argstr.inspect}"
   end
 end

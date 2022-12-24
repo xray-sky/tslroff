@@ -24,10 +24,14 @@
 
 module Troff
 
-  def req_rm(string = nil, *args)
-    if string
-      @state[:named_string].delete(string) or define_singleton_method("req_#{string}") { |*args| true } # REVIEW instance_eval(':undef req_foo') instead?
-    end
+  def req_rm(argstr = '', *args, breaking: nil)
+    return nil if argstr.empty?
+    arg = argstr.slice(0, 2).strip
+    #@state[:named_string].delete(string) or define_singleton_method("req_#{string}") { |*args| true } # REVIEW instance_eval(':undef req_foo') instead?
+    #warn arg.inspect
+    @state[:named_string].delete(arg) or instance_eval("undef #{arg.to_sym.inspect}")
+    rescue NameError
+      warn "attempt to .rm undefined macro #{arg}"
   end
 
 end

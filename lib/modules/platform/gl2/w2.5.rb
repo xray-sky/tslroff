@@ -14,46 +14,26 @@
 
 module GL2_W2_5
 
-  def init_rewrites
-    case File.basename(@source.filename)
-    # TODO: this fails because checkeq.1 only contains .so eqn.1. now what?
-    #when 'checkeq.1'
-    #  newsrc = @source.lines
-    #  newsrc[46].sub!(/\\\*$/, '')
-    #  @lines = newsrc.each
-    when 'eqn.1'
-      newsrc = @source.lines
-      newsrc[45].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
-      @lines = newsrc.each
-    when 'ftp.1c'
-      newsrc = @source.lines
-      newsrc[210].sub!(/f$/, 'fP')
-      newsrc[356].sub!(/f\\P/, 'fP')
-      @lines = newsrc.each
-    when 'ls.1'
-      newsrc = @source.lines
-      newsrc[188].sub!(/4em$/, '4m')
-      @lines = newsrc.each
+  def self.extended(k)
+    case k.instance_variable_get '@input_filename'
+    # REVIEW still necessary?
+    #when 'eqn.1'
+    #  k.instance_variable_get('@source').lines[45].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
+    #when 'ftp.1c'
+    #  k.instance_variable_get('@source').lines[210].sub!(/f$/, 'fP')
+    #  k.instance_variable_get('@source').lines[356].sub!(/f\\P$/, 'fP')
+    #when 'ls.1'
+    #  k.instance_variable_get('@source').lines[188].sub!(/4em$/, '4m')
     when 'intro.2'
-      newsrc = @source.lines
-      newsrc[316].sub!(/\\x-1/, "\\s-1")
-      @lines = newsrc.each
-    when 'gps.4'
-      newsrc = @source.lines
-      newsrc[16].sub!(/f$/, 'fP')
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[316].sub!(/\\x-1/, "\\s-1")
+    #when 'gps.4'
+    #  k.instance_variable_get('@source').lines[16].sub!(/f$/, 'fP')
     when 'tz.4'
-      newsrc = @source.lines
-      newsrc[42].sub!(/center\./, 'center;')
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[42].sub!(/center\./, 'center;')
     when 'regexp.5'
-      newsrc = @source.lines
-      newsrc[418].sub!(/^\.in/, '.if')
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[418].sub!(/^\.in/, '.if')
     when 'kmem.7'
-      newsrc = @source.lines
-      newsrc[0].sub!(/u_man/, 'a_man')
-      @lines = newsrc.each
+      k.instance_variable_get('@source').lines[0].sub!(/u_man/, 'a_man')
     end
   end
 

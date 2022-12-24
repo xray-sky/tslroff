@@ -36,8 +36,8 @@ module Troff
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
     #warn "\\l trying to draw horizontal lines from #{req_str.inspect}"
     # special case for '|0\(ul' for underlining
-    # consider '|1u\(ul' equivalent
-    if req_str.match?(/^\|[01]u?\\\(ul/)
+    # consider '|1u\(ul' equivalent. also if \(ul not specified (is default)
+    if req_str.match?(/^\|(?:0|1u)(?:\\\(ul)?$/)
       warn "\\l special case for underline macro (check if beginning of line is intended!)"
       last_break = @current_block.text.rindex { |t| t.is_a? LineBreak } || 0
       @current_block.text[last_break..-1].each do |t|

@@ -11,19 +11,24 @@
 # .in ±N        N=0       previous  B,‡,E,m Indent is set to ±N. The indent is prepended
 #                                           to each output line.
 #
-# sets register .i
+#  sets register .i
 #
-# REVIEW seems troff starts with .i = 0; but our css starts with '2m'. so all
+#  REVIEW seems troff starts with .i = 0; but our css starts with '2m'. so all
 #        calculations are base that?
 #
-# TODO The effect of .ll, .in, or .ti is delayed, if a partially collected line exists,
-#      until after that line is output. (how? - does it matter?)
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
 #
-# breaks. TODO can be suppressed with '
+#  TODO "The effect of .ll, .in, or .ti is delayed, if a partially collected line exists,
+#        until after that line is output." (how? - does it matter?)
+#
 #
 
 module Troff
-  def req_in(indent = nil, *_args) # should ignore extra args. probably all requests. sttydefs(1m) [SunOS 5.5.1]
+  def req_in(argstr = '', breaking: true)
+    warn ".in invoked with nobreak - how to?" unless breaking
+    indent = argstr.split.first
+
     previous = @state[:previous_indent]
     @state[:previous_indent] = @register['.i'].value
 
@@ -46,7 +51,7 @@ module Troff
   end
 
   def xinit_in
-    @state[:base_indent] = to_u('2m').to_i		# from the CSS; TODO: link this with css
+    @state[:base_indent] = to_u('2m').to_i		# from the CSS; TODO link this with css
     @register['.i'] = Register.new(@state[:base_indent], :ro => true)
     @state[:previous_indent] = @register['.i'].value
   end

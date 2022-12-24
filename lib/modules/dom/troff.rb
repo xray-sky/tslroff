@@ -6,7 +6,7 @@
 # REVIEW: add anchors menu for .SH ?
 
 require 'selenium-webdriver'
-%w[. request escape macro eqn].each do |t|
+%w[. request escape macro eqn tbl].each do |t|
   Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
     require_relative i
   end
@@ -15,6 +15,11 @@ end
 module Troff
 
   @@delim = %(\002\003\005\006\007"')
+  @@requests = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
+
+  def self.requests
+    @@requests
+  end
 
   def self.webdriver
     @@webdriver
@@ -22,12 +27,14 @@ module Troff
 
   def self.extended(k)
     k.extend ::Eqn
+    k.extend ::Tbl
     k.instance_variable_set '@register', {}
-    k.instance_variable_set '@state', { :footer => Block::Footer.new }
+    k.instance_variable_set '@state', { :header => Block::Header.new,
+                                        :footer => Block::Footer.new }
     k.instance_variable_set '@related_info_heading', %r{SEE(?: |&nbsp;)+ALSO}
   end
 
-  def source_init(titled: false)
+  def source_init
     # call any initialization methods for .nr, .ds, etc.
     # may be supplemented or overridden by version-specific methods
     # REVIEW do this in a grown up way - these need ordered to succeed
@@ -42,11 +49,7 @@ module Troff
       self.send(m) if m.to_s.start_with? 'init_'
     end
 
-    parse_title unless titled # I'll want to re-init after looking for the title
-    # TODO is this even necessary? I'm parsing stuff too many times, including
-    # everything twice for every .so (.so parses everything once, looking for title, then again processing the doc)
-    # perhaps this can be combined with the improvement for delaying <h1> for .ds, etc.
-    # TODO always output a header even if we don't know what to put in it. the divs get hosed without it.
+    parse_title
   end
 
   def to_html
@@ -55,16 +58,15 @@ module Troff
     loop do
       parse(next_line)
     rescue StopIteration
-      # TODO: perform end-of-input trap macros from .em;
-      #@current_block = Block.new
-      #@document << @current_block
-      #@current_block.style.attributes[:class] = 'foot'
-      #@current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
-      #unescape(@state[:footer].tap{|n| warn "footer: #{n.inspect}"} || '') # may not have got a footer (esp. if parse_title didn't find one)
-      #@current_block << '&ensp;&ensp;&mdash;&ensp;&ensp;'
-      @document << @state[:footer]
-      # REVIEW: maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
-      return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW: closes main doc divs start ed by :th
+      # TODO perform end-of-input trap macros from .em;
+      # REVIEW maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
+      unescape @state[:named_string][:header], output: @state[:header]
+      @document.insert(0, @state[:header])
+      if @state[:named_string][:footer]
+        unescape @state[:named_string][:footer], output: @state[:footer]
+        @document << @state[:footer]
+      end
+      return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW closes main doc divs start ed by :th
     rescue => e
       warn "#{@line.inspect} -"
       warn e
@@ -83,8 +85,20 @@ module Troff
   end
 
   def next_line
-    #@line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
-    @line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
+    #line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" } # REVIEW do we ever need to perserve the trailing \n ?
+    line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
+
+    # Hidden newlines -- REVIEW does this need to be any more sophisticated?
+    # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
+    # TODO the new-line at the end of a comment cannot be concealed.
+    # Doing it here means I don't have to do it everywhere we are doing local next_lines (.TS, .if, etc.)
+    # But, this will give us "bad" line numbers for warnings. I can probably live with that.
+    if @state[:escape_char]
+      if line.end_with?(@state[:escape_char]) and line[-2] != @state[:escape_char]
+        line.chop! << next_line
+      end
+    end
+    @line = line
   end
 
   # TODO find where we're inserting paragraphs (with and without margin-top:0) containing only
@@ -92,12 +106,12 @@ module Troff
   #      might have to do an a/b comparison to be sure. e.g. eqn(1) [SunOS 5.5.1]
 
   # prototype a new block with whatever necessary styles carried forward.
-  def blockproto(type = :p)
+  def blockproto(type = Block::Paragraph)
     break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will REVIEW is this working??
               # - no, it's eating the final break in a nofill, when we go to .ig! but we don't need blockproto in .ig
               #   so that is the solution for now. but watch this.
-    type = :cs if @state[:cs]
-    block = Block.new(type: type)
+    type = Block::Monospace if @state[:cs]
+    block = type.new
     block.style[:section] = @state[:section] if @state[:section]
     block.style[:linkify] = true if @state[:section] =~ @related_info_heading
     block.style.css[:margin_top] = "#{to_em(@register[')P'])}em" unless @register[')P'] == @state[:default_pd]
@@ -106,8 +120,7 @@ module Troff
     block.style.css.delete(:margin_left) if @register['.i'] == @state[:base_indent]
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j']] unless @register['.j'] == 1
     block.style.css[:text_align] = 'left' if noadj?		# .na sets left adjust without changing .j
-    #@current_tabstop = block.text.last
-    #@current_tabstop[:tab_stop] = 0
+    block.style.attributes[:class] = 'synopsis' if @state[:section]&.match?(/^synopsis$/i) and block.is_a? Block::Paragraph
     block
   end
 
@@ -124,20 +137,10 @@ module Troff
   end
 
   def parse_title
-    get_title or warn "reached end of document without finding title!"
-    @output_directory = "man#{@manual_section.downcase}" if @manual_section
-    #@state[:title_parsed] = true
-
-    # try to reset document state, in case we had some monkey business
-    # before finding .TH
-    #@document = []
-    #source_init(titled: true)
-    # I don't think it's necessary any more to rewind/reset, and avoiding it
-    # saves a _lot_ of time when there are many pages which .so (causing the
-    # source file to be parsed in full, twice)
-    #
     # parse as far as the title, so we can have the odir immediately after
     # a Manual.new, then if we want to continue (aren't just figuring out
     # a symlink target), then just continue on.
+    get_title or warn "reached end of document without finding title!"
+    @output_directory = "man#{@manual_section.downcase}" if @manual_section
   end
 end

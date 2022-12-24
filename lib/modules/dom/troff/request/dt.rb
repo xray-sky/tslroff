@@ -16,13 +16,18 @@
 #
 #  no idea how this is supposed to work, or how it can be made to work in HTML context
 #  so far the only use is cmp(1) [GL2-W2.5] and there are no args, so it's a no-op
+#
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#
 
 module Troff
 
-  def req_dt(pos = nil, macro = nil, *args)
+  def req_dt(argstr = '', breaking: nil)
+    (pos, macro) = argstr.split
     if pos and macro
       warn "!! setting diversion trap #{pos.inspect} #{macro.inspect}"
-      pos = pos.to_i
+      pos = to_u(pos).to_i
       @state[:diversion_trap][pos] ||= []
       @state[:diversion_trap][pos] << [ macro, args ]
     else

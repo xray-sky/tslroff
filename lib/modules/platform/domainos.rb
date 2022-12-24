@@ -43,6 +43,7 @@
 module DomainOS
 
   def self.extended(k)
+    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     systype = Regexp.last_match[1] if k.instance_variable_get('@source_dir').match(%r{(bsd|sys5)})
     k.instance_variable_set '@systype', systype
     k.instance_variable_set '@manual_entry',
@@ -52,7 +53,6 @@ module DomainOS
       %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
     k.instance_variable_set '@base_indent', 5
     k.instance_variable_set '@lines_per_page', nil
-    k.define_singleton_method(:req_LP, k.method(:req_PP)) if k.methods.include?(:req_PP)
 
     # special cases for Aegis help
     # there's a directory hierarchy in help/ - mirror it in the output directories
@@ -262,37 +262,26 @@ module DomainOS
   end
 
   # Troff methods <= tmac.an
-
-  def init_ds
-    super
-    @state[:named_string].merge!({
-      'lq' => '&ldquo;',
-      'rq' => '&rdquo;',
-      'R'  => '&reg;',
-      'S'  => "\\s#{Font.defaultsize}"
-    })
-  end
-
   # tmac.an.new
-  def req_AT(*args)
-    req_ds(']W', case args[0]
-                 when '3' then '7th Edition'
-                 when '4' then 'System III'
-                 when '5' then "System V#{' Release ' + args[1] if args[1]}"
-                 else '7th Edition'
-                 end
+  define_method 'AT' do |*args|
+    req_ds(']W ' + case args[0]
+                   when '3' then '7th Edition'
+                   when '4' then 'System III'
+                   when '5' then "System V#{' Release ' + args[1] if args[1]}"
+                   else '7th Edition'
+                   end
           )
   end
 
   # tmac.an.new
-  def req_UC(v = nil)
-    req_ds(']W', case v
-                 when '3' then '3rd Berkeley Distribution'
-                 when '4' then '4th Berkeley Distribution'
-                 when '5' then '4.2 Berkeley Distribution'
-                 when '6' then '4.3 Berkeley Distribution'
-                 else '3rd Berkeley Distribution'
-                 end
+  define_method 'UC' do |v = nil|
+    req_ds(']W ' + case v
+                   when '3' then '3rd Berkeley Distribution'
+                   when '4' then '4th Berkeley Distribution'
+                   when '5' then '4.2 Berkeley Distribution'
+                   when '6' then '4.3 Berkeley Distribution'
+                   else '3rd Berkeley Distribution'
+                   end
           )
   end
 end

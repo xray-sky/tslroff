@@ -14,6 +14,9 @@
 #                                     characters and empty text lines (blank lines) also
 #                                     cause a break.
 #
+# it appears that 'br does nothing at all.
+#
+#
 # REVIEW  the intersection of all these things needs closer look; on the AOS pages
 #         there are lots of examples like adb(1), or bitprt(1) [ AOS 4.3 ]:
 #           .nf
@@ -33,12 +36,11 @@
 #
 
 module Troff
-  def req_br(*_args)
-    #warn "pointlessly received arguments to .br #{_args.inspect} -- why?" if _args.any?
-    unless nofill? or broke?
+  def req_br(_argstr = '', breaking: true)
+    return unless breaking
+    unless nofill? or broke? or nobreak?
       @current_block << LineBreak.new(font: @current_block.text.last.font.dup,
                                      style: @current_block.text.last.style.dup)
-      #@current_tabstop = @current_block.text.last
     end
   end
 end

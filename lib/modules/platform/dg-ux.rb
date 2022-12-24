@@ -18,7 +18,7 @@ module DG_UX
 
   def self.extended(k)
     k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)\.[zZ]$/, '')
+      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)\.g?[zZ]$/, '')
     k.instance_variable_set '@heading_detection', %r(^(?<section>[A-Z][A-Za-z\s]+)$)
     k.instance_variable_set '@title_detection', %r{\s(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))$}
   end

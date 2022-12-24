@@ -20,17 +20,47 @@
 #                                     within the span; environment switching can prevent
 #                                     this.
 #
+# .cu N    off      N=1       E      A variant of .ul that causes every character to be
+#                                    underlined and causes no line breaks to occur in the
+#                                    affected input lines. That is, each output space
+#                                    following .cu is like an unpaddable space. .cu is
+#                                    identical to .ul in troff.
+#
+# .uf F    Italic   Italic    -      Underline font set to F. In nroff, F may not be on
+#                                    position 1 (initially Times Roman).
+#
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#
 #  TODO - figure out if the .tl / trap-invoked macro / environment switching part
 #         matters to us in any way.
 #
 
 module Troff
-  def req_ul(n = '1')
-    req_ft('I')
-    req_it(n, :finalize_ul)
+  def req_ul(argstr = '', breaking: nil)
+    n = argstr.split.first || '1'
+    req_ft @state[:ul_font]
+    req_it "#{n} [U"
   end
 
-  def finalize_ul
+  def req_uf(argstr = '', breaking: nil)
+    pos = argstr.slice(0, 2).strip
+    # REVIEW does this actually get some other font mounted on position 2?
+    @state[:ul_font] = case pos
+                       when ''     then 'I'
+                       when /^\d$/ then @state[:fonts][pos.to_i]
+                       else        pos
+                       end
+  end
+
+  #def finalize_ul
+  define_method "[U" do |argstr = '', breaking: nil|
     req_ft
   end
+
+  def init_ul
+    @state[:ul_font] = 'I'
+  end
+
+  alias_method :req_cu, :req_ul
 end

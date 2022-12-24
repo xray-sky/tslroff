@@ -6,6 +6,9 @@
 #
 # SCO OpenDesktop Platform Overrides
 #
+# TODO
+#   machine(hw) - See Also not detected because of tbl shme
+#
 
 module Xenix
 

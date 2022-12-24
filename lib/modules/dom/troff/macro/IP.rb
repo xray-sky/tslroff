@@ -15,7 +15,8 @@
 #
 
 module Troff
-  def req_IP(tag = '', indent = nil)	# )I reg holds carryover indent
+  define_method 'IP' do |tag = '', indent = nil, *_args|	# )I reg holds carryover indent
+    warn "received extra args to .IP ?? - #{_args.inspect}" if _args.any?
     @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
 
     # give us a block if we need one. doing it here keeps the paragraph spacing

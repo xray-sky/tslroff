@@ -16,22 +16,20 @@
 #                                           discussion of the input-line-count .it
 #                                           request in section 7.5, "Traps.")
 #
-#  REVIEW: what is "trap-invoked macros representing text"?
-#          -> .de and .ds are considered traps, so .B and other similar macros would be
-#             covered here? (answer: yes.)
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
 #
-#  REVIEW: is the implication from no arg meaning "off" that there can only be one set at a time?
-#          -> .TP makes use of .it, as does .B, which suggests.. 1) no, and 2) it should
-#             perhaps work like a stack?
 #
 
 module Troff
 
-  def req_it(count = nil, macro = nil, *args)
+  def req_it(argstr = '', breaking: nil)
+    (count, macro) = argstr.split
     if count and macro
       count = count.to_i
+      macro = "req_#{macro}" if Troff.requests.include? macro and respond_to?("req_#{macro}")
       @state[:input_trap][count] ||= []
-      @state[:input_trap][count] << [ macro, args ]
+      @state[:input_trap][count] << [ macro ]
     else
       warn "clearing all input traps due to .it #{count.inspect} #{macro.inspect}"
       init_it

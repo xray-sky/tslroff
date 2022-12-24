@@ -24,12 +24,16 @@
 #
 #   ugh.
 #
-#   REVIEW: not worth a thorough implementation if we never see it outside
-#           of ascii(7) [AOS 4.3] -- this is enough for that use.
+#   REVIEW not worth a thorough implementation if we never see it outside
+#          of ascii(7) [AOS 4.3] -- this is enough for that use.
 #
 
 module Troff
-  def req_cs(face = nil, width = nil, ptsiz = @register['.s'].value)
+  def req_cs(argstr = '', breaking: nil)
+    (face, width, ptsiz) = argstr.split
+    return nil unless face
+    ptsiz ||= @register['.s'].value
+
     if width
       warn "wishfully enabling .cs #{[face, width, ptsiz].inspect}"
       @state[:cs] = face

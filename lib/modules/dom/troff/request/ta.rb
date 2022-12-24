@@ -43,18 +43,22 @@
 # non-interpreted tab and leader respectively, and are equivalent to actual tabs and
 # leaders in copy mode but are ignored during output mode.
 #
-# TODO: initialize properly
-# TODO: justifications (right/centered)
-# TODO: what really happens when you get
-#         .ta 0.5i 1.0i 1.5i
-#         \tfoo\tbar\t\tbaz
-#       e.g. more tabs in input than currently defined - rwhod(1m) [GL2-W2.5]
-#       nroff just piles everything in, with no whitespace between
-# TODO: are comma-separated tabs legit? they seem to not be unusual. but, see above re: more tabs?
+#  REVIEW what happens when given not-an-N as arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#
+# TODO initialize properly
+# TODO justifications (right/centered)
+# TODO what really happens when you get
+#        .ta 0.5i 1.0i 1.5i
+#        \tfoo\tbar\t\tbaz
+#      e.g. more tabs in input than currently defined - rwhod(1m) [GL2-W2.5]
+#      nroff just piles everything in, with no whitespace between
+# TODO are comma-separated tabs legit? they seem to not be unusual. but, see above re: more tabs?
 #
 
 module Troff
-  def req_ta(*args)
+  def req_ta(argstr = '', breaking: nil)
+    args = argstr.split
     @state[:tabs] = Array.new
     while args.any? do
       stop = args.shift

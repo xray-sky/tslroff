@@ -12,6 +12,7 @@
 #  several pages - See the following commands: "foo," "bar" and "baz."
 #                  In this book: "spqr, wombat," "crumb," "fart," and "garbage."
 #                  In this book: "extended curses library," "termdef," and "terminfo."
+#  greek(7) has no shift in/out?
 
 module AIX_1_2_1
 

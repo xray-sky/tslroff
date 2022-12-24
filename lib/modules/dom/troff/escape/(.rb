@@ -10,7 +10,7 @@
 #
 
 module Troff
-  def esc_lparen(s)
+  define_method 'esc_(' do |s|
     translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @state[:translate].has_key? "#{@state[:escape_char]}(#{s}"
     @state[:special_char][s] || ''.tap { warn "undefined special character #{s}" }
   end

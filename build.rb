@@ -7,13 +7,17 @@
 #
 # Automate building of product manuals
 #
-# TODO: unbundleds (output, plus review input collections which may be mixed)
-# TODO: manual.erb can't find the CSS with the extra level of directory structure (e.g. UTek)
-# TODO: cope with pages named 'index' (e.g. DG-UX 5.4R3.00 index(3C))
+# TODO unbundleds (output, plus review input collections which may be mixed)
+# TODO manual.erb can't find the CSS with the extra level of directory structure (e.g. UTek)
+# √     - fixed for now by absolute ref to css
+# TODO cope with pages named 'index' (e.g. DG-UX 5.4R3.00 index(3C))
 #       - possibly by providing top level all-sections index (permuted or otherwise?)
-# TODO: unlink 404 refs, probably after auditing whether they are really missing
-# TODO: rewrite links in "overlay" versions (e.g. DG-UX 4.31, 5.4.2T, etc.) to base manual
-# TODO: rewrite links in optional products (e.g. Apollo ada 1.0 links to ld(1)) to.. where exactly?
+# TODO unlink 404 refs, probably after auditing whether they are really missing
+# TODO rewrite links in "overlay" versions (e.g. DG-UX 4.31, 5.4.2T, etc.) to base manual
+# TODO rewrite links in optional products (e.g. Apollo ada 1.0 links to ld(1)) to.. where exactly?
+# TODO supplemental (non-man) docs recovered from mit afs
+
+require 'fileutils'
 
 collections = {
   '': {
@@ -35,7 +39,7 @@ collections = {
     }
   },
   'Acorn': {
-    disabled: true,
+    #disabled: true,
     'RISCiX': {
       '1.2': {
         basedir: 'acorn/riscix/1.2',
@@ -49,17 +53,18 @@ collections = {
     }
   },
   'Alias': {
-    # use GL2/IRIX defs
-    disabled: true,
+    #disabled: true,
     '1': {
-      '2.1': {
+      module_override: 'GL2',
+      'v2.1': {
+        version_override: 'W3.6',
         basedir: 'alias/1/2.1',
         srcdirs: %w[iris]
       }
     }
   },
   'Apollo': {
-    disabled: true,
+    #disabled: true,
     'unbundled': {
       module_override: 'DomainOS',
       'ada_1.0': {
@@ -177,8 +182,8 @@ collections = {
     }
   },
   'Apple': {
-    disabled: true,
-    'A-UX': {
+    #disabled: true,
+    'A-UX': { # A/UX
       '0.7': {
         basedir: 'apple/aux/0.7',
         srcdirs: %w[catman/?_man/man[1-8]]
@@ -213,21 +218,37 @@ collections = {
     }
   },
   'Ardent': {
-    disabled: true,
+    #disabled: true,
     'SysV': {
+      module_override: 'Ardent_SysV',
       'R3.0': {
         basedir: 'ardent/sysv/3.0',
         srcdirs: %w[
           man/man[1-8]
           man/bsd/man[1-3]
         ]
+      },
+      'R4.1': {
+        basedir: 'ardent/sysv/4.1',
+        srcdirs: %w[
+          man[1-8]
+          bsd/man[1-3]
+        ]
+      },
+      'R4.2': {
+        basedir: 'ardent/sysv/4.2',
+        srcdirs: %w[
+          man[1-8]
+          bsd/man[1-3]
+        ]
       }
     }
   },
   'Atari': {
-    disabled: true,
+    #disabled: true,
     'SysV': {
       # TODO: sort out differences & local changes. are these separate releases??
+      module_override: 'Atari_SysV',
       '1.1-06': {
         basedir: 'atari/system_v/1.1-06',
         srcdirs: %w[
@@ -242,19 +263,12 @@ collections = {
     }
   },
   'Be': {
-    # TODO: graphics assets - the gifs in the R3 ./graphics/ & pressinfo/resources (not belogos/) directories are macbinary encoded! - must decode first
-    # TODO: are there actually metrowerks docs for R4 and earlier, somewhere other than develop/BeIDE?
-    #       (cd /Volumes/Museum/Manual/in/be/beos/pr2/beos/documentation && find . \( -name '*.jp*g' -o \( -name '*.[gG][iI][fF]' -o -name '*.pdf' \) \) -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/PR2 && tar xvfB - )
-    #       (cd /Volumes/Museum/Manual/in/be/beos/r3/beos/documentation && find . \( -name '*.jp*g' -o -name '*.[gG][iI][fF]' \) -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/R3 && tar xvfB - )
-    #       (cd /Volumes/Museum/Manual/in/be/beos/r3/beos/documentation && find . \( -name '*.tiff' -o \( -name '*.eps' -o -name '*.map' \) \) -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/R3 && tar xvfB - )
-    #       (cd /Volumes/Museum/Manual/in/be/beos/r4/beos/documentation && find . \( -name '*.jp*g' -o \( -name '*.[gG][iI][fF]' -o -name '*.eps' \) \) -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/R4 && tar xvfB - )
-    #       (cd /Volumes/Museum/Manual/in/be/beos/r4.5/develop && find . -name '*.gif' -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/R4.5 && tar xvfB - )
-    #       (cd /Volumes/Museum/Manual/in/be/beos/r4.5/beos/documentation && find . \( -name '*.jp*g' -o -name '*.[gG][iI][fF]' \) -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/R4.5 && tar xvfB - )
-    #       (cd /Volumes/Museum/Manual/in/be/beos/r5/develop && find . -name '*.gif' -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/R5 && tar xvfB - )
-    #       (cd /Volumes/Museum/Manual/in/be/beos/r5/beos/documentation && find . \( -name '*.jp*g' -o -name '*.[gG][iI][fF]' \) -print0 | xargs -0 tar cf -) | ( cd /Volumes/dev.online.typewritten.org/Manual/Be/BeOS/R5 && tar xvfB - )
+    # TODO graphics assets - the gifs in the R3 ./graphics/ & pressinfo/resources (not belogos/) directories are macbinary encoded! - must decode first
+    # TODO are there actually metrowerks docs for R4 and earlier, somewhere other than develop/BeIDE?
     disabled: true,
     'BeOS': {
       'PR2': {
+        assets: %w(*.jp*g *.[gG][iI][fF] *.pdf),
         basedir: 'be/beos/pr2',
         srcdirs: %w[
           beos/documentation
@@ -268,6 +282,7 @@ collections = {
         ]
       },
       'R3': {
+        assets: %w(*.jp*g *.[gG][iI][fF] *.map *.tiff *.eps),
         basedir: 'be/beos/r3',
         srcdirs: %w[
           beos/documentation
@@ -290,6 +305,7 @@ collections = {
         ]
       },
       'R4': {
+        assets: %w(*.jp*g *.[gG][iI][fF] *.eps),
         basedir: 'be/beos/r4',
         srcdirs: %w[
           beos/documentation
@@ -311,6 +327,7 @@ collections = {
         ]
       },
       'R4.5': {
+        assets: %w(*.jp*g *.[gG][iI][fF]),
         basedir: 'be/beos/r4.5',
         srcdirs: %w[
           beos/documentation
@@ -341,6 +358,7 @@ collections = {
         ]
       },
       'R5': {
+        assets: %w(*.jp*g *.[gG][iI][fF]),
         basedir: 'be/beos/r5',
         srcdirs: %w[
           beos/documentation
@@ -361,27 +379,40 @@ collections = {
     }
   },
   'Bell': {
-    disabled: true,
+    #disabled: true,
     # TODO: gif assets in 1ed, 1.1ed
-    'Plan9': {
+    'Inferno': {
+      #disabled: true,
       '1ed': {
-        basedir: 'bell/plan9/1e0',
+        assets: %w[*.gif],
+        basedir: 'bell/inferno/1e0',
         srcdirs: %w[man/html/*.htm]
       },
       '1.1ed': {
-        basedir: 'bell/plan9/1e1src',
+        assets: %w[*.gif],
+        basedir: 'bell/inferno/1e1src',
         srcdirs: %w[man/html/*.htm]
       },
       '3ed': {
-        disabled: true,
-        basedir: 'bell/plan9/3e',
+        basedir: 'bell/inferno/3e',
+        srcdirs: %w[man/[1-9]*]
+      },
+      '4ed': {
+        basedir: 'bell/inferno/4e',
         srcdirs: %w[man/[1-9]*]
       }
     },
+    'Plan9': {
+      '4ed': {
+        basedir: 'bell/plan9/4e',
+        srcdirs: %w[man/[1-8]]
+      }
+    },
     'UNIX': {
-      disabled: true,
+      #disabled: true,
       'V6': {
         # TODO: also contains a lot of papers for as, cc, etc.
+        #       where are the macro defs? - used lib/macros/an6 from gl2-w2.5
         basedir: 'bell/unix/v6',
         srcdirs: %w[
           man/man[1-8]
@@ -396,14 +427,16 @@ collections = {
         ]
       },
       '32V': {
+        version_override: 'V7',
         basedir: 'bell/unix/32v',
         srcdirs: %w[
           usr/man/man[1-8]
           usr/man/man0/intro
         ]
       },
-      'SysIII': {
+      'SysIII': { # where'd I get this manual? need lib/macros/an
         # TODO: also contains a lot of papers for as, cc, etc.
+        disabled: true,
         basedir: 'bell/unix/sysiii',
         srcdirs: %w[
           usr/src/man/man[1-8]
@@ -413,7 +446,7 @@ collections = {
     }
   },
   'Commodore': {
-    disabled: true,
+    #disabled: true,
     'AMIX': {
       '1.1': {
         basedir: 'commodore/amix/1.1',
@@ -450,9 +483,8 @@ collections = {
     }
   },
   'Concurrent': {
-    disabled: true,
-    'CX-UX': {
-      # TODO: (?) canonically is 'CX/UX'
+    #disabled: true,
+    'CX-UX': { # CX/UX
       '6.20': {
         basedir: 'concurrent/cx-ux/6.20',
         srcdirs: %w[
@@ -463,9 +495,26 @@ collections = {
     }
   },
   'DEC': {
-    disabled: true,
+    #disabled: true,
+    # TODO there's a bunch more releases / tapes to check
+    #      not clear on all the various releases/differences etc.
     'Ultrix': {
-      '2.0.0': {
+      'WS-1.1': { # REVIEW is this any different from 2.0.0 ?
+        version_override: '2.0.0',
+        basedir: 'dec/ultrix/ws-1.1',
+        srcdirs: %w[usr/man/man[1-8]]
+      },
+      # AQ-NC13A/B-BE
+      # what about AQ-KU57B-BE??
+      'WS-2.0/VAX': { # includes unsupported REVIEW where's the X pages? REVIEW is this any different from 2.0.0 ?
+        version_override: '2.0.0',
+        basedir: 'dec/ultrix/ws-2.0/vax',
+        srcdirs: %w[
+          usr/man/man[1-8]
+          usr/new/man/man[15]
+        ]
+      },
+      '2.0.0': { # from source
         basedir: 'dec/ultrix/2.0.0',
         srcdirs: %w[
           src/usr/man/man[1-8]
@@ -476,31 +525,86 @@ collections = {
           src/new/spms/man/mann/*.n
         ]
       },
-      '4.2.0/VAX': {
+      '4.2.0/VAX': { # from source
         basedir: 'dec/ultrix/4.2.0',
-        srcdirs: %w[usr/man/_vax.d/man[1-8]]
+        srcdirs: %w[src/usr/man/_vax.d/man[1-8]]
       },
-      '4.2.0/mips': {
+      '4.2.0/mips': { # from source
         basedir: 'dec/ultrix/4.2.0',
-        srcdirs: %w[usr/man/_mips.d/man[1-8]]
+        srcdirs: %w[src/usr/man/_mips.d/man[1-8]]
       },
       '4.5.1/mips': {
         basedir: 'dec/ultrix/4.5.1_mips',
         srcdirs: %w[man/man[1-8]]
       }
     },
+    'OSF1': {
+    },
+    'Digital_UNIX': {
+      module_override: 'OSF1',
+      'unbundled/COBOL_2.60': { # oh, but there's more. a LOT more. a LOT A LOT more.
+        basedir: 'dec/du/unbundled/dca260',
+        srcdirs: %w[usr/lib/cmplrs/cobol_260]
+      },
+      'unbundled/DCE_3.10': { # oh, but there's more. a LOT more. a LOT A LOT more.
+        basedir: 'dec/du/unbundled/dce310', # TODO wth is up with the section 1 pages (others - some are "normal" though - 3rpc, 3sec are)
+        srcdirs: %w[usr/opt/DCE310/man/man[1-8]]
+      },
+      'unbundled/DECNET_4.03': { # oh, but there's more. a LOT more. a LOT A LOT more.
+        basedir: 'dec/du/unbundled/dna40c',
+        srcdirs: %w[usr/opt/DNA403/share/man/man[158]]
+      },
+      'unbundled/DECNET_5.00': { # oh, but there's more. a LOT more. a LOT A LOT more.
+        basedir: 'dec/du/unbundled/dna500',
+        srcdirs: %w[usr/opt/DNA500/share/man/man[158]]
+      },
+      'unbundled/Open3D_4.96': { # oh, but there's more. a LOT more. a LOT A LOT more.
+        basedir: 'dec/du/unbundled/o3d496', # TODO 3gl pages have no section regex match
+        srcdirs: %w[usr/man/man[13]]
+      },
+      '3.2c': {
+        basedir: 'dec/du/32c',
+        srcdirs: %w[
+          usr/share/man/man[1-8]
+          usr/dt/share/man/man[1-6]
+          usr/opt/XR6320/X11R6/man/man[3n]
+        ]
+      },
+      '4.0d': {
+        basedir: 'dec/du/40d',
+        srcdirs: %w[
+          usr/share/man/man[1-8]
+          usr/dt/share/man/man[1-5]*
+        ]
+      }
+    },
     'Tru64': {
+      module_override: 'OSF1',
+      '4.0f': {
+        basedir: 'dec/du/40f',
+        srcdirs: %w[
+          usr/share/man/man[1-8]
+          usr/dt/share/man/man[1-5]*
+        ]
+      },
+      '5.0a': {
+        basedir: 'dec/tru64/5.0a',
+        srcdirs: %w[
+          usr/share/man/man[1-9]
+          usr/dt/share/man/man[1-6]*
+        ]
+      },
       '5.1b': {
         basedir: 'dec/tru64/5.1b',
         srcdirs: %w[
           usr/share/man/man[1-9]
           usr/dt/share/man/man[1-5]
         ]
-      },
+      }
     }
   },
   'DG': {
-   disabled: true,
+   #disabled: true,
     'DG-UX': {
       # TODO: canonically, 'DG/UX'
       '4.30': {
@@ -539,32 +643,56 @@ collections = {
           catman/?_man/man[0-8]
           catman/man[1358]
         ]
+      },
+      'R4.11': {
+        basedir: 'dg/dgux/R4.11',
+        srcdirs: %w[
+          catman/?_man/man[0-8]
+          catman/man[358]
+          catman/sdk_man/man[1-6]
+        ]
+      },
+      'R4.11MU05': {
+        version_override: 'R4.11',
+        basedir: 'dg/dgux/R4.11MU05',
+        srcdirs: %w[
+          catman/?_man/man[0-8]
+          catman/man[358]
+          catman/sdk_man/man[1-6]
+        ]
       }
     }
   },
   'Gould': {
-    disabled: true,
+    #disabled: true,
     'GDT-UNX': {
       '6.8_er0': {
-        # TODO: man1/adb.1 vs. man1/adb.1.orig etc.
-        #       divergences in cat[n] apart from n=9?
+        # TODO man1/adb.1 vs. man1/adb.1.orig etc.
+        #      divergences in cat[n] apart from n=9?
         basedir: 'gould/gdt-unx/6.8_er0',
         srcdirs: %w[
           man/cat9
           man/man[1-8l]
         ]
+      },
+      '6.8_er0_nroff': {
+        # enabled to facilitate comparision of preprocessed vs. source manuals
+        basedir: 'gould/gdt-unx/6.8_er0',
+        srcdirs: %w[man/cat[1-9l]]
       }
     }
   },
   'HP': {
-    disabled: true,
+    #disabled: true,
     'unbundled': {
       module_override: 'HPUX',
-      'ANSI-C_A09.00/S300': {
+      'ANSI-C_A09.00/S300': { # TODO has links to base HPUX pages
+        version_override: '9.05',
         basedir: 'hp/hpux/unbundled/ansi-c/A.09.00-S300',
         srcdirs: %w[usr/man/man[12345].Z]
       },
       'ANSI-C_A10.11/S700': { # TODO there's some Japanese language manual pages in here, too
+        version_override: '10.20',
         basedir: 'hp/hpux/unbundled/ansi-c/A.10.11-S700',
         srcdirs: %w[
           */*/opt/imake/man/man1.Z
@@ -574,6 +702,7 @@ collections = {
         ]
       },
       'C++_A.03.20/S300': { # REVIEW has extra man macros in usr/CC/man/SC/manmacros
+        version_override: '9.05',
         basedir: 'hp/hpux/unbundled/c++/A.03.20-S300',
         srcdirs: %w[
           usr/man/man3
@@ -582,14 +711,17 @@ collections = {
         ]
       },
       'DATIO_1.2': {
+        version_override: '8.05',
         basedir: 'hp/hpux/unbundled/datio/1.2',
         srcdirs: %w[usr/man/man1.Z]
       },
       'Instrument-Control-Lib_C.03.01': {
+        version_override: '9.05',
         basedir: 'hp/hpux/unbundled/instrument-control-lib/C.03.01',
         srcdirs: %w[usr/man/man*]
       },
       'Instrument-Control-Lib_G.03.00': {
+        version_override: '9.05',
         basedir: 'hp/hpux/unbundled/instrument-control-lib/G.03.00',
         srcdirs: %w[
           opt/sicl/share/man/man*
@@ -597,20 +729,23 @@ collections = {
         ]
       },
       'PersonalVisualizer_2.11/S700': {
+        version_override: '8.05',
         basedir: 'hp/hpux/unbundled/personalvisualizer/2.11-S700',
         srcdirs: %w[usr/man/man[13].Z]
       },
       'PowerShade_A.B1.00/S700': {
+        version_override: '8.05',
         basedir: 'hp/hpux/unbundled/powershade/A.B1.00-S700',
         srcdirs: %w[usr/man/man1.Z]
       },
       'SCPI_B.02.00/S300': {
+        version_override: '8.05',
         basedir: 'hp/hpux/unbundled/scpi/B.02.00-S300',
         srcdirs: %w[usr/hp75000/man/man[135]]
       }
     },
     'HPUX': {
-      '5.00': {
+      '5.00': { # refs S200 and S500, presumably either set will be the same?
         basedir: 'hp/hpux/5.00/S500',
         srcdirs: %w[usr/man/man*]
       },
@@ -635,6 +770,7 @@ collections = {
         ]
       },
       '6.00': {
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/6.00',
         srcdirs: %w[S300/usr/man/man*.Z]
       },
@@ -642,11 +778,13 @@ collections = {
         basedir: 'hp/hpux/6.20',
         srcdirs: %w[S300/usr/man/man*.Z]
       },
-      '7.01': {
+      '7.01': { # appears incomplete. where'd it come from?
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/7.01',
         srcdirs: %w[usr/man/man*]
       },
-      '7.03': {
+      '7.03': { # appears incomplete. where'd it come from?
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/7.03',
         srcdirs: %w[usr/man/man*]
       },
@@ -658,14 +796,17 @@ collections = {
         ]
       },
       '8.07': {
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/8.07',
         srcdirs: %w[usr/man/man*]
       },
       '9.00': {
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/9.00',
         srcdirs: %w[man/man*]
       },
       '9.03': {
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/9.03',
         srcdirs: %w[
           usr/man/man*
@@ -674,6 +815,7 @@ collections = {
         ]
       },
       '9.04': {
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/9.04 (S800 HP-PA Support)',
         srcdirs: %w[usr/man/man1m.Z]
       },
@@ -686,6 +828,7 @@ collections = {
         ]
       },
       '9.10': {
+        disabled: true, # no tmac support yet
         basedir: 'hp/hpux/9.10',
         srcdirs: %w[usr/man/man*]  # TODO: unbundled ?
       },
@@ -696,7 +839,7 @@ collections = {
     }
   },
   'IBM': {
-    disabled: true,
+    #disabled: true,
     'AIX': {
       '1.2.1': {
         #disabled: true,
@@ -720,11 +863,17 @@ collections = {
       }
     },
     'AOS': {
-      disabled: true,
+      #disabled: true,
       '4.3': {
         # REVIEW: 4.3 (unknown provenance)
         basedir: 'ibm/aos/4.3',
         srcdirs: %w[man/man[1-9nx]]
+      },
+      '4.3/supplemental': { # this is -mm source for supplemental IBM/4.3 doc, recovered from mit.edu afs
+        disabled: true,
+        version_override: '4.3',
+        basedir: 'ibm/aos/ibmdoc',
+        srcdirs: %w[] # TODO
       }
     #},
     # TODO:
@@ -736,7 +885,7 @@ collections = {
     }
   },
   'Intergraph': {
-    disabled: true,
+    #disabled: true,
     'CLIX': {
       '3.1r7.6.22': {
         basedir: 'intergraph/clix/3.1r7.6.22',
@@ -751,8 +900,20 @@ collections = {
       }
     }
   },
+  'Kodak': {
+    #disabled: true,
+    'Interactive': {
+      '2.2': {
+        basedir: 'kodak/interactive/2.2',
+        srcdirs: %w[
+          progman/new/usr/catman/p_man/man[1-5]
+          userman/new/usr/catman/u_man/man[178]
+        ]
+      }
+    }
+  },
   'mips': {
-    disabled: true,
+    #disabled: true,
     'unbundled': {
       module_override: 'RISC-os',
       'RISCwindows_4.00': {
@@ -787,13 +948,14 @@ collections = {
     }
   },
   'Motorola': {
-    disabled: true,
+    #disabled: true,
     'SysV': {
-      '88k/FH40.42': {
+      'module_override': 'Motorola_SysV',
+      'MC88000/FH40.42': {
         basedir: 'motorola/sysv-88k/R4/FH40.42',
         srcdirs: %w[usr/src/man/man[1-7]]
       },
-      '88k/FH40.43': {
+      'MC88000/FH40.43': {
         basedir: 'motorola/sysv-88k/R4/FH40.43',
         srcdirs: %w[
           usr/src/man/man[1-7]
@@ -803,7 +965,7 @@ collections = {
     }
   },
   'MWC': {
-    disabled: true,
+    #disabled: true,
     'Coherent': {
       '3.1.0': {
         basedir: 'mwc/coherent/3.1.0',
@@ -815,8 +977,18 @@ collections = {
       }
     }
   },
+  'NBI': {
+    #disabled: true,
+    '4.2BSD': {
+      module_override: 'NBI_4.2BSD',
+      '3.04v10.B': { # TODO these were not extracted cleanly. they're almost but not quite tar files - there's garbage in many files
+        basedir: 'nbi/4.2bsd/3.04v10.b',
+        srcdirs: %w[man/man[1-8]]
+      }
+    }
+  },
   'NeXT': {
-    disabled: true,
+    #disabled: true,
     'NEXTSTEP': {
       '1.0': {
         basedir: 'next/nextstep/1.0',
@@ -832,6 +1004,7 @@ collections = {
       }
     },
     'OPENSTEP': {
+      module_override: 'NEXTSTEP',
       '4.2': {
         basedir: 'next/openstep/4.2',
         srcdirs: %w[NextLibrary/Documentation/ManPages/man[1-8]]
@@ -839,7 +1012,7 @@ collections = {
     }
   },
   'Novell': {
-    disabled: true,
+    #disabled: true,
     'UnixWare': {
       '2.01': {
         basedir: 'novell/unixware/2.01',
@@ -848,17 +1021,46 @@ collections = {
     }
   },
   'Pixar': {
-    disabled: true,
+    #disabled: true,
     'HSI': {
+      module_override: 'SunOS',
       'sun3/1.1': {  # use SunOS 4 defs
+        version_override: '4.1.4',
         basedir: 'pixar/hsi-sun3/1.1',
         srcdirs: %w[hsi/man/man[1-8]]
       }
     }
   },
   'SCO': {
-    disabled: true,
+    #disabled: true,
+    'unbundled': {
+      module_override: 'OpenDesktop',
+      'LLI_3.1.0j': {
+        basedir: 'sco/unbundled/lli-r3.1.0j',
+        srcdirs: %w[usr/man/cat.*]
+      },
+      'TCPIP_1.2.0i': {
+        basedir: 'sco/unbundled/tcpip-1.2.0i',
+        srcdirs: %w[usr/man/cat.*]
+      }
+    },
     'OpenDesktop': {
+      '1.0.0y': {
+        basedir: 'sco/odt/1.0.0y',
+        srcdirs: %w[usr/man/cat.*]
+      },
+      '1.1.0': {
+        basedir: 'sco/odt/1.1.0',
+        srcdirs: %w[usr/man/cat.*]
+      },
+      '1.1.1g': {
+        basedir: 'sco/odt/1.1.1-update-g',
+        srcdirs: %w[usr/man/cat.*]
+      },
+      'X11R4-EFS-4.1.1b': {
+        basedir: 'sco/odt/x11r4-efs-r4.1.1b',
+        srcdirs: %w[usr/man/cat.*]
+      },
       '3.0.0': {
         basedir: 'sco/odt/3.0.0',
         srcdirs: %w[man/cat.*]
@@ -877,8 +1079,9 @@ collections = {
     }
   },
   'SGI': {
-    disabled: true,
+    #disabled: true,
     'libiris': {  # using 4BSD defs?
+      disabled: true,
       'R1c': {
         basedir: 'sgi/iris-lib/R1c',
         srcdirs: %w[man/man[13]]
@@ -914,6 +1117,7 @@ collections = {
       }
     },
     'IRIX': {  # using 4BSD defs?
+      disabled: true,
       '6.5.3f': {
         basedir: 'sgi/irix/6/5/3f',
         srcdirs: %w[
@@ -939,15 +1143,27 @@ collections = {
     }
   },
   'Solbourne': {
-    disabled: true,
+    #disabled: true,
     'OS-MP': {
-      '4.1': {
-        basedir: 'solbourne/os-mp/4.1',
+      '4.1A': {
+        basedir: 'solbourne/os-mp/4.1A',
         srcdirs: %w[share/man/man[1-8]]
       },
       '4.1A3': {
         basedir: 'solbourne/os-mp/4.1A3',
         srcdirs: %w[share/man/man[1-8]]
+      },
+      '4.1C': {
+        basedir: 'solbourne/os-mp/4.1C',
+        srcdirs: %w[share/man/man[1-8]]
+      },
+      'unbundled/OpenWindows_3.0': {
+        basedir: 'solbourne/os-mp/unbundled/ow3.0',
+        srcdirs: %w[man[1-8]]
+      },
+      'unbundled/X11R3': { # REVIEW is actually X11R5 ?? from pete/X.3.Q150
+        basedir: 'solbourne/os-mp/unbundled/x11r3',
+        srcdirs: %w[man[13]]
       },
       'unbundled/X11R5': {
         basedir: 'solbourne/os-mp/unbundled/x11r5',
@@ -956,16 +1172,39 @@ collections = {
     }
   },
   'Sony': {
-    disabled: true,
+    #disabled: true,
     'NEWS-os': {
-      '4.2.1R/ja_JP': {
+      '3.3/en_US': { # TODO extra docs
+        basedir: 'sony/news-os/3.3',
+        srcdirs: %w[public/usr/man/man[1-8nops]]
+      },
+      '3.3/ja_JP': {
+        basedir: 'sony/news-os/3.3',
+        srcdirs: %w[public/usr/jman/man[1-8nops]]
+      },
+      '4.1C/en_US': { # TODO extra docs
+        basedir: 'sony/news-os/4.1ca/usr/man',
+        srcdirs: %w[C/man[1-8nop]]
+      },
+      '4.1C/ja_JP': {
+        basedir: 'sony/news-os/4.1ca/usr/man',
+        srcdirs: %w[
+          ja_JP.SJIS/man[1-8nop]
+          Motif1.0/ja_JP.SJIS/man3
+        ]
+      },
+      '4.2.1R/en_US': {
+        basedir: 'sony/news-os/4.2.1R/usr/man',
+        srcdirs: %w[C/man[1-8nop]]
+      },
+      '4.2.1R/ja_JP': { # TODO compare installed man w/ media-extracted (.../4.2.1R/usr/man)
         basedir: 'sony/news-os/4.2.1R/man',
         srcdirs: %w[
           ja_JP.SJIS/man[1-8nop]
           Motif1.0/ja_JP.SJIS/man3
         ]
       },
-      '5.0.1/en_US': {
+      '5.0.1': {
         basedir: 'sony/news-os/5.0.1',
         # REVIEW: share/man.foon ??
         srcdirs: %w[
@@ -977,7 +1216,7 @@ collections = {
     }
   },
   'Sun': {
-    disabled: true,
+    #disabled: true,
     'Interactive': {
       '3.2r4.1': {
         basedir: 'sun/interactive/3.2r4.1',
@@ -1049,18 +1288,22 @@ collections = {
         srcdirs: %w[share/man/man[1-8]]
       },
       '4.0.2': {
+        version_override: '4.0', # literally identical
         basedir: 'sun/sunos/4.0.2',
         srcdirs: %w[share/man/man[1-8]]
       },
       '4.0.3/sun3': {
+        version_override: '4.0', # literally identical
         basedir: 'sun/sunos/4.0.3',
         srcdirs: %w[68020/share/man/man[1-8]]
       },
       '4.0.3/sun4': { # 35 more pages than sun3? REVIEW other differences?
+        version_override: '4.0', # literally identical
         basedir: 'sun/sunos/4.0.3',
         srcdirs: %w[sun4/share/man/man[1-8]]
       },
       '4.1.1': {
+        version_override: '4.1.4', # literally identical
         basedir: 'sun/sunos/4.1.1',
         srcdirs: %w[
           share/man/man[1-8]
@@ -1079,6 +1322,7 @@ collections = {
         srcdirs: %w[share/man/man[1-9]*]
       },
       '5.10': {
+        disabled: true,
         basedir: 'sun/sunos/5.10',
         srcdirs: %w[
           share/man/man[1-9]*
@@ -1088,7 +1332,7 @@ collections = {
     }
   },
   'Tektronix': {
-    disabled: true,
+    #disabled: true,
     'UTek': {
       '6130-W2.3': {
         basedir: 'tek/utek/6130/w2.3_2.3e',
@@ -1108,7 +1352,7 @@ collections = {
     }
   },
   'UCB': {
-    disabled: true,
+    #disabled: true,
     '386BSD': {
       '1.0': {
         basedir: 'ucb/386bsd/1.0',
@@ -1116,7 +1360,7 @@ collections = {
           share/man/cat[1-9]*
           local/man/man[13578]
           X386/man/man[135]
-        ] # REVIEW: local/man/man8 is a file, will probably cause a problem
+        ] # REVIEW local/man/man8 is a file, will probably cause a problem
       }
     },
     'BSD': {
@@ -1201,6 +1445,7 @@ collections.each do |vendor, oses|
       logtime = Time.now.strftime('%Y%m%d-%H%M%S')
       odir = "#{outdir}/#{vendor}/#{os}/#{ver}"
       system('mkdir', '-p', odir) unless Dir.exists?(odir)
+
       (params[:override] or params[:srcdirs]).each do |srcdir|
         os_module = versions[:module_override] || os
         ver_module = params[:version_override] || ver
@@ -1210,11 +1455,24 @@ collections.each do |vendor, oses|
           if debug
             Process.spawn(cmd)
           else
+            if params[:assets]
+              Dir.glob params[:assets].map { |g| "**/#{g}" },
+                       base: "#{indir}/#{params[:basedir]}/#{srcdir}" do |asset|
+                filename = File.basename asset
+                dest_dir = "#{odir}/#{File.dirname asset}"
+                next if File.exist? "#{dest_dir}/#{filename}"
+                system %(mkdir -p "#{dest_dir}") unless Dir.exist? dest_dir
+                FileUtils.copy "#{indir}/#{params[:basedir]}/#{srcdir}/#{asset}",
+                               "#{dest_dir}/#{filename}", preserve: true
+                FileUtils.chmod 'a+r', "#{dest_dir}/#{filename}" # for some reason some of the BeOS graphics copy with limited read perms
+              end
+            end
+
             Process.spawn(cmd, [:out, :err] => ["#{odir}/build_#{logtime}.log", File::CREAT|File::WRONLY|File::APPEND, 0644] )
           end
           Process.wait
         }
-        puts "#{os} (#{ver}) completed #{srcdir} in #{t[:time]}s"
+        puts "#{vendor} #{os} (#{ver}) completed #{srcdir} in #{t[:time]}s"
       end
       #t = timed_execute {
       #  Process.spawn("#{__dir__}/bin/chk404.rb #{outdir}/#{vendor}/#{os}/#{ver}/*",

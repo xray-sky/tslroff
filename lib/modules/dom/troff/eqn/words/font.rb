@@ -11,7 +11,7 @@ module Eqn
   end
 
   def eqn_size(parse_tree)
-    req_ps parse_tree.shift.to_i + 2
+    req_ps "#{parse_tree.shift.to_i + 2}"
   end
 
   def eqn_roman(parse_tree)

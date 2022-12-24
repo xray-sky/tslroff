@@ -11,6 +11,8 @@
 #     - these do not end with .z - this is fixed now but leaving the note to think harder about being more generic
 # 2.0 esch(8) sees-also "Startup-^MShell(8)" (with line break)
 #
+# local .TH for 0.7 transcript, if we have tmac.an
+#
 
 module A_UX
 

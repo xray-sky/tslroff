@@ -18,23 +18,21 @@
 #       PD  Current interparagraph distance.
 #
 # none of this is relevant to tslroff (REVIEW: unless some man page tries to use them - e.g. IN in ms.5)
-# TODO: this is totally incomplete
-# TOOD: TH just sets registers; they necessarily don't get printed until later (e.g. at page footer)
-#       subsequent macros may overwrite these registers, and it is those later values which
-#       will get used! see e.g. -- a.out(5) [AOS 4.3]
-# TODO: DomainOS softbench uses .TQ macro instead of .TH - this prevents us from outputting a correct set of divs
+#
+# TODO DomainOS softbench uses .TQ macro instead of .TH - this prevents us from outputting a correct set of divs
+# TODO consider trying to get an actual .tl style title in html, which would help us prevent the hanging \(em
+#      when some info is missing. I know we tried a bunch of nonsense ages ago, and didn't really solve it.
 #
 
 module Troff
-  def req_TH(*args, heading: nil)
-    @manual_section ||= args[1]
+  define_method 'TH' do |*args, heading: nil|
+    #@manual_section ||= args[1]
     # I want the section inferred from the filename to be a default
     # in case we don't get or can't parse the one from .TH
-    #@manual_section = args[1] unless args[1].empty?   # REVIEW ...do I?
+    @manual_section = args[1] if args[1] and !args[1].strip.empty?   # REVIEW ...do I? - I'm doing it that way in nroff. but this also means I can't override in platform/version
     @output_directory = "man#{@manual_section.downcase}" if @manual_section
-    req_DT
-    apply { @current_block.type = :th }
-    unescape(heading || "#{args[0]}\\^(\\^#{args[1]}\\^)") # TODO: delay this until first output, somehow, because of macros that expect to rewrite this
+    send 'DT'
+    @state[:named_string][:header] = heading || "#{args[0]}\\^(\\^#{args[1]}\\^)"
     @current_block = blockproto
     @document << @current_block
   end

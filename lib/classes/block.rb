@@ -20,7 +20,7 @@ class Block
 
   def initialize(arg = Hash.new)
     self.style = (arg[:style] or Style.new({}, get_object_exception_class))
-    self.type  = (arg[:type]  or :p)
+    #self.type  = (arg[:type]  or :p)
     self.text  = (arg[:text]  or Text.new)
     @last_tab_position = 0
     @last_tab_stop = 0
@@ -62,7 +62,8 @@ class Block
         @last_tab_stop = @text.count
       end
       @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
-    when Text   then @text << t
+    when Text, Block::TableCell   then @text << t
+    #when Text, Block::TableCell, Block::Pic   then @text << t
     when String
       if @text.last.text.respond_to?(:<<)
         @text.last << t
@@ -108,62 +109,12 @@ class Block
       %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
     end if style[:linkify]
 
-    case type
-    when :bare    then t
-    when :nroff   then %(<div class="body"><div id="man"><pre class="n">#{t}</pre></div></div>) # TODO maybe something with a gutter instead of breaking html with multiple id=man
-    when :comment then %(<!--#{t} -->\n)	# TODO: as a block, this is breaking up blocks that shouldn't be broke up! as(1) [SunOS 5.5.1]
-    when :th      then %(<div class="title"><h1>#{t}</h1></div>\n<div class="body">\n    <div id="man">\n)
-    when :subhead then %(<p class="subhead">#{t}</p>\n)
-    when :sh      then "<h2>#{t}</h2>\n"
-    when :ss      then "<h3>#{t}</h3>\n"
-    when :ss_alt  then "<h4>#{t}</h4>\n"
-    when :cs      then "<pre>#{t}</pre>\n"
-    when :se      then %(<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{t.gsub(/#/, '&num;')}</span></div></body></html>)
-    when :table   then "<table#{style.to_s}>\n#{t}</table>\n"
-    when :row     then " <tr#{style.to_s}>\n#{t}</tr>\n"
-    when :row_adj then "</tr>\n<tr#{style.to_s}>\n#{t}" # for adjusting tbl rows after _ and =
-    when :nil, :colspan_hold then '' # suppress. used for placeholding in tbl.
-    when :cell
-      # clear left/right padding that is equal to the default from css.
-      # doing it here because of the whole-column effect of the w() and the
-      # cell-by-cell processing we do in .TS/.T&
-      style.css.delete(:padding_left) if style.css[:padding_left] == "0.75em"
-      style.css.delete(:padding_right) if style.css[:padding_right] == "0.75em"
-      t.gsub!(/&tblctl_\S+?;/) do |e|
-        case e
-        when '&tblctl_nl;'  then %(<span style="width:#{style[:numeric_align][:left].call}em;text-align:right;display:inline-block;">)
-        when '&tblctl_nr;'  then %(<span style="width:#{style[:numeric_align][:right].call}em;display:inline-block;">)
-        when '&tblctl_ctr;' then %(<span style="width:100%;display:inline-block;text-align:center;">)
-        else warn "unimplemented #{e}"
-        end
-      end
-      "  <td#{style.to_s}>#{t}</td>\n"
-    when :p
-      case style[:section]
-      when 'SYNOPSIS'
-        %(<p class="synopsis"#{style.to_s}>\n#{t}\n</p>\n)
-      #when Manual.related_info_section # TODO: this is broke for overriding on a page basis. see also: Troff, Nroff
-      #  links = t.gsub(%r{(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<.+?>)*\((?:<.+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<.+?>)*\)(?:<.+?>)*)}) {
-      #            #(text, dir, section) = [$1, $7.downcase, $6.downcase]
-      #            caps = Regexp.last_match
-      #            entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
-      #            #%(<a href="../man#{dir}/#{entry}.#{section}.html">#{text}</a>)
-      #            #%(<a href="../man#{matches[:section].downcase}/#{entry}.#{matches[:fullsec].downcase}.html">#{matches[:text]}</a>)
-      #            %(<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
-      #            # <br /> tags still causing problems; just not so severe? - tftp(1c) [AOS 4.3]
-      #          }
-      #  "<p#{style.to_s}>\n#{links}\n</p>\n"
-      else
-        "<p#{style.to_s}>\n#{t}\n</p>\n"
-      end
-    else          %(<p style="color:gray;">BLOCK(#{type})<br>#{t}</p>\n)
-    end
   end
 
   def inspect
     <<~MSG
 
-      +- Block (#{__id__}) type: #{@type.inspect} (#{self.class.name})
+      +- Block (#{__id__}) class: #{self.class.name}
       |
       |  style: #{@style.inspect.each_line.collect { |l| l }.join('|         ')}
       |  text:  #{@text.inspect.each_line.collect { |l| l }.join('|         ')}

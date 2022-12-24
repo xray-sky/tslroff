@@ -8,7 +8,7 @@
 # Request       Initial   If no     Notes   Explanation
 #  form          value    argument
 #
-# .fp F         Roman     previous  E       Font changed to F. Alternatively, embed \fF.
+# .ft F         Roman     previous  E       Font changed to F. Alternatively, embed \fF.
 #                                           The font name P is reserved to mean the
 #                                           previous font.
 #

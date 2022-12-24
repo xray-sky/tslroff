@@ -15,12 +15,12 @@ class RoffControl < Text
     immutable!
   end
   def to_html ; warn 'unimplemented control' ; '' ; end
-  def inspect ; "  <===== undifferentiated control =====>\n" ; end
+  def inspect ; "  <===== undifferentiated control =====> " ; end
   alias text= immutable_setter
 end
 
 class Continuation < RoffControl
-  def inspect ; "<<== continuation #{@text}==>>" ; end
+  def inspect ; "<<== continuation #{@text}==>> " ; end
   def to_html ; '' ; end
 end
 
@@ -33,7 +33,7 @@ class LineBreak < RoffControl
   end
   def to_html ; '<br />' ; end
   def empty ; false ; end
-  def inspect ; "<===== line break =====>\n" ; end
+  def inspect ; "<===== line break =====> " ; end
   def stop ; 0 ; end # for calculation of tabs
 end
 
@@ -44,7 +44,7 @@ class PlaceHolder < RoffControl
   def to_html ; '' ; end
   def length ; 1 ; end
   def empty ; false ; end
-  def inspect ; '<<== placeholder ==>>' ; end
+  def inspect ; '<<== placeholder ==>> ' ; end
 
 end
 
@@ -56,7 +56,7 @@ end
 # after having objectified
 class EndSpan < RoffControl
   def to_html ; '</span>' ; end
-  def inspect ; "<===== end span =====>\n" ; end
+  def inspect ; "<===== end span =====> " ; end
 end
 
 # these are not actually used; the numeric alignments are done
@@ -75,7 +75,7 @@ end
 #end
 
 class BellLogo < RoffControl
-  def to_s ; '<<== Bell logo ==>>' ; end
+  def to_s ; '<<== Bell logo ==>> ' ; end
   def to_html ; %(<img src="/Manual/bell_logo.svg" style="height:1em;vertical-align:-0.2em;" />) ; end
   def empty? ; false ; end
   def length ; 1 ; end
@@ -88,7 +88,7 @@ class NarrowSpace < RoffControl
     super(arg)
   end
   def to_html ; '<span class="nrs"></span>' ; end
-  def inspect ; '<<== narrow space ==>>' ; end
+  def inspect ; '<<== narrow space ==>> ' ; end
 end
 
 class HalfNarrowSpace < RoffControl
@@ -97,7 +97,7 @@ class HalfNarrowSpace < RoffControl
     super(arg)
   end
   def to_html ; '<span class="hns"></span>' ; end
-  def inspect ; '<<== narrow space ==>>' ; end
+  def inspect ; '<<== narrow space ==>> ' ; end
 end
 
 class HorizontalSpace < RoffControl
@@ -107,7 +107,7 @@ class HorizontalSpace < RoffControl
     @width = arg[:width]
   end
   def to_html ; %(<span class="tab" style="width:#{@width}em;"></span>) ; end
-  def inspect ; "<<== #{@width} horizontal space ==>>" ; end
+  def inspect ; "<<== #{@width} horizontal space ==>> " ; end
 end
 
 class VerticalSpace < RoffControl
@@ -117,7 +117,7 @@ class VerticalSpace < RoffControl
   end
   def to_html ; %(<span class="vs" style="height:#{@height}em;"></span>) ; end
   def empty ; false ; end
-  def inspect ; "<<== #{@height} vertical space ==>>" ; end
+  def inspect ; "<<== #{@height} vertical space ==>> " ; end
 end
 
 class ExtraLineSpace < RoffControl
@@ -128,7 +128,7 @@ class ExtraLineSpace < RoffControl
   # REVIEW do I need to do something to keep this from going invisible? (inserted from \x)
   def to_html ; %(<span style="padding_#{@height > 0 ? 'top' : 'bottom'}:#{@height}em;"></span>) ; end
   def empty ; true ; end
-  def inspect ; "<<== #{@height} extra line space ==>>" ; end
+  def inspect ; "<<== #{@height} extra line space ==>> " ; end
 end
 
 class Overstrike < RoffControl
@@ -140,7 +140,7 @@ class Overstrike < RoffControl
   def to_html
     %(<span role="overstrike" class="clash"#{@style.to_s}>#{@chars.collect(&:to_html).join('<br />')}</span>)
   end
-  def inspect ; "<<== overstrike: #{@chars.inspect} ==>>" ; end
+  def inspect ; "<<== overstrike: #{@chars.inspect} ==>> " ; end
 end
 
 class NonSpacing < RoffControl
@@ -153,7 +153,7 @@ class NonSpacing < RoffControl
   def to_html
     %(<span role="non-spacing-character" #{@style.to_s}>#{@text.collect(&:to_html).join}</span>)
   end
-  def inspect ; "<<== non-spacing character: #{@text.inspect} ==>>" ; end
+  def inspect ; "<<== non-spacing character: #{@text.inspect} ==>> " ; end
 end
 
 class Rule < RoffControl
@@ -163,12 +163,12 @@ class Rule < RoffControl
     @width = arg[:width] || 0
   end
   def to_html ; %(<span style="width:#{@width}em;display:inline-block;border-top:1px solid black;"></span>) ; end
-  def inspect ; "<<== #{@width} horizontal rule ==>>" ; end
+  def inspect ; "<<== #{@width} horizontal rule ==>> " ; end
 end
 
 class Unsupported < RoffControl
   def initialize(thing) ; @thing = thing ; end
-  def to_s ; "<<== unsupported: #{thing.inspect} ==>>" ; end
+  def to_s ; "<<== unsupported: #{thing.inspect} ==>> " ; end
   def to_html ; %(<span class="u">#{thing.inspect}</span>) ; end
   alias_method :inspect, :to_s
 end

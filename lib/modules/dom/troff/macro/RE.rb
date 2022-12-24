@@ -13,7 +13,7 @@
 #
 
 module Troff
-  def req_RE(k = nil)
+  define_method 'RE' do |k = nil, *_args|
     return if @register[')p'].zero?		# never .RS'd.
     case k
     when nil then true

@@ -13,13 +13,13 @@
 #
 
 module Troff
-  def req_P(*_args)
-    warn "received argument #{_args.inspect} to .P - why??" unless _args.empty?
+  define_method 'P' do |*_args|
+    #warn "received argument #{_args.inspect} to .P - why??" unless _args.empty?
     init_IP		# .PP resets \n()I to 0.5i
     @current_block = blockproto
     @document << @current_block
     indent(@state[:base_indent] + @register[')R'])
   end
 
-  alias req_PP req_P
+  alias_method 'PP', 'P'
 end

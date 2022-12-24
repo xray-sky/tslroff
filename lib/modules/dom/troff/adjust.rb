@@ -15,16 +15,13 @@ module Troff
   end
 
   def space_adj
-    return if @current_block.empty? || broke? || @state[:eqn_active] #|| continuation? - @current_block.empty covers continuation as RoffControl
-
-    # check for input traps before we trip the output indicator
-    #process_input_traps if @current_block.output_indicator?
-
     # janky hack to prevent space adjusting after .IP tag (once), or after eqn
     if @current_block.text.last.instance_variable_defined?(:@no_space_adj)
       @current_block.text.last.remove_instance_variable(:@no_space_adj)
       return
     end
+
+    return if @current_block.empty? || broke? || @state[:eqn_active] #|| continuation? - @current_block.empty covers continuation as RoffControl
 
     # An input text line ending with ., ?, !, .), ?), or !) is taken to be the end
     # of a sentence, and an additional space character is automatically provided during

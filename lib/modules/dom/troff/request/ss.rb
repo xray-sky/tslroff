@@ -19,9 +19,13 @@
 #
 #   our default font size is 12pt
 #
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#
 
 module Troff
-  def req_ss(ss = '12')
+  def req_ss(argstr = '', breaking: nil)
+    ss = argstr.split.first || Font.defaultsize
     new_style = Style.new(@current_block.text.last.style.dup)
     current_spacing = new_style[:word_spacing] || @state[:default_ss]
     new_spacing = ss.to_f / 36

@@ -68,7 +68,7 @@ module Troff
       #str = str.split(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/).join(esc_star(req_str))
       # doing replacement in a block appears to prevent characters in the replacement string
       # with special meaning to Regexp from being interpreted
-      str.gsub!(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/) { |_x| esc_star(req_str) }
+      str.gsub!(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/) { |_x| send 'esc_*', req_str }
     end
     str
   end # TODO is there a sensible way to make this reusable with _n and _w ?
@@ -125,8 +125,8 @@ module Troff
       # we got the full escape back from get_char, as c
       case c[0]
       when @state[:escape_char]
-        esc_method = "esc_#{Troff.quote_method(c[1])}"
-        if %w[esc_n esc_star].include? esc_method
+        esc_method = "esc_#{c[1]}" #"esc_#{Troff.quote_method(c[1])}"
+        if %w[esc_n esc_*].include? esc_method
           copy << send(esc_method, c[2..-1])
         else
           copy << case c[1]
@@ -134,7 +134,7 @@ module Troff
                   when 't' then "\t"
                   when 'a' then "\a"
                   when @state[:escape_char] then @state[:escape_char]
-                  else c
+                  else c[0..1] + __unesc_cm(c[2..-1] || '') # gotta go into e.g. \h'foo' and parse 'foo' in copymode too
                   end
         end
         str.slice! 0, c.length    # remove processed esc from str
@@ -222,29 +222,31 @@ module Troff
       when @state[:escape_char]
         return '&shy;' if c == @state[:hyphenation_character]
         # we got the full escape back from get_char, as c
-        esc_method = "esc_#{Troff.quote_method(c[1])}"
+        esc_method = "esc_#{c[1]}" #"esc_#{Troff.quote_method(c[1])}"
         if respond_to? esc_method
           # TODO: \* returns insead of outputting - I made this awful complex
           #       perhaps I should just make all esc_ methods return String, empty or otherwise
           @current_block << send(esc_method, c[2..-1])
         else
           @current_block << case c[1] #esc
-                            when 'a', 't' then ''                  # always ignored during output mode
+                            when 'a', 't' then ''                  # always ignored during output mode; "\a" is "non-interpreted leader character"
                             when '_' then '_'                      # underrule, equivalent to \(ul
                             when '-' then '&minus;'                # "minus sign in current font"
                             when ' ' then '&nbsp;'                 # "unpaddable space-sized character"
                             when '0' then '&ensp;'                 # "digit-width space" - possibly "en space"?
                             when '%' then '&shy;'                  # discretionary hyphen - TODO this is overrideable, even as something that isn't an escape.
-                            when '&' then '&zwj;'                  # "non-printing, zero-width character" - possibly "zero-width joiner"
-                            #when '&' then ''                      # "non-printing, zero-width character" - more useful as '' except we need &zwj; for numeric align in tbl
                             when "'" then '&acute;'                # "typographically equivalent to \(aa" §23.
                             when '`' then '&#96;'                  # "typographically equivalent to \(ga" §23.
+                            #when '&' then ''                      # "non-printing, zero-width character"
+                            when '&' then @current_block.style[:numeric_align] ? '&zwj;' : '' # more useful as '' except we need &zwj; for numeric align in tbl
                             when '|' then NarrowSpace.new(font: @current_block.text.last.font.dup,
                                                          style: @current_block.text.last.style.dup)          # 1/6 em      narrow space char
                             when '^' then HalfNarrowSpace.new(font: @current_block.text.last.font.dup,
                                                              style: @current_block.text.last.style.dup)      # 1/12em half-narrow space char
-                            when 'c' then Continuation.new(font: @current_block.text.last.font.dup,
-                                                          style: @current_block.text.last.style.dup)         # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
+                            when 'c' # apparently everything past the \c is discarded
+                              str.slice!(0..-1)
+                              Continuation.new(font: @current_block.text.last.font.dup,
+                                              style: @current_block.text.last.style.dup)         # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
                             when 'e' then @state[:escape_char].dup # printable escape char - don't push a reference, or << may modify it!
                             when 'p'
                               if fill?
@@ -283,7 +285,8 @@ module Troff
     return '&shy;' if chr == @state[:hyphenation_character]
     xlc = @state[:translate][chr]
     return @current_block << chr unless xlc
-    return __unesc(xlc.dup) unless xlc.start_with?("\e")
+    #return __unesc(xlc.dup) unless xlc.start_with?("\e")
+    return xlc.dup unless xlc.start_with?("\e")
     oesc = @state[:escape_char]
     req_ec "\e"
     __unesc(xlc.dup)

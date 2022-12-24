@@ -3,7 +3,7 @@
 #
 #
 # Manual class
-# Just a delegatation to input format specific methods
+# Just a delegation to input format specific methods
 #
 
 require 'pathname'
@@ -68,10 +68,6 @@ class Manual
     !@symlink.nil?
   end
 
-  #def last_tabstop
-  #  @current_block.text.reverse.detect { |t| t.text.is_a? Tab or t.text.is_a? LineBreak } || @current_block.text[0]
-  #end
-
   def apply(&block)
     yield
     rescue ImmutableBlockError
@@ -88,7 +84,7 @@ class Manual
   def load_platform_overrides
     platform_const = self.platform
     require_relative "../modules/platform/#{platform_const.downcase}.rb"
-    # module name can't start with a digit; is trouble for 386BSD
+    # constant can't start with a digit; is trouble for 386BSD
     platform_const = "X#{platform_const}" if platform_const.match?(/^[0-9]/)
     extend Kernel.const_get(platform_const.gsub(/[^0-9A-Za-z]/, '_').to_sym)
   rescue LoadError => e

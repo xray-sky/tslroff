@@ -44,18 +44,19 @@
 #
 
 module Troff
-  def req_tr(str)
-    warn "enabling .tr for #{str.inspect}"
+  def req_tr(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    warn "enabling .tr for #{argstr.inspect}"
     begin
-      a = str.slice!(0, get_char(str).length)
-      b = str.slice!(0, get_char(str)&.length || 0)
+      a = argstr.slice!(0, get_char(argstr).length)
+      b = argstr.slice!(0, get_char(argstr)&.length || 0)
       case b
       when a then @state[:translate].delete(a)
       when '' then @state[:translate][a] = ' '
       else
         @state[:translate][a] = (@state[:escape_char] ? b.sub(/^#{Regexp.quote @state[:escape_char]}/, "\e") : b)
       end
-    end until str.empty?
+    end until argstr.empty?
   end
 
   def init_tr

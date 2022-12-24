@@ -28,6 +28,10 @@
 #
 # .if !'string1'string2' anything    -      If string1 not identical to string2, accept anything.
 #
+# .ie c anything  -        -         u      If portion of if-else; all above forms (like .if).
+#
+# .el anything    -        -         -      Else portion of if-else.
+#
 #   The built-in condition names are
 #      o      True if current page number is odd
 #      e      True if current page number is even
@@ -46,11 +50,32 @@
 # tmac.an gives examples of both ^G (BEL) and " as delimiters (GL2-W2.5, SunOS 5.5)
 # and \(ts is used in mwm(1) [AOS 4.3], so "any" really does mean _any_.
 #
+#
+# remember we came here without our args parsed (split)
+# "the last line must end with a right delimiter" apparently doesn't exclude whitespace/comments.
+#
 
 module Troff
-  def req_if(*args)
+  def req_ie(argstr = '', breaking: nil)
+    @state[:else] = !req_if(argstr)
+  end
+
+  def req_el(argstr = '', breaking: nil)
     resc = Regexp.quote(@state[:escape_char])
-    argstr = args.shift
+    # we probably have a straight else block, .el \{ foo
+    # but there is a crazy interaction if there is a block .if we are not going to execute
+    if argstr.sub!(/^#{resc}{/, '') or (argstr.match?(/#{resc}{/) and !@state[:else])
+      loop do
+        parse(argstr) if @state[:else]
+        argstr = next_line
+        break if argstr.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
+      end
+    end
+    parse(argstr) if @state[:else]
+  end
+
+  def req_if(argstr = '', breaking: nil)
+    resc = Regexp.quote(@state[:escape_char])
     test = argstr.slice!(0, get_char(argstr).length)
     predicate = if test == '!'
                   test = argstr.slice!(0, get_char(argstr).length)
@@ -60,7 +85,8 @@ module Troff
                 end
 
     # get the full escape, if that's what we're on the road to
-    test << argstr.slice!(0, get_escape(argstr).length) if test == @state[:escape_char]
+    # REVIEW I think this is irrelevant now that get_char returns the full escape?
+    #test << argstr.slice!(0, get_escape(argstr).length) if test == @state[:escape_char]
     condition = case test
                 when 'e', 'E' then warn 'can\'t test for even page number'
                 when 'o', 'O' then warn 'can\'t test for odd page number'
@@ -68,15 +94,16 @@ module Troff
                   test.downcase == 't'
                 when /^[-(0-9]/, /^#{resc}[wn]/  # this is going to be a numeric expression REVIEW is this condition complete?
                   expr = test
-                  until argstr.start_with?(' ')
+                  until argstr.start_with?(' ') or argstr.empty? # sccsfile(4) [HPUX 6.20] has .if !\ns and that's it. causes infinite loop here without .empty?
                     expr << argstr.slice!(0, get_char(argstr).length)
                   end
-                  warn ".if evaluating numeric expression #{expr.inspect}"
-                  to_u(__unesc_w(__unesc_n(expr))).to_f > 0
+                  #to_u(__unesc_w(unescape(expr, copymode: true))).to_f.tap { |n| warn ".if evaluating numeric expression #{expr.inspect}" } > 0
+                  to_u(expr).to_f.tap { |n| warn ".if evaluating numeric expression #{expr.inspect}" } > 0
                 else
                   # TODO this is getting parsed oddly. maybe the results are ok, but we should figure out the correct deal
                   #      see pvs(1) [SunOS 5.5.1] lines 112, 113
                   quote_char = Regexp.escape test
+                  # TODO probably better to re-do this without regexp, using get_char
                   argstr.sub!(%r{(?<lhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}(?<rhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}}, '')
                   (lhs, rhs) = [Regexp.last_match(:lhs), Regexp.last_match(:rhs)]
                   if lhs.nil? and rhs.nil?
@@ -84,20 +111,29 @@ module Troff
                     warn "invalid condition to .if? #{(test+argstr).inspect} - evaluating as false"
                     false
                   else
-                    warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect}"
-                     # REVIEW is it really true that the only relevant escape processing is \* ?
-                     __unesc_star(lhs) == __unesc_star(rhs)
+                    #lp = __unesc_w(unescape(lhs, copymode: true))
+                    #rp = __unesc_w(unescape(rhs, copymode: true))
+                    #warn ".if comparing strings #{lhs.inspect} (#{lp.inspect}) == #{rhs.inspect} (#{rp.inspect}) is #{predicate.inspect}?"
+                    #lp == rp
+                    warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect} is: #{predicate.inspect}?"
+                    lhs == rhs
                   end
                 end
 
-    warn "rejecting condition #{predicate ? '' : '!'} #{condition.inspect}" unless condition == predicate or test == 'n'
+    warn "rejecting condition#{predicate ? ' ' : ' !'}#{condition.inspect}" unless condition == predicate or test == 'n'
 
+    # TODO if we .TS inside .if \{ \} ,the .TE\} won't happen in the right order (.TS tries to parse .TE with arg \})
+    #      we get an exception and things don't reset until after the next .if -- although the output looks ok.
+    #      making .TE tolerate receiving args (which it should probably do anyway) suppressed the exception,
+    #      but we still parse the .if badly. if the condition is false then we won't have this problem because
+    #      .TS is not entered.
     argstr.strip!
-    if argstr.sub!(/^#{resc}{/, '')
+    if argstr.sub!(/^#{resc}{\s*/, '')
       loop do
+        warn "parsing tbl in block .if -- check correct block end results" if argstr.match?(/^[.']\s*TS/) and condition == predicate
         parse(argstr) if condition == predicate
         argstr = next_line
-        break if argstr.sub!(/#{resc}}$/, '')
+        break if argstr.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
       end #until argstr.sub!(/#{resc}}$/, '') somehow this never happens; looks like argstr outside of loop context isn't updating
     end
     parse(argstr) if condition == predicate

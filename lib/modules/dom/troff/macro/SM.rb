@@ -9,19 +9,13 @@
 #
 
 module Troff
-  def req_SM(*args)
-    req_ps(Font.defaultsize.to_s)
-    req_ps('-1')
-    if args.any?
-      unescape(args.join(' '))
-      send(:finalize_SM)
+  define_method 'SM' do |*args|
+    req_ps "#{Font.defaultsize - 1}"
+    if !args[0]&.empty?
+      parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+      send '}f'
     else
-      req_it('1', :finalize_SM)
+      req_it('1 }f')
     end
   end
-
-  def finalize_SM
-    req_ps(Font.defaultsize.to_s)	# it's possible somebody messed with the font size in the .SM text
-  end
-
 end

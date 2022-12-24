@@ -25,25 +25,26 @@
 #  delimiter is # and the padding indicator is ^, #^xxx^right# specifies a right-adjusted
 #  string with the string xxx centered in the remaining space.
 #
-#  TODO: how the heck to accomplish almost any of that in HTML
-#
 #  for now the only use I observed in the Manual is `.fc ^ ~`, with all padding on the
 #  left. so it's something like a single tab, regardless of fit; troff seems to pile up
 #  the output fields on overflow (like I would get with fixed-width tab spans in HTML anyway)
 #
-#  REVIEW: what happens when you get a tab inside of a field? maybe it won't happen.
+#  REVIEW what happens when you get a tab inside of a field? maybe it won't happen.
 #
 
 module Troff
-  def req_fc(delim = nil, pad = ' ')
-    if delim
-      warn ".fc enabling field processing (#{delim.inspect} / #{pad.inspect})"
-      @state[:field_delimiter] = delim
-      @state[:field_pad_char]  = pad
-    else
+  def req_fc(argstr = '', breaking: nil)
+    delim = argstr.slice!(0) || ''
+    pad = argstr.sub(/^ */, '').slice(0) || ' '
+    pad = ' ' if pad.empty?
+    if delim.empty?
       warn ".fc disabling field processing"
       @state.delete(:field_delimiter)
       @state.delete(:field_pad_char)
+    else
+      warn ".fc enabling field processing (#{delim.inspect} / #{pad.inspect})"
+      @state[:field_delimiter] = delim
+      @state[:field_pad_char]  = pad
     end
   end
 end

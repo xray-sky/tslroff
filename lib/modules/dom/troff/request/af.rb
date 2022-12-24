@@ -28,7 +28,9 @@
 
 module Troff
 
-  def req_af(reg, fmt)
+  def req_af(argstr = '', breaking: nil)
+    (reg, fmt) = argstr.split
+    return nil unless reg and fmt
     unless reg.match(/s[tb]/) or @register[reg].read_only?
       @register[reg].format = fmt
     end

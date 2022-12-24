@@ -14,25 +14,39 @@
 #                                     respect to the previous value, if any. The increment
 #                                     for auto-incrementing is set to M.
 #
-# incrementing is done when processing the \n escape, rather than at output, because
-# it may be a positive or negative increment, or none at all
+#  incrementing is done when processing the \n escape, rather than at output, because
+#  it may be a positive or negative increment, or none at all
 #
 #
-# enforcement of read_only registers is done in .nr rather than internal to the class,
-# because the internal registers still need to be updated, just not from document context
+#  enforcement of read_only registers is done in .nr rather than internal to the class,
+#  because the internal registers still need to be updated, just not from document context
 #
-# REVIEW: does this accept a leading ± to indicate the "with respect to the previous value" part?
+#  REVIEW what happens when given not-an-N as second arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#         REVIEWED ignored, yes. TODO doesn't set anything. same as if no number passed at all.
+#
+#  REVIEW does this accept a leading ± to indicate the "with respect to the previous value" part?
+#         - yes.
+#
+#  REVIEW if we set up an increment, and subsequently .nr without one, is it held? - TODO yes.
 #
 
 require 'forwardable'
 
 module Troff
 
-  def req_nr(reg, value = '0', increment = nil)
+  def req_nr(argstr = '', breaking: nil)
+    (reg, value, increment) = argstr.split
+    return nil unless reg and value
+
     #warn "assigning register #{reg.inspect} value #{value.inspect}"
     @register[reg] = Register.new unless @register.has_key?(reg)
     unless @register[reg].read_only?
-      @register[reg].value = value.to_i
+      if value.start_with? '+' or value.start_with? '-'
+        @register[reg].value = to_u("#{@register[reg].value}#{value}").to_i#.tap { |n| warn "adjusting reg #{reg.inspect} to #{n.inspect}" }
+      else
+        @register[reg].value = to_u(value).to_i#.tap { |n| warn "setting reg #{reg.inspect} to #{n.inspect} with increment #{increment.inspect}" }
+      end
       @register[reg].increment = increment.to_i if increment
     end
   end
@@ -62,7 +76,7 @@ module Troff
       # §25 Predefined Read-only Number Registers
       ############################################
       '$$' => Register.new(Process.pid, :ro => true),                     # process id of troff.
-      #.$                                                                 # # of args avail at current macro level.
+      '.$' => Register.new(0, :ro => true),                               # # of args avail at current macro level.
       '.A' => Register.new(0, :ro => true),                               # 1 in troff if -a option used; always 1 in nroff.
       '.F' => Register.new(File.basename(@source.filename), :ro => true), # name of current input file.
       #.H                                                                 # avail horizontal resolution in u.
@@ -86,11 +100,17 @@ module Troff
       #.t                                                                 # distance to the next trap.
       '.u' => Register.new(1, :ro => true),                               # 1 in fill mode and 0 in no-fill mode.
       '.v' => Register.new(to_u("#{Font.defaultsize}p*6/5"),
-                           :ro => true)                                   # current vertical line spacing in basic units (default: 1.2em)
+                           :ro => true),                                   # current vertical line spacing in basic units (default: 1.2em)
       #.w                                                                 # width of previous character.
       #.x                                                                 # reserved: version-dependent.
       #.y                                                                 # reserved: version-dependent.
       #.z                                                                 # name of current diversion.
+      ###########################################
+      # these are variously defined in tmac.an
+      # some pages reference them
+      ###########################################
+      ')L' => Register.new(to_u('11i')),   # page length
+      'LL' => Register.new(to_u('6.5i'))   # line length (page width - margins)
     })
 
     # c. is supposed to be the same as read-only variable .c

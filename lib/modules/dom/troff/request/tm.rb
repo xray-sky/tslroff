@@ -13,7 +13,7 @@
 #
 
 module Troff
-  def req_tm(*args)
-    warn(".tm: #{args.join(' ')}")
+  def req_tm(argstr = '', breaking: nil)
+    warn(".tm: #{argstr}")
   end
 end

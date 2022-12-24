@@ -22,9 +22,8 @@ module Troff
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
     warn "\\o trying to overstrike #{req_str.inspect}"
     #unescape(req_str)
-    pile = Block.new(type: :bare,
-                     text: Text.new(font: @current_block.text.last.font.dup,
-                                   style: @current_block.text.last.style.dup))
+    pile = Block::Bare.new(text: Text.new(font: @current_block.text.last.font.dup,
+                                         style: @current_block.text.last.style.dup))
     #save_blk = output
     #output = pile
     while req_str.length > 0

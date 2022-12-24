@@ -20,6 +20,9 @@
 #
 # .sp 0 is effectively a .br
 #
+#  REVIEW what happens when given not-an-N as first arg (invalid expression)
+#         ignored, I think, which means bad interaction from to_u returning '0' in that case
+#
 # TODO negative motion, traps, no-space mode, unit scaling, etc.
 # TODO for some reason (probably to reserve page space?) a.out(4) [GL2-W2.5] has
 #           .sp 1i
@@ -35,20 +38,18 @@
 #
 
 module Troff
-  def req_sp(n = '1')  # TODO everything is wrong?
+  def req_sp(argstr = '', breaking: true)  # TODO everything is wrong?
     return if nospace?
+    warn ".sp invoked in spacing mode with nobreak - how to?" unless breaking
+    n = argstr.split.first || '1'
     v = to_em(to_u(n, default_unit: 'v')) # TODO hardcoding 1.2 em line height is bogus
     (warn "pathological output of .sp #{v}em" ; return) if v < 0
     (req_br ; return) if v == 0
-    #@current_block << "&roffctl_vs:#{v}em;"
     @current_block << VerticalSpace.new(height: v, font: @current_block.text.last.font.dup,
                                                   style: @current_block.text.last.style.dup)
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
     # REVIEW .sp in tbl (.TS) context w/rt @current_block, etc.
     #        is it worth special casing to give row (bottom-)padding? I think it might be
-    #@current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
-    @current_block.reset_output_indicator
-    #@current_tabstop = @current_block.text.last
-    #@current_tabstop[:tab_stop] = 0
+    #@current_block.reset_output_indicator
   end
 end

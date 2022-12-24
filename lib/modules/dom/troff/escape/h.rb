@@ -50,7 +50,12 @@ module Troff
       if new_shift == 0
         apply { @current_block.text.last.style.delete(:horizontal_shift) }
       else
-        apply { @current_block.text.last.style[:horizontal_shift] = new_shift }
+        if nofill?
+          warn ">>> treating it like a tab of #{new_shift}em due to nofill"
+          insert_tab width: new_shift
+        else
+          apply { @current_block.text.last.style[:horizontal_shift] = new_shift }
+        end
       end
       ''
     else

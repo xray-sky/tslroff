@@ -98,11 +98,18 @@ module Interactive
 
   # small caps
   define_method 'SC' do |*args|
-    req_ps
-    if args.count > 2
-      parse "#{args[0]}\\s-1#{args[1]}\\s+1#{args[2]}"
-    elsif args.any?
-      parse "\\s-1#{args[0]}\\s+1#{args[1]}"
+    if args.any?
+      parse '.nr ;S \\n(.s'
+      req_ps
+      parse '.nr ;G \\n(.s' # ...silly. but, they do it. and it prevents last size from getting progressively smaller
+      req_ps
+      if args.count > 2
+        parse "#{args[0]}\\s-1#{args[1]}\\s+1#{args[2]}"
+      else
+        parse "\\s-1#{args[0]}\\s+1#{args[1]}"
+      end
+      parse '.ps \\n(;G'
+      parse '.ps \\n(;S'
     else
       req_ps "#{Font.defaultsize}-1"
       req_it '1 }f'

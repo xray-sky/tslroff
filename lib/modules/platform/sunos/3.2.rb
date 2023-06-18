@@ -6,6 +6,17 @@
 #
 # SunOS 3.2 Platform Overrides
 #
+# TODO processor-specific overrides
+#
+
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'mc68881version.8' then 'Troff'
+    else @magic
+    end
+  end
+end
 
 module SunOS_3_2
 
@@ -15,8 +26,8 @@ module SunOS_3_2
       raise ManualIsBlacklisted, 'is makefile'
     when 'index.3'
       k.instance_variable_set '@manual_entry', '_index'
-    #when 'default.1'
-    #  k.instance_variable_set '@manual_entry', '_default'
+    when 'default.1'
+      k.instance_variable_set '@manual_entry', '_default'
     #when 'erf.3m'
     #  src = k.instance_variable_get '@source'
     #  # troff switches font size to do the baseline shift, and I can't get that in html.
@@ -31,15 +42,6 @@ module SunOS_3_2
     #  src.lines[26].gsub!(/\\s10/, "\\s12")
     #  src.lines[26].gsub!(/(\\u)/, '\\v@-0.5v@')
     #  src.lines[26].gsub!(/(\\d)/, '\\v@0.5v@')
-    when 'mc68881version.8'
-      # incorrectly recognized as nroff source as the first character is '@'
-      require_relative '../../dom/troff.rb'
-      # save a ref to our :init_ds and :req_TH methods, before they get smashed by the extend
-      k.define_singleton_method :_init_ds, k.method(:init_ds)
-      k.define_singleton_method :_TH, k.method(:TH)
-      k.extend ::Troff
-      k.define_singleton_method :init_ds, k.method(:_init_ds)
-      k.define_singleton_method :TH, k.method(:_TH)
     #when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
     #  raise ManualIsBlacklisted, 'not a manual entry'
     #when 'eqn.eqn', 'eqnchar.eqn'
@@ -50,7 +52,8 @@ module SunOS_3_2
   def init_ds
     super
     @state[:named_string].merge!({
-      ']W' => 'Sun Release 3.2\(*b' # ß, eh?
+      #']W' => 'Sun Release 3.2\(*b' # ß, eh? - 68010 release only TODO
+      ']W' => 'Sun Release 3.2' # 68020/SPARC releases
     })
   end
 
@@ -68,7 +71,7 @@ module SunOS_3_2
                    when '1C' then 'USER COMMANDS'
                    when '1G' then 'USER COMMANDS'
                    when '1S' then 'SUN-SPECIFIC USER COMMANDS'
-                   when '1V' then 'VAX-SPECIFIC USER COMMANDS'
+                   when '1V' then 'USER COMMANDS'
                    when '2'  then 'SYSTEM CALLS'
                    when '2V' then 'SYSTEM CALLS'
                    when '3'  then 'C LIBRARY FUNCTIONS'
@@ -98,6 +101,8 @@ module SunOS_3_2
 
     heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
     @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+    # TODO SYS4-3.2 adds .ds ]W \\$4 ; .ds ]D \\$5
 
     super(*args, heading: heading)
   end

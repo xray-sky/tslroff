@@ -89,3 +89,12 @@ module HPUX_5_50_S500
     k.extend HPUX_5_20
   end
 end
+
+# not strictly identical, though functionally so
+
+module HPUX_6_00
+  def self.extended(k)
+    k.extend HPUX_5_20
+  end
+end
+

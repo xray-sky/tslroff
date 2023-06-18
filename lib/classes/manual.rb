@@ -5,6 +5,9 @@
 # Manual class
 # Just a delegation to input format specific methods
 #
+# TODO
+# √ at some point I broke the way overriding @magic from platform/version overrides was working
+#
 
 require 'pathname'
 require_relative 'block.rb'
@@ -13,7 +16,12 @@ require_relative 'text.rb'
 require_relative 'styles/block.rb'
 require_relative 'styles/control.rb'
 require_relative 'styles/eqntext.rb'
+require_relative 'styles/pic.rb'
 require_relative 'styles/tab.rb'
+require_relative '../modules/dom/nroff.rb'
+require_relative '../modules/dom/troff.rb'
+require_relative '../modules/dom/html.rb'
+require_relative '../modules/dom/unknown.rb'
 
 ManualIsBlacklisted = Class.new(RuntimeError)
 
@@ -43,14 +51,8 @@ class Manual
     @source = Source.new(file)
     @current_block = Block.new
 
-    @magic = @source.magic
-    require_relative "../modules/dom/#{@magic.downcase}"
-    extend Kernel.const_get(@magic)
+    doctype_extend
 
-    load_platform_overrides
-    load_version_overrides
-
-    # give us a chance to do platform/version specific rewrites on @source
     @lines = @source.lines.each
     source_init
   rescue Errno::ENOENT, Errno::EISDIR
@@ -60,12 +62,24 @@ class Manual
     # broken symlink (or symlink to directory) -- defer this to platform override code
     # don't rely on anything that needs @source! (magic, parse_title, etc.)
     @lines = [].each
-    load_platform_overrides
-    load_version_overrides
+    doctype_extend
   end
 
   def symlink?
     !@symlink.nil?
+  end
+
+  def warn(m)
+    super("#{@input_filename} [#{input_line_number}]: #{m}")
+  end
+
+  def page_title
+    "#{@manual_entry}(#{@manual_section}) &mdash; #{@platform} #{@version}"
+  end
+
+  def output_filename
+    # REVIEW maybe this method also useful for related/symlink problems ?
+    @manual_entry.tr('/', '_') # for coping with VMS pages e.g. EDIT vs. /EDIT
   end
 
   def apply(&block)
@@ -79,27 +93,6 @@ class Manual
       retry
     rescue ImmutableStyleError => e
       warn "!!! rescuing #{e.class.name} (??)"
-  end
-
-  def load_platform_overrides
-    platform_const = self.platform
-    require_relative "../modules/platform/#{platform_const.downcase}.rb"
-    # constant can't start with a digit; is trouble for 386BSD
-    platform_const = "X#{platform_const}" if platform_const.match?(/^[0-9]/)
-    extend Kernel.const_get(platform_const.gsub(/[^0-9A-Za-z]/, '_').to_sym)
-  rescue LoadError => e
-    nil # there isn't one. not catastrophic.
-  end
-
-  def load_version_overrides
-    require_relative "../modules/platform/#{self.platform.downcase}/#{self.version}.rb"
-    extend Kernel.const_get("#{self.platform}_#{self.version}".gsub(/[^0-9A-Za-z]/, '_').to_sym)
-  rescue LoadError => e
-    nil # there isn't one. not catastrophic.
-  end
-
-  def warn(m)
-    super("#{@input_filename} [#{input_line_number}]: #{m}")
   end
 
   # Try to establish some simplistic default behavior for
@@ -133,8 +126,28 @@ class Manual
     warn "encountered unsupported link type, #{@source_dir}/#{@input_filename} => #{@symlink}"
   end
 
-  def page_title
-    "#{@manual_entry}(#{@manual_section}) &mdash; #{@platform} #{@version}"
-  end
+  def doctype_extend
+    begin
+      require_relative "../modules/platform/#{@platform.downcase}.rb"
+      platform_module = Kernel.const_get(@platform.sub(/^([0-9])/, 'X\1').to_sym)
+    rescue LoadError
+      platform_module = nil
+    end
 
+    begin
+      require_relative "../modules/platform/#{@platform.downcase}/#{@version}.rb"
+      version_module = Kernel.const_get("#{@platform}_#{@version}".gsub(/[^0-9A-Za-z]/, '_').to_sym)
+    rescue LoadError
+      version_module = nil
+    end
+
+    # separate the require from the extend, to give us a chance to keep the platform/version
+    # overrides in order when the automatic document type detection fails
+
+    @magic = @source.magic # is this used anywhere other than below? - YES (in tslroff.rb) REVIEW is that useful to keep
+
+    extend Kernel.const_get(@magic)
+    extend platform_module if platform_module
+    extend version_module  if version_module
+  end
 end

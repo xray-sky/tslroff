@@ -62,7 +62,7 @@ class Block
         @last_tab_stop = @text.count
       end
       @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
-    when Text, Block::TableCell   then @text << t
+    when Text, Block::TableCell, Block::Inline then @text << t
     #when Text, Block::TableCell, Block::Pic   then @text << t
     when String
       if @text.last.text.respond_to?(:<<)
@@ -76,10 +76,10 @@ class Block
         @text << brk
       end
     when Block  # this is primarily meant for handling named strings, which may include typesetter escapes
-      raise RuntimeError "appending non-bare block #{t.inspect}" unless t.type == :bare
+      raise RuntimeError "appending non-bare block #{t.inspect}" #unless t.class == Block::Bare # bare blocks used by vms for inserting pre-formatted html; TODO probably create a Link text class
       @text += t.text
       # don't leave the last text object open, or else you'll start writing into the named string definition.
-      @text << Text.new(font: text.last.font.dup, style: text.last.style.dup)
+      @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
     end
     (immutable! and @output_indicator = true) unless t.empty? # @output_indicator also manipulated in parse, for suppression after comment
   end
@@ -93,10 +93,13 @@ class Block
   end
 
   def to_selenium
-    return %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
+    %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
   end
 
-  def to_html             # TODO: this needs more work to e.g. leave <!-->, etc. open for subsequent output, but stay whitespace safe (don't introduce whitespace by inserting newlines, etc.)
+  def to_html
+    # TODO this needs more work to e.g. leave <!-->, etc. open for subsequent output, but stay whitespace safe (don't introduce whitespace by inserting newlines, etc.)
+    # TODO don't output a <p> just for a comment - see ct(7) HP-UX 6.00
+    # TODO we are still getting empty <p> in some circumstances - see ct(7) HP-UX 6.00
     t = text.collect(&(type == :comment ? :to_s : :to_html)).join
 
     # insert related information references

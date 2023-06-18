@@ -23,15 +23,9 @@ class Text
     self.text  = (arg[:text]  or String.new)
   end
 
-  # stop is overriden by anything providing tab structure
-  def stop
-    0
-  end
-
-  # width is overriden by anything providing tab structure
-  def width
-    0
-  end
+  # stop and width are overriden by anything providing tab structure
+  def stop ; 0 ; end
+  def width ; 0 ; end
 
   def <<(t)
     @text << t
@@ -78,7 +72,7 @@ class Text
     # this relies on all other spans being closed tidily within a single Text object
     tab = @tab_width ? %(<span class="tab" style="width:#{@tab_width};">) : ''
 
-    if text.is_a? RoffControl
+    if text.is_a?(RoffControl) or text.is_a?(Block::Inline)
       ent = text.to_html#.tap {|n| warn "Control to html #{self.inspect}" }
     else
       return '' if length.zero?
@@ -91,6 +85,7 @@ class Text
 
       # troff treats ` and ' like typesetter's quotes (§2.1)
       # make sure < and > are printable while we're at it
+      # TODO output complying &amp; without messing up any entities we already inserted
       ent.gsub!(/<|>|`+|'+/) do |c|
         case c
         when '``' then '&ldquo;'

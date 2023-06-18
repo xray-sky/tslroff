@@ -104,3 +104,36 @@ module HPUX_9_05
   end
 
 end
+
+# all the same tmac.an
+
+module HPUX_8_07
+  def self.extended(k)
+    k.extend HPUX_9_05
+  end
+end
+
+module HPUX_9_00
+  def self.extended(k)
+    k.extend HPUX_9_05
+  end
+end
+
+module HPUX_9_03
+  def self.extended(k)
+    k.extend HPUX_9_05
+  end
+end
+
+module HPUX_9_04
+  def self.extended(k)
+    k.extend HPUX_9_05
+  end
+end
+
+module HPUX_9_10
+  def self.extended(k)
+    k.extend HPUX_9_05
+  end
+end
+

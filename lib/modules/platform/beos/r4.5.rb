@@ -18,19 +18,22 @@
 #         ...but where is it defined in their manual? no css I can see.
 #
 
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'rcs.html' then 'HTML'
+    else @magic
+    end
+  end
+end
+
 module BeOS_R4_5
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
     when 'rcs.html'
       k.instance_variable_get('@source').lines[0].sub!(/^\s+{/, '')
-      # incorrectly recognized as nroff source
-      # ugly, but seems to work?
-      require_relative '../../dom/html.rb'
-      #Dir.glob("#{File.dirname(__FILE__)}/../../dom/html/*.rb").each { |i| require i }
-      k.extend ::HTML # TODO: this doesn't change src.magic so tslroff.rb builds a related links menu out of all the <a>s
-      k.define_singleton_method :parse_title, k.method(:do_nothing)
-      k.instance_variable_set('@source_lines', k.instance_variable_get('@source').lines)
-      k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
+      #k.instance_variable_set('@source_lines', k.instance_variable_get('@source').lines)
+      #k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
     when 'doc'
       # this is a plain text file. correctly magicked, but no title, etc.
       # but we need nroff's to_html method back
@@ -77,7 +80,7 @@ module BeOS_R4_5
         l.force_encoding encoding if encoding
         l.gsub!(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;')
       end
-      k.instance_variable_set('@source', Nokogiri::HTML(source_lines.join))
+      #k.instance_variable_set('@source', Nokogiri::HTML(source_lines.join))
     end
   end
 end

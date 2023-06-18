@@ -15,9 +15,14 @@ module BSD
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     k.instance_variable_set '@manual_entry',
        k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
-    k.instance_variable_set '@manual_section', Regexp.last_match[1]
-    k.instance_variable_set '@output_directory', "man#{k.instance_variable_get '@manual_section'}"
+    # assigning @manual_section here defeats parse_title and means we get the filename's section for output_dir only
+    #k.instance_variable_set '@manual_section', Regexp.last_match[1]
+    #k.instance_variable_set '@output_directory', "man#{k.instance_variable_get '@manual_section'}"
     #k.instance_variable_get('@state')[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
+    case k.instance_variable_get '@input_filename'
+    when /Makefile/
+      raise ManualIsBlacklisted, 'is makefile'
+    end
   end
 
 
@@ -75,19 +80,19 @@ module BSD
     heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"
     @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
 
-    super(heading: heading)
+    super(*args, heading: heading)
   end
 
   # tmac.an.new
-  define_method 'UC' do |v = nil, *_args|
-    req_ds(']W ' + case v
-                   when '4' then '4th Berkeley Distribution'
-                   when '5' then '4.2 Berkeley Distribution'
-                   when '6' then '4.3 Berkeley Distribution'
-                   else '3rd Berkeley Distribution'
-                   end
-          )
-  end
+  #define_method 'UC' do |v = nil, *_args|
+  #  req_ds(']W ' + case v
+  #                 when '4' then '4th Berkeley Distribution'
+  #                 when '5' then '4.2 Berkeley Distribution'
+  #                 when '6' then '4.3 Berkeley Distribution'
+  #                 else '3rd Berkeley Distribution'
+  #                 end
+  #        )
+  #end
 
   define_method 'VE' do |*_args|
     warn ".VE can't yet draw margin characters (.mc)"

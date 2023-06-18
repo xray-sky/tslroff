@@ -57,6 +57,7 @@ end
 raise ArgumentError, 'need an input file!' if filelist.empty?
 template = File.read("#{assets}/manual.erb")
 
+ppid = Process.pid
 files = filelist.sort.each
 loop do
   file = files.next
@@ -66,18 +67,26 @@ loop do
   # TODO defining this here, after just a Manual.new, means I can't override odir/manual_entry
   #      and that I'm married to parse_title in source_init. I want to delay this until after
   #      to_html has parsed everything.
+  #  ->  also means I lose the ability to fork multiple entries out of a VMS .hlb
+  #  √   ..fortunately it looks like I don't need ofile until I try to write, so maybe just move it?
+  #      ..but also a problem for VMS with EDIT vs. /EDIT
 
-  odir = "#{outdir}/#{src.output_directory}"
+  odir = Proc.new {
+    odir = "#{outdir}/#{src.output_directory}"
+    system('mkdir', '-p', odir) unless Dir.exists?(odir)
+    odir
+  }
+
   #ofile = "#{odir}/#{src.manual_entry}.#{src.manual_section}.html" # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).
-  ofile = "#{odir}/#{src.manual_entry}.html" # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).
-  system('mkdir', '-p', odir) unless Dir.exists?(odir)
+  #ofile = "#{odir}/#{src.manual_entry}.html" # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).
+
 
   if src.symlink?
     new_link = src.retarget_symlink
     begin
-      File.symlink(new_link[:target], "#{odir}/#{new_link[:link]}") if new_link
+      File.symlink(new_link[:target], "#{odir.call}/#{new_link[:link]}") if new_link
     rescue Errno::EEXIST
-      File.delete "#{odir}/#{new_link[:link]}"
+      File.delete "#{odir.call}/#{new_link[:link]}"
       retry
     rescue Errno::EINTR => e
       warn "retry symlink (#{e.message})"
@@ -95,13 +104,16 @@ loop do
     pid = fork do
       # whoa hoss, why does requiring this at the top break my string parsing?!
       require 'erb'
-      File.open(ofile, File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
+      #File.open(ofile, File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
+      File.open("#{odir.call}/#{src.output_filename}.html", File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
         file.write(ERB.new(template).result(loopcontext))
       end
       exit
     end
     Process.detach(pid)
   end
+
+  break unless ppid == Process.pid # guard against fork (e.g. for VMS Help)
 
   #result = RubyProf.stop
   #RubyProf::FlatPrinter.new(result).print(STDOUT)
@@ -112,8 +124,8 @@ loop do
   rescue FileIsEmptyError, IOError, SystemCallError => e
     warn "#{ifile}: #{e.message}"
   rescue StopIteration
+    Troff.report_selenium_cache_stats if defined?(::Troff) # only if we loaded Troff
     break
   rescue => e
     warn "#{ifile}: unhandled exception #{e.message}\n#{e.backtrace.join("\n")}"
 end
-

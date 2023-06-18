@@ -6,13 +6,14 @@
 #
 # NEWS-os 4.2.1R (SJIS) Platform Overrides
 #
+# TODO pic - libfcvg(3x)
 # TODO
 # √ <html lang="ja">
 # √ all the 'alias' pages (the ones which just .so another page) aren't Shift_JIS and break on re-encoding
 #   tbl(1) has postprocessed tbl - looks like map3270(5) does too
 # √ eqn(1) getting rogue <br>  leaving eqn text... sometimes? is this the same as noticing extra <br> in solaris?
 # √ ntpq(1) misidentified as nroff source
-#   checknr(1) :: [47] has \f& (probably meant \&) - doesn't need fixing, just turn of the red css
+#   checknr(1) :: [47] has \f& (probably meant \&) - doesn't need fixing, just turn off the red css
 #   dbx(1) :: [537] tries to use \f4
 #   learn(1) :: [121] \f (nothing)
 #   listres(1) :: [39, 41] \f-, \fi, \fp
@@ -25,6 +26,15 @@
 #
 
 require_relative './en_us.rb'
+
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'ntpq.8' then 'Troff'
+    else @magic
+    end
+  end
+end
 
 module NEWS_os_4_2_1R_ja_JP
 
@@ -44,14 +54,6 @@ module NEWS_os_4_2_1R_ja_JP
     when 'ntpq.8'
       # incorrectly recognized as nroff source as the first character is '@'
       k.instance_variable_get('@source').lines[0].sub!(/^/, '.')
-      require_relative '../../../dom/troff.rb'
-      # save a ref to our :init_ds method, before it gets smashed by the extend
-      # processing doesn't require .so, .AT, etc., so they don't need saving
-      k.define_singleton_method :_init_ds, k.method(:init_ds)
-      k.define_singleton_method :_TH, k.method(:TH)
-      k.extend ::Troff
-      k.define_singleton_method :init_ds, k.method(:_init_ds)
-      k.define_singleton_method :TH, k.method(:_TH)
     end
   end
 

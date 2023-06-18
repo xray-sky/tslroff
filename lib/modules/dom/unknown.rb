@@ -3,10 +3,11 @@
 # unknown source magic
 # defer to platform overrides
 #
+# REVIEW still necessary?
+#
 
 module Unknown
-  def source_init
-    load_platform_overrides
-    load_version_overrides
+  def self.extended(k)
+    warn "!!! extended doctype ::Unknown"
   end
 end

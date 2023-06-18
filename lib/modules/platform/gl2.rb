@@ -1,4 +1,7 @@
-# SGI GL2 Platform Overrides
+# SGI GL1/GL2 Platform Overrides
+#
+# All versions use basically the same macros.
+# The only real variation is in font size, and we don't care about that.
 #
 # tmac.an
 # =======
@@ -49,8 +52,7 @@
 #
 # What the hell are \(Dy and \(Dn ?? - section 3G
 #
-# Alias/1 v2.1 has wrong mod. dates
-# GL1 W2.3 has 29 Sep 2021 as footer date. probably want to address that.
+# Alias/1 v2.1 has wrong mod. dates; bad dirs for non-numeric sections; missing 'Version' string
 # GL1 W2.3 some of the entries are longer than an enforced 11 character filename limit;
 #   presumably these should be renamed for the actual entry, not based on the filename.
 #   because of the extensive use of .so we shouldn't use 'title' but maybe just provide a rewrite table
@@ -58,6 +60,8 @@
 # GL2 W2.5 same problem, plus man1d/zshadeabstr, man1m/mklost+foun
 # GL1 W2.1 is clean
 # W2.1 and W2.3 Mail(1) want to use font T (times?)
+# Something has maybe gone wrong with \w - adb(1) has too small tabs probably based on mismeasuring "..."
+#   though there don't seem to be any other obvious signs of mess-up. is it argparse with " ?
 #
 
 module GL2
@@ -77,7 +81,8 @@ module GL2
       ']D' => 'Silicon Graphics',
       ']L' => '', # explicitly blanked in .TH before being conditionally redefined
       ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W"
+      #:footer => "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W"
+      :footer => "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W"
     })
   end
 
@@ -110,7 +115,7 @@ module GL2
   define_method 'IX' do |*args| ; end
 
   define_method 'TH' do |*args|
-    req_ds "]L #{args[2]}" if args[2] and !args[3].strip.empty?
+    req_ds "]L #{args[2]}" if args[2] and !args[2].strip.empty?
     req_ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
     heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"

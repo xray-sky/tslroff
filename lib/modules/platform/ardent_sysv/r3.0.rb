@@ -9,6 +9,7 @@
 # TODO
 # √ find the tmac.an for 3.0 (have only tmac.vgrind??) - is in unbundled dwb (thanks vaxbarn)
 #   modification dates
+#   gamma(3m) has font size issues (leaving inline eqn? because \s10 and not \s+2 or \s\n(.s ?)
 #
 
 module Ardent_SysV_R3_0

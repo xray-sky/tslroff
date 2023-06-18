@@ -53,6 +53,7 @@ module SunOS_4_0
                    when '3L' then 'LIGHTWEIGHT PROCESSES LIBRARY'
                    when '3M' then 'MATHEMATICAL LIBRARY'
                    when '3N' then 'NETWORK FUNCTIONS'
+                   when '3P' then 'SUNPHIGS LIBRARY' # unbundled
                    when '3R' then 'RPC SERVICES LIBRARY'
                    when '3S' then 'STANDARD I/O FUNCTIONS'
                    when '3V' then 'SYSTEM V LIBRARY'
@@ -69,6 +70,7 @@ module SunOS_4_0
                    when '5V' then 'FILE FORMATS'
                    when '6'  then 'GAMES AND DEMOS'
                    when '7'  then 'PUBLIC FILES, TABLES, AND TROFF MACROS'
+                   when '7P' then 'SUNPHIGS LIBRARY' # unbundled
                    when '8'  then 'MAINTENANCE COMMANDS'
                    when '8C' then 'MAINTENANCE COMMANDS'
                    when '8S' then 'MAINTENANCE COMMANDS'

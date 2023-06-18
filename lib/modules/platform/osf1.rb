@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -6,7 +6,15 @@
 #
 # OSF/1 & Digital UNIX (Tru64) Platform Overrides
 #
+# .\" Basic Font Usage:
+# .\"   For *troff processing, these macros assume the fonts are in the
+# .\"   following order:
+# .\"	  Position: 1  2  3  4  5  6  7  8  9  10 11 12
+# .\"	  Font:     R  I  B  BI CW CB H  HI HB HX S1 S
+#
 # TODO
+# √ OSF/1 3.0 macros (an, an.repro, rsml, sml) (identical to 3.2c except copyright date)
+#
 #   something's got to be done about the huge volume of warnings from all the comments
 #     in the osf macro files. .so of them on every. goddamn. page. is fucking killing us.
 #
@@ -16,11 +24,12 @@
 # √  - looks like it's full of &zwj; (likely from \*L and \*O) and this is probably the problem.
 #
 # √ some pages have RELATED INFORMATION instead of SEE ALSO
+#   cdoc(1) [3.0] has 'See Also'
 #   CA.pl(1s) no read perms on output??? (because it is named .pl? looks like it)
 #   hier(7) links Functions:‍symlink‍(2) -- lack of whitespace; other pages WITH whitespace still linking this way
 #
 
-class Font # Triumvirate is essentially Helvetica
+class Font # Gothic/Geneva and Triumvirate are all essentially Helvetica
   class TR < Font::H ; end
   class TB < Font::HB ; end
   class TI < Font::HI ; end
@@ -38,6 +47,12 @@ module OSF1
       k.instance_variable_get('@input_filename').sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
     k.instance_variable_set '@related_info_heading', %r{(?:SEE(?: |&nbsp;)+ALSO|RELATED(?: |&nbsp;)INFORMATION)}
+    case k.instance_variable_get '@source_dir'
+    when /SJIS/ # Tru64 iconv deckanji -> UTF8 translation gives ¥ for \ ; the SJIS translation doesn't
+      k.instance_variable_set '@language', 'ja'
+      k.instance_variable_get('@source').lines.collect! { |k| k.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
+      k.instance_variable_set '@related_info_heading', %r{関連項目}u
+    end
     case k.instance_variable_get '@input_filename'
     when /^default\./
       k.instance_variable_set '@manual_entry', '_default'
@@ -284,7 +299,7 @@ module OSF1
     req_ds "]D #{args[4]}"
     req_ds "]U #{args[5]}" # product, or product status
     req_ds "]A #{args[6]}" # "usually architecture"
-    req_ds(']T ' + case args[1][0]
+    req_ds(']T ' + case args[1]&.[](0) # the unbundled OpenGL pages don't have an args[1] (TODO? rewrite)
                    when '1' then 'Commands'
                    when '2' then 'System Calls'
                    when '3' then 'Subroutines'

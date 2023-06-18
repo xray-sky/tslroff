@@ -25,22 +25,27 @@
 #         ...but where is it defined in their manual? no css I can see.
 #
 
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'gcc.html', 'rcs.html', 'rcsfile.html', 'rcsintro.html', 'uuencode.html' then 'HTML'
+    else @magic
+    end
+  end
+end
+
 module BeOS_R5
   def self.extended(k)
-    reclassified = false
     case k.instance_variable_get '@input_filename'
     when 'gcc.html', 'rcsfile.html', 'rcsintro.html'
       k.instance_variable_get('@source').lines[0] = ''
-      reclassified = true
     when 'rcs.html'
       k.instance_variable_get('@source').lines[0].sub!(/^\s+{/, '')
-      reclassified = true
     when 'uuencode.html'
       k.instance_variable_get('@source').lines.slice!(0, 40)
-      reclassified = true
     when /fm.html/, 'Metrowerks_License.html' # metrowerks
       # the metrowerks source is too heinous for nokogiri, too much malicious compliance to cope with
-      # maybe the features are regular enouhg we can just... fudge it.
+      # maybe the features are regular enough we can just... fudge it.
       # * none of the pages have titles
       # * all have navigation content before <body>
       source_lines = k.instance_variable_get('@source_lines')
@@ -55,16 +60,6 @@ module BeOS_R5
       k.instance_variable_set '@content_start', source_lines.index { |l| l.match? %r{<a name="Top">} }
       k.instance_variable_set '@content_end', source_lines.index { |l| l.match? %r{<a name="Bottom">} }
       k.define_singleton_method :to_html, k.method(:to_html_metrowerks)
-    end
-    if reclassified
-      # incorrectly recognized as nroff source
-      # ugly, but seems to work?
-      require_relative '../../dom/html.rb'
-      #Dir.glob("#{File.dirname(__FILE__)}/../../dom/html/*.rb").each { |i| require i }
-      k.extend ::HTML # TODO: this doesn't change src.magic so tslroff.rb builds a related links menu out of all the <a>s
-      k.define_singleton_method :parse_title, k.method(:do_nothing)
-      k.instance_variable_set('@source_lines', k.instance_variable_get('@source').lines)
-      k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
     end
   end
 end

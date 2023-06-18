@@ -1,22 +1,50 @@
 class Block
-  class Bare < Block
+  class Nroff < Block
+    def to_html
+      # TODO maybe something with a gutter instead of breaking html with multiple id=man
+      %(<pre class="n">#{@text.collect(&:to_html).join}</pre>)
+    end
+  end
+
+  # classification, to allow useful <<
+  class Inline < Block
+  end
+
+  class Bare < Block::Inline
     def to_html
       @text
     end
   end
 
-  class Nroff < Block
-    def to_html
-      # TODO maybe something with a gutter instead of breaking html with multiple id=man
-      %(<div class="body"><div id="man"><pre class="n">#{@text.collect(&:to_html).join}</pre></div></div>)
-    end
-  end
-
-  class Comment < Block
+  class Comment < Block::Inline
     def to_html
       # TODO as a block, this is breaking up blocks that shouldn't be broke up! as(1) [SunOS 5.5.1]
       # REVIEW is it still?
       %(<!--\n#{@text.to_s}\n-->)
+    end
+  end
+
+  class Link < Block::Inline
+    attr_accessor :href
+    def initialize(arg = Hash.new)
+      @href = arg[:href]
+      super(arg)
+    end
+
+    def to_html
+      %(<a href="#{@href}">#{@text.collect(&:to_html).join}</a>)
+    end
+  end
+
+  class Anchor < Block::Inline
+    attr_accessor :name
+    def initialize(arg = Hash.new)
+      @name = arg[:name]
+      super(arg)
+    end
+
+    def to_html
+      %(<a name="##{@name}">#{@text.collect(&:to_html).join}</a>)
     end
   end
 

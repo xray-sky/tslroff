@@ -9,26 +9,29 @@
 require_relative 'file/magic.rb'
 
 class Source
-  attr_reader :lines, :magic, :filename
+  attr_reader :filename, :lines, :magic
 
   def initialize(file)
     @filename = file
     case File.magic(file)
     when 'tar'
       raise ArgumentError, "Input file is tape archive: #{file}"
-      # TODO:
+      # TODO
       #
       # this might be useful later for dealing productively with tar files.
       # https://gist.github.com/sinisterchipmunk/1335041
       #
       # also I need to re-enter in case of a gzipped tar file.
       # is this even worth doing?
+      #
+      # TODO need to re-enter in the case of the HP ANSI-C A.10.11-S700 manual,
+      #      which is gzipped compressed data. (WHY.)
     when 'gz'
-      @lines = IO.readlines("|gzip -dc #{file}")	# gzip does it all, even if zlib won't.
+      @lines = IO.readlines %(|gzip -dc "#{file}")	# gzip does it all, even if zlib won't.
     when 'ogz'
-      @lines = IO.readlines("|gzip_old -dc #{file}")	# 10.6 gzip does it all, even if zlib won't.
+      @lines = IO.readlines %(|gzip_old -dc "#{file}")	# 10.6 gzip does it all, even if zlib won't.
     else
-      @lines = IO.readlines(file)
+      @lines = IO.readlines file
     end
 
     begin

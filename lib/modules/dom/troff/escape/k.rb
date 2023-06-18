@@ -22,8 +22,9 @@ module Troff
     @register[s] = Register.new(0)
     unless block.to_s.empty?
       #@@webdriver.get(%(data:text/html;charset=utf-8,#{block.to_html}))
-      @@webdriver.get block.to_html
-      @register[s].value = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      #@@webdriver.get block.to_html
+      #@register[s].value = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      @register[s].value = typesetter_width(block).to_i
     end
     warn "\\k stored #{@register[s].value} in #{s}"
     ''

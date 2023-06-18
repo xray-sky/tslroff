@@ -31,10 +31,16 @@ module Nroff
   end
 
   def to_html
+    @document = to_lp
+    %(<div class="body"><div id="man">) + @document.collect(&:to_html).join + "</div></div>"
+  end
+
+  def to_lp
     alt_typebox_shift  = false
     escape_shift       = false
     platen_position    = 1      # top of page, with room for one backward half-linefeed
     printhead_position = 0      # leftmost column
+    document           = []
     section            = ''
 
     loop do
@@ -48,12 +54,12 @@ module Nroff
       input_line.each_char do |char|
 
         page = @lines_per_page ? platen_position / (2 * @lines_per_page) : 0
-        @document[page] ||= Block::Nroff.new(text: [])
+        document[page] ||= Block::Nroff.new(text: [])
 
         line = (platen_position - 2 * (@lines_per_page || 0) * page) / 2
-        @document[page].text[line] ||= Line.new(source: @input_filename)
+        document[page].text[line] ||= Line.new(source: @input_filename)
 
-        text = @document[page].text[line]
+        text = document[page].text[line]
         text.section = section
         # bit lame to do this every character, but this is where the Line is
         # TODO incorrectly detecting links in title line - chgrp(1) [UTek W2.3]
@@ -66,6 +72,7 @@ module Nroff
         # REVIEW I wonder if these control characters ought to be programmable
         #        not if col(1) is involved - VT(\013), SI (\016), SO (\017), and ESC-7, 8, and 9 only
         #   TODO but Aegis makes use of its own escape sequences for pad font selection;
+        #        VMS makes use of ANSI escapes in some pages;
         #        and presumably we'll have to deal with color codes in VM/ESA online help?
         # TODO support VT as alternate form of full reverse linefeed
         case char
@@ -80,8 +87,8 @@ module Nroff
         else
           if escape_shift
             case char
-            when '7' then platen_position -= 2 unless (platen_position < 2 and warn "tried to backfeed off the @document?" and true)
-            when '8' then platen_position -= 1 unless (platen_position < 1 and warn "tried to half-backfeed off the @document?" and true)
+            when '7' then platen_position -= 2 unless (platen_position < 2 and warn "tried to backfeed off the document?" and true)
+            when '8' then platen_position -= 1 unless (platen_position < 1 and warn "tried to half-backfeed off the document?" and true)
             when '9' then platen_position += 1
             else warn "processing unknown escape sequence [#{char}"
             end
@@ -95,7 +102,7 @@ module Nroff
         end
       end
     rescue StopIteration
-      return @document.collect(&:to_html).join
+      return document
     end
   end
 

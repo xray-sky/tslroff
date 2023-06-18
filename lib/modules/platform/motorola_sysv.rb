@@ -9,6 +9,7 @@
 # Defines .TX but with all SunOS titles. Leave it out.
 # Uses \f4 like CX-UX 6.20. Probably related.
 #
+# TODO pic - allocb(3d), dupb(3d), linkb(3d)
 # TODO
 #   options to TH happening oddly - no arg[1] for section??
 #   a few pages want to .rm }C for some reason
@@ -99,7 +100,7 @@ module Motorola_SysV
     req_ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
     heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-    @state[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
 
     super(*args, heading: heading)
   end

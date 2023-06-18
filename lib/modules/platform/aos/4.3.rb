@@ -23,6 +23,18 @@
 #   acct.5 [19]: .so can't read /usr/include/sys/acct.h
 #   ar.5 [27]: .so can't read /usr/include/ar.h
 
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'async_daemon.2', 'setdomainname.2',
+         'yp_all.3n', 'yp_bind.3n', 'yp_match.3n', 'yp_next.3n', 'yp_order.3n', 'yp_unbind.3n', 'yperr_string.3n', 'ypprot_err.3n'
+      # all incorrectly recognized as nroff source as the first character is '#'
+      'Troff'
+    else @magic
+    end
+  end
+end
+
 module AOS_4_3
 
   def self.extended(k)
@@ -47,18 +59,9 @@ module AOS_4_3
       k.instance_variable_get('@source').lines[102].sub!(/\\\*$/, '*') # nroff ignores these, but they are intended to output
     when 'async_daemon.2', 'setdomainname.2',
          'yp_all.3n', 'yp_bind.3n', 'yp_match.3n', 'yp_next.3n', 'yp_order.3n', 'yp_unbind.3n', 'yperr_string.3n', 'ypprot_err.3n'
-      # incorrectly recognized as nroff source as the first character is '#'
       k.instance_variable_get('@source').lines[0].sub!(/^#/, '.\\"')
       k.instance_variable_get('@source').lines[1].sub!(/^#/, '.\\"')
       k.instance_variable_get('@source').lines[2].sub!(/^#/, '.\\"')
-      require_relative '../../dom/troff.rb'
-      # save a ref to our :init_ds and :req_TH methods, before they get smashed by the extend
-      # processing doesn't require .so, .AT, etc., so they don't need saving
-      #k.define_singleton_method :_init_ds, k.method(:init_ds)
-      #k.define_singleton_method :_req_TH, k.method(:req_TH)
-      k.extend ::Troff
-      #k.define_singleton_method :init_ds, k.method(:_init_ds)
-      #k.define_singleton_method :req_TH, k.method(:_req_TH)
     when 'index.3'
       k.instance_variable_set '@manual_entry', '_index'
     when 'mouse.4'  # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead

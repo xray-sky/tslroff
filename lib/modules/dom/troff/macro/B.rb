@@ -36,12 +36,22 @@ module Troff
 
   define_method '}S' do |*args|
     # special case for shift out of italic
-    req_ds "]F #{(args[0] == '2' and !args[4].empty?) ? '\\^' : ''}"
-    if !args[3].empty?
-      parse %(.}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}")
-    else
-      parse args[2]
-    end
+    #
+    # recursive .}S causes bad interactions with stray double-quotes :: restore(1m) [ HP-UX 10.20 ]
+    # this means we have to be intentional about the way things like .if '\f2'' evaluate true
+    #  - defer our conditionals to req_if
+    #
+    #req_ds "]F #{(args[0] == '2' and !args[4].empty?) ? '\\^' : ''}"
+    #if !args[3].empty?
+    #  parse %(.}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}").tap { |n| warn ".}S :: #{n.inspect}" }
+    #else
+    #  parse args[2]
+    #end
+
+    req_ds ']F'
+    req_if(%(!\007#{args[4]}\007\007 .ds ]F\\^), quiet: true) if args[0] == '2'
+    req_ie(%(!\007#{args[3]}\007\007 .}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}"), quiet: true)
+    req_el args[2]
     send '}f'
   end
 

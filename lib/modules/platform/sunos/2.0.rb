@@ -9,18 +9,9 @@
 
 module SunOS_2_0
 
+  Magic = { 'skyversion.8' => 'Troff' }
+
   def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'skyversion.8'
-      # incorrectly recognized as nroff source as the first character is '@'
-      require_relative '../../dom/troff.rb'
-      # save a ref to our :init_ds and :req_TH methods, before they get smashed by the extend
-      k.define_singleton_method :_init_ds, k.method(:init_ds)
-      k.define_singleton_method :_TH, k.method(:TH)
-      k.extend ::Troff
-      k.define_singleton_method :init_ds, k.method(:_init_ds)
-      k.define_singleton_method :TH, k.method(:_TH)
-    end
   end
 
   def init_ds

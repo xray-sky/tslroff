@@ -3,9 +3,11 @@
 #    troff main
 # ---------------
 #
-# REVIEW: add anchors menu for .SH ?
+# REVIEW add anchors menu for .SH ?
+# TODO .foot => /tsl-print.css (center, n% grey, extra margin-top)
+# TODO tabs and probably other contrivances also need copying to print css. check especially eqn.
+#
 
-require 'selenium-webdriver'
 %w[. request escape macro eqn tbl].each do |t|
   Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
     require_relative i
@@ -19,10 +21,6 @@ module Troff
 
   def self.requests
     @@requests
-  end
-
-  def self.webdriver
-    @@webdriver
   end
 
   def self.extended(k)
@@ -77,7 +75,9 @@ module Troff
   private
 
   def debug(line, *msg)
-    warn (['debug: ']+(msg.collect(&:inspect))).join(' ') if input_line_number == line
+    if input_line_number == line
+      block_given? ? yield(msg) : warn((['debug: ']+(msg.collect(&:inspect))).join(' '))
+    end
   end
 
   def input_line_number
@@ -85,8 +85,8 @@ module Troff
   end
 
   def next_line
-    #line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" } # REVIEW do we ever need to perserve the trailing \n ?
-    line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
+    line = @lines.tap { @register['.c'].incr }.next.chomp#.tap { |n| warn "reading new line #{n.inspect}" } # REVIEW do we ever need to perserve the trailing \n ?
+    #line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
 
     # Hidden newlines -- REVIEW does this need to be any more sophisticated?
     # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
@@ -143,4 +143,5 @@ module Troff
     get_title or warn "reached end of document without finding title!"
     @output_directory = "man#{@manual_section.downcase}" if @manual_section
   end
+
 end

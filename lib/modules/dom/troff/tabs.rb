@@ -13,7 +13,7 @@
 # done by closing the text block and resetting text[:tab_stop] any time there's
 # a break or vertical space. So when it gets here, there's nothing extra needed.
 #
-# when we run out of tabs, nroff outputs nothing... but only if we're already past the
+# when we run out of tabs, troff outputs nothing... but only if we're already past the
 # last tab stop. based on lex(1) [SunOS 5.5.1] we're still meant to position if possible
 #
 
@@ -38,9 +38,10 @@ module Troff
     block = Block::Selenium.new(style: @current_block.style.dup,
                                  text: @current_block.text.slice(@current_block.last_tab_stop..-1))
     unless block.to_s.empty?
-      @@webdriver.get block.to_html
-      position = @current_block.last_tab_position +
-                 to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      #@@webdriver.get block.to_html
+      #position = @current_block.last_tab_position +
+      #           to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      position = @current_block.last_tab_position + typesetter_width(block).to_i
     end
 
     remaining_tabs = @state[:tabs].select { |stop| stop >= position }

@@ -47,6 +47,12 @@
 # TODO "will not affect the current environment"
 # TODO set number registers -- REVIEW is it necessary? (is it used in practice)
 # REVIEW i'm in big trouble if I ever get a \w with a tab in it
+# TODO consider implementing a selenium answer cache. even if it isn't persisted it ought to pay
+#      dividends on pages with lots of tabs
+#        e.g. SunPHIGS 1.1 currently runs 15min to process, without a cache
+#             with the cache, appx. half that.
+#             but I'm seeing problems with the cache apparently being poisoned by
+#             results where the CSS did not load correctly?
 #
 
 module Troff
@@ -57,15 +63,16 @@ module Troff
     # get a manipulable block that can be rendered without leaving anything in the output stream
     selenium = Block::Selenium.new
     unescape(req_str, output: selenium)
-    @@webdriver.get selenium.to_html
+    #@@webdriver.get selenium.to_html
     #@@webdriver.execute_cdp('CSS.enable', {}) it does nothing
-    begin
-      width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px')#.to_i
-      # do i really need to append 'u' here? there was a place. nroff? tbl? REVIEW what happened
-    rescue Selenium::WebDriver::Error::NoSuchElementError => e
-      warn e
-      'NaN' # REVIEW: side effects - returning nil - but what string makes sense?
-    end
+    #begin
+    #  width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px')#.to_i
+    #  # do i really need to append 'u' here? there was a place. nroff? tbl? REVIEW what happened
+    #rescue Selenium::WebDriver::Error::NoSuchElementError => e
+    #  warn e
+    #  'NaN' # REVIEW: side effects - returning nil - but what string makes sense?
+    #end
+    typesetter_width selenium
   end
 
   # TODO I want a way to instantiate these, but with a warning so I can note
@@ -76,35 +83,4 @@ module Troff
   #  @register['ct'] = Troff::Register.new()
   #end
 
-  # safari can't run headless and is about 3x slower than headless chromedriver
-  # otherwise the reults appear identical (at first glance)
-  def xinit_selenium_safari
-    unless defined? @@webdriver
-      safari_opts = Selenium::WebDriver::Safari::Options.new
-      #safari_opts.add_argument('--headless')
-      @@webdriver = Selenium::WebDriver.for(:safari, options: safari_opts)
-      # calibrate Selenium (dimension results are in px)
-      @@webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')
-      @@pixels_per_inch = @@webdriver.find_element(id: 'calibrate').size.width
-    end
-  end
-
-  # chromedriver without --headless is ~20% slower than safari
-  def xinit_selenium_chrome
-    unless defined? @@webdriver
-      chrome_opts = Selenium::WebDriver::Chrome::Options.new
-      chrome_opts.add_argument('--headless')
-      # look for installed Chrome browser location
-      chrome_bin = %w( ~/bin/chrome    ~/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
-                       /usr/bin/chrome /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome ).
-                   map { |p| File.expand_path(p) }.find { |b| File.executable?(b) }
-      chrome_opts.binary = chrome_bin
-      @@webdriver = Selenium::WebDriver.for(:chrome, options: chrome_opts)
-      # calibrate Selenium (dimension results are in px)
-      @@webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')
-      @@pixels_per_inch = @@webdriver.find_element(id: 'calibrate').size.width
-    end
-  end
-
-  alias_method :xinit_selenium, :xinit_selenium_chrome
 end

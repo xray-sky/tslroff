@@ -50,9 +50,6 @@ module Troff
     # - I guess that helps with .if/.ie argparsing but it means I need to take care about macros vs. requests!
     argstr = __unesc_w(unescape(str.sub(%r{\s*\\".*$}, ''), copymode: true))
     until argstr.empty?
-      #argstr.sub!(/^(?:"(.*?)(?:(?<!#{resc})"(\S*)(?: +|$)|$)|(.+?)(?:(?<!#{resc}) +|$))/, '')
-      #args << __unesc_w(unescape(Regexp.last_match[1..3].join, copymode: true))
-
       # eat leading space
       arg = argstr.slice!(0, get_char(argstr).length)
       case arg
@@ -60,7 +57,6 @@ module Troff
       when '"'
         arg = '' # these double quotes don't copy
         loop do
-        #warn "getargs building quoted arg #{arg.inspect}"
           break if argstr.empty?
           chr = get_char(argstr)
           if chr == '"'
@@ -69,20 +65,17 @@ module Troff
           end
           arg << argstr.slice!(0, chr.length)
         end
-        #args << __unesc_w(unescape(arg, copymode: true))
       else
         loop do
-        #warn "getargs building unquoted arg #{arg.inspect}"
           break if argstr.empty?
           chr = get_char(argstr)
           break if chr == ' '
           arg << argstr.slice!(0, chr.length)
         end
       end
-      #args << __unesc_w(unescape(arg, copymode: true))
       args << arg
     end
-    args#.tap {|n| warn "giving args #{n.inspect}" }
+    args
   end
 
 end

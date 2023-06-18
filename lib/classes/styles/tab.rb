@@ -1,4 +1,3 @@
-#class Tab < RoffControl # Text ?
 class Tab < Text
   def initialize(arg)
     super(arg)

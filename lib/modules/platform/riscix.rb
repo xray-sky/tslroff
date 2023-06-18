@@ -28,7 +28,7 @@ module RISCiX
 
   def init_tr
     super
-    @state[:translate]['*'] = "\\(**"
+    @state[:translate]['*'] = "\e(**"
   end
 
   def init_PD
@@ -79,6 +79,14 @@ module RISCiX
     req_nf
     req_sp
   end
+
+  # indexing and other undefined macros. ignore.
+  define_method 'BY' do |*args| ; end
+  define_method 'iX' do |*args| ; end
+  define_method 'IX' do |*args| ; end # defined in tmac.s
+  define_method 'SB' do |*args| ; end # REVIEW this one looks like we lost content
+  define_method 'TX' do |*args| ; end
+  define_method 'UX' do |*args| ; end # defined in tmac.s
 
   define_method 'TH' do |*args|
     req_ds "]L #{args[2]}"

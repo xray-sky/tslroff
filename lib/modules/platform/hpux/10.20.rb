@@ -29,6 +29,10 @@
 #   REVIEW osf pages (e.g. sams(1)) for .sS (.SP) example offset spacing -- is it really 0, given no args?
 #   svcdumplog(1) has "RELATED INFORMATION" instead of "SEE ALSO"
 #   dcecp_cdsalias(1m) sources osf macros _twice_, causing a .rn loop (also causes loop in troff)
+#   remove_object(1m) [106]: \*C apparently expands to \&\f (with no following font request) - undef .empty? (nil) in tokenize/get_char
+#     tmac/sml has .ds C \&\\f\\*(!]\" (where is .ds !] ??)
+#     + related information -- detect ' ', translate ' ' to '_' for link
+#   restore(1m) [402]: are we bug compatible now with formatting through .CI (too many quotes: 'blocks' should be C but is I, check if troff does the same)
 #
 
 module HPUX_10_20

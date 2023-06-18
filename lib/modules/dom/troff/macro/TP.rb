@@ -50,8 +50,9 @@ module Troff
       tag.class == String ? unescape(tag) : @current_block.text = tag
 
       # get the width
-      @@webdriver.get(Block::Selenium.new(text: @current_block.text).to_html)
-      tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      #@@webdriver.get(Block::Selenium.new(text: @current_block.text).to_html)
+      #tag_width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
+      tag_width = typesetter_width(Block::Selenium.new(text: @current_block.text)).to_i
 
       # reset the font (in case it wasn't reverted cleanly in the tag - nis+(1) [SunOS 5.5.1])
       # so our unit conversions aren't affected.

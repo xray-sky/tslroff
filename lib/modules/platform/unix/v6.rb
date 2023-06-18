@@ -11,6 +11,7 @@
 #
 # TODO
 #   link detection - section in roman numerals
+#   is everything here ok? what's up with cc(i) ?
 #
 
 module UNIX_V6

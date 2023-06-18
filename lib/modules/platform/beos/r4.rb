@@ -23,13 +23,12 @@ module BeOS_R4
     case k.instance_variable_get '@input_filename'
     when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
       k.instance_variable_get('@source_lines').each { |l| l.force_encoding Encoding::ISO_8859_1 }
-      k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
+      #k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
     else
-      source_lines = k.instance_variable_get('@source_lines')
-      source_lines.each do |l|
+      k.instance_variable_get('@source_lines').each do |l|
         l.gsub!(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;')
       end
-      k.instance_variable_set('@source', Nokogiri::HTML(source_lines.join))
+      #k.instance_variable_set('@source', Nokogiri::HTML(source_lines.join))
     end
   end
 end

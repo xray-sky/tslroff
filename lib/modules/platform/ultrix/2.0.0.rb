@@ -12,6 +12,8 @@
 #    - check the ultrix macro defs for unexpected side-effects
 #   missing sections in cmd refs, e.g. WS-1.1 cc(1) ?
 #   mail(1) wants to use font T - is it same as TR? - probably Times actually
+#   cc(1) + others have both courier AND the DEC monospaced font override?
+#   cdc(1) loses monospaced font in the middle of the last EXAMPLE?
 #
 
 module Ultrix_2_0_0

@@ -73,7 +73,7 @@ module Ultrix_4_2_0
   end
 
   define_method 'NT' do |*args|
-    req_ds 'NO Note' # <- this is the difference from base Ultrix ('NO NOTE')
+    req_ds 'NO Note' # <- this is the difference from base Ultrix ('NO NOTE') - actually still NOTE in 4.0
     req_ds "NO #{args[1]}" if args[1] and args[1] != 'C'
     req_ds "NO #{args[0]}" if args[0] and args[0] != 'C'
     req_sp '12p'
@@ -118,6 +118,32 @@ module Ultrix_4_2_0
 end
 
 # all the same tmac.an
+# 4.0 still has NO NOTE in .NT, a couple of indent changes for nroff, and slightly
+#     different page numbering in the footer, but we don't care. otherwise identical.
+
+module Ultrix_4_0_0_mips
+  def self.extended(k)
+    k.extend Ultrix_4_2_0
+  end
+end
+
+module Ultrix_4_0_0_VAX
+  def self.extended(k)
+    k.extend Ultrix_4_2_0
+  end
+end
+
+module Ultrix_4_1_0_mips
+  def self.extended(k)
+    k.extend Ultrix_4_2_0
+  end
+end
+
+module Ultrix_4_1_0_VAX
+  def self.extended(k)
+    k.extend Ultrix_4_2_0
+  end
+end
 
 module Ultrix_4_2_0_mips
   def self.extended(k)
@@ -131,6 +157,18 @@ module Ultrix_4_2_0_VAX
   end
 end
 
+module Ultrix_4_4_0_mips
+  def self.extended(k)
+    k.extend Ultrix_4_2_0
+  end
+end
+
+module Ultrix_4_4_0_VAX
+  def self.extended(k)
+    k.extend Ultrix_4_2_0
+  end
+end
+
 module Ultrix_4_5_1_mips
   def self.extended(k)
     k.extend Ultrix_4_2_0
@@ -139,7 +177,7 @@ end
 
 module Ultrix_4_5_1_VAX
   def self.extended(k)
-    k.extend Ultrix_4_5_1
+    k.extend Ultrix_4_2_0
   end
 end
 

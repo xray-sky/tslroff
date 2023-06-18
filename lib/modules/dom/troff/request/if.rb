@@ -56,8 +56,8 @@
 #
 
 module Troff
-  def req_ie(argstr = '', breaking: nil)
-    @state[:else] = !req_if(argstr)
+  def req_ie(argstr = '', breaking: nil, quiet: false)
+    @state[:else] = !req_if(argstr, breaking: breaking, quiet: quiet)
   end
 
   def req_el(argstr = '', breaking: nil)
@@ -74,7 +74,7 @@ module Troff
     parse(argstr) if @state[:else]
   end
 
-  def req_if(argstr = '', breaking: nil)
+  def req_if(argstr = '', breaking: nil, quiet: false)
     resc = Regexp.quote(@state[:escape_char])
     test = argstr.slice!(0, get_char(argstr).length)
     predicate = if test == '!'
@@ -88,8 +88,8 @@ module Troff
     # REVIEW I think this is irrelevant now that get_char returns the full escape?
     #test << argstr.slice!(0, get_escape(argstr).length) if test == @state[:escape_char]
     condition = case test
-                when 'e', 'E' then warn 'can\'t test for even page number'
-                when 'o', 'O' then warn 'can\'t test for odd page number'
+                when 'e', 'E' then quiet or warn 'can\'t test for even page number'
+                when 'o', 'O' then quiet or warn 'can\'t test for odd page number'
                 when 'n', 't', 'N', 'T'
                   test.downcase == 't'
                 when /^[-(0-9]/, /^#{resc}[wn]/  # this is going to be a numeric expression REVIEW is this condition complete?
@@ -98,7 +98,7 @@ module Troff
                     expr << argstr.slice!(0, get_char(argstr).length)
                   end
                   #to_u(__unesc_w(unescape(expr, copymode: true))).to_f.tap { |n| warn ".if evaluating numeric expression #{expr.inspect}" } > 0
-                  to_u(expr).to_f.tap { |n| warn ".if evaluating numeric expression #{expr.inspect}" } > 0
+                  to_u(expr).to_f.tap { |n| quiet or warn ".if evaluating numeric expression #{expr.inspect}" } > 0
                 else
                   # TODO this is getting parsed oddly. maybe the results are ok, but we should figure out the correct deal
                   #      see pvs(1) [SunOS 5.5.1] lines 112, 113
@@ -108,19 +108,23 @@ module Troff
                   (lhs, rhs) = [Regexp.last_match(:lhs), Regexp.last_match(:rhs)]
                   if lhs.nil? and rhs.nil?
                     # we probably got an invalid condition, which is ignored
-                    warn "invalid condition to .if? #{(test+argstr).inspect} - evaluating as false"
+                    quiet or warn "invalid condition to .if? #{(test+argstr).inspect} - evaluating as false"
                     false
                   else
-                    #lp = __unesc_w(unescape(lhs, copymode: true))
-                    #rp = __unesc_w(unescape(rhs, copymode: true))
-                    #warn ".if comparing strings #{lhs.inspect} (#{lp.inspect}) == #{rhs.inspect} (#{rp.inspect}) is #{predicate.inspect}?"
-                    #lp == rp
-                    warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect} is: #{predicate.inspect}?"
-                    lhs == rhs
+                    # warn is too chatty with .}S conditionals coming through here
+                    quiet or warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect} is: #{predicate.inspect}?"
+                    # this fails; '\f2' == '' -- restore(1m) [ HP-UX 10.20 ]
+                    #lhs == rhs
+                    lp = Block::Bare.new
+                    unescape(lhs, output: lp)
+                    rp = Block::Bare.new
+                    unescape(rhs, output: rp)
+                    lp.to_s == rp.to_s
                   end
                 end
 
-    warn "rejecting condition#{predicate ? ' ' : ' !'}#{condition.inspect}" unless condition == predicate or test == 'n'
+    # warn is too chatty with .}S conditionals coming through here
+    quiet or warn "rejecting condition#{predicate ? ' ' : ' !'}#{condition.inspect}" unless condition == predicate or test == 'n'
 
     # TODO if we .TS inside .if \{ \} ,the .TE\} won't happen in the right order (.TS tries to parse .TE with arg \})
     #      we get an exception and things don't reset until after the next .if -- although the output looks ok.

@@ -14,6 +14,15 @@
 
 require_relative './en_us.rb'
 
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'ntpq.8' then 'Troff'
+    else @magic
+    end
+  end
+end
+
 module NEWS_os_4_1C_ja_JP
 
   def self.extended(k)
@@ -34,14 +43,6 @@ module NEWS_os_4_1C_ja_JP
     when 'ntpq.8'
       # incorrectly recognized as nroff source as the first character is '@'
       k.instance_variable_get('@source').lines[0].sub!(/^/, '.')
-      require_relative '../../../dom/troff.rb'
-      # save a ref to our :init_ds and :req_TH methods, before they get smashed by the extend
-      # processing doesn't require .so, .AT, etc., so they don't need saving
-      k.define_singleton_method :_init_ds, k.method(:init_ds)
-      k.define_singleton_method :_TH, k.method(:TH)
-      k.extend ::Troff
-      k.define_singleton_method :init_ds, k.method(:_init_ds)
-      k.define_singleton_method :TH, k.method(:_TH)
     end
   end
 

@@ -6,6 +6,9 @@
 #
 # Amiga SVR4 Platform Overrides
 #
+# TODO
+#   type clashes in openlook entries - can't parse title
+#
 
 module AMIX
 

@@ -10,6 +10,45 @@
 #   binary garbage in several pages?? - they're packed AND compressed.
 #
 
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'acct.ADM.z', 'accton.ADM.z', 'acctsh.ADM.z', 'addx.ADM.z', 'adfmt.ADM.z', 'auditd.ADM.z',
+         'authck.ADM.z', 'backup.ADM.z', 'badtrk.ADM.z', 'chroot.ADM.z',
+         'custom.ADM.z', 'ff.ADM.z', 'fsck.ADM.z', 'fsdb.ADM.z', 'fstyp.ADM.z',
+         'fwtmp.ADM.z', 'goodpw.ADM.z', 'id.ADM.z', 'idinst.ADM.z', 'ipcs.ADM.z', 'majors.ADM.z',
+         'mkdev.ADM.z', 'mmdf.ADM.z', 'mount.ADM.z', 'proto.ADM.z', 'reduce.ADM.z', 'sag.ADM.z',
+         'sar.ADM.z', 'setmnt.ADM.z', 'shtdwn.ADM.z', 'sync.ADM.z', 'tcbck.ADM.z', 'uadmin.ADM.z',
+         'uucico.ADM.z', 'uulist.ADM.z', 'uutry.ADM.z', 'wall.ADM.z', 'xtt.ADM.z', '300.C.z', '450.C.z',
+         'Intro.C.z', 'banner.C.z', 'basename.C.z', 'bc.C.z', 'bdiff.C.z', 'cat.C.z', 'cd.C.z',
+         'chmod.C.z', 'chown.C.z', 'clear.C.z', 'comm.C.z', 'copy.C.z', 'cpio.C.z', 'cron.C.z',
+         'crontab.C.z', 'csh.C.z', 'cut.C.z', 'dd.C.z', 'devnm.C.z', 'dircmp.C.z', 'dirname.C.z',
+         'diskcp.C.z', 'dtype.C.z', 'echo.C.z', 'ed.C.z', 'ex.C.z', 'factor.C.z', 'false.C.z',
+         'file.C.z', 'find.C.z', 'finger.C.z', 'fixhdr.C.z', 'format.C.z', 'getopts.C.z', 'gets.C.z',
+         'greek.C.z', 'grep.C.z', 'head.C.z', 'hp.C.z', 'id.C.z', 'jterm.C.z', 'jwin.C.z',
+         'ksh.C.z', 'last.C.z', 'ln.C.z', 'logname.C.z', 'lp.C.z', 'lpstat.C.z', 'machid.C.z',
+         'mail.C.z', 'mesg.C.z', 'mnt.C.z', 'mv.C.z', 'newform.C.z', 'nl.C.z', 'paste.C.z',
+         'pax.C.z', 'pr.C.z', 'pwcheck.C.z', 'rcvtrip.C.z', 'remote.C.z', 'rmdir.C.z', 'sddate.C.z',
+         'setkey.C.z', 'sh.C.z', 'shl.C.z', 'spell.C.z', 'spline.C.z', 'split.C.z', 'tail.C.z',
+         'tapecntl.C.z', 'tar.C.z', 'tee.C.z', 'tset.C.z', 'umask.C.z', 'uname.C.z', 'uniq.C.z',
+         'uustat.C.z', 'uuto.C.z', 'uux.C.z', 'vi.C.z', 'vidi.C.z', 'w.C.z', 'what.C.z',
+         'who.C.z', 'whodo.C.z', 'xargs.C.z', 'yes.C.z', 'a.out.F.z', 'authcap.F.z', 'clock.F.z',
+         'core.F.z', 'filehdr.F.z', 'filesyst.F.z', 'fspec.F.z', 'group.F.z', 'hs.F.z', 'inittab.F.z',
+         'limits.F.z', 'linenum.F.z', 'mapchan.F.z', 'mem.F.z', 'mfsys.F.z', 'micnet.F.z',
+         'mnttab.F.z', 'nl_type.F.z', 'permiss.F.z', 'plot.F.z', 'pnch.F.z', 'poll.F.z', 'reloc.F.z',
+         'sccsfile.F.z', 'scnhdr.F.z', 'scr_dump.F.z', 'sdevice.F.z', 'tables.F.z', 'termcap.F.z',
+         'terminfo.F.z', 'top.F.z', 'types.F.z', 'utmp.F.z', 'x.out.F.z', 'xbackup.F.z', 'Intro.HW.z',
+         'boot.HW.z', 'cdrom.HW.z', 'cmos.HW.z', 'hd.HW.z', 'machine.HW.z', 'mouse.HW.z', 'ramdisk.HW.z',
+         'rtc.HW.z', 'screen.HW.z', 'tape.HW.z', 'xt.HW.z', 'ascii.M.z', 'cvtomf.M.z', 'fcntl.M.z',
+         'isverify.M.z', 'jagent.M.z', 'login.M.z', 'mapchan.M.z', 'messages.M.z', 'mestbl.M.z', 'numtbl.M.z',
+         'prof.M.z', 'profile.M.z', 'rmb.M.z', 'streamio.M.z', 'sxt.M.z', 'terminfo.M.z', 'timtbl.M.z',
+         'tirdwr.M.z', 'values.M.z', 'xtproto.M.z', 'X.X.z', 'mwm.X.z', 'xdm.X.z', 'xedit.X.z'
+      'Nroff'
+    else @magic
+    end
+  end
+end
+
 module OpenDesktop_1_1_0
 
   def self.extended(k)
@@ -52,15 +91,8 @@ module OpenDesktop_1_1_0
          'environ.M.z', 'getclk.M.z', 'getty.M.z', 'init.M.z', 'layers.M.z', 'ld.M.z',
          'locale.M.z', 'log.M.z', 'mapkey.M.z', 'math.M.z', 'montbl.M.z', 'mscreen.M.z',
          'multiscr.M.z', 'promain.M.z', 'systty.M.z', 'term.M.z', 'termio.M.z', 'termios.M.z',
-         'timod.M.z', 'trchan.M.z', 'tty.M.z', 'tz.M.z', 'bitmap.X.z', 'xman.X.z', 'xterm.X.z'
-      k.instance_variable_set '@source', IO.readlines("| gzip_old -dc #{k.instance_variable_get '@source_dir'}/#{k.instance_variable_get '@input_filename'} | zcat")
-      k.instance_variable_get('@source').define_singleton_method(:lines) { self }
-    # also these (GRRR)
-    # arrived with magic :Unknown
-    # TODO
-    #  - acct.ADM, acctsh.ADM, others didn't get See Also ?
-    #  - at least accton.ADM did?
-    when 'acct.ADM.z', 'accton.ADM.z', 'acctsh.ADM.z', 'addx.ADM.z', 'adfmt.ADM.z', 'auditd.ADM.z',
+         'timod.M.z', 'trchan.M.z', 'tty.M.z', 'tz.M.z', 'bitmap.X.z', 'xman.X.z', 'xterm.X.z',
+         'acct.ADM.z', 'accton.ADM.z', 'acctsh.ADM.z', 'addx.ADM.z', 'adfmt.ADM.z', 'auditd.ADM.z',
          'authck.ADM.z', 'backup.ADM.z', 'badtrk.ADM.z', 'chroot.ADM.z',
          'custom.ADM.z', 'ff.ADM.z', 'fsck.ADM.z', 'fsdb.ADM.z', 'fstyp.ADM.z',
          'fwtmp.ADM.z', 'goodpw.ADM.z', 'id.ADM.z', 'idinst.ADM.z', 'ipcs.ADM.z', 'majors.ADM.z',
@@ -92,14 +124,6 @@ module OpenDesktop_1_1_0
          'tirdwr.M.z', 'values.M.z', 'xtproto.M.z', 'X.X.z', 'mwm.X.z', 'xdm.X.z', 'xedit.X.z'
       k.instance_variable_set '@source', IO.readlines("| gzip_old -dc #{k.instance_variable_get '@source_dir'}/#{k.instance_variable_get '@input_filename'} | zcat")
       k.instance_variable_get('@source').define_singleton_method(:lines) { self }
-      k.instance_variable_set '@magic', :Nroff
-      require_relative '../../dom/nroff.rb'
-      require_relative '../opendesktop.rb'
-      k.extend ::Nroff
-      k.extend ::OpenDesktop
-      k.instance_variable_set '@heading_detection', %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-      k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
-      k.instance_variable_set '@related_info_heading', 'See Also'
     when 'assign.CMD.z', 'attrib.CMD.z', 'break.CMD.z', 'chdir.CMD', 'chkdsk.CMD.z',
          'cls.CMD', 'command.CMD.z', 'ctty.CMD.z', 'date.CMD.z', 'del.CMD.z'
       k.instance_variable_set '@output_directory', 'manDOS'

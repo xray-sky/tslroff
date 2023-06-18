@@ -7,6 +7,15 @@
 # SunOS 3.5 Platform Overrides
 #
 
+class Source
+  def magic
+    case File.basename(@filename)
+    when 'mc68881version.8' then 'Troff'
+    else @magic
+    end
+  end
+end
+
 module SunOS_3_5
 
   def self.extended(k)
@@ -27,15 +36,6 @@ module SunOS_3_5
       src.lines[26].gsub!(/\\s10/, "\\s12")
       src.lines[26].gsub!(/(\\u)/, '\\v@-0.5v@')
       src.lines[26].gsub!(/(\\d)/, '\\v@0.5v@')
-    when 'mc68881version.8'
-      # incorrectly recognized as nroff source as the first character is '@'
-      require_relative '../../dom/troff.rb'
-      # save a ref to our :init_ds and :req_TH methods, before they get smashed by the extend
-      k.define_singleton_method :_init_ds, k.method(:init_ds)
-      k.define_singleton_method :_TH, k.method(:TH)
-      k.extend ::Troff
-      k.define_singleton_method :init_ds, k.method(:_init_ds)
-      k.define_singleton_method :TH, k.method(:_TH)
     when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
       raise ManualIsBlacklisted, 'not a manual entry'
     when 'eqn.eqn', 'eqnchar.eqn'

@@ -15,6 +15,11 @@ module Troff
 
 # return one or more input characters.
 # \P counts as one character, as does \*(xx.
+# TODO cope with problems like \f\*(xx where xx is not a defined string (or is defined empty)
+#      without throwing an exception. REVIEW what troff does with this
+#      see:
+#        hpux 10.20 remove_object(1m) \*C problem
+#        du 4.0f dthelpprint(1) [496,501] - \n\n problems
 
   def get_char(s, count:  1)
     chars = ''

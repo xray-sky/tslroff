@@ -13,6 +13,15 @@
 #  symlink rewrite (index.html [*]: encountered unsupported link type, /Volumes/Museum/Manual/in/be/beos/r4/beos/documentation/User's Guide/index.html => 00_FrontMatter/index.html)
 #
 
+class Source
+  def magic
+    case File.basename(@filename)
+    when '97-08-04_adamation.html' then 'HTML'
+    else @magic
+    end
+  end
+end
+
 module BeOS_R3
   def self.extended(k)
     # press releases (and others?) have ^M line endings which are vanishing in nokogiri,
@@ -21,7 +30,8 @@ module BeOS_R3
       k.instance_variable_get('@source_lines').collect! do |l|
         l.split("\r").join("\n")
       end
-      k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
+      # REVIEW do I still need to re-set @source based on recent changes to Manual class?
+      #k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
     end
     case k.instance_variable_get '@input_filename'
     when 'mailinglists.html'
@@ -29,14 +39,9 @@ module BeOS_R3
     when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html',
          'BeOS_Software.html'
       k.instance_variable_get('@source_lines').each { |l| l.force_encoding Encoding::ISO_8859_1 }
-      k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
+      #k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
     when '97-08-04_adamation.html'
-      if k.instance_variable_get('@magic') == :Unknown
-        k.instance_variable_get('@source').lines.each { |l| l.force_encoding Encoding::ISO_8859_1 }
-        k.instance_variable_set('@magic', :HTML)
-        k.extend ::HTML
-        k.send :source_init
-      end
+      k.instance_variable_get('@source').lines.each { |l| l.force_encoding Encoding::ISO_8859_1 }
       k.instance_variable_get('@source').xpath('//body').css('a[@href="http//www.bespecific.com"]').each { |a| a.replace a.text }
     end
   end

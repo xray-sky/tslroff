@@ -35,7 +35,7 @@ module SunOS_3_4
                    when '1C' then 'USER COMMANDS'
                    when '1G' then 'USER COMMANDS'
                    when '1S' then 'SUN-SPECIFIC USER COMMANDS'
-                   when '1V' then 'VAX-SPECIFIC USER COMMANDS'
+                   when '1V' then 'USER COMMANDS'
                    when '2'  then 'SYSTEM CALLS'
                    when '2V' then 'SYSTEM CALLS'
                    when '3'  then 'C LIBRARY FUNCTIONS'

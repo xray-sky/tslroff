@@ -3,6 +3,21 @@
 #    Troff utility routines
 # ---------------
 #
+# Tried a bunch of stuff to get faster results through selenium.
+#  * specify user profile, instead of letting it generate one every time
+#  * explicitly set various browser cache options
+#  * get doc once, use javascript to replace element (to prevent repeated download/parse of css)
+#  * find element with css selector instead of by id
+#  ...nothing helped.
+#
+# implemented a selenium answer cache. even if it isn't persisted it ought to pay dividends
+# on pages with lots of tabs
+#     e.g. SunPHIGS 1.1 currently runs 15min to process, without a cache
+#          with the cache, appx. half that.
+#
+#          but I'm seeing problems sometimes with the cache apparently being poisoned by
+#          results where the CSS did not load correctly?
+#
 
 require 'selenium-webdriver'
 
@@ -72,34 +87,6 @@ module Troff
       # calibrate Selenium (dimension results are in px)
       @@webdriver.get('data:text/html;charset=utf-8,<div id="calibrate" style="width:1in;"></div>')
       @@pixels_per_inch = @@webdriver.find_element(id: 'calibrate').size.width
-      # simple cache for webdriver.get method
-      #  TODO
-      #  - doesn't actually work; .get manipulates internal state of webdriver object;
-      #    need to later be able to do .find_element (e.g. during tabs) and this won't
-      #    work correctly if we've not actually done the .get
-      #    the cache needs to correctly manipulate the internal state of @@webdriver,
-      #    not just return the data
-      #
-      #@@webdriver.define_singleton_method :get do |html|
-      #  @selenium_cache ||= {hits: 0, misses: 0, calls: 0}
-      #  @selenium_cache[:calls] += 1
-      #  if @selenium_cache.has_key?(html)
-      #    @selenium_cache[:hits] += 1
-      #    @selenium_cache[html]
-      #  else
-      #    @selenium_cache[:misses] += 1
-      #    @selenium_cache[html] = super(html)
-      #  end
-      #end
-      #@@webdriver.define_singleton_method :hits do
-      #  @selenium_cache[:hits]
-      #end
-      #@@webdriver.define_singleton_method :misses do
-      #  @selenium_cache[:misses]
-      #end
-      #@@webdriver.define_singleton_method :calls do
-      #  @selenium_cache[:calls]
-      #end
       xinit_selenium_cache
     end
   end

@@ -10,10 +10,12 @@ module Troff
   #   figure out how that works. quoting, breaking, these are odd
 
   def request(req, argstr, breaking: true)
-    if Troff.requests.include? req and respond_to?("req_#{req}") # it's not a macro and we haven't renamed it
+    if Requests.include? req and respond_to?("req_#{req}") # it's not a macro and we haven't renamed it
       send "req_#{req}", __unesc_w(unescape(argstr, copymode: true)), breaking: breaking
     else
       send req, *(getargs argstr)
+      # REVIEW necessary?
+      #@register['.$'].value = 0
     end
     rescue NoMethodError => e
       # Control lines with unrecognized names are ignored. §1.1
@@ -85,8 +87,7 @@ module Troff
         unescape(__unesc_w(__unesc_n(line))) # we actually want to do this in a better order than l->r because of ar(4) [SunOS 5.5.1] :: [30-31]
 
         if nofill?# and !@state[:break_suppress] # suppress break between tag & para in .TP, etc. in nofill mode - see prtdiag(1m) [SunOS 5.5.1]
-          @current_block << LineBreak.new(font: @current_block.text.last.font.dup,
-                                         style: @current_block.text.last.style.dup)	# this duplicates .br, but if that is guarded on nofill...
+          @current_block << LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # this duplicates .br, but if that is guarded on nofill...
         else
           #@state.delete(:break_suppress)
           space_adj

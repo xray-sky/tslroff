@@ -45,8 +45,7 @@ module Troff
     v = to_em(to_u(n, default_unit: 'v')) # TODO hardcoding 1.2 em line height is bogus
     (warn "pathological output of .sp #{v}em" ; return) if v < 0
     (req_br ; return) if v == 0
-    @current_block << VerticalSpace.new(height: v, font: @current_block.text.last.font.dup,
-                                                  style: @current_block.text.last.style.dup)
+    @current_block << VerticalSpace.new(height: v, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
     # REVIEW .sp in tbl (.TS) context w/rt @current_block, etc.
     #        is it worth special casing to give row (bottom-)padding? I think it might be

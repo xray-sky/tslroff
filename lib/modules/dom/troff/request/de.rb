@@ -57,7 +57,7 @@ module Troff
     begin
       # find the old method - might be a request, or a macro
       oldmethod = name
-      oldmethod = "req_#{name}" if Troff.requests.include? name
+      oldmethod = "req_#{name}" if Requests.include? name
 
       savemethod = "#{oldmethod}#{@input_filename}#{@register['.c']}"
       define_singleton_method savemethod, method(oldmethod)

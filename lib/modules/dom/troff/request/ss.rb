@@ -26,13 +26,13 @@
 module Troff
   def req_ss(argstr = '', breaking: nil)
     ss = argstr.split.first || Font.defaultsize
-    new_style = Style.new(@current_block.text.last.style.dup)
+    new_style = Style.new(@current_block.terminal_text_style.dup)
     current_spacing = new_style[:word_spacing] || @state[:default_ss]
     new_spacing = ss.to_f / 36
     if new_spacing == @state[:default_ss]
-      apply { @current_block.text.last.style.delete(:word_spacing) }
+      apply { @current_block.terminal_text_style.delete(:word_spacing) }
     else
-      apply { @current_block.text.last.style[:word_spacing] = new_spacing }
+      apply { @current_block.terminal_text_style[:word_spacing] = new_spacing }
     end
   end
 

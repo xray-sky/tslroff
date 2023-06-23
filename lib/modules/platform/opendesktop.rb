@@ -6,6 +6,9 @@
 #
 # SCO OpenDesktop Platform Overrides
 #
+# TODO
+#   losing capital letters in command names (e.g. Xsco)
+#
 
 module OpenDesktop
 

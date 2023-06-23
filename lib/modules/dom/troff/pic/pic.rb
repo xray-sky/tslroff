@@ -82,3 +82,7 @@
 #  - # (comment to end of line)
 #  - sh (arbitrary shell command)
 #
+
+module Troff
+#  def
+end

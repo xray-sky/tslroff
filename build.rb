@@ -130,7 +130,6 @@ collections = {
       }
     },
     'Aegis': {
-      module_override: 'DomainOS',
       'SR9.7.5': {
         # TODO: (what though?) unbundled products for sure (lisp)
         basedir: 'apollo/domain_os/9.7.5',
@@ -138,7 +137,6 @@ collections = {
       }
     },
     'DomainIX': {
-      module_override: 'DomainOS',
       'SR9.5': {
         basedir: 'apollo/domain_os/9.5',
         srcdirs: %w[
@@ -189,7 +187,6 @@ collections = {
     }
   },
   'Apple': {
-    #disabled: true,
     'A-UX': { # A/UX
       '0.7': {
         basedir: 'apple/aux/0.7',
@@ -205,7 +202,7 @@ collections = {
       }
     },
     'Rhapsody': {
-      disabled: true,
+      disabled: true, # requires groff, totally new macro package
       '5.0': {
         basedir: 'apple/rhapsody/dr1',
         srcdirs: %w[man/man[1-8]]

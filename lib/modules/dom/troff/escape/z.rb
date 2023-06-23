@@ -46,8 +46,7 @@
 
 module Troff
   def esc_z(s)
-    pile = Block::Bare.new(text: Text.new(font: @current_block.text.last.font.dup,
-                                         style: @current_block.text.last.style.dup))
+    pile = Block::Bare.new(text: Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup))
 =begin
     outchars = 0
     until outchars == 2 do
@@ -59,27 +58,27 @@ module Troff
 
       if chr.start_with? "\\h"
         width = "#{pile.text.pop.style[:horizontal_shift]}em"
-        out = Overstrike.new(chars: [dead_chr], font: @current_block.text.last.font.dup,
-                                               style: @current_block.text.last.style.dup)
+        out = Overstrike.new(chars: [dead_chr], font: @current_block.terminal_font.dup,
+                                               style: @current_block.terminal_text_style.dup)
         out.style.css[:width] = width.tap { |n| warn "special case \\z with \\h (#{n})" }
         return out
       end
 
-      if pile.text.last.length > 0
-        pile << Text.new(font: pile.text.last.font.dup,
-                        style: pile.text.last.style.dup)
+      if pile.terminal_text_obj.length > 0
+        pile << Text.new(font: pile.terminal_font.dup,
+                        style: pile.terminal_text_style.dup)
         outchars += 1
       end
     end
 
-    Overstrike.new(chars: pile.text, font: @current_block.text.last.font.dup,
-                                    style: @current_block.text.last.style.dup)
+    Overstrike.new(chars: pile.text, font: @current_block.terminal_font.dup,
+                                    style: @current_block.terminal_text_style.dup)
 =end
-    until pile.text.last.length > 0
+    until pile.terminal_text_obj.length > 0
       chr = s.slice!(0, get_char(s).length)
       warn "\\z trying to output #{chr.inspect} as non-spacing character"
       unescape chr, output: pile
     end
-    NonSpacing.new(text: pile.text, font: pile.text.last.font.dup, style: pile.text.last.style.dup)
+    NonSpacing.new(text: pile.text, font: pile.terminal_font.dup, style: pile.terminal_text_style.dup)
   end
 end

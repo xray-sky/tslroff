@@ -106,7 +106,7 @@ loop do
       require 'erb'
       #File.open(ofile, File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
       File.open("#{odir.call}/#{src.output_filename}.html", File::CREAT|File::TRUNC|File::WRONLY, 0644) do |file|
-        file.write(ERB.new(template).result(loopcontext))
+        file.write(ERB.new(template, trim_mode: '-').result(loopcontext))
       end
       exit
     end

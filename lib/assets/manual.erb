@@ -1,8 +1,7 @@
-<%# TODO: want some way of indicating OS/Version in the page structure; don't leave it all to the URL (use the title?) -%>
-<%# TODO: make the relative link to the stylesheet less fragile somehow -%>
-<%# TODO: fix overflow on related articles menu -%>
-<%# Not anymore: <link rel="stylesheet" type="text/css" href="../../../< %= relative_root % >/tslroff.css"></link> -%>
-<%# relative_root = src.output_directory.gsub(%r{[^/]+}, '..') -%>
+<%#
+  TODO: want some way of indicating OS/Version in the page structure; don't leave it all to the URL (use the title?)
+  TODO: fix overflow on related articles menu
+-%>
 <html lang="<%= src.language %>">
 <head>
   <title><%= src.page_title %></title>

@@ -1,3 +1,4 @@
+=begin
 module Locator
   def locate(loc: '.sw at 0,0')
     (corner, pos) = loc.split(' at ')
@@ -151,3 +152,4 @@ class Pic
   end
 
 end
+=end

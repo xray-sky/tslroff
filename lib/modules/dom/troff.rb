@@ -6,26 +6,32 @@
 # REVIEW add anchors menu for .SH ?
 # TODO .foot => /tsl-print.css (center, n% grey, extra margin-top)
 # TODO tabs and probably other contrivances also need copying to print css. check especially eqn.
+# TODO finish making the macro package selectable
 #
 
-%w[. request escape macro eqn tbl].each do |t|
+%w[. request escape eqn tbl].each do |t|
+#%w[. request escape eqn tbl pic].each do |t|
   Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
     require_relative i
   end
 end
 
+require_relative 'groff.rb'
+require_relative 'troff/tmac/an.rb'
+
 module Troff
 
-  @@delim = %(\002\003\005\006\007"')
-  @@requests = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
+  Delimiters = %(\002\003\005\006\007"') # unused. REVIEW necessary? useful?
+  Requests = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
 
-  def self.requests
-    @@requests
-  end
+  def self.requests ; Requests ; end # REVIEW smrtr?
+  def self.useGroff? ; false ; end
 
   def self.extended(k)
     k.extend ::Eqn
     k.extend ::Tbl
+    k.extend ::Groff if Troff.useGroff?
+    #k.extend ::Pic
     k.instance_variable_set '@register', {}
     k.instance_variable_set '@state', { :header => Block::Header.new,
                                         :footer => Block::Footer.new }

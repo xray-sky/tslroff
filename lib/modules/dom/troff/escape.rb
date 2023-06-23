@@ -166,7 +166,7 @@ module Troff
 
     #if broke?
     #  @current_block << String.new
-    #  @current_tabstop = @current_block.text.last
+    #  @current_tabstop = @current_block.terminal_text_obj
     #  @current_tabstop[:tab_stop] = 0
     #end
 
@@ -215,7 +215,7 @@ module Troff
           insert_tab(width: to_em(stop - @current_block.last_tab_position), stop: stop)
         else # next_tab returns nil when we run out of tabs
           # prevent exception on running out of tabs - happening all the time, because... why?
-          warn "out of tabs after #{@current_block.text.last.text.inspect} with tabs=#{@state[:tabs].inspect}! (rest: #{str.inspect})"
+          warn "out of tabs after #{@current_block.terminal_string.inspect} with tabs=#{@state[:tabs].inspect}! (rest: #{str.inspect})"
           @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
                                 # I choose to insert the space because of rogue tabs in e.g. fnattr(1) [SunOS 5.5.1]
         end
@@ -239,22 +239,20 @@ module Troff
                             when '`' then '&#96;'                  # "typographically equivalent to \(ga" §23.
                             #when '&' then ''                      # "non-printing, zero-width character"
                             when '&' then @current_block.style[:numeric_align] ? '&zwj;' : '' # more useful as '' except we need &zwj; for numeric align in tbl
-                            when '|' then NarrowSpace.new(font: @current_block.text.last.font.dup,
-                                                         style: @current_block.text.last.style.dup)          # 1/6 em      narrow space char
-                            when '^' then HalfNarrowSpace.new(font: @current_block.text.last.font.dup,
-                                                             style: @current_block.text.last.style.dup)      # 1/12em half-narrow space char
+                            when '|' then NarrowSpace.new(font: @current_block.terminal_font.dup,
+                                                         style: @current_block.terminal_text_style.dup)          # 1/6 em      narrow space char
+                            when '^' then HalfNarrowSpace.new(font: @current_block.terminal_font.dup,
+                                                             style: @current_block.terminal_text_style.dup)      # 1/12em half-narrow space char
                             when 'c' # apparently everything past the \c is discarded
                               str.slice!(0..-1)
-                              Continuation.new(font: @current_block.text.last.font.dup,
-                                              style: @current_block.text.last.style.dup)         # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
+                              Continuation.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
                             when 'e' then @state[:escape_char].dup # printable escape char - don't push a reference, or << may modify it!
                             when 'p'
                               if fill?
                                 warn "uncertain use of \\p (fill break)" # p.29
                                 # TODO this breaks at _end of word_, which might not be where the \p is
                                 # REVIEW should also cause the line to be justified normally
-                                LineBreak.new(font: @current_block.text.last.font.dup,
-                                             style: @current_block.text.last.style.dup)
+                                LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
                               else
                                 ''
                               end
@@ -286,7 +284,7 @@ module Troff
     xlc = @state[:translate][chr]
     return @current_block << chr unless xlc
     #return __unesc(xlc.dup) unless xlc.start_with?("\e")
-    return xlc.dup unless xlc.start_with?("\e")
+    return @current_block << xlc.dup unless xlc.start_with?("\e")
     oesc = @state[:escape_char]
     req_ec "\e"
     __unesc(xlc.dup)

@@ -1,7 +1,7 @@
 module Eqn
 
   def eqn_above(parse_tree)
-    @current_block << LineBreak.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    @current_block << LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     gen_eqn [parse_tree.shift]
   end
 
@@ -19,7 +19,7 @@ module Eqn
               when 'c' then 'center'
               else nil
               end
-    col = Column.new(justify: justify, font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    col = Column.new(justify: justify, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     col.style.css[:line_height] = '1.5em' if method.end_with?('col') # matrix
     gen_eqn [parse_tree.shift], output: col
     @current_block << col
@@ -42,7 +42,7 @@ module Eqn
            else x
            end
 
-    blk = EqnBlock.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    blk = EqnBlock.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     blk.style.css[:vertical_align] = 'middle'
     gen_eqn [parse_tree.shift], output: blk
 
@@ -87,11 +87,11 @@ module Eqn
         extheight = extended.count * 0.75
         lineheight = 0.75 #- ((extheight - height) / extheight) # the extent to which we are too tall
         lbracket = Bracket.new(line_height: lineheight,
-                                     style: @current_block.text.last.style.dup,
+                                     style: @current_block.terminal_text_style.dup,
                                       font: Font::R.new(size: @register['.s'].value))
         lbracket.style.css[:text_align] = 'right'
         extended.each do |c|
-          lbracket << Text.new(font: lbracket.text.last.font.dup, style: lbracket.text.last.style.dup)
+          lbracket << Text.new(font: lbracket.terminal_font.dup, style: lbracket.terminal_text_style.dup)
           unescape c, output: lbracket
         end
         @current_block << lbracket
@@ -116,11 +116,11 @@ module Eqn
         unescape "\\0\\f1#{rbrk}\\fP"
       else
         rbracket = Bracket.new(line_height: lineheight,
-                                     style: @current_block.text.last.style.dup,
+                                     style: @current_block.terminal_text_style.dup,
                                       font: Font::R.new(size: @register['.s'].value))
         rbracket.style.css[:text_align] = 'left'
         extended.each do |c|
-          rbracket << Text.new(font: rbracket.text.last.font.dup, style: rbracket.text.last.style.dup)
+          rbracket << Text.new(font: rbracket.terminal_font.dup, style: rbracket.terminal_text_style.dup)
           unescape c, output: rbracket
         end
         @current_block << rbracket

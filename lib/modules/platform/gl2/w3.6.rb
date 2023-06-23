@@ -6,6 +6,12 @@
 #
 # SGI GL2-W3.6 Platform Overrides
 #
+# TODO
+#    adb(1) ::
+#        .ie '\*(.T'psc' .ds IM \(im
+#        .el .ds IM \v'.1m'=\v'-.1m'\s-2\h'-.1m'>\h'.1m'\s+2
+#      our \*(.T is 'html' and we don't have an \(im defined. but maybe we want to implement something.
+#
 
 module GL2_W3_6
 

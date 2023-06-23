@@ -75,6 +75,7 @@ module Troff
       end
       args << arg
     end
+    @register['.$'].value = args.count
     args
   end
 

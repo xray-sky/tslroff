@@ -5,8 +5,8 @@
 #
 # TODO: how do tabs interact with .TP / .IP / .RS etc. ?
 #
-# REVIEW: details in §9.1, §9.2
-# REVIEW: returns nil if we're out of tabs
+# REVIEW details in §9.1, §9.2
+# REVIEW returns nil if we're out of tabs
 #
 # vertical motion must be suppressed when calculating widths through selenium
 # due to display:block;width:100%; - becomes measuring width:100% - this is
@@ -22,7 +22,7 @@ module Troff
   private
 
   def insert_tab(width: 0, stop: 0) # width in em
-    hold_style = Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    hold_style = Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     tabtext = @current_block.text.slice!(@current_block.last_tab_stop..-1)
     @current_block << Tab.new(text: tabtext, width: width, stop: stop,
                              # something weird is happening here with styling tabs immediately after a Break

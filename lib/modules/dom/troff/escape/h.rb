@@ -33,13 +33,13 @@ module Troff
     req_str = __unesc_w(__unesc_n(s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1'))) # we may have come here without having getargsed
     if req_str.match?(/^[-\w\.]+/)
       warn "horizontal motion: #{req_str.inspect}"
-      new_style = Style.new(@current_block.text.last.style.dup)
+      new_style = Style.new(@current_block.terminal_text_style.dup)
       current_shift = new_style[:horizontal_shift] || 0
       new_shift = to_em("#{current_shift}m+#{req_str}").to_f
       if new_shift == 0
-        apply { @current_block.text.last.style.delete(:horizontal_shift) }
+        apply { @current_block.terminal_text_style.delete(:horizontal_shift) }
       else
-        apply { @current_block.text.last.style[:horizontal_shift] = new_shift }
+        apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }
       end
       ''
     elsif req_str.start_with?('|')
@@ -48,13 +48,13 @@ module Troff
       warn "^^^ not from beginning of line!" unless broke? # TODO this warning is tripping apparently incorrectly on lex(1) [SunOS 5.5.1] since we're in nofill and just had a linebreak. why?
       new_shift = to_em("#{req_str}").to_f
       if new_shift == 0
-        apply { @current_block.text.last.style.delete(:horizontal_shift) }
+        apply { @current_block.terminal_text_style.delete(:horizontal_shift) }
       else
         if nofill?
           warn ">>> treating it like a tab of #{new_shift}em due to nofill"
           insert_tab width: new_shift
         else
-          apply { @current_block.text.last.style[:horizontal_shift] = new_shift }
+          apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }
         end
       end
       ''

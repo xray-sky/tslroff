@@ -18,17 +18,14 @@
 #  it may be a positive or negative increment, or none at all
 #
 #
+#  if we set up an increment, and subsequently .nr without one, is it held? - yes.
+#
 #  enforcement of read_only registers is done in .nr rather than internal to the class,
 #  because the internal registers still need to be updated, just not from document context
 #
-#  REVIEW what happens when given not-an-N as second arg (invalid expression)
-#         ignored, I think, which means bad interaction from to_u returning '0' in that case
-#         REVIEWED ignored, yes. TODO doesn't set anything. same as if no number passed at all.
-#
-#  REVIEW does this accept a leading ± to indicate the "with respect to the previous value" part?
-#         - yes.
-#
-#  REVIEW if we set up an increment, and subsequently .nr without one, is it held? - TODO yes.
+#  what happens when given not-an-N as second arg (invalid expression)
+#  - ignored. doesn't set anything. same as if no number passed at all.
+#  TODO which means bad interaction from to_u returning '0' in that case
 #
 
 require 'forwardable'
@@ -39,13 +36,12 @@ module Troff
     (reg, value, increment) = argstr.split
     return nil unless reg and value
 
-    #warn "assigning register #{reg.inspect} value #{value.inspect}"
     @register[reg] = Register.new unless @register.has_key?(reg)
     unless @register[reg].read_only?
       if value.start_with? '+' or value.start_with? '-'
-        @register[reg].value = to_u("#{@register[reg].value}#{value}").to_i#.tap { |n| warn "adjusting reg #{reg.inspect} to #{n.inspect}" }
+        @register[reg].value = to_u("#{@register[reg].value}#{value}").to_i
       else
-        @register[reg].value = to_u(value).to_i#.tap { |n| warn "setting reg #{reg.inspect} to #{n.inspect} with increment #{increment.inspect}" }
+        @register[reg].value = to_u(value).to_i
       end
       @register[reg].increment = increment.to_i if increment
     end
@@ -75,32 +71,32 @@ module Troff
       ############################################
       # §25 Predefined Read-only Number Registers
       ############################################
-      '$$' => Register.new(Process.pid, :ro => true),                     # process id of troff.
-      '.$' => Register.new(0, :ro => true),                               # # of args avail at current macro level.
-      '.A' => Register.new(0, :ro => true),                               # 1 in troff if -a option used; always 1 in nroff.
-      '.F' => Register.new(File.basename(@source.filename), :ro => true), # name of current input file.
+      '$$' => Register.new(Process.pid, ro: true),                        # process id of troff.
+      '.$' => Register.new(0, ro: true),                                  # # of args avail at current macro level.
+      '.A' => Register.new(0, ro: true),                                  # 1 in troff if -a option used; always 1 in nroff.
+      '.F' => Register.new(File.basename(@source.filename), ro: true),    # name of current input file.
       #.H                                                                 # avail horizontal resolution in u.
-      '.L' => Register.new(1, :ro => true),                               # current line spacing parameter (.ls).
+      '.L' => Register.new(1, ro: true),                                  # current line spacing parameter (.ls).
       #.P                                                                 # 1 if current page is being printed; otherwise 0.
       #.T                                                                 # 1 if -T option used; otherwise 0.
       #.V                                                                 # avail vertical resolution in u.
       #.a                                                                 # post-line extra line-space most recently utilized using \x'N'
-      '.c' => Register.new(0, 1, :ro => true),                            # number of lines read from current input file.
+      '.c' => Register.new(0, 1, ro: true),                               # number of lines read from current input file.
       #.d                                                                 # current vertical place in current diversion. == nl if no diversion
-      '.f' => Register.new(1, :ro => true),                               # current font position.
+      '.f' => Register.new(1, ro: true),                                  # current font position.
+      #.g                                                                 # set non-zero for groff
       #.h                                                                 # text baseline high-water mark on current page or diversion (?)
-      #.i' => Register.new(@state[:base_indent], :ro => true),            # current indent. - circular dependency referencing @base_indent here - see xinit_in
-      '.j' => Register.new(1, :ro => true),                               # current adj mode and type. can be saved for use with .ad to restore
+      #.i' => Register.new(@state[:base_indent], ro: true),               # current indent. - circular dependency referencing @base_indent here - see xinit_in
+      '.j' => Register.new(1, ro: true),                                  # current adj mode and type. can be saved for use with .ad to restore
       #.k                                                                 # horizontal size of text (minus indent) of current partially collected output line, if any, in current env.
-      '.l' => Register.new(to_u('7.5i'), :ro => true),                    # current line length. TODO connect this to some future implementation of .ll ??
+      '.l' => Register.new(to_u('7.5i'), ro: true),                       # current line length. TODO connect this to some future implementation of .ll ??
       #.n                                                                 # length of text portion on previous output line.
-      '.o' => Register.new(0, :ro => true),                               # current page offset (left margin). separate from indents. REVIEW: how does changing this interact with css ('0' provides 1in margin)
+      '.o' => Register.new(0, ro: true),                                  # current page offset (left margin). separate from indents. REVIEW: how does changing this interact with css ('0' provides 1in margin)
       #.p                                                                 # current page length.
-      '.s' => Register.new(Font.defaultsize, :ro => true),                # current point size.
+      '.s' => Register.new(Font.defaultsize, ro: true),                   # current point size.
       #.t                                                                 # distance to the next trap.
-      '.u' => Register.new(1, :ro => true),                               # 1 in fill mode and 0 in no-fill mode.
-      '.v' => Register.new(to_u("#{Font.defaultsize}p*6/5"),
-                           :ro => true),                                   # current vertical line spacing in basic units (default: 1.2em)
+      '.u' => Register.new(1, ro: true),                                  # 1 in fill mode and 0 in no-fill mode.
+      '.v' => Register.new(to_u("#{Font.defaultsize}p*6/5"), ro: true),   # current vertical line spacing in basic units (default: 1.2em)
       #.w                                                                 # width of previous character.
       #.x                                                                 # reserved: version-dependent.
       #.y                                                                 # reserved: version-dependent.

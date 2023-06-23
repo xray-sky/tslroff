@@ -1,8 +1,3 @@
-# EQ.rb
-# -------------
-#   troff
-# -------------
-#
 #   .EQ
 #
 #   http://bitsavers.trailing-edge.com/pdf/altos/3068/690-15844-001_Altos_Unix_System_V_Documenters_Workbench_Vol_2_Jul85.pdf
@@ -79,6 +74,8 @@
 # √ correctly space adjust (or don't) - use eqn(1) [NEWS-os 4.2.1R] lines 246, 248, 250 to test.
 #   can something be done to the css to prevent breaking between Eqn and punctuation?
 #     eqn(1) [SunOS 3.5] can give e.g. a sub i sup 2 with , on the next line.
+
+class EndOfEqn < RuntimeError ; end
 
 module Troff
 

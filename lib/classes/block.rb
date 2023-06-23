@@ -14,37 +14,38 @@ class Block
   include Immutable
   extend Forwardable
 
-  attr_reader   :text, :type, :last_tab_position, :last_tab_stop
+  attr_reader   :text, :last_tab_position, :last_tab_stop
   attr_accessor :style
   def_delegators :@style, :immutable?, :immutable!
 
   def initialize(arg = Hash.new)
     self.style = (arg[:style] or Style.new({}, get_object_exception_class))
-    #self.type  = (arg[:type]  or :p)
     self.text  = (arg[:text]  or Text.new)
     @last_tab_position = 0
     @last_tab_stop = 0
   end
 
-  def output_indicator?
-    @output_indicator
-  end
-
-  def reset_output_indicator
-    @output_indicator = false
-  end
-
   def empty?
-    type == :comment or text.reject(&:empty?).none?
+    text.reject(&:empty?).none?
   end
 
   def text=(t)
-    unless t.empty?
-      @output_indicator = true
-      immutable!
-    end
+    immutable! unless t.empty?
     @text = t.is_a?(Array) ? t : [t]
   end
+
+  # REVIEW smrtr? - does everything we might append to text[] have a style / font ?
+  #   one potential snag is what happens if we ever have a brand new Block with text == []
+  def terminal_text_obj   ; @text.last       ; end
+  def terminal_string     ; @text.last.text  ; end
+  def terminal_font       ; @text.last.font  ; end
+  def terminal_text_style ; @text.last.style ; end
+
+  # REVIEW I guess I did this to myself. is there a "cleverer" way to have done this?
+  def terminal_text_obj=(arg)   ; @text.last = arg       ; end
+  def terminal_string=(arg)     ; @text.last.text = arg  ; end
+  def terminal_font=(arg)       ; @text.last.font = arg  ; end
+  def terminal_text_style=(arg) ; @text.last.style = arg ; end
 
   def <<(t)
     case t
@@ -54,8 +55,6 @@ class Block
       @last_tab_stop = @text.count
     when RoffControl, EqnBlock # don't leave this as the last bit of text, or it'll eat appends to @text
       # we might be at the very start of Block when @text is still [] - TODO some smarter strategy
-      # TODO also I think this broke Continuation?
-      #hold = Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
       @text << t
       if t.is_a? LineBreak or t.is_a? VerticalSpace
         @last_tab_position = 0
@@ -63,25 +62,15 @@ class Block
       end
       @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
     when Text, Block::TableCell, Block::Inline then @text << t
-    #when Text, Block::TableCell, Block::Pic   then @text << t
-    when String
-      if @text.last.text.respond_to?(:<<)
-        @text.last << t
-      else
-        # REVIEW why was this case here? it duplicates LineBreak
-        warn "we are in a degenerate part of the code - block.rb line 72"
-        brk = Text.new(font: text.last.font.dup, style: text.last.style.dup)
-        brk[:tab_stop] = 0
-        brk.text = t
-        @text << brk
-      end
-    when Block  # this is primarily meant for handling named strings, which may include typesetter escapes
+    when String then @text.last << t
+    when Block  # cruft catcher
       raise RuntimeError "appending non-bare block #{t.inspect}" #unless t.class == Block::Bare # bare blocks used by vms for inserting pre-formatted html; TODO probably create a Link text class
+      warn "we are in a degenerate part of the code - block.rb line 91"
       @text += t.text
       # don't leave the last text object open, or else you'll start writing into the named string definition.
       @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
     end
-    (immutable! and @output_indicator = true) unless t.empty? # @output_indicator also manipulated in parse, for suppression after comment
+    immutable! unless t.empty?
   end
 
   def coerce(obj)
@@ -97,6 +86,7 @@ class Block
   end
 
   def to_html
+    warn "we are in a degnerate part of the code - base class Block.to_html()"
     # TODO this needs more work to e.g. leave <!-->, etc. open for subsequent output, but stay whitespace safe (don't introduce whitespace by inserting newlines, etc.)
     # TODO don't output a <p> just for a comment - see ct(7) HP-UX 6.00
     # TODO we are still getting empty <p> in some circumstances - see ct(7) HP-UX 6.00

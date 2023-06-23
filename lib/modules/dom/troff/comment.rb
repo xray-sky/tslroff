@@ -12,13 +12,11 @@ module Troff
 
   define_method 'req_\\"' do |argstr, breaking: nil|
     return nil unless argstr
-    # This was done as a block, but then it was breaking up a block it was
-    # encountered during. So now it's inline.
-    apply { @current_block.text.last.style[:comment] = true }
+    # This was done as a block, but then it was breaking up a block it was encountered during. So now it's inline.
+    # REVIEW re-implement as an inline-block type? would that help us keep this open to capture multiple lines of comments in a single Comment object?
+    apply { @current_block.terminal_text_style[:comment] = true }
     @current_block << argstr
-    apply { @current_block.text.last.style.delete(:comment) }
-    # and this was interfering with comments inserted between .TP macro and tag - ex(1) [SunOS 5.5.1]
-    #@current_block.reset_output_indicator
+    apply { @current_block.terminal_text_style.delete(:comment) }
   end
 
   define_method 'esc_"' do |s|

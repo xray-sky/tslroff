@@ -50,7 +50,7 @@ module Troff
       width = to_em(to_u(width, default_unit: 'm'))
       if ['', '\\(ul'].include? req_str
         warn "\\l special case for hr based on #{width.inspect}em of #{req_str.inspect}"
-        @current_block << Rule.new(width: width, font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+        @current_block << Rule.new(width: width, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
       else
         warn "\\l ... dunno: #{width.inspect}em of #{req_str.inspect}"
       end

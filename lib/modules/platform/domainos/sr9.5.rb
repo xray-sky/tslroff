@@ -9,10 +9,11 @@
 # TODO:
 #
 
-module DomainOS_SR9_5
+module DomainIX_SR9_5
 
   def self.extended(k)
     k.instance_variable_set '@lines_per_page', 66	# REVIEW: at least for /IX
+    k.instance_variable_set '@related_info_heading', 'RELATED INFORMATION'
     case k.instance_variable_get '@input_filename'
     when 'index.hlp'
       k.instance_variable_set '@manual_entry', '_index'

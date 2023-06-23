@@ -37,10 +37,7 @@
 
 module Troff
   def req_br(_argstr = '', breaking: true)
-    return unless breaking
-    unless nofill? or broke? or nobreak?
-      @current_block << LineBreak.new(font: @current_block.text.last.font.dup,
-                                     style: @current_block.text.last.style.dup)
-    end
+    return if !breaking or nofill? or broke? or nobreak?
+    @current_block << LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
   end
 end

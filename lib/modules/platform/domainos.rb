@@ -285,3 +285,15 @@ module DomainOS
           )
   end
 end
+
+module Aegis
+  def self.extended(k)
+    k.extend DomainOS
+  end
+end
+
+module DomainIX
+  def self.extended(k)
+    k.extend DomainOS
+  end
+end

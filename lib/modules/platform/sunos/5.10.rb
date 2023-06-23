@@ -10,6 +10,8 @@
 # REVIEW tmac/ansun, tmac/ansun.tbl (what is the point of these?)
 # TODO
 #   most pages use .sp/.in/mk/.in/.rt/.sp instead of .TP - for the love of mike WHY.
+#    - can't think of a way to do a general .mk/.rt implementation but perhaps we can hack
+#      something for the limited purpose of the 5.10 manual usage
 #
 
 module SunOS_5_10

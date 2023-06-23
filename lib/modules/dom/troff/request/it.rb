@@ -27,7 +27,7 @@ module Troff
     (count, macro) = argstr.split
     if count and macro
       count = count.to_i
-      macro = "req_#{macro}" if Troff.requests.include? macro and respond_to?("req_#{macro}")
+      macro = "req_#{macro}" if Requests.include? macro and respond_to?("req_#{macro}")
       @state[:input_trap][count] ||= []
       @state[:input_trap][count] << [ macro ]
     else

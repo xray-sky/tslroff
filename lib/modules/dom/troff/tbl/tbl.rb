@@ -1,5 +1,3 @@
-EndOfTbl = Class.new(RuntimeError)
-
 module Tbl
 
   # The format section specifies the layout of the columns. Each line in the format
@@ -200,7 +198,7 @@ module Tbl
 
         # spans
         when /^(s)/i
-          cell.parent = row.text.last
+          cell.parent = row.terminal_text_obj
           cell.colspan_inc
 
         #when /^(\^)/

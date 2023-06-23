@@ -1,14 +1,8 @@
-# PS.rb
-# -------------
-#   troff
-# -------------
+#   .PS xx
 #
-#   Starts figure (pic) processing
+#     Starts figure (pic) processing
 #
 # TODO
-#
-
-require 'open3'
 
 class EndOfPic < RuntimeError ; end
 

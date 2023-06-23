@@ -6,39 +6,7 @@
 # tmac.an
 # =======
 #
-# }H
-#   .ie\\*(]L .tl \\*(]H\\*(]D\\*(]H
-#   .el       .tl \\*(]H\\*(]D \|\\*(]L\\*(]H
-#
-# }F
-#   .if o .tl 'Page %''\\*(]W'
-#   .if e .if !\\nv+1 .tl '\\*(]W''Page %'
-#
-# TH
-#   .ift      .ds ]H \\$1\^(\^\\$2\^)
-#   .if\\n()t .ds ]D Silicon Graphics
-#             .ds ]L
-#   .if!\\$3  .ds ]L (\^\\$3\^)
-#   .if!\\$4  .ds ]D \\$4
-#
-# .ifn     \{.ie \nd .ds ]W (last mod. \nm/\/nd\/ny)
-#            .el.ds      ]W (printed \n(mo/\n(dy/\n(yr)
-# .if\n()t \{.ie \nd .ds ]W \*(]m \nd, 19\ny
-#            .el.ds      ]W \*(]m \n(dy, 19\n(yr
-#
-# ]m is full month
-#
-# I don't understand where \nd comes from, but it seems pretty clear from the
-# preformatted pages in the GL2-W2.5 image that the "normal" behavior is to put
-# "last mod. {file timestamp}" in the footer.
-#
-# "normal" footer behavior is    page n                          last mod. (timestamp)
-#
-# "normal" header behavior is    NAME(SEC)          Silicon Graphics         NAME(SEC)
-# ping(8) has                    PING(8)    Silicon Graphics (May 23, 1986)    PING(8)
-#           --> this is .TH arg  $1   $2    $4                $3
-#
-#  TODO:
+#  TODO
 #
 # The man command executes manprog that takes a file name as its argument.  Manprog
 # calculates and returns a string of three register definitions used by the formatters
@@ -60,8 +28,6 @@
 # GL2 W2.5 same problem, plus man1d/zshadeabstr, man1m/mklost+foun
 # GL1 W2.1 is clean
 # W2.1 and W2.3 Mail(1) want to use font T (times?)
-# Something has maybe gone wrong with \w - adb(1) has too small tabs probably based on mismeasuring "..."
-#   though there don't seem to be any other obvious signs of mess-up. is it argparse with " ?
 #
 
 module GL2

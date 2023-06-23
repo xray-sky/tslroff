@@ -1,7 +1,4 @@
-# TS.rb
-# -------------
-#   troff
-# -------------
+# .TS
 #
 #   Starts table (tbl) processing
 #
@@ -9,12 +6,9 @@
 #   bail somehow if we have a .TE with table already processed through tbl (NEWS-os, AOS)
 #
 
+class EndOfTbl < RuntimeError ; end
+
 module Troff
-
-  define_method 'TE' do |*_args|
-    raise EndOfTbl
-  end
-
   define_method 'T&' do |*args|
     formats_terminator = Regexp.new('\.\s*$')
     format_lines = []
@@ -23,6 +17,10 @@ module Troff
       format_lines << next_line
     end
     @state[:tbl_formats] = Tbl.formats(format_lines)
+  end
+
+  define_method 'TE' do |*_args|
+    raise EndOfTbl
   end
 
   define_method 'TS' do |*args|
@@ -102,7 +100,7 @@ module Troff
 
       # apply held rules to either the bottom of the last row, or the top of the next
       if @state[:tbl_bottom_rules]
-        tbl.text.last.text.each_with_index do |cell, column|
+        tbl.terminal_string.each_with_index do |cell, column|
           cell.style.css[:border_bottom] = case @state[:tbl_bottom_rules][column] || @state[:tbl_bottom_rules][0]
                                            when '', "\\^"  then next # bottom border. no upward row spanning involved.
                                            when '_', "\\_" then '1px solid black'
@@ -144,8 +142,8 @@ module Troff
 
         # we need to set the font registers based on the cell's format, because otherwise
         # :last_xx is going to be whatever happened in format_row for the rightmost cell
-        @register['.f'].value = @state[:fonts].invert[cell.text.last.font.face] || 0.tap { warn "trouble setting \\n(.f based on table cell style #{cell.text.last.font.face.inspect} -- falling back to position 0" }
-        @register['.s'].value = cell.text.last.font.size # TODO this is where size is being reset between cells for sysconf(3c) [SunOS 5.5.1] :: [125]
+        @register['.f'].value = @state[:fonts].invert[cell.terminal_font.face] || 0.tap { warn "trouble setting \\n(.f based on table cell style #{cell.terminal_font.face.inspect} -- falling back to position 0" }
+        @register['.s'].value = cell.terminal_font.size # TODO this is where size is being reset between cells for sysconf(3c) [SunOS 5.5.1] :: [125]
                                                          # -- what can be done?? perhaps just a rewrite. but then how to detect it's happened on other pages?
 
 
@@ -161,7 +159,7 @@ module Troff
           end
 
         if cell.is_a? Block::RowSpan
-          cell.parent = tbl.text.last.text[column]
+          cell.parent = tbl.terminal_string[column]
           cell.rowspan_inc
           cell.style.css[:vertical_align] = 'middle'
         end
@@ -203,7 +201,7 @@ module Troff
             @current_block.style[:numeric_align][:left]  = Proc.new { to_em(tbl[:nalign][column][0].to_s + 'u') }
             @current_block.style[:numeric_align][:right] = Proc.new { to_em(tbl[:nalign][column][1].to_s + 'u') }
 
-            (left, right) = case @current_block.text.last.text.strip
+            (left, right) = case @current_block.terminal_string.strip
                             when /^(.*)&zwj;(.*)$/ then   Regexp.last_match[1,2]
                             when /^(.*)(\.\d+)$/   then   Regexp.last_match[1,2]   # REVIEW: "the rightmost dot adjacent to a digit"
                             when /^(\d+)$/         then [ Regexp.last_match[1], '' ]
@@ -222,17 +220,14 @@ module Troff
 
             if right == :noalign
               # why was this assigning, instead of appending?
-              @current_block.text.last.text = "&tblctl_ctr;#{left}"
-              @current_block << EndSpan.new(font: @current_block.text.last.font.dup,
-                                           style: @current_block.text.last.style.dup)
+              @current_block.terminal_string = "&tblctl_ctr;#{left}"
+              @current_block << EndSpan.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
             else
               # ditto?
-              @current_block.text.last.text = "&tblctl_nl;#{left}"
-              @current_block << EndSpan.new(font: @current_block.text.last.font.dup,
-                                           style: @current_block.text.last.style.dup)
+              @current_block.terminal_string = "&tblctl_nl;#{left}"
+              @current_block << EndSpan.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
               @current_block << "&tblctl_nr;#{right}"
-              @current_block << EndSpan.new(font: @current_block.text.last.font.dup,
-                                           style: @current_block.text.last.style.dup)
+              @current_block << EndSpan.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
             end
 
           end
@@ -243,7 +238,7 @@ module Troff
   rescue EndOfTbl => e
     # encountered .TE with held box rules. apply them as bottom borders on the last table row.
     if @state[:tbl_top_rules]
-      tbl.text.last.text.each_with_index do |cell, column|
+      tbl.terminal_string.each_with_index do |cell, column|
         cell.style.css[:border_bottom] = case @state[:tbl_top_rules][column] || @state[:tbl_top_rules][0]
                                          when '', "\\^"  then next # bottom border. no upward row spanning involved.
                                          when '_' then '1px solid black'
@@ -276,5 +271,4 @@ module Troff
     @register.delete(:tbl_dsize)
     @document << @current_block
   end
-
 end

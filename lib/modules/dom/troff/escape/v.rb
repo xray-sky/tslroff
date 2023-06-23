@@ -28,13 +28,13 @@ module Troff
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
     if req_str.match?(/^([-\w\.]+)/)
-      new_style = Style.new(@current_block.text.last.style.dup)
+      new_style = Style.new(@current_block.terminal_text_style.dup)
       current_baseline = new_style[:baseline] || 0
       new_baseline = to_em("#{current_baseline}m+#{to_u(req_str, default_unit: 'v')}u").to_f
       if new_baseline == 0
-        apply { @current_block.text.last.style.delete(:baseline) }
+        apply { @current_block.terminal_text_style.delete(:baseline) }
       else
-        apply { @current_block.text.last.style[:baseline] = new_baseline }
+        apply { @current_block.terminal_text_style[:baseline] = new_baseline }
       end
       ''
     else

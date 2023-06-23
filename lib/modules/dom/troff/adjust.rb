@@ -11,13 +11,13 @@ module Troff
   def break_adj
     # TODO: this - I'm taking this over to erase end-of-block breaks, because I don't
     #              remember what this was originally supposed to be about
-    @current_block.text.pop if @current_block.text.last.text.is_a?(LineBreak)
+    @current_block.text.pop if @current_block.terminal_string.is_a?(LineBreak)
   end
 
   def space_adj
     # janky hack to prevent space adjusting after .IP tag (once), or after eqn
-    if @current_block.text.last.instance_variable_defined?(:@no_space_adj)
-      @current_block.text.last.remove_instance_variable(:@no_space_adj)
+    if @current_block.terminal_text_obj.instance_variable_defined?(:@no_space_adj)
+      @current_block.terminal_text_obj.remove_instance_variable(:@no_space_adj)
       return
     end
 

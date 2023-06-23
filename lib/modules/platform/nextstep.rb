@@ -99,3 +99,9 @@ module NEXTSTEP
   end
 
 end
+
+module OPENSTEP
+  def self.extended(k)
+    k.extend ::NEXTSTEP
+  end
+end

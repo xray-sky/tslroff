@@ -1,5 +1,3 @@
-EndOfEqn = Class.new(RuntimeError)
-
 Dir.glob("#{__dir__}/words/*.rb").each do |i|
   require_relative i
 end
@@ -9,7 +7,7 @@ module Eqn
   def eqn_setup
     @state[:eqn_active] = true
     @eqnhold = @current_block
-    @current_block = EqnBlock.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
+    @current_block = EqnBlock.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     # save and set fonts
     @register['98'] = @register['.f'].dup
     @register['99'] = @register['.s'].dup
@@ -148,7 +146,7 @@ module Eqn
               # needed to protect escapes from this gsub.
               txt.gsub!(/[^A-Za-z]+/) do |m|
                 m = "\\f1#{m}\\fP"
-                m = "\\|#{m}" if @register['.f'].value == 2 and !@current_block.text.last.empty?
+                m = "\\|#{m}" if @register['.f'].value == 2 and !@current_block.terminal_text_obj.empty?
                 m
               end
               # these "shorthands" apparently needn't be surrounded by spaces, so won't be caught by the eqnchars match

@@ -37,22 +37,9 @@
 #                                          and so does bcopy(1m) - so I'll add @ to the delims? REVIEW
 #                                          and hp(1) uses `; mv(5) uses #
 #
-# Tried a bunch of stuff to get faster results through selenium.
-#  * specify user profile, instead of letting it generate one every time
-#  * explicitly set various browser cache options
-#  * get doc once, use javascript to replace element (to prevent repeated download/parse of css)
-#  * find element with css selector instead of by id
-#  ...nothing helped.
-#
 # TODO "will not affect the current environment"
 # TODO set number registers -- REVIEW is it necessary? (is it used in practice)
-# REVIEW i'm in big trouble if I ever get a \w with a tab in it
-# TODO consider implementing a selenium answer cache. even if it isn't persisted it ought to pay
-#      dividends on pages with lots of tabs
-#        e.g. SunPHIGS 1.1 currently runs 15min to process, without a cache
-#             with the cache, appx. half that.
-#             but I'm seeing problems with the cache apparently being poisoned by
-#             results where the CSS did not load correctly?
+# REVIEW i'm in big trouble if I ever get a \w with a tab in it (why did I think this? seems ok maybe)
 #
 
 module Troff
@@ -63,16 +50,7 @@ module Troff
     # get a manipulable block that can be rendered without leaving anything in the output stream
     selenium = Block::Selenium.new
     unescape(req_str, output: selenium)
-    #@@webdriver.get selenium.to_html
-    #@@webdriver.execute_cdp('CSS.enable', {}) it does nothing
-    #begin
-    #  width = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px')#.to_i
-    #  # do i really need to append 'u' here? there was a place. nroff? tbl? REVIEW what happened
-    #rescue Selenium::WebDriver::Error::NoSuchElementError => e
-    #  warn e
-    #  'NaN' # REVIEW: side effects - returning nil - but what string makes sense?
-    #end
-    typesetter_width selenium
+    typesetter_width(selenium)
   end
 
   # TODO I want a way to instantiate these, but with a warning so I can note

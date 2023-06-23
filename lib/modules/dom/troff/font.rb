@@ -38,19 +38,18 @@ module Troff
            end
 
     @register[:prev_ps].value = @register['.s'].value
-    #apply { @current_block.text.last.font.size = size }
+    #apply { @current_block.terminal_font.size = size }
 
     # see note in \v about this scaling of baseline shift
     # summary: if we have a pending baseline shift with no output yet, the shift
     #          needs scaling based on the previous font size
     # TODO so far this is just making a bigger mess.
-    #cur = @current_block.text.last
+    #cur = @current_block.terminal_text_obj
     #if !cur.immutable? and cur.style[:baseline]
     #  cur.style[:baseline] = cur.style[:baseline] * (@register['.s'].value / size)
     #end
 
     @register['.s'].value = size
-    #@current_block << change_font
     change_font
     ''
   end
@@ -61,10 +60,7 @@ module Troff
     rescue NameError
       fontclass = Kernel.const_get('Font').tap { |n| warn "trying to use unknown font #{@state[:fonts][@register['.f'].value].inspect} (position #{@register['.f'].value.inspect})" }
     end
-    # what were we thinking of, Font has no style?
-    #apply { @current_block.text.last.font = fontclass.new(size: @register['.s'].value,
-    #                                                     style: @current_block.text.last.style.dup) }
-    apply { @current_block.text.last.font = fontclass.new(size: @register['.s'].value) }
+    apply { @current_block.terminal_font = fontclass.new(size: @register['.s'].value) }
   end
 
   def init_font

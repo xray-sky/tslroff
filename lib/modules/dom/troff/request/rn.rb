@@ -33,7 +33,7 @@ module Troff
 
     # find the old method - might be a request, or a macro
     oldmethod = oldname
-    oldmethod = "req_#{oldname}" if Requests.include? oldname
+    oldmethod = "req_#{oldname}" if REQUESTS.include? oldname
 
     if respond_to? oldmethod
       warn ".rn renaming request/macro #{oldname.inspect} as #{newname.inspect}"

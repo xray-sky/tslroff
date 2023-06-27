@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/04/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -39,13 +39,11 @@
 # types.5 [15]: .so can't read /usr/include/sys/types.h
 # utmp.5 [18]: .so can't read /usr/include/utmp.h
 
-
 module GDT_UNX
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1]
     case k.instance_variable_get '@input_filename'
     # REVIEW there are several pages that exist as 'copy___'. are these all strict duplicates?
@@ -59,14 +57,16 @@ module GDT_UNX
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => "UNIX Programmer's Manual",
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      # REVIEW ]W is overridden with '7th Edition' in .TH, but the manuals in cat*/
-      # have the date. among other things that don't quite match tmac.an ..?
-      #']W' => '7th Edition',
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*(]W",
+        ']D' => "UNIX Programmer's Manual",
+        # REVIEW ]W is overridden with '7th Edition' in .TH, but the manuals in cat*/
+        # have the date. among other things that don't quite match tmac.an ..?
+        #']W' => '7th Edition',
+        ']W' => File.mtime(@source.filename).strftime('%B %d, %Y')
+      }
+    )
   end
 
   def init_tr
@@ -82,15 +82,15 @@ module GDT_UNX
   # REVIEW
   # this is used seemingly to prevent processing the next line
   # as a request. but, it's not in tmac.an or the DWB manual.
-  def li(*args)
-    parse("\\&" + next_line)
+  def li(*_args)
+    parse "\\&#{next_line}"
   end
 
   # .so with absolute path, headers in /usr/include
   def req_so(name, breaking: nil)
     osdir = @source_dir.dup
     @source_dir << '/../..'
-    super(name)
+    super(name, breaking: breaking)
     @source_dir = osdir
   end
 
@@ -105,7 +105,7 @@ module GDT_UNX
 
   # tmac.an.new
   define_method 'UC' do |v = '', *_args|
-    req_ds(']W ' + v.empty? ? '3rd Berkeley Distribution' : "#{v}th Berkeley Distribution")
+    req_ds "]W #{v.empty? ? '3rd Berkeley Distribution' : "#{v}th Berkeley Distribution"}"
   end
 
   # .NOP - does nothing but I would like to insert this text as a comment

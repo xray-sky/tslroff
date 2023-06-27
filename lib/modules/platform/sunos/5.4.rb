@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/11/23.
 # Copyright 2023 Typewritten Software. All rights reserved.
@@ -25,10 +25,12 @@ module SunOS_5_4
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']W' => "SunOS #{@version}",
-      '||' => '/usr/share/lib/tmac'
-    })
+    @state[:named_string].merge!(
+      {
+        ']W' => "SunOS #{@version}",
+        '||' => '/usr/share/lib/tmac'
+      }
+    )
   end
 
   def init_fp
@@ -41,45 +43,45 @@ module SunOS_5_4
 
   def init_sunos54
     @state[:sections] = {
-      '1'  => 'User Commands',
-      '1b' => 'SunOS/BSD Compatibility Package Commands',
-      '1c' => 'Communication Commands',
-      '1f' => 'FMLI Commands',
-      '1g' => 'Graphics and CAD Commands',
-      '1m' => 'Maintenance Commands',
-      '1s' => 'SunOS Specific Commands',
-      '2'  => 'System Calls',
-      '3'  => 'C Library Functions',
-      '3b' => 'SunOS/BSD Compatibility Library Functions',
-      '3c' => 'C Library Functions',
-      '3e' => 'C Library Functions',
-      '3f' => 'Fortran Library Routines',
-      '3g' => 'C Library Functions',
-      '3k' => 'Kernel VM Library Functions',
-      '3l' => 'Lightweight Processes Library',
-      '3m' => 'Mathematical Library',
-      '3n' => 'Network Functions',
-      '3r' => 'Realtime Library',
-      '3s' => 'Standard I/O Functions',
-      '3t' => 'Thread Library',
-      '3w' => 'C Library Functions',
-      '3x' => 'Miscellaneous Library Functions',
+      '1'   => 'User Commands',
+      '1b'  => 'SunOS/BSD Compatibility Package Commands',
+      '1c'  => 'Communication Commands',
+      '1f'  => 'FMLI Commands',
+      '1g'  => 'Graphics and CAD Commands',
+      '1m'  => 'Maintenance Commands',
+      '1s'  => 'SunOS Specific Commands',
+      '2'   => 'System Calls',
+      '3'   => 'C Library Functions',
+      '3b'  => 'SunOS/BSD Compatibility Library Functions',
+      '3c'  => 'C Library Functions',
+      '3e'  => 'C Library Functions',
+      '3f'  => 'Fortran Library Routines',
+      '3g'  => 'C Library Functions',
+      '3k'  => 'Kernel VM Library Functions',
+      '3l'  => 'Lightweight Processes Library',
+      '3m'  => 'Mathematical Library',
+      '3n'  => 'Network Functions',
+      '3r'  => 'Realtime Library',
+      '3s'  => 'Standard I/O Functions',
+      '3t'  => 'Thread Library',
+      '3w'  => 'C Library Functions',
+      '3x'  => 'Miscellaneous Library Functions',
       '3xc' => 'X/Open Curses Library Functions',
       '3xn' => 'X/Open Networking Services Library Functions',
-      '4'  => 'File Formats',
-      '4b' => 'SunOS/BSD Compatibility Package File Formats',
-      '5'  => 'Headers, Environments, and Macros',
-      '6'  => 'Games and Demos',
-      '7'  => 'Special Files',
-      '7b' => 'SunOS/BSD Compatibility Special Files',
-      '8'  => 'Maintenance Procedures',
-      '8c' => 'Maintenance Procedures',
-      '8s' => 'Maintenance Procedures',
-      '9'  => 'DDI and DKI',
-      '9e' => 'DDI and DKI Driver Entry Points',
-      '9f' => 'DDI and DKI Kernel Functions',
-      '9s' => 'DDI and DKI Data Structures',
-      'l'  => 'Local Commands'
+      '4'   => 'File Formats',
+      '4b'  => 'SunOS/BSD Compatibility Package File Formats',
+      '5'   => 'Headers, Environments, and Macros',
+      '6'   => 'Games and Demos',
+      '7'   => 'Special Files',
+      '7b'  => 'SunOS/BSD Compatibility Special Files',
+      '8'   => 'Maintenance Procedures',
+      '8c'  => 'Maintenance Procedures',
+      '8s'  => 'Maintenance Procedures',
+      '9'   => 'DDI and DKI',
+      '9e'  => 'DDI and DKI Driver Entry Points',
+      '9f'  => 'DDI and DKI Kernel Functions',
+      '9s'  => 'DDI and DKI Data Structures',
+      'l'   => 'Local Commands'
     }
   end
 
@@ -240,7 +242,7 @@ module SunOS_5_4
                    when 'KR' then "The C Programming Language"
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}".tap { |x| warn "Tz => #{x}" }
                    end
-    )
+          )
     parse "\\fI\\*(Tz\\f1#{args[1]}"
   end
 
@@ -263,7 +265,7 @@ module SunOS_5_4
                    when 'HC_HWCONFIG' then "x86 Device Configuration Guide"
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}".tap { |x| warn "Hc => #{x}" }
                    end
-    )
+          )
     parse "\\fI\\*(Hc\\f1#{args[1]}"
   end
 

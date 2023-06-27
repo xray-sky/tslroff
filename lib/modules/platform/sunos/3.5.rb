@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/08/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -45,16 +45,18 @@ module SunOS_3_5
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']W' => 'Sun Release 3.5'
-    })
+    @state[:named_string].merge!(
+      {
+        ']W' => 'Sun Release 3.5'
+      }
+    )
   end
 
   # REVIEW
   # this is used seemingly to prevent processing the next line
   # as a request. but, it's not in tmac.an or the DWB manual.
   # still used in 3.5, but only for binmail(1)
-  def li(*args)
+  def li(*_args)
     parse("\\&" + next_line)
   end
 

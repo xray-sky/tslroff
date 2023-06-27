@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/23/21.
 # Copyright 2021 Typewritten Software. All rights reserved.
@@ -19,8 +19,7 @@
 module UnixWare
 
   def self.extended(k)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
     k.instance_variable_set '@heading_detection', %r(^\s{6,7}(?<section>[A-Z][A-Za-z\s]+)$)
     k.instance_variable_set '@title_detection', %r{^       (?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
     k.instance_variable_set '@related_info_heading', 'REFERENCES'

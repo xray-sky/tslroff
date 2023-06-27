@@ -31,7 +31,7 @@ module Troff
   def esc_h(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = __unesc_w(__unesc_n(s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1'))) # we may have come here without having getargsed
-    if req_str.match?(/^[-\w\.]+/)
+    if req_str.match?(/^[-\w.]+/)
       warn "horizontal motion: #{req_str.inspect}"
       new_style = Style.new(@current_block.terminal_text_style.dup)
       current_shift = new_style[:horizontal_shift] || 0
@@ -41,26 +41,22 @@ module Troff
       else
         apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }
       end
-      ''
     elsif req_str.start_with?('|')
       req_str.slice!(0)
       warn "attempting to \\h to absolute pos #{req_str.inspect}" # TODO/REVIEW maybe this can, for practical purposes, be handled like a tab? - ar(4) [SunOS 5.5.1]
       warn "^^^ not from beginning of line!" unless broke? # TODO this warning is tripping apparently incorrectly on lex(1) [SunOS 5.5.1] since we're in nofill and just had a linebreak. why?
-      new_shift = to_em("#{req_str}").to_f
-      if new_shift == 0
+      new_shift = to_em(req_str.to_s).to_f
+      if new_shift.zero?
         apply { @current_block.terminal_text_style.delete(:horizontal_shift) }
+      elsif nofill?
+        warn ">>> treating it like a tab of #{new_shift}em due to nofill"
+        insert_tab width: new_shift
       else
-        if nofill?
-          warn ">>> treating it like a tab of #{new_shift}em due to nofill"
-          insert_tab width: new_shift
-        else
-          apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }
-        end
+        apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }
       end
-      ''
     else
       warn "don't know how to \\h #{req_str.inspect}"
-      ''
     end
+    ''
   end
 end

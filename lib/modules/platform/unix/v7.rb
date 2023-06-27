@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/04/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -17,12 +17,14 @@ module UNIX_V7
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => "UNIX Programmer's Manual",
-      ']W' => "7th Edition",
-      # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        ']D' => "UNIX Programmer's Manual",
+        ']W' => "7th Edition",
+        # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
+        :footer => "\\*(]W"
+      }
+    )
   end
 
   define_method 'TH' do |*args|

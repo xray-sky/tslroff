@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/10/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -35,13 +35,15 @@ module Plan9
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      'Tm' => '&trade;',
-      ']D' => 'Plan 9',
-      #']L' => '',
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        'Tm' => '&trade;',
+        ']D' => 'Plan 9',
+        #']L' => '',
+        ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+        footer: "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
+      }
+    )
   end
 
   def init_fp
@@ -56,7 +58,7 @@ module Plan9
 
   def init_PD
     super
-    @register['PD'] = @register[')P']         # Plan9 .PD sets \n(PD instead of \n()P - unknown if it is made use of
+    @register['PD'] = @register[')P'] # Plan9 .PD sets \n(PD instead of \n()P - unknown if it is made use of
   end
 
   def init_TH
@@ -73,7 +75,7 @@ module Plan9
       if args.any?
         parse "\\%\\&\\f#{fp}#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
       else
-        req_ft "#{fp}"
+        req_ft fp.to_s
       end
       send 'HY'
     end
@@ -96,17 +98,19 @@ module Plan9
   # .2C, .1C, .C1, .C2, .C3
   # no proprietary markings (.PM, .)G) either, apparently
 
-  define_method 'EE' do |*args|
+  define_method 'EE' do |*_args|
     req_ft '1'
     req_fi
   end
 
-  define_method 'EX' do |*args|
+  define_method 'EX' do |*_args|
     req_ft '5'
     req_nf
   end
 
-  define_method 'HY' do |*args| ; req_hy '14' ; end
+  define_method 'HY' do |*_args|
+    req_hy '14'
+  end
 
   define_method 'TF' do |*args|
     parse %(.IP "" "\\w'\f5#{args[0]}\\ \\ \\fP'u")

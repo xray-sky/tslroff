@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -23,11 +23,13 @@ module Ultrix_2_0_0
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => 'UNIX Programmer\'s Manual',
-      ']W' => '7th Edition',
-      :footer => '' # just a page number
-    })
+    @state[:named_string].merge!(
+      {
+        ']D' => 'UNIX Programmer\'s Manual',
+        ']W' => '7th Edition',
+        :footer => '' # just a page number
+      }
+    )
   end
 
   define_method 'TH' do |*args|

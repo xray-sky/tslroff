@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/14/23.
 # Copyright 2023 Typewritten Software. All rights reserved.
@@ -24,17 +24,18 @@ module DYNIX
     end
   end
 
-
   def init_ds
     super
-    @state[:named_string].merge!({
-      # tmac.an.new
-      ']D' => "UNIX Programmer's Manual",   # default set by .TH
-      ']W' => '7th Edition',                # default set by .TH
-      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      'V)' => '',
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        # tmac.an.new
+        footer: "\\*(]W",
+        ']D' => "UNIX Programmer's Manual", # default set by .TH
+        ']W' => '7th Edition', # default set by .TH
+        #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+        'V)' => ''
+      }
+    )
   end
 
   def init_tr
@@ -46,7 +47,7 @@ module DYNIX
   #def req_so(name, breaking: nil)
   #  osdir = @source_dir.dup
   #  @source_dir << '/..'
-  #  super(name)
+  #  super(name, breaking: breaking)
   #  @source_dir = osdir
   #end
 
@@ -84,7 +85,7 @@ module DYNIX
     warn ".VS can't yet draw margin characters (.mc)"
   end
 
-  define_method 'Ps' do |*_args|
+  define_method 'Ps' do |*args|
     warn "REVIEW .Ps #{args.inspect}"
     req_ft '5'
     req_sp
@@ -92,7 +93,7 @@ module DYNIX
     req_in '+0.5i'
   end
 
-  define_method 'Pe' do |*_args|
+  define_method 'Pe' do |*args|
     warn "REVIEW .Pe #{args.inspect}"
     req_sp
     req_fi

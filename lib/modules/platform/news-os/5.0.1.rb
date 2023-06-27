@@ -16,8 +16,8 @@
 #    - there are some overlaps (e.g. cc(1), cc(1-bsd)) but the SEE ALSO links don't specify
 #
 
-require_relative '../sunos.rb'
-require_relative '../sunos/4.0.rb'
+require_relative '../sunos'
+require_relative '../sunos/4.0'
 
 module NEWS_os_5_0_1
 
@@ -26,18 +26,19 @@ module NEWS_os_5_0_1
       k.extend SunOS
       k.extend SunOS_4_0
     end
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
     k.instance_variable_set '@heading_detection', %r{^(?<section>[A-Z][A-Za-z\s]+)$}
-    k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}		# REVIEW now what?
+    k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-    })
+    @state[:named_string].merge!(
+      {
+        ']W' => File.mtime(@source.filename).strftime('%B %d, %Y'),
+      }
+    )
   end
 
 end

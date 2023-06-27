@@ -13,6 +13,8 @@
 #
 # TODO
 #   character centers aligned
+# √ there can be font changes involved: \o'\f2n\f1\(rn' -- factor(1) [SunOS 5.5.1] (bold n, with an overbar (extended radical for '\(sr'))
+#      ha! but it fails in psroff too - no overstrike.
 #
 #
 
@@ -22,25 +24,12 @@ module Troff
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
     warn "\\o trying to overstrike #{req_str.inspect}"
     pile = Block::Bare.new(text: Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup))
-    while req_str.length > 0
+    until req_str.empty?
       chr = req_str.slice!(0, get_char(req_str).length)
       unescape chr, output: pile
       pile << Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) unless @current_block.terminal_text_obj.empty?
     end
     pile.text.pop # nuke the last empty Text obj
     Overstrike.new(chars: pile.text)#.tap { |n| warn "inserted overstrike #{n.inspect}" }
-    #''
-=begin
-this is totally f***ed because there can be font changes involved here
-\o'\f2n\f1\(rn' -- from factor(1) [SunOS 5.5.1] (bold n, with an overbar (extended radical for '\(sr'))
-ha! but it fails in psroff too - no overstrike.
-    pile = []
-    begin
-      pile << s.slice!(0, get_char(s).length)
-    end until s.empty?
-    warn "\\o overstriking >2 chars (#{pile.inspect})" if pile.length > 2
-    pile = pile.join("\017")
-    "&roffctl_overstrike(#{pile});"
-=end
   end
 end

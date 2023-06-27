@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/07/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -14,11 +14,20 @@
 #                  In this book: "extended curses library," "termdef," and "terminfo."
 #  greek(7) has no shift in/out?
 
+class Source
+  def magic
+    case File.basename(@filename)
+    # incorrectly recognized as troff source as the first character is '.'
+    when '3270keys.5', 'cshrc.5', 'netrc.5', 'rhosts.5' then 'Nroff'
+    else @magic
+    end
+  end
+end
+
 module AIX_1_2_1
 
   def self.extended(k)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@heading_detection', %r(^(?<section>[A-Z][A-Z\s]+)$)
     k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>[-+_., A-Za-z0-9]+?)\((?<section>\S+?),(?<book>[CLF])\))}
     k.instance_variable_set '@related_info_heading', 'RELATED INFORMATION'
@@ -31,21 +40,13 @@ module AIX_1_2_1
       k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>REMOTE PROCEDURE CALL \(RPC\))\((?<section>\S+?),(?<book>[CLF])\))}
     when 'XDR__eXternal_Data_Representation.3n'
       k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>XDR \(EXTERNAL DATA REPRESENTION\))\((?<section>\S+?),(?<book>[CLF])\))}
-    when '3270keys.5', 'cshrc.5', 'netrc.5', 'rhosts.5'
-      # incorrectly recognized as troff source as the first character is '.'
-      require_relative '../../dom/nroff.rb'
-      Dir.glob("#{File.dirname(__FILE__)}/../../dom/nroff/*.rb").each { |i| require i }
-      # save a ref to our :detect_links method, before it gets smashed by the extend
-      k.define_singleton_method :_detect_links, k.method(:detect_links)
-      k.extend ::Nroff
-      k.define_singleton_method :detect_links, k.method(:_detect_links)
     when 'acctdir.8'
       k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>acct/\*)\((?<section>\S+?),(?<book>[CLF])\))}
     end
   end
 
   def page_title
-    super << " &mdash; AIX PS/2 1.2.1"
+    "#{super} &mdash; AIX PS/2 1.2.1"
   end
 
   def parse_title
@@ -58,7 +59,7 @@ module AIX_1_2_1
   end
 
   def retarget_symlink # looks like these are all same-directory links, though via absolute path for some reason
-    link_dir = Pathname.new @source_dir
+    #link_dir = Pathname.new @source_dir
     target_dir = Pathname.new File.dirname(@symlink).sub(%r(^/usr/man), '..')
     real_target = File.realpath("#{@source_dir}/#{target_dir}/#{File.basename(@symlink)}")
 

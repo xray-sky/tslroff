@@ -10,12 +10,7 @@ module Immutable
 
   def self.included(baseclass)
     # Create an ImmutableObject exception class for the class that's been extended
-    #begin
-      Object.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
-    #rescue NameError
-      # search parent classes
-
-    #end
+    Object.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
   end
 
   def [](key)
@@ -24,17 +19,18 @@ module Immutable
 
   def []=(key, val)
     attr = "@#{key}"
-    raise get_object_exception_class if immutable? and instance_variable_get(attr) != val
+    raise object_exception_class if immutable? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
   def delete(key)
     attr = "@#{key}"
-    raise get_object_exception_class if immutable? and instance_variable_defined?(attr)
+    raise object_exception_class if immutable? and instance_variable_defined?(attr)
     remove_instance_variable(attr) if instance_variable_defined?(attr)
   end
 
   def prototype
+    # TODO rubocop hates this. figure out what we were after and fix it
     Hash[(keys.collect do |k|
       begin
         [k, self[k].dup]
@@ -48,14 +44,14 @@ module Immutable
     self.class.new(prototype)
   end
 
-  def ==(obj)
-    return false unless keys.sort == obj.keys.sort
+  def ==(other)
+    return false unless keys.sort == other.keys.sort
     keys.each do |k|
-      return false unless self[k] == obj[k]
+      return false unless self[k] == other[k]
     end
   end
 
-  def each(&block)
+  def each
     return enum_for(__callee__) unless block_given?
     keys.each do |k|
       yield [k, self[k]]
@@ -65,7 +61,7 @@ module Immutable
 
   def immutable_setter(val)
     attr = "@#{__callee__.to_s.sub(/=$/, '')}"
-    raise get_object_exception_class, "Attr: #{attr} => Val: #{val}" if immutable? and instance_variable_get(attr) != val
+    raise object_exception_class, "Attr: #{attr} => Val: #{val}" if immutable? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
@@ -85,13 +81,13 @@ module Immutable
 
   def values
     keys.collect do |v|
-      self.v
+      send v
     end.compact
   end
 
   private
 
-  def get_object_exception_class
+  def object_exception_class
     Kernel.const_get("Immutable#{self.class.name}Error")
   end
 end

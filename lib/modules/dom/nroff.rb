@@ -3,7 +3,7 @@
 #    nroff source
 # ---------------
 #
-# REVIEW: add anchors menu for detected headings ?
+# REVIEW add anchors menu for detected headings ?
 
 Dir.glob("#{File.dirname(__FILE__)}/nroff/*.rb").each do |i|
   require i
@@ -13,17 +13,17 @@ module Nroff
   attr_reader :input_line_number
 
   def self.extended(k)
+    k.instance_variable_set '@input_line_number', 0
+
     k.instance_variable_set '@tab_width', 8
     k.instance_variable_set '@lines_per_page', 66
     k.instance_variable_set '@related_info_heading', 'SEE ALSO'
 
     # watch for alphabetic text starting in first column, which would be a title or section head
     k.instance_variable_set '@heading_detection', %r{^(?<section>[A-Z][A-Za-z\s]+)$}
-    #k.instance_variable_set '@title_detection', %r{^((\S+?)\(((\S+?)(-\S+)*)\))}		# TODO supposedly this doesn't always match correctly. rrestore.ffs(1) [RISC/os 4.52]
-    k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}		# REVIEW now what?
-    k.instance_variable_set '@summary_heading', %r{^NAME$}  # REVIEW works for UNIX manual entries.
+    k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
+    k.instance_variable_set '@summary_heading', %r{^NAME$} # REVIEW works for UNIX manual entries.
 
-    k.instance_variable_set '@input_line_number', 0
   end
 
   def source_init
@@ -32,7 +32,7 @@ module Nroff
 
   def to_html
     @document = to_lp
-    %(<div class="body"><div id="man">) + @document.collect(&:to_html).join + "</div></div>"
+    %(<div class="body"><div id="man">#{@document.collect(&:to_html).join}</div></div>)
   end
 
   def to_lp
@@ -67,7 +67,7 @@ module Nroff
           text.links = detect_links(plaintext)
         end
 
-        platen_position % 2 == 0 ? text.up! : text.down!
+        platen_position.even? ? text.up! : text.down!
 
         # REVIEW I wonder if these control characters ought to be programmable
         #        not if col(1) is involved - VT(\013), SI (\016), SO (\017), and ESC-7, 8, and 9 only
@@ -78,7 +78,7 @@ module Nroff
         case char
         when ' '   then printhead_position += 1
         when "\n"  then platen_position += 2 and printhead_position = 0
-        when "\cH" then printhead_position -= 1 unless printhead_position.zero?   # ignore a backspace in leftmost column
+        when "\cH" then printhead_position -= 1 unless printhead_position.zero? # ignore a backspace in leftmost column
         when "\cI" then printhead_position += (@tab_width - printhead_position % @tab_width)
         when "\cM" then printhead_position = 0
         when "\cN" then alt_typebox_shift = true
@@ -115,12 +115,9 @@ module Nroff
     # REVIEW might need to be done one at a time, in sequence, to be properly effective.
     # TODO make this return sensible english text no matter the order overstrikes occur
     line.gsub(%r((\e.|_\cH|\cH.|\cM.*)), '')
-    rescue ArgumentError => e
-      if e.message.match?(/invalid byte sequence/)
-        warn "#{e.message} parsing #{line.inspect}"
-      else
-        raise
-      end
+  rescue ArgumentError => e
+    raise unless e.message.match? %r(invalid byte sequence)
+    warn "#{e.message} parsing #{line.inspect}"
   end
 
   def detect_links(line)

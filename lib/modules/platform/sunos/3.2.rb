@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/06/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -51,16 +51,18 @@ module SunOS_3_2
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #']W' => 'Sun Release 3.2\(*b' # ß, eh? - 68010 release only TODO
-      ']W' => 'Sun Release 3.2' # 68020/SPARC releases
-    })
+    @state[:named_string].merge!(
+      {
+        #']W' => 'Sun Release 3.2\(*b' # ß, eh? - 68010 release only TODO
+        ']W' => 'Sun Release 3.2' # 68020/SPARC releases
+      }
+    )
   end
 
   # REVIEW
   # this is used seemingly to prevent processing the next line
   # as a request. but, it's not in tmac.an or the DWB manual.
-  def li(*args)
+  def li(*_args)
     parse("\\&" + next_line)
   end
 

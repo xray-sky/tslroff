@@ -41,11 +41,13 @@ module NEWS_os_4_2_1R_en_US
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => "NEWS-OS Programmer's Manual",
-      ']W' => "7th Edition",
-      :footer => "NEWS-OS\t\\s-2Release 4.2.1R\\s+2"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "NEWS-OS\t\\s-2Release 4.2.1R\\s+2",
+        ']D' => "NEWS-OS Programmer's Manual",
+        ']W' => "7th Edition"
+      }
+    )
   end
 
 end

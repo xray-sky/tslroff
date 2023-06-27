@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/04/21.
 # Copyright 2021 Typewritten Software. All rights reserved.
@@ -14,31 +14,32 @@
 # "help" format is plain text, with directory structure, some in-line metadata,
 #  and somewhat different rules around "SEE ALSO"
 #
-# REVIEW: do I really want to downcase all the sections? 3X11 wants to be uppercase.
-# TODO:
-#       10.4 SysV coffdump(1) links to a.out(5) - should be a.out(4)
-#       10.4 SysV/BSD X11 pages mostly missing (only dangling symlinks - extract issue)
-# √     10.4 new  mh sources usr/new/lib/mh/components, usr/new/lib/mh/distcomps (extract issue)
-# √     10.4 new  most of rcs*.n refs "entry (n)" (with a space)
-#       10.4 new  ali.n has &minus; in link - Nokogiri is garbling this in the Menu
-#       10.4 new  anno.n has the same problem as rcs with whitespace in refs - but these are Troff
-# √     10.4 new  doesn't give systype; put BSD override on mh manual (some links in new/, some in BSD)
-#       10.4 new  need to get systype into Related Info links for Troff
-# √     10.4 Help edacl has "SEE ALS0" section
-# √     10.4 Help kbd has incorrectly indented related info text
-# √     10.4 Help prsvr/config link to 'prsvr' not detected (next line extra indent on For)
-# √     10.4 Help login/window links to 'l' (single letter link not detected); 's' is only other single char help
-#       10.4 Help emt_function_keys [2]: processing unknown escape sequence [E
-#                 but: 'help emt emt_function_keys' does not result in displaying this file.
-#                 at minimum, changes the display font size. 5x9 for emt, 5x7 (corrupted by col?) for em3270
-#                 guess: ^]J starts font change request
-#                        next char is length of font name (number of characters) - ^D was 4, ^E is 5; if it's wrong, you get the extra characters echoed as normal text
-#                        then the string with the font name (f5x7, f5x9, f7x13, helvetica12; default pad font seems to be f16.b)
-#                        ^[E terminates the name
-#                        ^A ? is important; no change without this.
-#       10.4 Softbench manual doesn't use .TH, which breaks a lot of assumptions
-#       10.4 Softbench manual doesn't give systype, which breaks Related Info links
-#       consider allowing related info detection in index.hlp (commands.hlp, dm.hlp... no "SEE ALSO")
+# REVIEW do I really want to downcase all the sections? 3X11 wants to be uppercase.
+# TODO
+#   10.4 SysV coffdump(1) links to a.out(5) - should be a.out(4)
+#   10.4 SysV/BSD X11 pages mostly missing (only dangling symlinks - extract issue)
+# √ 10.4 new  mh sources usr/new/lib/mh/components, usr/new/lib/mh/distcomps (extract issue)
+# √ 10.4 new  most of rcs*.n refs "entry (n)" (with a space)
+#   10.4 new  ali.n has &minus; in link - Nokogiri is garbling this in the Menu
+#   10.4 new  anno.n has the same problem as rcs with whitespace in refs - but these are Troff
+# √ 10.4 new  doesn't give systype; put BSD override on mh manual (some links in new/, some in BSD)
+#   10.4 new  need to get systype into Related Info links for Troff
+# √ 10.4 Help edacl has "SEE ALS0" section
+# √ 10.4 Help kbd has incorrectly indented related info text
+# √ 10.4 Help prsvr/config link to 'prsvr' not detected (next line extra indent on For)
+# √ 10.4 Help login/window links to 'l' (single letter link not detected); 's' is only other single char help
+#   10.4 Help emt_function_keys [2]: processing unknown escape sequence [E
+#             but: 'help emt emt_function_keys' does not result in displaying this file.
+#             at minimum, changes the display font size. 5x9 for emt, 5x7 (corrupted by col?) for em3270
+#             guess: ^]J starts font change request
+#                    next char is length of font name (number of characters) - ^D was 4, ^E is 5; if it's wrong, you get the extra characters echoed as normal text
+#                    then the string with the font name (f5x7, f5x9, f7x13, helvetica12; default pad font seems to be f16.b)
+#                    ^[E terminates the name
+#                    ^A ? is important; no change without this.
+#   10.4 Softbench manual doesn't use .TH, which breaks a lot of assumptions
+#   10.4 Softbench manual doesn't give systype, which breaks Related Info links
+#   consider allowing related info detection in index.hlp (commands.hlp, dm.hlp... no "SEE ALSO")
+#   unbundled Ada SEE ALSO links to e.g. a.db with no section
 
 module DomainOS
 
@@ -46,11 +47,9 @@ module DomainOS
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     systype = Regexp.last_match[1] if k.instance_variable_get('@source_dir').match(%r{(bsd|sys5)})
     k.instance_variable_set '@systype', systype
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '') + (systype ? ".#{systype}" : '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '') + (systype ? ".#{systype}" : '')
     # spoilsport: "dde(1)(Domain/OS)" => SR10.4 ./bsd4.3/usr/man/cat1/dde.1
-    k.instance_variable_set '@title_detection',
-      %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
+    k.instance_variable_set '@title_detection', %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
     k.instance_variable_set '@base_indent', 5
     k.instance_variable_set '@lines_per_page', nil
 
@@ -72,9 +71,7 @@ module DomainOS
       k.define_singleton_method :parse_title, k.method(:parse_title_aegis_helpfile)
       k.instance_variable_set '@output_directory', Regexp.last_match[1]
       k.instance_variable_set '@manual_section', 'help'
-      k.instance_variable_set '@help_sections',
-        %w[calls debug dm ed edacct edns edstr em3270 emt fmt login magtape
-           protection prsvr shell syscalls vt100]
+      k.instance_variable_set '@help_sections', %w[calls debug dm ed edacct edns edstr em3270 emt fmt login magtape protection prsvr shell syscalls vt100]
       # TODO: nope, some of these pages use unix style format, with 'NAME' section heading --- arp has no space following -; bind has no (); cc has no - at all
       k.instance_variable_set '@summary_heading', %r{^#{k.instance_variable_get '@manual_entry'}\s\(\S+?\)\s+-+\s+\S}
     elsif k.instance_variable_get('@input_filename').end_with?('.a')
@@ -172,11 +169,11 @@ module DomainOS
   # though they appear totally orderly so maybe unnecessary.
   def detect_links_syscalls(line)
     syscall_detect = '([_$a-z0-9]+)'
-    if line.match(/^\s{#{@base_indent}}(?:#{syscall_detect}(?:, |,\s*$|\.\s*$|;\s*$))+/)
-      return line.scan(/#{syscall_detect}/).map do |text, _|
-        [text, "#{text.tr('$', '')}.html"]
-      end.to_h
-    end
+    return unless line.match(/^\s{#{@base_indent}}(?:#{syscall_detect}(?:, |,\s*$|\.\s*$|;\s*$))+/)
+
+    line.scan(/#{syscall_detect}/).map do |text, _|
+      [text, "#{text.delete '$'}.html"]
+    end.to_h
   end
 
   # Related help references in the Aegis help files are not consistently
@@ -231,7 +228,7 @@ module DomainOS
       end
 
       # bare lists of single refs
-      # TODO: (somehow) setprot.hlp has "protection rights" spanning lines
+      # TODO (somehow) setprot.hlp has "protection rights" spanning lines
       if line.match(/^\s{#{@base_indent}}(?:#{entry_detect}(?:, |,\s*$|\.\s*$|;\s*$))+/)
         return line.scan(/#{entry_detect}/).map do |text, _|
           [text, "#{relative_path}#{text.tr(" \t", '/')}.html"]
@@ -249,7 +246,7 @@ module DomainOS
   # between the manual entry and section reference
   def detect_links_rcs(line)
     line.scan(/(?<=[\s,.;])((\S+?)\s?\((\d.*?)\))/).map do |text, ref, section|
-      [text, "../man#{section.downcase}/#{ref}#{'.' + @systype if @systype}.html"]
+      [text, "../man#{section.downcase}/#{ref}#{".#{@systype}" if @systype}.html"]
     end.to_h
   end
 
@@ -257,7 +254,7 @@ module DomainOS
   def detect_links_sysv_coffdump(line)
     line.scan(/(?<=[\s,.;])((\S+?)\((\d.*?)\))/).map do |text, ref, section|
       section.tr!('5', '4')
-      [text, "../man#{section.downcase}/#{ref}#{'.' + @systype if @systype}.html"]
+      [text, "../man#{section.downcase}/#{ref}#{".#{@systype}" if @systype}.html"]
     end.to_h
   end
 
@@ -267,7 +264,7 @@ module DomainOS
     req_ds(']W ' + case args[0]
                    when '3' then '7th Edition'
                    when '4' then 'System III'
-                   when '5' then "System V#{' Release ' + args[1] if args[1]}"
+                   when '5' then "System V#{" Release #{args[1]}" if args[1]}"
                    else '7th Edition'
                    end
           )

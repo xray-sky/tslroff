@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/16/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -10,17 +10,18 @@
 module HPUX
 
   def self.extended(k)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      :footer => "\\*()H\\0\\0\\(em\\0\\0\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W"
+        #'Tm' => '&trade;',
+      }
+    )
   end
 
   def init_PD
@@ -38,14 +39,14 @@ module HPUX
     @register['IN'] = Troff::Register.new(@state[:base_indent])
   end
 
-  define_method 'DT' do |*args|
+  define_method 'DT' do |*_args|
     req_ta '3.6m 7.2m 10.8m 14.4m 18m 21.6m 28.8m 32.4m 36m 39.6m 43.2m 46.8m'
   end
 
   # index info - what even makes sense to do with this
   # probably nothing, as it seems to be for bound manuals (absolute page number)
-  def iX(*args) ; end
-  define_method 'IX' do |*args| ; end
+  def iX(*_args) ; end
+  define_method 'IX' do |*_args| ; end
 
   define_method 'PM' do |*args|
     warn ".PM #{args.inspect} - testing"

@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/04/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -8,21 +8,24 @@
 #
 # HTML format input.
 #
-# TODO: User's Guide has footer (with copyright we should maintain) outside </body>
-# √     Shell Tools/man1/gcc.html, rcsfile.html start with "Content-type: text/html"
-# √                      rcs.html, rcsintro.html, uuencode.html start with garbage
-# √     Shell Tools/man1 output is a mess (CSS clash)
-# √     Shell Tools/man1 gives us related links; these need rewriting (apparently)
-#          - plus allowing into Related Info menu
-#       also might want related info menu in the Be Book. but not on the index pages? blah.
-#       figure out @output_directory which makes the css link correctly for everything
-#          - stuff in the root, outside the book directories, gets one too many ../
-#          - or if we fix the root pages, the stuff in the book directories gets one too few
-#       copyrights outputs too wide?? wtf
-#       do an Anchors menu too? (probably should)
-# √     can we use roman (don't italic) <a> without href= ? metroworks body text is all <a name=>
-# REVIEW: also interesting use of <p class="body"> which could be considered to interfere with our CSS
-#         ...but where is it defined in their manual? no css I can see.
+# TODO
+#   User's Guide has footer (with copyright we should maintain) outside </body>
+# √ Shell Tools/man1/gcc.html, rcsfile.html start with "Content-type: text/html"
+# √                  rcs.html, rcsintro.html, uuencode.html start with garbage
+# √ Shell Tools/man1 output is a mess (CSS clash)
+# √ Shell Tools/man1 gives us related links; these need rewriting (apparently)
+#      - plus allowing into Related Info menu
+#   also might want related info menu in the Be Book. but not on the index pages? blah.
+#   figure out @output_directory which makes the css link correctly for everything
+#      - stuff in the root, outside the book directories, gets one too many ../
+#      - or if we fix the root pages, the stuff in the book directories gets one too few
+#   copyrights outputs too wide?? wtf
+#   do an Anchors menu too? (probably should)
+# √ can we use roman (don't italic) <a> without href= ? metroworks body text is all <a name=>
+#
+# REVIEW
+#   also interesting use of <p class="body"> which could be considered to interfere with our CSS
+#      ...but where is it defined in their manual? no css I can see.
 #
 
 class Source
@@ -48,7 +51,7 @@ module BeOS_R5
       # maybe the features are regular enough we can just... fudge it.
       # * none of the pages have titles
       # * all have navigation content before <body>
-      source_lines = k.instance_variable_get('@source_lines')
+      source_lines = k.instance_variable_get('@source').lines
       source_lines.each do |l|
         # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
         l.gsub!(%r{(</?)kbd>}, '\1tt>')
@@ -57,8 +60,8 @@ module BeOS_R5
         l.sub!(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1')
       end
       source_lines.delete_at(source_lines.index { |n| n.match?(%r{^\s*<body bgcolor=#ffffff BACKGROUND="images/arnoldbg.gif">\s*$}) })
-      k.instance_variable_set '@content_start', source_lines.index { |l| l.match? %r{<a name="Top">} }
-      k.instance_variable_set '@content_end', source_lines.index { |l| l.match? %r{<a name="Bottom">} }
+      k.instance_variable_set('@content_start', source_lines.index { |l| l.match? %r{<a name="Top">} })
+      k.instance_variable_set('@content_end', source_lines.index { |l| l.match? %r{<a name="Bottom">} })
       k.define_singleton_method :to_html, k.method(:to_html_metrowerks)
     end
   end

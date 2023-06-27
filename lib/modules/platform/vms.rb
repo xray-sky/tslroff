@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/04/23.
 # Copyright 2023 Typewritten Software. All rights reserved.
@@ -34,11 +34,11 @@
 #
 
 # load enough of troff to make tabs work, for laying out hyperlinks
-require_relative '../dom/troff/request/nr.rb'
-require_relative '../dom/troff/request/ta.rb'
-require_relative '../dom/troff/expressions.rb'
-require_relative '../dom/troff/tabs.rb'
-require_relative '../dom/troff/util.rb'
+require_relative '../dom/troff/request/nr'
+require_relative '../dom/troff/request/ta'
+require_relative '../dom/troff/expressions'
+require_relative '../dom/troff/tabs'
+require_relative '../dom/troff/util'
 
 module VMS
   def self.extended(k)
@@ -98,7 +98,7 @@ module VMS
         Process.waitpid(pid)
       else
         @manual_entry = mod.name
-        @output_directory = "#{@helplib_dir}"
+        @output_directory = @helplib_dir
         pagehead = Block::Header.new(text: Text.new(text: "#{helplib} #{mod.name} &mdash; #{@platform} #{@version}"))
         pagelinks = {commands: [], qualifiers: [], subsections: []}
         pagetext = mod_to_html mod
@@ -139,7 +139,7 @@ module VMS
     modulehead = ''
     modulehead = %(<a name="#{mod.linkname}"><h#{depth}>#{mod.name}</h#{depth}></a>) if h1 or depth>1
     moduletext = (@lines = mod.text.each ; to_lp.collect(&:to_html).join)
-    subsectiontext = mod.all_subsections.collect { |mod| mod_to_html mod }.join
+    subsectiontext = mod.all_subsections.collect { |s| mod_to_html s }.join
     pagelinks[:subsections] = mod.subsections.collect { |s| Block::Link.new(text: Text.new(text: s.name), href: "##{s.name}") }
     pagelinks[:qualifiers] = mod.qualifiers.collect { |q| Block::Link.new(text: Text.new(text: q.linkname), href: "##{q.linkname}") }
     pagelinks[:commands] = mod.commands.collect do |c|
@@ -275,7 +275,7 @@ class VMSHelpLibrary
       #warn "tab encountered: #{line.inspect}" if line.include? "\t" # REVIEW if we switch from ::Nroff
       case line
       when /^!/ then next # is comment
-      when /^1\s+(\S.*)$/  # new module key
+      when /^1\s+(\S.*)$/ # new module key
         @modules << VMSHelpLibraryModule.new(1, modname, modtext)
         modname = Regexp.last_match[1]
         modtext = []
@@ -290,12 +290,13 @@ class VMSHelpLibrary
   end
 
   def commands
-    @modules.select { |mod| !mod.name.match? /[a-z]/ }
+    @modules.reject { |mod| mod.name.match? /[a-z]/ }
   end
 end
 
 class VMSHelpLibraryModule
   attr_reader :depth, :text
+
   def initialize(depth, name, helptext)
     #warn "#{'   ' * (depth-1)}new: #{depth} #{name}"
     @name = name.strip # occasionally will get trailing whitespace that messes up the anchors
@@ -334,36 +335,36 @@ class VMSHelpLibraryModule
   end
 
   def name
-    is_subsection? ? @name.tr('_', ' ') : @name
+    subsection? ? @name.tr('_', ' ') : @name
   end
 
   def linkname
     # REVIEW add : to characters to split after? see µ4.4 DEBUG DEPOSIT/ASCII:n
-    is_qualifier? ? @name.sub(/^(\/.+?)[= \[].*$/, '\1') : name # might get something like /[NO]TERMINATE
+    qualifier? ? @name.sub(/^(\/.+?)[= \[].*$/, '\1') : name # might get something like /[NO]TERMINATE
   end
 
-  def is_qualifier?
+  def qualifier?
     @name.start_with?('/')
   end
 
-  def is_subsection?
-    !is_qualifier? and @name.match?(/[a-z]/)
+  def subsection?
+    !qualifier? and @name.match?(/[a-z]/)
   end
 
-  def is_command?
-    !is_subsection? and !is_qualifier?
+  def command?
+    !subsection? and !qualifier?
   end
 
   def qualifiers
-    @subsections.select { |subsection| subsection.is_qualifier? }
+    @subsections.select(&:qualifier?)
   end
 
   def subsections
-    @subsections.select { |subsection| subsection.is_subsection? }
+    @subsections.select(&:subsection?)
   end
 
   def commands
-    @subsections.select { |subsection| subsection.is_command? }
+    @subsections.select(&:command?)
   end
 
   def all_subsections

@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -22,38 +22,38 @@ module Motorola_SysV
     #k.instance_variable_set '@title_detection', %r{^\s{2,3}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}		# REVIEW now what?
     #k.instance_variable_set '@lines_per_page', 67
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
 # looks like none of this matters much, as the provided pages are all nroff format except for X11.
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      # DocString_MOT
-      'sS' => 'UNIX',
-      'sl' => 'UNIX SYSTEM V/68 or V/88 Release 4',
-      'sL' => 'UNIX SYSTEM V/68 or V/88 Release 4',
-      's3' => 'UNIX SYSTEM V/68 and V/88 Release 4',
-      's4' => 'UNIX SYSTEM V/68 and V/88 Release 4',
-      's1' => 'UNIX SYSTEM V/68',
-      's2' => 'UNIX SYSTEM V/88',
-      'hC' => 'Motorola',
-      'hs' => 'M68000 or M88000 family of processors',
-      'h1' => 'M68000 family of processors',
-      'h2' => 'M68000 family of processors',
-      'h4' => 'M68000 family of processors',
-      'h3' => 'M88000 family of processors',
-      'hl' => 'supported Delta Series and DeltaSERVER platforms',
-      'rp' => 'platform',
-      # For internal Motorola use only
-      'rL' => 'RM01',
-      #']W' => "(last mod. #{File.mtime(@source.filename).strftime("%B %d, %Y")})",
-      ']W' => '',
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*(]W",
+        #'Tm' => '&trade;',
+        # DocString_MOT
+        'sS' => 'UNIX',
+        'sl' => 'UNIX SYSTEM V/68 or V/88 Release 4',
+        'sL' => 'UNIX SYSTEM V/68 or V/88 Release 4',
+        's3' => 'UNIX SYSTEM V/68 and V/88 Release 4',
+        's4' => 'UNIX SYSTEM V/68 and V/88 Release 4',
+        's1' => 'UNIX SYSTEM V/68',
+        's2' => 'UNIX SYSTEM V/88',
+        'hC' => 'Motorola',
+        'hs' => 'M68000 or M88000 family of processors',
+        'h1' => 'M68000 family of processors',
+        'h2' => 'M68000 family of processors',
+        'h4' => 'M68000 family of processors',
+        'h3' => 'M88000 family of processors',
+        'hl' => 'supported Delta Series and DeltaSERVER platforms',
+        'rp' => 'platform',
+        # For internal Motorola use only
+        'rL' => 'RM01',
+        ']W' => ''
+      }
+    )
   end
 
   def init_fp

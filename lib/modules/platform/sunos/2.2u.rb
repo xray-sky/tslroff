@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/06/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -20,9 +20,11 @@ module SunOS_2_2U
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']W' => 'Sun Release 2.2'
-    })
+    @state[:named_string].merge!(
+      {
+        ']W' => 'Sun Release 2.2'
+      }
+    )
   end
 
   # REVIEW

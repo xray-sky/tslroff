@@ -10,18 +10,18 @@
 #
 
 require 'pathname'
-require_relative 'block.rb'
-require_relative 'source.rb'
-require_relative 'text.rb'
-require_relative 'styles/block.rb'
-require_relative 'styles/control.rb'
-require_relative 'styles/eqntext.rb'
-#require_relative 'styles/pic.rb'
-require_relative 'styles/tab.rb'
-require_relative '../modules/dom/nroff.rb'
-require_relative '../modules/dom/troff.rb'
-require_relative '../modules/dom/html.rb'
-require_relative '../modules/dom/unknown.rb'
+require_relative 'block'
+require_relative 'source'
+require_relative 'text'
+require_relative 'styles/block'
+require_relative 'styles/control'
+require_relative 'styles/eqntext'
+#require_relative 'styles/pic'
+require_relative 'styles/tab'
+#require_relative '../modules/dom/nroff'
+#require_relative '../modules/dom/troff'
+#require_relative '../modules/dom/html'
+#require_relative '../modules/dom/unknown'
 
 ManualIsBlacklisted = Class.new(RuntimeError)
 
@@ -69,8 +69,8 @@ class Manual
     !@symlink.nil?
   end
 
-  def warn(m)
-    super("#{@input_filename} [#{input_line_number}]: #{m}")
+  def warn(msg)
+    super("#{@input_filename} [#{input_line_number}]: #{msg}")
   end
 
   def page_title
@@ -84,15 +84,15 @@ class Manual
 
   def apply(&block)
     yield
-    rescue ImmutableBlockError
-      @current_block = blockproto
-      @document << @current_block
-      retry
-    rescue ImmutableTextError, ImmutableFontError
-      @current_block << Text.new(font: @current_block.text.last.font.dup, style: @current_block.text.last.style.dup)
-      retry
-    rescue ImmutableStyleError => e
-      warn "!!! rescuing #{e.class.name} (??)"
+  rescue ImmutableBlockError
+    @current_block = blockproto
+    @document << @current_block
+    retry
+  rescue ImmutableTextError, ImmutableFontError
+    @current_block << Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
+    retry
+  rescue ImmutableStyleError => e
+    warn "!!! rescuing #{e.class.name} (??)"
   end
 
   # Try to establish some simplistic default behavior for
@@ -107,7 +107,7 @@ class Manual
     # do not: links to subdirectories with different names in same directory
     if (link_dir + target_dir) == link_dir and File.file?(real_target)
       # instantiating target to get any local transforms on @manual_entry (which is based on input file name)
-      # TODO: get @output_directory from .TH in Troff Manual.new (already done for Nroff Manual.new)
+      # TODO get @output_directory from .TH in Troff Manual.new (already done for Nroff Manual.new)
       target_entry = Manual.new(real_target, @platform, @version)
       return { link: "#{@manual_entry}.html",
                target: "#{target_entry.manual_entry}.html" }
@@ -129,7 +129,7 @@ class Manual
   def doctype_extend
     begin
       require_relative "../modules/platform/#{@platform.downcase}.rb"
-      platform_module = Kernel.const_get(@platform.sub(/^([0-9])/, 'X\1').to_sym)
+      platform_module = Kernel.const_get(@platform.gsub(/[^0-9A-Za-z]/, '_').sub(/^([0-9])/, 'X\1').to_sym) # 386bsd is not a valid Constant REVIEW smrtr? .prepend("OS_")?
     rescue LoadError
       platform_module = nil
     end
@@ -145,6 +145,7 @@ class Manual
     # overrides in order when the automatic document type detection fails
 
     @magic = @source.magic # is this used anywhere other than below? - YES (in tslroff.rb) REVIEW is that useful to keep
+    require_relative "../modules/dom/#{@magic.downcase}"
 
     extend Kernel.const_get(@magic)
     extend platform_module if platform_module

@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/17/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -34,14 +34,16 @@ module HPUX_9_05
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      'Tm' => '&trade;',
-      ')H' => '', # .TH sets this to \&. Some pages define it.
-      #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
-      # REVIEW is this what actually goes in the footer in the printed manual?
-      ']V' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "\\*()H\\0\\0\\(em\\0\\0\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
+        'Tm' => '&trade;',
+        ')H' => '', # .TH sets this to \&. Some pages define it.
+        #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
+        # REVIEW is this what actually goes in the footer in the printed manual?
+        ']V' => File.mtime(@source.filename).strftime("%B %d, %Y")
+      }
+    )
   end
 
   def init_fp
@@ -53,14 +55,14 @@ module HPUX_9_05
   def req_so(name, breaking: nil)
     osdir = @source_dir.dup
     @source_dir << '/../..' if name.start_with?('/')
-    super(name)
+    super(name, breaking: breaking)
     @source_dir = osdir
   end
 
   %w[C B I].each do |a|
     define_method a do |*args|
       if args.any?
-        req_ft "#{@state[:fonts].index(a)}"
+        req_ft @state[:fonts].index(a).to_s
         parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
         #send '}N'
         send '}f'
@@ -72,7 +74,7 @@ module HPUX_9_05
   end
 
   %w[C B I R].permutation(2).each do |a, b|
-    define_method "#{a + b}" do |*args|
+    define_method(a + b) do |*args|
       parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
     end
   end
@@ -87,13 +89,12 @@ module HPUX_9_05
     # .sp .3v between, .sp 1.5v following.
     #space = false
     %w( ]J ]O ).each do |s|
-      unless @state[:named_string][s].empty?
-        space = true
-        byline = Block::Footer.new
-        byline.style.css[:margin_top] = '0.5em' # TODO not working?
-        unescape "\\f3\\*(#{s}\\fP", output: byline
-        @document << byline
-      end
+      next if @state[:named_string][s].empty?
+      #space = true
+      byline = Block::Footer.new
+      byline.style.css[:margin_top] = '0.5em' # TODO not working?
+      unescape "\\f3\\*(#{s}\\fP", output: byline
+      @document << byline
     end
     #req_sp('1.5v') if space # probably this is overkill, actually
 

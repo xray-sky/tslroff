@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/13/21.
 # Copyright 2021 Typewritten Software. All rights reserved.
@@ -8,7 +8,7 @@
 #
 # HTML format input. This should be interesting.
 #
-# TODO: User's Guide has footer (with copyright we should maintain) outside </body>
+# TODO User's Guide has footer (with copyright we should maintain) outside </body>
 #       Shell Tools/man1/gcc.html, rcsfile.html start with "Content-type: text/html"
 #                        rcs.html, rcsintro.html, uuencode.html start with garbage
 #       Shell Tools/man1 output is a mess (CSS clash)
@@ -23,7 +23,7 @@
 #       malicious compliance from nokogiri on metrowerks pages, which can't as easily be
 #         rewritten prior to parsing, as we did in plan9
 #       <title> correctly, not unix manual style "index()". <h1> is fine.
-# REVIEW: also interesting use of <p class="body"> which could be considered to interfere with our CSS
+# REVIEW also interesting use of <p class="body"> which could be considered to interfere with our CSS
 #         ...but where is it defined in their manual? no css I can see.
 #
 
@@ -58,9 +58,9 @@ module BeOS
 
     <<~DOC
       <div class="title"><h1>#{title}</h1></div>
-      <div class="htbody"#{(' style="' + body_styles + '"') unless body_styles.empty?}>
+      <div class="htbody"#{%( style="#{body_styles}") unless body_styles.empty?}>
           <div id="man">
-      #{body.children.to_xhtml(encoding: 'UTF-8').gsub(/&#13;/, '') }
+      #{body.children.to_xhtml(encoding: 'UTF-8').gsub(/&#13;/, '')}
           </div>
       </div>
     DOC

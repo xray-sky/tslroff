@@ -7,7 +7,7 @@
 #
 
 module Troff
-  def esc_u(s)
+  def esc_u(*)
     esc_v %('-0.5m')
   end
 end

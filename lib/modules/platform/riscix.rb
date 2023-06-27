@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -11,19 +11,20 @@ module RISCiX
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S*)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S*)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1]
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => 'UNIX Programmer\'s Manual',
-      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      ']W' => '7th Edition',
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        ']D' => 'UNIX Programmer\'s Manual',
+        #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+        ']W' => '7th Edition',
+        footer: "\\*(]W"
+      }
+    )
   end
 
   def init_tr
@@ -68,25 +69,25 @@ module RISCiX
                    end)
   end
 
-  define_method 'DE' do |*args|
+  define_method 'DE' do |*_args|
     req_fi
     send 'RE'
     req_sp '.5'
   end
 
-  define_method 'DS' do |*args|
+  define_method 'DS' do |*_args|
     send 'RS'
     req_nf
     req_sp
   end
 
   # indexing and other undefined macros. ignore.
-  define_method 'BY' do |*args| ; end
-  define_method 'iX' do |*args| ; end
-  define_method 'IX' do |*args| ; end # defined in tmac.s
-  define_method 'SB' do |*args| ; end # REVIEW this one looks like we lost content
-  define_method 'TX' do |*args| ; end
-  define_method 'UX' do |*args| ; end # defined in tmac.s
+  define_method 'BY' do |*_args| ; end
+  define_method 'iX' do |*_args| ; end
+  define_method 'IX' do |*_args| ; end # defined in tmac.s
+  define_method 'SB' do |*_args| ; end # REVIEW this one looks like we lost content
+  define_method 'TX' do |*_args| ; end
+  define_method 'UX' do |*_args| ; end # defined in tmac.s
 
   define_method 'TH' do |*args|
     req_ds "]L #{args[2]}"

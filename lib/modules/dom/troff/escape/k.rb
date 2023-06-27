@@ -8,8 +8,6 @@ module Troff
   def esc_k(s)
     s.slice!(0) if s.start_with?('(')
     warn "using \\k to store a horizontal position in #{s}..."
-    position = 0
-    #block = Block.new(type: :se, style: @current_block.style.dup)
     block = Block::Selenium.new(style: @current_block.style.dup)
     last_break = @current_block.text.rindex { |t| t[:tab_stop] == 0 }
     block.text = @current_block.text.slice(last_break..-1)
@@ -20,12 +18,7 @@ module Troff
     last_text.text.sub!(/\s$/, '&nbsp;') if last_text.text.respond_to? :sub!
 
     @register[s] = Register.new(0)
-    unless block.to_s.empty?
-      #@@webdriver.get(%(data:text/html;charset=utf-8,#{block.to_html}))
-      #@@webdriver.get block.to_html
-      #@register[s].value = to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
-      @register[s].value = typesetter_width(block).to_i
-    end
+    @register[s].value = typesetter_width(block).to_i unless block.to_s.empty?
     warn "\\k stored #{@register[s].value} in #{s}"
     ''
   end

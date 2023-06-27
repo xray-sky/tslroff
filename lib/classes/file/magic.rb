@@ -11,7 +11,7 @@
 # zlib can't deal with old school UNIX compression. just gzip.
 #require "zlib"
 
-# TODO: do something productive with a symlink
+# TODO do something productive with a symlink
 # i.e. generate equivalent output link
 
 FileIsEmptyError = Class.new(RuntimeError)

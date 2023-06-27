@@ -16,25 +16,24 @@
   end
 end
 
-require_relative 'groff.rb'
-require_relative 'troff/tmac/an.rb'
+require_relative 'groff'
+require_relative 'troff/tmac/an'
 
 module Troff
 
-  Delimiters = %(\002\003\005\006\007"') # unused. REVIEW necessary? useful?
-  Requests = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
+  DELIMITERS = %(\002\003\005\006\007"') # unused. REVIEW necessary? useful?
+  REQUESTS = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
 
-  def self.requests ; Requests ; end # REVIEW smrtr?
+  def self.requests ; REQUESTS ; end # REVIEW smrtr?
   def self.useGroff? ; false ; end
 
   def self.extended(k)
     k.extend ::Eqn
     k.extend ::Tbl
-    k.extend ::Groff if Troff.useGroff?
     #k.extend ::Pic
+    k.extend ::Groff if Troff.useGroff?
     k.instance_variable_set '@register', {}
-    k.instance_variable_set '@state', { :header => Block::Header.new,
-                                        :footer => Block::Footer.new }
+    k.instance_variable_set '@state', { header: Block::Header.new, footer: Block::Footer.new }
     k.instance_variable_set '@related_info_heading', %r{SEE(?: |&nbsp;)+ALSO}
   end
 
@@ -49,8 +48,8 @@ module Troff
     xinit_nr
     xinit_in
 
-    self.methods.each do |m|
-      self.send(m) if m.to_s.start_with? 'init_'
+    methods.each do |m|
+      send(m) if m.to_s.start_with? 'init_'
     end
 
     parse_title
@@ -70,7 +69,7 @@ module Troff
         unescape @state[:named_string][:footer], output: @state[:footer]
         @document << @state[:footer]
       end
-      return @document.collect(&:to_html).join + "\n    </div>\n</div>" # REVIEW closes main doc divs start ed by :th
+      return "#{@document.collect(&:to_html).join}\n    </div>\n</div>" # REVIEW closes main doc divs start ed by :th
     rescue => e
       warn "#{@line.inspect} -"
       warn e
@@ -81,9 +80,8 @@ module Troff
   private
 
   def debug(line, *msg)
-    if input_line_number == line
-      block_given? ? yield(msg) : warn((['debug: ']+(msg.collect(&:inspect))).join(' '))
-    end
+    return unless input_line_number == line
+    block_given? ? yield(msg) : warn("debug: #{msg.collect(&:inspect).join(' ')}")
   end
 
   def input_line_number
@@ -99,11 +97,8 @@ module Troff
     # TODO the new-line at the end of a comment cannot be concealed.
     # Doing it here means I don't have to do it everywhere we are doing local next_lines (.TS, .if, etc.)
     # But, this will give us "bad" line numbers for warnings. I can probably live with that.
-    if @state[:escape_char]
-      if line.end_with?(@state[:escape_char]) and line[-2] != @state[:escape_char]
-        line.chop! << next_line
-      end
-    end
+    line.chop! << next_line if @state[:escape_char] and line.end_with?(@state[:escape_char]) and line[-2] != @state[:escape_char]
+
     @line = line
   end
 
@@ -125,7 +120,7 @@ module Troff
     block.style.css[:margin_left] = "#{to_em(@register['.i'])}em"
     block.style.css.delete(:margin_left) if @register['.i'] == @state[:base_indent]
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j']] unless @register['.j'] == 1
-    block.style.css[:text_align] = 'left' if noadj?		# .na sets left adjust without changing .j
+    block.style.css[:text_align] = 'left' if noadj? # .na sets left adjust without changing .j
     block.style.attributes[:class] = 'synopsis' if @state[:section]&.match?(/^synopsis$/i) and block.is_a? Block::Paragraph
     block
   end

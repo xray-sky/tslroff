@@ -6,20 +6,20 @@
 #
 
 require 'forwardable'
-require_relative 'font.rb'
-require_relative 'style.rb'
-require_relative '../modules/immutable.rb'
+require_relative 'font'
+require_relative 'style'
+require_relative '../modules/immutable'
 
 class Text
   include Immutable
   extend Forwardable
   def_delegators :@text, :length, :empty?, :to_s#, :match, :match?, :sub, :sub!, :gsub, :gsub!
 
-  attr_reader   :text, :font, :style
+  attr_reader :text, :font, :style
 
   def initialize(arg = Hash.new)
     self.font  = (arg[:font]  or Font::R.new)
-    self.style = (arg[:style] or Style.new({}, get_object_exception_class))
+    self.style = (arg[:style] or Style.new({}, object_exception_class))
     self.text  = (arg[:text]  or String.new)
   end
 
@@ -63,10 +63,10 @@ class Text
   end
 
   def to_html
-    # TODO: some or most of this should probably be made troff-specific (somehow)
+    # TODO some or most of this should probably be made troff-specific (somehow)
     #return '<br />' if text.is_a?(LineBreak) # Break.empty? is true
 
-    tags = Array.new
+    tags = []
 
     # tab separately, as it may encompass several Text objects
     # this relies on all other spans being closed tidily within a single Text object
@@ -102,7 +102,7 @@ class Text
       tags << (f[:tag] ? "<#{f[:tag]}#{f[:class] ? " class=#{f[:class]}" : ''}#{f[:styles] ? %( style="#{f[:styles]}") : ''}>" : '')
 
       if @style[:css].any?
-        tags << %(<span#{@style.to_s}>) # TODO @styles.to_s incompatible with below probably
+        tags << %(<span#{@style}>) # TODO @styles.to_s incompatible with below probably
       end
 
       if @style.keys.any?
@@ -133,7 +133,7 @@ class Text
 
   # override this from Immutable so that our subclasses
   # don't all try to dispatch their own unique exceptions
-  def get_object_exception_class
+  def object_exception_class
     Kernel.const_get("ImmutableTextError")
   end
 

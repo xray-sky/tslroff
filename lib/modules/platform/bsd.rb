@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/04/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -13,8 +13,7 @@ module BSD
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-       k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     # assigning @manual_section here defeats parse_title and means we get the filename's section for output_dir only
     #k.instance_variable_set '@manual_section', Regexp.last_match[1]
     #k.instance_variable_set '@output_directory', "man#{k.instance_variable_get '@manual_section'}"
@@ -28,13 +27,14 @@ module BSD
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      # tmac.an.new
-      ']D' => 'Unix Programmer\'s Manual',  # default set by .TH
-      ']W' => '7th Edition',                # default set by .TH
-      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*(]W",
+        # tmac.an.new
+        ']D' => 'Unix Programmer\'s Manual', # default set by .TH
+        ']W' => '7th Edition' # default set by .TH
+      }
+    )
   end
 
   def init_tr
@@ -46,7 +46,7 @@ module BSD
   def req_so(name, breaking: nil)
     osdir = @source_dir.dup
     @source_dir << '/..'
-    super(name)
+    super(name, breaking: breaking)
     @source_dir = osdir
   end
 
@@ -54,7 +54,7 @@ module BSD
   define_method 'AT' do |*args|
     req_ds(']W ' + case args[0]
                    when '4' then 'System III'
-                   when '5' then "System V#{' Release ' + args[1] if args[1] and !args[1].empty?}"
+                   when '5' then "System V#{" Release #{args[1]}" if !args[1]&.empty?}"
                    else '7th Edition'
                    end
           )

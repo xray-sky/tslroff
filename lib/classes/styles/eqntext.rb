@@ -1,5 +1,5 @@
 class EqnBlock < Block
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:type] = :eqn
     super(arg)
     self.font = arg[:font]
@@ -16,7 +16,7 @@ class EqnBlock < Block
 end
 
 class Column < EqnBlock
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:type] = :eqn_column
     super(arg)
     style.css[:text_align] = arg[:justify] if arg[:justify]
@@ -25,7 +25,7 @@ class Column < EqnBlock
 end
 
 class ExtendedRadical < EqnBlock
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:type] = :extended_radical
     super(arg)
   end
@@ -33,7 +33,7 @@ class ExtendedRadical < EqnBlock
 end
 
 class Fraction < EqnBlock
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:numerator] ||= Numerator.new
     arg[:denominator] ||= Denominator.new
     arg[:text] = [ arg[:numerator], FractionRule.new, arg[:denominator] ]
@@ -51,7 +51,7 @@ class Fraction < EqnBlock
 end
 
 class Denominator < EqnBlock
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:type] = :denominator
     super(arg)
   end
@@ -69,7 +69,7 @@ class FractionRule < RoffControl
 end
 
 class SubScript < EqnBlock
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:type] = :eqn_sscript
     super(arg)
   end
@@ -77,7 +77,7 @@ class SubScript < EqnBlock
 end
 
 class SuperScript < EqnBlock
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:type] = :eqn_sscript
     super(arg)
   end
@@ -85,7 +85,7 @@ class SuperScript < EqnBlock
 end
 
 class Bracket < EqnBlock
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     super(arg)
     arg[:line_height] ||= 0.95
     @style.css[:display] = 'block'

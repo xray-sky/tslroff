@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 10/7/19.
 # Copyright 2019 Typewritten Software. All rights reserved.
@@ -40,19 +40,19 @@ module AOS_4_3
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
     when 'bf77.1'
-      k.instance_variable_get('@source').lines[239].sub!(/^/, '\\\\&')	# non-macro line starts with .
+      k.instance_variable_get('@source').lines[239].sub!(/^/, '\\\\&') # non-macro line starts with .
     # REVIEW maybe this kind of thing should be left alone?
     # -- this appears to have been specific to the aek distrib
     #when 'f77.1'
-    #  k.instance_variable_get('@source').lines[277].sub!(/^/, "\\&")	# non-macro line starts with .
-    when 'fpr.1'  # there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
+    #  k.instance_variable_get('@source').lines[277].sub!(/^/, "\\&") # non-macro line starts with .
+    when 'fpr.1' # there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
       newsrc = k.instance_variable_get('@source').lines
       (28..37).each { |i| newsrc[i].sub!(/^\.\\"\s/, '') }
       (40..156).each { |i| newsrc[i] = '\"' }
     # REVIEW maybe this kind of thing should be left alone?
     when 'ftp.1c'
       k.instance_variable_get('@source').lines[210].sub!(/f$/, 'fP')
-    when 'help.1'	# also in olh.1 but uses .so
+    when 'help.1' # also in olh.1 but uses .so
       k.instance_variable_get('@source').lines[20].sub!(/^/, "\\&")	# non-macro line starts with '
     when 'mdtar.1'
       k.instance_variable_get('@source').lines[96].sub!(/\\\*\s+$/, '*')
@@ -64,7 +64,7 @@ module AOS_4_3
       k.instance_variable_get('@source').lines[2].sub!(/^#/, '.\\"')
     when 'index.3'
       k.instance_variable_set '@manual_entry', '_index'
-    when 'mouse.4'  # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead
+    when 'mouse.4' # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead
       newsrc = k.instance_variable_get('@source').lines
       (122..140).each { |i| newsrc[i].sub!(/^\.\\"/, '') }
       newsrc[254].sub!(/t/, 'n')

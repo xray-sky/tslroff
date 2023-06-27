@@ -20,13 +20,14 @@ class Block
     def to_html
       # TODO as a block, this is breaking up blocks that shouldn't be broke up! as(1) [SunOS 5.5.1]
       # REVIEW is it still?
-      %(<!--\n#{@text.to_s}\n-->)
+      %(<!--\n#{@text}\n-->)
     end
   end
 
   class Link < Block::Inline
     attr_accessor :href
-    def initialize(arg = Hash.new)
+
+    def initialize(arg = {})
       @href = arg[:href]
       super(arg)
     end
@@ -38,7 +39,8 @@ class Block
 
   class Anchor < Block::Inline
     attr_accessor :name
-    def initialize(arg = Hash.new)
+
+    def initialize(arg = {})
       @name = arg[:name]
       super(arg)
     end
@@ -49,43 +51,43 @@ class Block
   end
 
   class Header < Block
-    def to_html # (was :th)
+    def to_html
       %(<div class="title"><h1>#{@text.collect(&:to_html).join}</h1></div>\n<div class="body">\n    <div id="man">\n)
     end
   end
 
   class Footer < Block
-    def to_html # (was :p)
+    def to_html
       %(<p class="foot"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
     end
   end
 
   class Head < Block
-    def to_html # (was :sh)
+    def to_html
       "<h2#{@style}>#{@text.collect(&:to_html).join}</h2>\n"
     end
   end
 
   class SubHead < Block
-    def to_html # (was :ss)
+    def to_html
       "<h3#{@style}>#{@text.collect(&:to_html).join}</h3>\n"
     end
   end
 
   class SubHeadAlt < Block
-    def to_html # (was :ss_alt)
+    def to_html
       "<h4#{@style}>#{@text.collect(&:to_html).join}</h4>\n"
     end
   end
 
   class SubSubHead < Block
-    def to_html # (was :subhead)
+    def to_html
       %(<p class="subhead"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
     end
   end
 
   class Monospace < Block
-    def to_html # (was :subhead)
+    def to_html
       "<pre#{@style}>#{@text.collect(&:to_html).join}</pre>\n"
     end
   end
@@ -94,27 +96,29 @@ class Block
     # TODO selenium div is too wide for measuring blocks with text-align:center (e.g. class="foot")
     #      but.. we're not rendering style into selenium div, how are we getting text-align:center??
     #      we are not, something else must be happening
-    def to_html # (was :se)
+    def to_html
       payload = @text.collect(&:to_html).join
-                  .gsub(/(?<!&)#(?!\d+;)/, '&num;') # don't let selenium eat text following a bare # (why does it eat text following a #)
-                  .sub(/(\s+)$/) { |s| '&nbsp;' * s.length } # don't let selenium lose trailing whitespace
+                     .gsub(/(?<!&)#(?!\d+;)/, '&num;') # don't let selenium eat text following a bare # (why does it eat text following a #)
+                     .sub(/(\s+)$/) { |s| '&nbsp;' * s.length } # don't let selenium lose trailing whitespace
       %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium"#{@style}>#{payload}</span></div></body></html>)
     end
   end
 
   class Table < Block
-    def to_html # (was :table)
+    def to_html
       "<table#{@style}>\n#{@text.collect(&:to_html).join}</table>\n"
     end
   end
 
   class TableRow < Block
     attr_accessor :boxrule_adjust
-    def initialize(arg = Hash.new)
+
+    def initialize(arg = {})
       @boxrule_adjust = arg[:boxrule_adjust]
       super(arg)
     end
-    def to_html # (was :row)
+
+    def to_html
       boxrule = ''
       if @boxrule_adjust
         @text.each { |cell| cell.rowspan_inc unless cell.style[:box_rule] }
@@ -125,7 +129,7 @@ class Block
   end
 
   class TableCell < Block
-    def initialize(arg = Hash.new)
+    def initialize(arg = {})
       @rowspan = 1
       @colspan = 1
       super(arg)
@@ -178,8 +182,7 @@ class Block
   end
 
   class Paragraph < Block
-    def to_html # (was :p)
-
+    def to_html
       # this used to happen before every block was processed.
       # TODO something better.
       #      something not tied to Block::Paragraph.
@@ -219,7 +222,7 @@ class Block
 
   private
 
-  def get_object_exception_class
+  def object_exception_class
     Kernel.const_get("ImmutableBlockError")
   end
 

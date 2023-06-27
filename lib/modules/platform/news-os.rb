@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/12/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -14,8 +14,7 @@ module NEWS_os
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.([\dnop][^\.]*)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([\dnop][^.]*)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
@@ -46,8 +45,8 @@ module NEWS_os
 
   # index info - what even makes sense to do with this
   # probably nothing, as it seems to be for bound manuals (absolute page number)
-  def iX(*args) ; end
-  define_method 'IX' do |*args| ; end
+  def iX(*_args) ; end
+  define_method 'IX' do |*_args| ; end
 
   define_method 'TH' do |*args|
     req_ds "]L #{args[2]}"

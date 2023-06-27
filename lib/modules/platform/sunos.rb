@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/10/14.
 # Copyright 2014 Typewritten Software. All rights reserved.
@@ -21,10 +21,12 @@ module SunOS
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        #'Tm' => '&trade;',
+        footer: "\\*(]W"
+      }
+    )
   end
 
   def init_tr
@@ -41,17 +43,17 @@ module SunOS
   def req_so(name, breaking: nil)
     osdir = @source_dir.dup
     @source_dir << '/../..' if name.start_with?('/')
-    super(name)
+    super(name, breaking: breaking)
     @source_dir = osdir
   end
 
   # index info - what even makes sense to do with this
   # probably nothing, as it seems to be for bound manuals (absolute page number)
-  define_method 'IX' do |*args| ; end
+  define_method 'IX' do |*_args| ; end
 
   # some pages call this, but the def is commented out all the way back to 0.3
   # defining it as a no-op suppresses the warning.
-  define_method 'UC' do |*args| ; end
+  define_method 'UC' do |*_args| ; end
 
   # good news - margin characters don't seem to be used anywhere in the Sun manual
   define_method 'VE' do |*args|

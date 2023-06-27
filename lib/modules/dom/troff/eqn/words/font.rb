@@ -7,7 +7,7 @@ module Eqn
 
   def eqn_gsize(s)
     warn "eqn requests gsize #{s}"
-    @state[:eqn_gsize] = s.to_i + 2 # troff default size 10 vs. ours 12
+    @state[:eqn_gsize] = s.to_i + 2 # troff default size 10 vs. ours 12 TODO this is actually causing something of a mess
   end
 
   def eqn_size(parse_tree)

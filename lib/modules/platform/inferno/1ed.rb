@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/14/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -11,13 +11,16 @@
 # this html is dogshit. was it created by microsoft word? nokogiri enforces malicious compliance.
 # easier to rewrite the input than to try to ask nokogiri to move things around
 #
+# TODO
+#   lost the img files?
+#
 
 module Inferno_1ed
 
   def self.extended(k)
     k.instance_variable_set('@output_directory', '') #+ k.instance_variable_get('@source_dir')) # wrong
     k.instance_variable_set('@manual_entry', k.instance_variable_get('@input_filename').sub(/\.htm$/, ''))
-    k.instance_variable_get('@source_lines').each do |l|
+    k.instance_variable_get('@source').lines.each do |l|
       # some of the pages have extended characters encoded Windows-1252
       l.force_encoding Encoding::Windows_1252
       # nokogiri is inserting extra whitespace at the beginning of <pre>,
@@ -30,47 +33,44 @@ module Inferno_1ed
     end
     case k.instance_variable_get '@input_filename'
     when 'index.htm'
-      #k.instance_variable_set '@manual_entry', '_index'
-      k.define_singleton_method :page_title, proc { 'Inferno Reference &mdash; Plan9 1ed' }
-      k.instance_variable_get('@source_lines')[0].sub!(%r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
+      k.define_singleton_method(:page_title, proc { 'Inferno Reference &mdash; Inferno 1ed' })
+      k.instance_variable_get('@source').lines[0].sub!(%r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
     when 'cmd6.htm', 'md_math1.htm',
          'md_sec4.htm', 'md_sec8.htm', 'md_sec9.htm', 'md_sec12.htm', 'md_sec13.htm', 'md_sec14.htm',
          'md_sec19.htm', 'md_sys1.htm', 'md_sys4.htm'
-      k.instance_variable_get('@source_lines')[7].gsub!(%r{</a>}, '') << '</a>'
-      k.instance_variable_get('@source_lines')[9].sub!(%r{^<pre>}, '') # _sec14 only
+      k.instance_variable_get('@source').lines[7].gsub!(%r{</a>}, '') << '</a>'
+      k.instance_variable_get('@source').lines[9].sub!(%r{^<pre>}, '') # _sec14 only
     when 'devices.htm'
-      k.instance_variable_get('@source_lines')[201].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[201].sub!(%r{^<em>}, '</a>')
     when 'md_misc4.htm'
-      k.instance_variable_get('@source_lines')[53].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[53].sub!(%r{^<em>}, '</a>')
     when 'md_pref.htm'
-      k.instance_variable_get('@source_lines')[55].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[55].sub!(%r{^<em>}, '</a>')
     when 'md_pref4.htm'
-      k.instance_variable_get('@source_lines')[76].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[76].sub!(%r{^<em>}, '</a>')
     when 'md_sys6.htm'
-      k.instance_variable_get('@source_lines')[27].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[27].sub!(%r{^<em>}, '</a>')
     when 'md_sys7.htm'
-      k.instance_variable_get('@source_lines')[162].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[162].sub!(%r{^<em>}, '</a>')
     when 'md_sys8.htm'
-      k.instance_variable_get('@source_lines')[22].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[22].sub!(%r{^<em>}, '</a>')
     when 'md_sys10.htm'
-      k.instance_variable_get('@source_lines')[84].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[84].sub!(%r{^<em>}, '</a>')
     when 'md_sys11.htm'
-      k.instance_variable_get('@source_lines')[218].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[218].sub!(%r{^<em>}, '</a>')
     when 'md_sys15.htm'
-      k.instance_variable_get('@source_lines')[20].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[20].sub!(%r{^<em>}, '</a>')
     when 'proto.htm'
-      k.instance_variable_get('@source_lines')[390].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[390].sub!(%r{^<em>}, '</a>')
     when 'proto5.htm'
-      k.instance_variable_get('@source_lines')[29].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[29].sub!(%r{^<em>}, '</a>')
     when 'proto6.htm'
-      k.instance_variable_get('@source_lines')[114].sub!(%r{^<em>}, '</a>')
-      k.instance_variable_get('@source_lines')[117].sub!(%r{^<em>}, '</a>')
-      k.instance_variable_get('@source_lines')[120].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[114].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[117].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[120].sub!(%r{^<em>}, '</a>')
     when 'proto7.htm'
-      k.instance_variable_get('@source_lines')[43].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[43].sub!(%r{^<em>}, '</a>')
     end
-    # pick up changes to the source we rewrote
-    k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
   end
 
   def to_html
@@ -98,7 +98,7 @@ module Inferno_1ed
 
     <<~DOC
       <div class="title"><h1>#{title}</h1></div>
-      <div class="htbody"#{(' style="' + body_styles + '"') unless body_styles.empty?}>
+      <div class="htbody"#{%( style="#{body_styles}") unless body_styles.empty?}>
           <div id="man">
       #{body.children.to_xhtml(encoding: 'UTF-8')}
           </div>
@@ -107,6 +107,6 @@ module Inferno_1ed
   end
 
   def page_title
-    @source.xpath('//h1').first.text + ' &mdash; Plan9 1ed'
+    "#{@source.xpath('//h1').first.text} &mdash; Inferno 1ed"
   end
 end

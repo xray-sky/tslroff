@@ -8,7 +8,7 @@
 # Automate building of product manuals
 #
 # TODOs
-#   unbundleds (output, plus review input collections which may be mixed)
+#   unbundleds (output, plus REVIEW input collections which may be mixed)
 #   manual.erb can't find the CSS with the extra level of directory structure (e.g. UTek)
 # √   - fixed for now by absolute ref to css
 #   cope with pages named 'index' (e.g. DG-UX 5.4R3.00 index(3C))
@@ -18,6 +18,7 @@
 #   rewrite links in optional products (e.g. Apollo ada 1.0 links to ld(1)) to.. where exactly?
 #   supplemental (non-man) docs recovered from mit afs
 #   page titles for unbundled pages are messed up
+#   assets failure if srcdirs[] is all files (*.htm - Inferno)
 #
 
 require 'fileutils'
@@ -46,11 +47,10 @@ collections = {
     }
   },
   'Acorn': {
-    #disabled: true,
     'RISCiX': {
       '1.2': {
         basedir: 'acorn/riscix/1.2',
-        # TODO: were the math functions moved to man0 to 'disable' them?
+        # REVIEW were the math functions moved to man0 to 'disable' them?
         # there are other BSD title pages etc. in man0, and a Makefile with Acorn (c)
         srcdirs: %w[
           share/man/man0/*.3m
@@ -60,7 +60,6 @@ collections = {
     }
   },
   'Alias': {
-    #disabled: true,
     '1': {
       module_override: 'GL2',
       'v2.1': {
@@ -71,67 +70,66 @@ collections = {
     }
   },
   'Apollo': {
-    #disabled: true,
     'unbundled': {
       module_override: 'DomainOS',
       'ada_1.0': {
         basedir: 'apollo/domain_os/unbundled/ada_1.0',
-        srcdirs: %w[bsd4.2/usr/man/man[13]] # TODO: + doc/*release_notes
+        srcdirs: %w[bsd4.2/usr/man/man[13]] # TODO + doc/*release_notes
       },
       'cc_4.6': {
         basedir: 'apollo/domain_os/unbundled/cc_4.6',
-        srcdirs: %w[sys/help] # TODO: + doc/*release_notes
+        srcdirs: %w[sys/help] # TODO + doc/*release_notes
       },
       'cc_5.5': {
         basedir: 'apollo/domain_os/unbundled/cc_5.5',
-        srcdirs: %w[sys/help] # TODO: + doc/*release_notes
+        srcdirs: %w[sys/help] # TODO + doc/*release_notes
       },
       'cc_6.9': {
         basedir: 'apollo/domain_os/10.3.5',
-        srcdirs: %w[sys/help/cc.hlp] # TODO: + doc/*release_notes
+        srcdirs: %w[sys/help/cc.hlp] # TODO + doc/*release_notes
       },
       'dpcc_3.5': {
         basedir: 'apollo/domain_os/10.3.5',
-        srcdirs: %w[sys/help/dpcc*.hlp] # TODO: + doc/*release_notes
+        srcdirs: %w[sys/help/dpcc*.hlp] # TODO + doc/*release_notes
       },
       'ftn_10.9': {
         basedir: 'apollo/domain_os/10.3.5',
-        srcdirs: %w[sys/help/ftn.hlp] # TODO: + doc/*release_notes
+        srcdirs: %w[sys/help/ftn.hlp] # TODO + doc/*release_notes
       },
       'lisp_2.0': { # DOMAIN LISP
-        disabled: true, # TODO: release_notes
+        disabled: true, # TODO release_notes
         basedir: 'apollo/domain_os/unbundled/lisp_2.0',
         srcdirs: %w[doc]
       },
       'lisp_4.0': { # Common LISP
         basedir: 'apollo/domain_os/10.3.5',
-        srcdirs: %w[sys/help/*lisp.hlp] # REVIEW: these are all three the same, what is the extent to which I care?
+        srcdirs: %w[sys/help/*lisp.hlp] # REVIEW these are all three the same, what is the extent to which I care?
       },
       'nfs_1.0': {
         basedir: 'apollo/domain_os/unbundled/nfs_1.0',
-        srcdirs: %w[bsd4.2/usr/man/man[58]] # TODO: + doc/*release_notes ; REVIEW: cat[58] also present
+        srcdirs: %w[bsd4.2/usr/man/man[58]] # TODO + doc/*release_notes ; REVIEW cat[58] also present
       },
       'pascal_7.54': {
         basedir: 'apollo/domain_os/unbundled/pascal_7.54',
-        srcdirs: %w[sys/help] # TODO: + doc/*release_notes
+        srcdirs: %w[sys/help] # TODO + doc/*release_notes
       },
-      'pascal_8.8': { # REVIEW: what version _is_ this??
+      'pascal_8.8': { # REVIEW what version _is_ this??
         basedir: 'apollo/domain_os/10.3.5',
-        srcdirs: %w[sys/help/pas.hlp] # TODO: + doc/*release_notes
+        srcdirs: %w[sys/help/pas.hlp] # TODO + doc/*release_notes
       },
       'tcpbsd_3.0': {
-        disabled: true, # TODO: release_notes
+        disabled: true, # TODO release_notes
         basedir: 'apollo/domain_os/unbundled/tcpbsd4.2_3.0',
         srcdirs: %w[doc]
       },
       'tcpbsd_3.1': {
         basedir: 'apollo/domain_os/unbundled/tcpbsd4.2_3.1',
-        srcdirs: %w[bsd4.2/usr/man/man[18]] # TODO: + doc/*release_notes
+        srcdirs: %w[bsd4.2/usr/man/man[18]] # TODO + doc/*release_notes
       }
     },
     'Aegis': {
       'SR9.7.5': {
-        # TODO: (what though?) unbundled products for sure (lisp)
+        # TODO (what though?) unbundled products for sure (lisp)
         basedir: 'apollo/domain_os/9.7.5',
         srcdirs: %w[sys/help/*]
       }
@@ -147,7 +145,7 @@ collections = {
     },
     'DomainOS': {
       'SR10.3.5': {
-        # TODO: (what though?) unbundled products for sure (lisp)
+        # TODO (what though?) unbundled products for sure (lisp)
         basedir: 'apollo/domain_os/10.3.5',
         srcdirs: %w[
           sys/help/*
@@ -159,7 +157,7 @@ collections = {
         ]
       },
       'SR10.4': {
-        # TODO: (what though?) unbundled products for sure (lisp)
+        # TODO (what though?) unbundled products for sure (lisp)
         basedir: 'apollo/domain_os/10.4',
         srcdirs: %w[
           sys/help/*
@@ -172,7 +170,7 @@ collections = {
         ]
       },
       'SR10.4.1': {
-        # TODO: (what though?) unbundled products probably (pascal, fortran, etc.)
+        # TODO (what though?) unbundled products probably (pascal, fortran, etc.)
         basedir: 'apollo/domain_os/10.4.1',
         srcdirs: %w[
           sys/help/*
@@ -222,7 +220,6 @@ collections = {
     }
   },
   'Ardent': {
-    #disabled: true,
     'SysV': {
       module_override: 'Ardent_SysV',
       'R3.0': {
@@ -249,9 +246,8 @@ collections = {
     }
   },
   'Atari': {
-    #disabled: true,
     'SysV': {
-      # TODO: sort out differences & local changes. are these separate releases??
+      # TODO sort out differences & local changes. are these separate releases??
       module_override: 'Atari_SysV',
       '1.1-06': {
         basedir: 'atari/system_v/1.1-06',
@@ -269,7 +265,6 @@ collections = {
   'Be': {
     # TODO graphics assets - the gifs in the R3 ./graphics/ & pressinfo/resources (not belogos/) directories are macbinary encoded! - must decode first
     # TODO are there actually metrowerks docs for R4 and earlier, somewhere other than develop/BeIDE?
-    disabled: true,
     'BeOS': {
       'PR2': {
         assets: %w(*.jp*g *.[gG][iI][fF] *.pdf),
@@ -440,7 +435,7 @@ collections = {
         ]
       },
       'SysIII': { # where'd I get this manual? need lib/macros/an
-        # TODO: also contains a lot of papers for as, cc, etc.
+        # TODO also contains a lot of papers for as, cc, etc.
         disabled: true,
         basedir: 'bell/unix/sysiii',
         srcdirs: %w[
@@ -451,7 +446,6 @@ collections = {
     }
   },
   'Commodore': {
-    #disabled: true,
     'AMIX': {
       '1.1': {
         basedir: 'commodore/amix/1.1',
@@ -488,7 +482,6 @@ collections = {
     }
   },
   'Concurrent': {
-    #disabled: true,
     'CX-UX': { # CX/UX
       '6.20': {
         basedir: 'concurrent/cx-ux/6.20',
@@ -500,7 +493,6 @@ collections = {
     }
   },
   'DEC': {
-    #disabled: true,
     # TODO there's a bunch more releases / tapes to check
     #      not clear on all the various releases/differences etc.
     # TODO arrange output dirs better
@@ -538,7 +530,7 @@ collections = {
       'Tru64/C++_6.2': {
         module_override: 'OSF1',
         version_override: '4.0f',
-        assets: %w(*.gif *.ps *.pdf),
+        assets: %w[*.gif *.ps *.pdf],
         basedir: 'dec/du/unbundled/cxx620',
         srcdirs: %w[usr/share/doclib/cplusplus/*.htm] # TODO html support
       },
@@ -643,7 +635,7 @@ collections = {
       'Tru64/FORTRAN_5.3': {
         module_override: 'OSF1',
         version_override: '4.0f',
-        assets: %w(*.gif),
+        assets: %w[*.gif],
         basedir: 'dec/du/unbundled/dfa530',
         srcdirs: %w[
           usr/lib/cmplrs/fort*_530/*.man
@@ -912,6 +904,21 @@ collections = {
       }
     },
     'OSF1': {
+      'SILVER_Baselevel_4_rev36': {
+        # DEC OSF/1 SILVER Baselevel 4 (Rev. 36) for MIPS from tenox - prerelease for mips TODO tmac.an
+        basedir: 'dec/osf1/silver4_r36_mips',
+        srcdirs: %w[usr/share/man/man[1-8]]
+      },
+      '1.0/mips': {
+        # DEC OSF/1 V1.0 (TIN) for MIPS from tenox - TODO tmac.an
+        basedir: 'dec/osf1/1.0_tin_mips',
+        srcdirs: %w[usr/share/man/man[1-8]]
+      },
+      'X2.0-8/mips': {
+        # DEC OSF/1 X2.0-8 (Rev. 155) for MIPS from tenox - TODO tmac.an
+        basedir: 'dec/osf1/2.0-8_mips',
+        srcdirs: %w[usr/share/man/man[1-8]]
+      },
       '3.0': {
         version_override: '3.2c', # identical apart from (c) date
         basedir: 'dec/osf1/3.0',
@@ -1021,9 +1028,9 @@ collections = {
     }
   },
   'DG': {
-   #disabled: true,
+    #disabled: true,
     'DG-UX': {
-      # TODO: canonically, 'DG/UX'
+      # TODO canonically, 'DG/UX'
       '4.30': {
         basedir: 'dg/dgux/4.30',
         srcdirs: %w[catman/?_man/man[0-8]]
@@ -1085,7 +1092,7 @@ collections = {
     'GDT-UNX': {
       '6.8_er0': {
         # TODO man1/adb.1 vs. man1/adb.1.orig etc.
-        #      divergences in cat[n] apart from n=9?
+        #       divergences in cat[n] apart from n=9?
         basedir: 'gould/gdt-unx/6.8_er0',
         srcdirs: %w[
           man/cat9
@@ -1164,6 +1171,27 @@ collections = {
         version_override: '8.05',
         basedir: 'hp/hpux/unbundled/scpi/B.02.00-S300',
         srcdirs: %w[usr/hp75000/man/man[135]]
+      }
+    },
+    'OSF1': {
+      # A.01.00_BL50 HP_OSF1 1.0
+      # from plamen; incomplete - need tmac.an (for now, pretend it's the same as DEC?)
+      # disc 2 only - products:
+      #  • C++ Compiler 2.1
+      #  • Developer's Kit 1.0
+      #  • Pascal Compiler 1.0
+      '1.0': {
+        basedir: 'hp/osf1/a.01.00_bl50',
+        srcdirs: %w[
+          usr/CC/man/man[13]
+          man-assembler/files/usr/share/man/man1
+          man-ccs/files/usr/share/man/man[13]
+          man-dde/files/usr/dde/man/man1
+          man-devenv/files/usr/local/sdm/man/man[15]
+          man-ncs/files/usr/share/man/man[13]
+          man-x11r4/files/usr/share/man/man[134]
+          pascal~58a4/man/files/usr/pas/man/man1
+        ]
       }
     },
     'HPUX': {
@@ -1246,11 +1274,11 @@ collections = {
       },
       '9.10': {
         basedir: 'hp/hpux/9.10',
-        srcdirs: %w[usr/man/man*]  # TODO unbundled stuff mixed in ?
+        srcdirs: %w[usr/man/man*] # TODO unbundled stuff mixed in ?
       },
       '10.20': {
         basedir: 'hp/hpux/10.20',
-        srcdirs: %w[man/man*]  # TODO + doc/ ?
+        srcdirs: %w[man/man*] # TODO + doc/ ?
       }
     }
   },
@@ -1264,13 +1292,13 @@ collections = {
       },
       '2.2.1': {
         #disabled: true,
-        # REVIEW: 2.2.1-alt-src/
+        # REVIEW 2.2.1-alt-src/
         basedir: 'ibm/aix/2.2.1',
         srcdirs: %w[man/man[1-7]]
       },
       '4.3.3': {
         disabled: true,
-        # TODO: incomplete (infoexplorer/html manual?)
+        # TODO incomplete (infoexplorer/html manual?)
         basedir: 'ibm/aix/4.3.3',
         srcdirs: %w[
           share/man/man[1-8]
@@ -1281,7 +1309,7 @@ collections = {
     'AOS': {
       #disabled: true,
       '4.3': {
-        # REVIEW: 4.3 (unknown provenance)
+        # REVIEW 4.3 (unknown provenance)
         basedir: 'ibm/aos/4.3',
         srcdirs: %w[man/man[1-9nx]]
       },
@@ -1317,7 +1345,6 @@ collections = {
     }
   },
   'Kodak': {
-    #disabled: true,
     'Interactive': {
       '2.2': {
         basedir: 'kodak/interactive/2.2',
@@ -1329,7 +1356,6 @@ collections = {
     }
   },
   'mips': {
-    #disabled: true,
     'unbundled': {
       module_override: 'RISC-os',
       'RISCwindows_4.00': {
@@ -1337,7 +1363,7 @@ collections = {
         srcdirs: %w[usr/RISCwindows4.0/man/cat/man[13]]
       }
     },
-    'RISC-os': {  # TODO: canonically, RISC/os
+    'RISC-os': { # TODO canonically, RISC/os
       '4.52': {
         basedir: 'mips/risc-os/4.52',
         srcdirs: %w[man/catman/?_man/*man[1-8]]
@@ -1364,7 +1390,6 @@ collections = {
     }
   },
   'Motorola': {
-    #disabled: true,
     'SysV': {
       module_override: 'Motorola_SysV',
       'MC88000/FH40.42': {
@@ -1381,7 +1406,6 @@ collections = {
     }
   },
   'MWC': {
-    #disabled: true,
     'Coherent': {
       '3.1.0': {
         basedir: 'mwc/coherent/3.1.0',
@@ -1394,7 +1418,6 @@ collections = {
     }
   },
   'NBI': {
-    #disabled: true,
     '4.2BSD': {
       module_override: 'NBI_4.2BSD',
       '3.04v10.B': { # TODO these were not extracted cleanly. they're almost but not quite tar files - there's garbage in many files
@@ -1404,7 +1427,6 @@ collections = {
     }
   },
   'NeXT': {
-    #disabled: true,
     'NEXTSTEP': {
       '1.0': {
         basedir: 'next/nextstep/1.0',
@@ -1420,7 +1442,6 @@ collections = {
       }
     },
     'OPENSTEP': {
-      module_override: 'NEXTSTEP',
       '4.2': {
         basedir: 'next/openstep/4.2',
         srcdirs: %w[NextLibrary/Documentation/ManPages/man[1-8]]
@@ -1428,7 +1449,6 @@ collections = {
     }
   },
   'Novell': {
-    #disabled: true,
     'UnixWare': {
       '2.01': {
         basedir: 'novell/unixware/2.01',
@@ -1437,7 +1457,6 @@ collections = {
     }
   },
   'SCO': {
-    #disabled: true,
     'unbundled': {
       module_override: 'OpenDesktop',
       'LLI_3.1.0j': {
@@ -1472,7 +1491,6 @@ collections = {
       }
     },
     'Xenix': {
-      #disabled: true,
       '2.3.4': {
         basedir: 'sco/xenix/2.3.4',
         srcdirs: %w[usr/man/cat.*]
@@ -1506,7 +1524,6 @@ collections = {
     }
   },
   'SGI': {
-    #disabled: true,
     'thirdparty': {
       'C-TAD_Look-In': {
         basedir: 'sgi/thirdparty/ctad_lookin',
@@ -1526,8 +1543,7 @@ collections = {
         srcdirs: %w[Install/man]
       }
     },
-    'libiris': {  # using 4BSD macros?
-      #disabled: true,
+    'libiris': { # using 4BSD macros?
       'R1c': {
         module_override: 'BSD',
         version_override: '4.3-VAX-MIT',
@@ -1582,8 +1598,7 @@ collections = {
       }
     },
     'IRIX': {
-      #disabled: true,
-      '6.5.3f': {
+      '6.5.3f': { # TODO re-extraction
         basedir: 'sgi/irix/6.5.3f',
         srcdirs: %w[
           share/catman/?_man/cat[1-8o]/*.z
@@ -1608,7 +1623,6 @@ collections = {
     }
   },
   'Solbourne': {
-    #disabled: true,
     'OS-MP': {
       '4.1A': {
         basedir: 'solbourne/os-mp/4.1A',
@@ -1637,7 +1651,6 @@ collections = {
     }
   },
   'Sony': {
-    #disabled: true,
     'NEWS-os': {
       '3.3/en_US': { # TODO extra docs
         basedir: 'sony/news-os/3.3',
@@ -1671,7 +1684,7 @@ collections = {
       },
       '5.0.1': {
         basedir: 'sony/news-os/5.0.1',
-        # REVIEW: share/man.foon ??
+        # REVIEW share/man.foon ??
         srcdirs: %w[
           share/man/*cat[1-8]
           X11/usr/man/man[13]
@@ -1681,7 +1694,6 @@ collections = {
     }
   },
   'Sun': {
-    #disabled: true,
     'Interactive': {
       '3.2r4.1': {
         basedir: 'sun/interactive/3.2r4.1',
@@ -1986,8 +1998,8 @@ collections = {
           iv-3.1/iv/man/Unidraw/*.n
         ]
         # TODO all kinds of stuff in here, it (probably) needs sorted/organized into subdirs
-        #      TeX sources of Lucid Emacs manual in lemacs.new/man/
-        #      postscript source in iv-3.1/iv/src/man/refman > make refman.PS
+        #       TeX sources of Lucid Emacs manual in lemacs.new/man/
+        #       postscript source in iv-3.1/iv/src/man/refman > make refman.PS
       },
       'Oracle/6.0.33.1': {
         version_override: '4.1',
@@ -2147,8 +2159,8 @@ collections = {
       },
       '5.1/SPARC': {
         # TODO reveal the secrets of how SPARC and x86 are different, if beyond drivers in man7
-        #      I guess that's just an intellectual exercise as they can't be merged
-        #       - e.g. substantial differences in matherr(3m)
+        #       I guess that's just an intellectual exercise as they can't be merged
+        #        - e.g. substantial differences in matherr(3m)
         version_override: '5.1',
         basedir: 'sun/sunos/5.1',
         srcdirs: %w[
@@ -2244,7 +2256,6 @@ collections = {
     }
   },
   'Tektronix': {
-    #disabled: true,
     'UTek': {
       '6130-W2.3': {
         basedir: 'tek/utek/6130/w2.3_2.3e',
@@ -2264,7 +2275,6 @@ collections = {
     }
   },
   'UCB': {
-    #disabled: true,
     '386BSD': {
       '1.0': {
         basedir: 'ucb/386bsd/1.0',
@@ -2332,27 +2342,26 @@ loop do
   end
 end
 
-collections = collections.select { |k,v| k == vendor } if vendor
+collections = collections.select { |k, _v| k == vendor } if vendor
 if os
-  collections = collections.select { |k,v| v.has_key?(os) }
-  vendor ||= collections.select { |k,v| v.is_a?(Hash) }.keys.first
-  collections[vendor].reject! { |k,v| (k != os && v.is_a?(Hash)) || (k == :disabled) }
+  collections = collections.select { |k, v| v.key?(os) }
+  vendor ||= collections.select { |_k, v| v.is_a?(Hash) }.keys.first
+  collections[vendor].reject! { |k, v| (k != os && v.is_a?(Hash)) || (k == :disabled) }
 end
 if ver
   vendor ||= collections.keys.first
-  os ||= collections[vendor].select { |k,v| v.is_a?(Hash) }.keys.first
-  collections[vendor][os].reject! { |k,v| (k != ver && v.is_a?(Hash)) || (k == :disabled)}
+  os ||= collections[vendor].select { |_k, v| v.is_a?(Hash) }.keys.first
+  collections[vendor][os].reject! { |k, v| (k != ver && v.is_a?(Hash)) || (k == :disabled) }
 end
 
 #raise ArgumentError, 'need input and output directories!' if indir.empty? || outdir.empty?
 
+system('mkdir', '-p', outdir) unless Dir.exist?(outdir)
 css = "#{__dir__}/lib/assets/tslroff.css"
-unless File.mtime(css) <= File.mtime("#{outdir}/tslroff.css")
-warn File.mtime(css).inspect
-warn File.mtime("#{outdir}/tslroff.css").inspect
+unless File.exist?("#{outdir}/tslroff.css") and File.mtime(css) > File.mtime("#{outdir}/tslroff.css") # FIX no longer copies on empty dir (FIXed? test it: 20230626)
   Process.spawn("cp #{css} #{outdir}")
   Process.wait
-  puts "updated tslroff.css from lib/assets/"
+  puts 'updated tslroff.css from lib/assets/'
 end
 
 collections.each do |vendor, oses|
@@ -2365,7 +2374,7 @@ collections.each do |vendor, oses|
       next if params[:disabled]
       logtime = Time.now.strftime('%Y%m%d-%H%M%S')
       odir = "#{outdir}/#{vendor}/#{os}/#{ver}"
-      system('mkdir', '-p', odir) unless Dir.exists?(odir)
+      system('mkdir', '-p', odir) unless Dir.exist?(odir)
 
       (params[:override] or params[:srcdirs]).each do |srcdir|
         os_module = params[:module_override] || versions[:module_override] || os
@@ -2389,7 +2398,7 @@ collections.each do |vendor, oses|
               end
             end
 
-            Process.spawn(cmd, [:out, :err] => ["#{odir}/build_#{logtime}.log", File::CREAT|File::WRONLY|File::APPEND, 0644] )
+            Process.spawn(cmd, %i[out err] => ["#{odir}/build_#{logtime}.log", File::CREAT | File::WRONLY | File::APPEND, 0o644])
           end
           Process.wait
         }

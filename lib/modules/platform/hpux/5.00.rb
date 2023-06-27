@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/16/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -20,12 +20,14 @@ module HPUX_5_00
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-      ']W' => "last mod. #{File.mtime(@source.filename).strftime("%B %d, %Y")}",
-      # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
-      :footer => "Hewlett-Packard\\0\\0\\(em\\0\\0\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
+        footer: "Hewlett-Packard\\0\\0\\(em\\0\\0\\*(]W",
+        ']L' => '', # explicitly blanked in .TH before being conditionally redefined
+        ']W' => "last mod. #{File.mtime(@source.filename).strftime("%B %d, %Y")}"
+      }
+    )
   end
 
   def init_TH

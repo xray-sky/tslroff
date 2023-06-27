@@ -7,7 +7,7 @@
 #
 
 module Unknown
-  def self.extended(k)
+  def self.extended(_k)
     warn "!!! extended doctype ::Unknown"
   end
 end

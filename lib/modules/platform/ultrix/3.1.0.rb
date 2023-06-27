@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/16/23.
 # Copyright 2023 Typewritten Software. All rights reserved.
@@ -24,14 +24,16 @@ module Ultrix_3_1_0
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => 'UNIX Programmer\'s Manual',
-      ']W' => '7th Edition',
-      :footer => "\\f(TB\\*(]T\\fP"
-    })
+    @state[:named_string].merge!(
+      {
+        ']D' => 'UNIX Programmer\'s Manual',
+        ']W' => '7th Edition',
+        :footer => "\\f(TB\\*(]T\\fP"
+      }
+    )
   end
 
-  define_method 'CW' do |*args|
+  define_method 'CW' do |*_args|
     req_ft 'CW'
   end
 
@@ -48,16 +50,16 @@ module Ultrix_3_1_0
     req_ft 'R'
   end
 
-  define_method 'EE' do |*args|
+  define_method 'EE' do |*_args|
     req_fi
-    req_ps "#{Font.defaultsize}"
+    req_ps Font.defaultsize.to_s
     req_in "-#{@register['EX'].value}u"
     req_sp '.5'
     req_ft '1'
   end
 
   define_method 'EX' do |*args|
-    req_nr 'EX ' + to_u("#{args[0] || 0}n+#{@state[:base_indent]}u")
+    req_nr "EX #{to_u "#{args[0] || 0}n+#{@state[:base_indent]}u"}"
     req_nf
     req_sp '.5'
     req_in "+#{@register['EX'].value}u"

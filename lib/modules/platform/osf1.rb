@@ -43,14 +43,13 @@ module OSF1
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     k.define_singleton_method(:HB, k.method(:GB)) if k.methods.include?(:GB)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
     k.instance_variable_set '@related_info_heading', %r{(?:SEE(?: |&nbsp;)+ALSO|RELATED(?: |&nbsp;)INFORMATION)}
     case k.instance_variable_get '@source_dir'
     when /SJIS/ # Tru64 iconv deckanji -> UTF8 translation gives ¥ for \ ; the SJIS translation doesn't
       k.instance_variable_set '@language', 'ja'
-      k.instance_variable_get('@source').lines.collect! { |k| k.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
+      k.instance_variable_get('@source').lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
       k.instance_variable_set '@related_info_heading', %r{関連項目}u
     end
     case k.instance_variable_get '@input_filename'
@@ -63,12 +62,14 @@ module OSF1
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      #:footer => "\\fH\\*(]W\\fP"
-      :footer => ''
-    })
+    @state[:named_string].merge!(
+      {
+        #'Tm' => '&trade;',
+        #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+        #:footer => "\\fH\\*(]W\\fP"
+        footer: ''
+      }
+    )
   end
 
   def init_fp
@@ -108,9 +109,9 @@ module OSF1
     osdir = @source_dir.dup
     @source_dir << '/../..' if name.start_with?('/')
     if %w[sml rsml].include? File.basename(name)
-      super(name) { |lines| lines.reject! { |l| l.start_with? '...\\"' } }
+      super(name, breaking: breaking) { |lines| lines.reject! { |l| l.start_with? '...\\"' } }
     else
-      super(name)
+      super(name, breaking: breaking)
     end
     @source_dir = osdir
   end
@@ -141,7 +142,7 @@ module OSF1
     parse "\\s-2<\\|CTRL\\|#{args[0]}\\|>\\s+2"
   end
 
-  define_method 'CW' do |*args|
+  define_method 'CW' do |*_args|
     req_ft 'CW'
   end
 
@@ -165,9 +166,9 @@ module OSF1
     req_sp '.5'
   end
 
-  define_method 'EE' do |*args|
+  define_method 'EE' do |*_args|
     req_fi
-    req_ps "#{Font.defaultsize}"
+    req_ps Font.defaultsize.to_s
     req_in "-#{@register['EX'].value}u"
     req_sp '.5'
     req_ft '1'
@@ -218,7 +219,7 @@ module OSF1
   end
 
   # apparently for indexing; do nothing for now but suppress the warning
-  define_method 'iX' do |*args| ; end
+  define_method 'iX' do |*_args| ; end
 
   define_method 'I1' do |*args|
     warn "REVIEW .I1 #{args.inspect}"
@@ -236,7 +237,7 @@ module OSF1
     parse "\\f(CW\\|#{args[0]}\\|\\fP\\fR(#{args[2]})\\fP#{args[2]}"
   end
 
-  define_method 'NE' do |*args|
+  define_method 'NE' do |*_args|
     req_ce '0'
     req_in '-5n'
     req_sp '12p'
@@ -260,8 +261,8 @@ module OSF1
   end
 
   # for indexing - don't care. uses \*(BK internally (default value: "Book Title")
-  define_method 'HH' do |*args| ; end
-  define_method 'NX' do |*args| ; end
+  define_method 'HH' do |*_args| ; end
+  define_method 'NX' do |*_args| ; end
 
   define_method 'Pn' do |*args|
     parse "#{args[0]}\\&\\f(CW\\|#{args[1]}\\|\\fP#{args[2]}"
@@ -272,11 +273,11 @@ module OSF1
     parse "\\f(CW\\|#{args[0]}\\|\\fP#{args[1]}"
   end
 
-  define_method 'R' do |*args|
+  define_method 'R' do |*_args|
     req_ft 'R'
   end
 
-  define_method 'RN' do |*args|
+  define_method 'RN' do |*_args|
     parse "\\s-2<\\|RETURN\\|>\\s+2"
   end
 

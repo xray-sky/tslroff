@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/04/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -13,8 +13,7 @@
 module Interactive_2_2
 
   def self.extended(k)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)(?:\.z)?$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)(?:\.z)?$/, '')
     k.instance_variable_set '@heading_detection', %r(^\s{10}(?<section>[A-Z][A-Za-z\s]+)$)
     # some of these entries with longish names end up with clashes in the title line
     # so detect just on closing parenthesis, regardless of following whitespace

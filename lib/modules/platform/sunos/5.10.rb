@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/15/23.
 # Copyright 2023 Typewritten Software. All rights reserved.
@@ -34,10 +34,12 @@ module SunOS_5_10
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']W' => 'SunOS 5.10',
-      '||' => '/usr/share/lib/tmac'
-    })
+    @state[:named_string].merge!(
+      {
+        ']W' => 'SunOS 5.10',
+        '||' => '/usr/share/lib/tmac'
+      }
+    )
   end
 
   def init_fp
@@ -48,91 +50,91 @@ module SunOS_5_10
 
   def init_sunos551
     @state[:sections] = {
-      '1'  => 'User Commands',
-      '1b' => 'SunOS/BSD Compatibility Package Commands',
-      '1c' => 'Communication Commands',
-      '1f' => 'FMLI Commands',
-      '1g' => 'Graphics and CAD Commands',
-      '1m' => 'Maintenance Commands',
-      '1s' => 'SunOS Specific Commands',
-      '2'  => 'System Calls',
-      '3'  => 'Introduction to Library Functions',
-      '3aio' => 'Asynchronous I/O Library Functions',
-      '3bsm' => 'Security and Auditing Library Functions',
-      '3c' => 'Standard C Library Functions',
-      '3cfgadm' => 'Configuration Administration Library Functions',
-      '3curses' => 'Curses Library Functions',
-      '3devid' => 'Device ID Library Functions',
+      '1'        => 'User Commands',
+      '1b'       => 'SunOS/BSD Compatibility Package Commands',
+      '1c'       => 'Communication Commands',
+      '1f'       => 'FMLI Commands',
+      '1g'       => 'Graphics and CAD Commands',
+      '1m'       => 'Maintenance Commands',
+      '1s'       => 'SunOS Specific Commands',
+      '2'        => 'System Calls',
+      '3'        => 'Introduction to Library Functions',
+      '3aio'     => 'Asynchronous I/O Library Functions',
+      '3bsm'     => 'Security and Auditing Library Functions',
+      '3c'       => 'Standard C Library Functions',
+      '3cfgadm'  => 'Configuration Administration Library Functions',
+      '3curses'  => 'Curses Library Functions',
+      '3devid'   => 'Device ID Library Functions',
       '3devinfo' => 'Device Information Library Functions',
-      '3dl' => 'Dynamic Linking Library Functions',
-      '3dmi' => 'DMI Library Functions',
-      '3door' => 'Door Library Functions',
-      '3elf' => 'ELF Library Functions',
-      '3ext' => 'Extended Library Functions',
-      '3gen' => 'Sring Pattern-Matching Library Functions',
-      '3head' => 'Headers',
-      '3krb' => 'Kerberos Library Functions',
-      '3kstat' => 'Kernel Statistics Library Functions',
-      '3kvm' => 'Kernel VM Library Functions',
-      '3ldap' => 'LDAP Library Functions',
-      '3lib' => 'Interface Libraries',
-      '3libucb' => 'SunOS/BSD Compatibility Interface Libraries',
-      '3m' => 'Mathematical Library Functions',
-      '3mail' => 'User Mailbox Library Functions',
-      '3malloc' => 'Memory Allocation Library Functions',
-      '3mp' => 'Multiple Precision Library Functions',
-      '3nsl' => 'Networking Services Library Functions',
-      '3pam' => 'PAM Library Functions',
-      '3plot' => 'Graphics Interface Library Functions',
-      '3proc' => 'Process Control Library Functions',
-      '3rac' => 'Remote Asynchronous Calls Library Functions',
-      '3resolv' => 'Resolver Library Functions',
-      '3rpc' => 'RPC Library Functions',
-      '3rt' => 'Realtime Library Functions',
-      '3sched' => 'LWP Scheduling Library Functions',
-      '3sec' => 'File Access Control Library Functions',
-      '3snmp' => 'SNMP Library Functions',
-      '3socket' => 'Sockets Library Functions',
-      '3thr' => 'Threads Library Functions',
-      '3tnf' => 'TNF Library Functions',
-      '3ucb' => 'SunOS/BSD Compatibility Library Functions',
-      '3volmgt' => 'Volume Management Library Functions',
+      '3dl'      => 'Dynamic Linking Library Functions',
+      '3dmi'     => 'DMI Library Functions',
+      '3door'    => 'Door Library Functions',
+      '3elf'     => 'ELF Library Functions',
+      '3ext'     => 'Extended Library Functions',
+      '3gen'     => 'Sring Pattern-Matching Library Functions',
+      '3head'    => 'Headers',
+      '3krb'     => 'Kerberos Library Functions',
+      '3kstat'   => 'Kernel Statistics Library Functions',
+      '3kvm'     => 'Kernel VM Library Functions',
+      '3ldap'    => 'LDAP Library Functions',
+      '3lib'     => 'Interface Libraries',
+      '3libucb'  => 'SunOS/BSD Compatibility Interface Libraries',
+      '3m'       => 'Mathematical Library Functions',
+      '3mail'    => 'User Mailbox Library Functions',
+      '3malloc'  => 'Memory Allocation Library Functions',
+      '3mp'      => 'Multiple Precision Library Functions',
+      '3nsl'     => 'Networking Services Library Functions',
+      '3pam'     => 'PAM Library Functions',
+      '3plot'    => 'Graphics Interface Library Functions',
+      '3proc'    => 'Process Control Library Functions',
+      '3rac'     => 'Remote Asynchronous Calls Library Functions',
+      '3resolv'  => 'Resolver Library Functions',
+      '3rpc'     => 'RPC Library Functions',
+      '3rt'      => 'Realtime Library Functions',
+      '3sched'   => 'LWP Scheduling Library Functions',
+      '3sec'     => 'File Access Control Library Functions',
+      '3snmp'    => 'SNMP Library Functions',
+      '3socket'  => 'Sockets Library Functions',
+      '3thr'     => 'Threads Library Functions',
+      '3tnf'     => 'TNF Library Functions',
+      '3ucb'     => 'SunOS/BSD Compatibility Library Functions',
+      '3volmgt'  => 'Volume Management Library Functions',
       '3xcurses' => 'X/Open Curses Library Functions',
-      '3xfn' => 'XFN Interface Library Functions',
-      '3xnet' => 'X/Open Networking Services Library Functions',
-      '3b' => 'SunOS/BSD Compatibility Library Functions',
-      '3e' => 'C Library Functions',
-      '3f' => 'Fortran Library Routines',
-      '3g' => 'C Library Functions',
-      '3k' => 'Kernel VM Library Functions',
-      '3l' => 'Lightweight Processes Library',
-      '3n' => 'Network Functions',
-      '3r' => 'Realtime Library',
-      '3s' => 'Standard I/O Functions',
-      '3t' => 'Thread Library',
-      '3w' => 'C Library Functions',
-      '3x' => 'Miscellaneous Library Functions',
-      '3xc' => 'X/Open Curses Library Functions',
-      '3xn' => 'X/Open Networking Services Library Functions',
-      '4'  => 'File Formats',
-      '4b' => 'SunOS/BSD Compatibility Package File Formats',
-      '5'  => 'Standards, Environments, and Macros',
-      '6'  => 'Games and Demos',
-      '7'  => 'Device and Network Interfaces',
-      '7b' => 'SunOS/BSD Compatibility Special Files',
-      '7d' => 'Devices',
-      '7fs' => 'File Systems',
-      '7i' => 'Ioctl Requests',
-      '7m' => 'STREAMS Modules',
-      '7p' => 'Protocols',
-      '8'  => 'Maintenance Procedures',
-      '8c' => 'Maintenance Procedures',
-      '8s' => 'Maintenance Procedures',
-      '9'  => 'Device Driver Interfaces',
-      '9e' => 'Driver Entry Points',
-      '9f' => 'Kernel Functions for Drivers',
-      '9s' => 'Data Structures for Drivers',
-      'l'  => 'Local Commands'
+      '3xfn'     => 'XFN Interface Library Functions',
+      '3xnet'    => 'X/Open Networking Services Library Functions',
+      '3b'       => 'SunOS/BSD Compatibility Library Functions',
+      '3e'       => 'C Library Functions',
+      '3f'       => 'Fortran Library Routines',
+      '3g'       => 'C Library Functions',
+      '3k'       => 'Kernel VM Library Functions',
+      '3l'       => 'Lightweight Processes Library',
+      '3n'       => 'Network Functions',
+      '3r'       => 'Realtime Library',
+      '3s'       => 'Standard I/O Functions',
+      '3t'       => 'Thread Library',
+      '3w'       => 'C Library Functions',
+      '3x'       => 'Miscellaneous Library Functions',
+      '3xc'      => 'X/Open Curses Library Functions',
+      '3xn'      => 'X/Open Networking Services Library Functions',
+      '4'        => 'File Formats',
+      '4b'       => 'SunOS/BSD Compatibility Package File Formats',
+      '5'        => 'Standards, Environments, and Macros',
+      '6'        => 'Games and Demos',
+      '7'        => 'Device and Network Interfaces',
+      '7b'       => 'SunOS/BSD Compatibility Special Files',
+      '7d'       => 'Devices',
+      '7fs'      => 'File Systems',
+      '7i'       => 'Ioctl Requests',
+      '7m'       => 'STREAMS Modules',
+      '7p'       => 'Protocols',
+      '8'        => 'Maintenance Procedures',
+      '8c'       => 'Maintenance Procedures',
+      '8s'       => 'Maintenance Procedures',
+      '9'        => 'Device Driver Interfaces',
+      '9e'       => 'Driver Entry Points',
+      '9f'       => 'Kernel Functions for Drivers',
+      '9s'       => 'Data Structures for Drivers',
+      'l'        => 'Local Commands'
     }
   end
 
@@ -376,7 +378,7 @@ module SunOS_5_10
                    when 'KR' then "The C Programming Language"
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
                    end
-    )
+          )
     parse "\\fI\\*(Tz\\f1#{args[1]}"
   end
 
@@ -403,7 +405,7 @@ module SunOS_5_10
                    when 'HC_RSMARNOTES' then "Product Notes: Sun RSM Array 2000 Software"
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
                    end
-    )
+          )
     parse "\\fI\\*(Hc\\f1#{args[1]}"
   end
 

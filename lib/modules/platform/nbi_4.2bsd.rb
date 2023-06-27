@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/05/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -13,8 +13,7 @@ module NBI_4_2BSD
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-       k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1]
     k.instance_variable_set '@output_directory', "man#{k.instance_variable_get '@manual_section'}"
     #k.instance_variable_get('@state')[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
@@ -23,13 +22,14 @@ module NBI_4_2BSD
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      # tmac.an.new
-      ']D' => 'Unix Programmer\'s Manual',    # default set by .TH
-      ']W' => '\\f3INTEGRATED SOLUTIONS 4.2 BSD\\f1', # set by .}F
-      #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        # tmac.an.new
+        footer: "\\*(]W",
+        ']D' => 'Unix Programmer\'s Manual', # default set by .TH
+        ']W' => '\\f3INTEGRATED SOLUTIONS 4.2 BSD\\f1' # set by .}F
+      }
+    )
   end
 
   def init_tr
@@ -41,7 +41,7 @@ module NBI_4_2BSD
   #def req_so(name, breaking: nil)
   #  osdir = @source_dir.dup
   #  @source_dir << '/..'
-  #  super(name)
+  #  super(name, breaking: breaking)
   #  @source_dir = osdir
   #end
 

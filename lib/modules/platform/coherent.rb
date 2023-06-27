@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/05/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -18,8 +18,7 @@ module Coherent
   def self.extended(k)
     k.instance_variable_set '@heading_detection', %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
     k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\(\S*?\))\s.+?\s\k<manentry>$}
-    k.instance_variable_set '@output_directory',
-      File.basename(k.instance_variable_get '@source_dir')
+    k.instance_variable_set '@output_directory', File.basename(k.instance_variable_get '@source_dir')
     k.instance_variable_set '@related_info_heading', '***** See Also *****'
     case k.instance_variable_get '@input_filename'
     when 'default'

@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -13,8 +13,7 @@ module Sprite
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S*|man)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S*|man)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
     case k.instance_variable_get '@input_filename'
     when /^default\./
@@ -26,12 +25,14 @@ module Sprite
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      ']l' => '/sprite/lib/ditroff/', # for including tmac.sprite
-      ']W' => 'Sprite version 1.0',
-      :footer => "\\*(]W\\0\\0\\(em\\0\\0\\*(]L"
-    })
+    @state[:named_string].merge!(
+      {
+        #'Tm' => '&trade;',
+        ']l' => '/sprite/lib/ditroff/', # for including tmac.sprite
+        ']W' => 'Sprite version 1.0',
+        footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L"
+      }
+    )
   end
 
   def init_tr
@@ -94,7 +95,7 @@ module Sprite
     send 'AS'
     send 'TH', *args
     req_ds "]H #{args[0]}"
-    req_ds ']S '+ case args[1]
+    req_ds ']S ' + case args[1]
                    when 'admin'   then 'Administrative Commands'
                    when 'cmds'    then 'User Commands'
                    when 'daemons' then 'Daemons'
@@ -105,7 +106,7 @@ module Sprite
                    else "UNKNOWN SECTION (#{args[1]})"
                    end
     req_ds ']D \\*(]S'
-    req_ds "]L #{File.mtime(@source.filename).strftime("%B %d, %Y")}"
+    req_ds "]L #{File.mtime(@source.filename).strftime('%B %d, %Y')}"
     req_ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
   end
 

@@ -12,13 +12,13 @@
 # TODO make it check targets of symlinks too?
 #
 
-#$LOAD_PATH << File.dirname(__FILE__)
+# $LOAD_PATH << File.dirname(__FILE__)
 
 require 'nokogiri'
 
 filelist = ARGV.collect do |arg|
   # TODO make this actually recursive
-  File.directory?(arg) ? Dir.glob(arg + '/**').select { |f| File.ftype(f) == 'file' } : arg
+  File.directory?(arg) ? Dir.glob("#{arg}/**").select { |f| File.ftype(f) == 'file' } : arg
 end.flatten
 
 raise ArgumentError, 'need an input file!' if filelist.empty?
@@ -27,6 +27,6 @@ filelist.each do |file|
   basedir = File.dirname(file)
   doc = Nokogiri::HTML(File.new(file))
   doc.css('#man a').each do |link|
-    warn "#{file}: #{link.text.strip}" unless File.exists?("#{basedir}/#{link['href']}")
+    warn "#{file}: #{link.text.strip}" unless File.exist?("#{basedir}/#{link['href']}")
   end
 end

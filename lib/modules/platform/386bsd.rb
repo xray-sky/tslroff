@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/7/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -17,8 +17,7 @@
 module X386BSD
 
   def self.extended(k)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.([\dZz]\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([\dZz]\S?)$/, '')
     k.instance_variable_set '@heading_detection', %r(^(?<section>[A-Z][A-Za-z\s]+)$)
     k.instance_variable_set '@related_info_heading', 'SEE ALSO'
     k.instance_variable_set '@lines_per_page', nil

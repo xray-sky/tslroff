@@ -16,12 +16,10 @@
 # the maximum values are used. The most recently utilized post-line extra line space
 # is available in the .a register.
 #
-# TODO: how to use the .a register??
+# TODO how to use the .a register??
 #
 # REVIEW '0' arg - see spline(1g) [GL2-W2.5]
 # REVIEW same wart as \w w/rt extra delimiters. let's see what we run into.
-#
-#
 #
 
 module Troff
@@ -30,16 +28,14 @@ module Troff
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
 
     space = to_u(req_str, default_unit: 'v').to_i
-    unless space.zero?
-      warn "trying to \\x#{space} - (\\#{req_str.inspect})"
-      #container = Text.new(font: output.terminal_font.dup, style: output.terminal_text_style.dup)
-      #container.style.css[ space > 0 ? :padding_top : :padding_bottom] = to_em("#{space}u") + 'em'
-      #container.text << s[0]
-      #output << container
-      #output << Text.new(font: output.text[-2].font.dup, style: output.text[-2].style.dup)
-      ExtraLineSpace.new(height: space, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
-    else
-      ''
-    end
+    return '' if space.zero?
+
+    warn "trying to \\x#{space} - (\\#{req_str.inspect})"
+    #container = Text.new(font: output.terminal_font.dup, style: output.terminal_text_style.dup)
+    #container.style.css[ space > 0 ? :padding_top : :padding_bottom] = to_em("#{space}u") + 'em'
+    #container.text << s[0]
+    #output << container
+    #output << Text.new(font: output.text[-2].font.dup, style: output.text[-2].style.dup)
+    ExtraLineSpace.new(height: space, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
   end
 end

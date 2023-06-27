@@ -1,6 +1,7 @@
-<%#
-  TODO: want some way of indicating OS/Version in the page structure; don't leave it all to the URL (use the title?)
-  TODO: fix overflow on related articles menu
+<%# TODO
+  want some way of indicating OS/Version in the page structure; don't leave it all to the URL (use the title?)
+  menu class 'here' could include more information about where in the Online Manual, specifically
+  fix overflow on related articles menu
 -%>
 <html lang="<%= src.language %>">
 <head>
@@ -9,7 +10,7 @@
   <link rel="stylesheet" type="text/css" media="screen" href="/Manual/tslroff.css" />
   <link rel="stylesheet" type="text/css" media="print"  href="/tsl-print.css" />
   <meta charset="UTF-8">
-  <meta name="generator" content="tslroff.rb">
+  <meta name="generator" content="https://github.com/xray-sky/tslroff">
   <meta name="sourcefile" content="<%= file %>">
 </head>
 <body>

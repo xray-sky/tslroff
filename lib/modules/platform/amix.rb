@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/16/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -14,18 +14,19 @@ module AMIX
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.Z$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.Z$/, '')
     #k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      ']W' => 'Amiga Unix',
-      :footer => "\\*(]W\\0\\0\\(em\\0\\0\\*(]L"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L",
+        #'Tm' => '&trade;',
+        ']W' => 'Amiga Unix'
+      }
+    )
   end
 
   def init_tr
@@ -42,7 +43,7 @@ module AMIX
   def req_so(name, breaking: nil)
     osdir = @source_dir.dup
     @source_dir << '/../..' if name.start_with?('/')
-    super(name)
+    super(name, breaking: breaking)
     @source_dir = osdir
   end
 
@@ -141,13 +142,13 @@ module AMIX
                    when 'KR'       then "The C Programming Language"
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
                    end
-    )
+          )
     parse "\\fI\\*(Tx\\fP#{args[1]}"
   end
 
   # some pages call this, but the def is commented out
   # defining it as a no-op suppresses the warning.
-  define_method 'UC' do |*args| ; end
+  define_method 'UC' do |*_args| ; end
 
   # good news - margin characters don't seem to be used anywhere in the Sun manual
   define_method 'VE' do |*args|

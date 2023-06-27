@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/30/21.
 # Copyright 2021 Typewritten Software. All rights reserved.
@@ -31,26 +31,25 @@ module DomainOS_SR10_3_5
       k.instance_variable_set '@related_info_heading', 'SEE ALS0'
     when 'cdfsmount.1m', 'cdfsumount.1m'
       k.instance_variable_set '@related_info_heading', 'SEE AlSO'
-    when 'Xdomain.1', 'mwm.1', 'stconv.1', 'stlicense.1', 'stload.1', 'stmkdirs.1',
-         'stmkfont.1', 'x11start.1'
+    when 'Xdomain.1', 'mwm.1', 'stconv.1', 'stload.1', 'stmkdirs.1', 'stmkfont.1', 'x11start.1'
       k.instance_variable_set '@lines_per_page', 66
+    when 'stlicense.1'
+      k.instance_variable_set '@lines_per_page', 66
+      k.define_singleton_method :detect_links, k.method(:detect_links_rcs)
     when 'cu.1c',
          'accept.1m', 'captoinfo.1m', 'ftpd.1m', 'rc.1m', 'reject.1m', 'rexecd.1m',
          'uuclean.1m', 'uucleanup.1m', 'writed.1m',
          'vhangup.2'
       # captoinfo.1m title detection fails due to broken title, but ends up where it ought to go anyway
       k.define_singleton_method :detect_links, k.method(:detect_links_rcs)
-    when 'stlicense.1', 'stload.1'
-      k.instance_variable_set '@lines_per_page', 66
-      k.define_singleton_method :detect_links, k.method(:detect_links_rcs)
-    when 'ali.n', 'anno.n', 'burst.n', 'comp.n', 'dist.n'
-      k.instance_variable_set '@systype', 'bsd'
     when 'ci.n', 'co.n', 'ident.n', 'merge.n', /^rcs.*\.n$/, 'rlog.n', 'sccstorcs.n'
       k.define_singleton_method :detect_links, k.method(:detect_links_rcs)
       # TODO: links spanning lines - rcsfile.n "rcsmerge (1)"
       #                              rcs.n     "rlog (1)"
       #                              ident.n   "rcsmerge (1)"
       #                              rlog.n    "rcsintro (1)"
+    when 'ali.n', 'anno.n', 'burst.n', 'comp.n', 'dist.n'
+      k.instance_variable_set '@systype', 'bsd'
     when 'cc.hlp', 'clxwedlisp.hlp', 'dpcc.hlp', 'dpcc_remote.hlp', 'ftn.hlp',
          'lisp.hlp', 'pas.hlp', 'wedlisp.hlp'
       raise ManualIsBlacklisted, 'is unbundled'

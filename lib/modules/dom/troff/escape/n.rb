@@ -19,7 +19,7 @@ module Troff
     # I think we can get away with relying on the @register default value
     # but let's keep the diagnostic for now.
     #warn "unselected number register #{s.inspect} from set #{@register.keys.inspect} - using 0" unless @register.has_key?(s)
-    warn "unselected number register #{s.inspect} - using 0" unless @register.has_key?(s)
+    warn "unselected number register #{s.inspect} - using 0" unless @register.key?(s)
     @register[s].send(incr).tap { warn "auto incrementing register #{s.inspect}" } if incr
     @register[s].to_s
   end

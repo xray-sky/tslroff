@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/17/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -21,14 +21,16 @@ module HPUX_8_05
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      'Tm' => '&trade;',
-      ')H' => '', # .TH sets this to \&. Some pages define it.
-      #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
-      # REVIEW is this what actually goes in the footer in the printed manual?
-      ']V' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "\\*()H\\0\\0\\(em\\0\\0\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
+        'Tm' => '&trade;',
+        ')H' => '', # .TH sets this to \&. Some pages define it.
+        #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
+        # REVIEW is this what actually goes in the footer in the printed manual?
+        ']V' => File.mtime(@source.filename).strftime("%B %d, %Y")
+      }
+    )
   end
 
   define_method 'TH' do |*args|

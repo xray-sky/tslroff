@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -14,19 +14,20 @@ module NEXTSTEP
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S*)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S*)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      ']D' => 'UNIX Programmer\'s Manual',
-      ']W' => '7th Edition',
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        #'Tm' => '&trade;',
+        ']D' => 'UNIX Programmer\'s Manual',
+        ']W' => '7th Edition',
+        footer: "\\*(]W"
+      }
+    )
   end
 
   def init_tr
@@ -52,13 +53,13 @@ module NEXTSTEP
                    end)
   end
 
-  define_method 'DE' do |*args|
+  define_method 'DE' do |*_args|
     send 'RE'
     req_fi
     req_sp '.5'
   end
 
-  define_method 'DS' do |*args|
+  define_method 'DS' do |*_args|
     send 'RS'
     req_nf
     req_sp

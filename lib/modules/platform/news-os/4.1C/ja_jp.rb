@@ -12,7 +12,7 @@
 #                  troff seems to ignore it, take the next char ("foo\n\-bar" prints "foo0ar")
 #
 
-require_relative './en_us.rb'
+require_relative './en_us'
 
 class Source
   def magic
@@ -28,7 +28,7 @@ module NEWS_os_4_1C_ja_JP
   def self.extended(k)
     k.extend NEWS_os_4_1C_en_US
     k.instance_variable_set '@language', 'ja'
-    k.instance_variable_get('@source').lines.collect! { |k| k.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
+    k.instance_variable_get('@source').lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
     k.instance_variable_set '@related_info_heading', %r{関連事項}u
     case k.instance_variable_get '@input_filename'
     when 'index.3', 'index.3f'
@@ -47,7 +47,9 @@ module NEWS_os_4_1C_ja_JP
   end
 
   def req_so(name, breaking: nil)
-    super(name) { |lines| lines.collect! { |k| k.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) } }
+    super(name, breaking: breaking) do |lines|
+      lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
+    end
   end
 
 end

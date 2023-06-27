@@ -18,13 +18,12 @@ module Troff
     warn "\\b trying to draw brackets #{req_str.inspect}"
 
     justify = req_str.match?(/\(l/) ? 'right' : 'left'
-    bracket = Bracket.new(style: @current_block.terminal_text_style.dup,
-                           font: Font::R.new(size: @register['.s'].value))
+    bracket = Bracket.new(style: @current_block.terminal_text_style.dup, font: Font::R.new(size: @register['.s'].value))
     bracket.style.css[:text_align] = justify
     bracket.style.css.delete :color
-    until req_str.empty? do
+    until req_str.empty?
       chr = req_str.slice!(0, get_char(req_str).length)
-    warn "\\b unescaping #{chr.inspect}"
+      warn "\\b unescaping #{chr.inspect}"
       bracket << Text.new(font: bracket.terminal_font.dup, style: bracket.terminal_text_style.dup)
       unescape chr, output: bracket
     end

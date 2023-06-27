@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/3/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -8,7 +8,9 @@
 #
 # 1.1e has HTML format input.
 #
-# TODO fix watermark alpha channel, if possible, to deal with non-white background
+# TODO
+#   fix watermark alpha channel, if possible, to deal with non-white background
+#   lost the img files?
 #
 
 module Inferno_1_1ed
@@ -16,7 +18,7 @@ module Inferno_1_1ed
   def self.extended(k)
     k.instance_variable_set('@output_directory', '') #+ k.instance_variable_get('@source_dir')) # wrong
     k.instance_variable_set('@manual_entry', k.instance_variable_get('@input_filename').sub(/\.htm$/, ''))
-    k.instance_variable_get('@source_lines').each do |l|
+    k.instance_variable_get('@source').lines.each do |l|
       # some of the pages have extended characters encoded Windows-1252
       l.force_encoding Encoding::Windows_1252
       # nokogiri is inserting extra whitespace at the beginning of <pre>,
@@ -31,51 +33,49 @@ module Inferno_1_1ed
     case k.instance_variable_get '@input_filename'
     when 'index.htm'
       #k.instance_variable_set '@manual_entry', '_index'
-      k.define_singleton_method :page_title, proc { 'Inferno Reference &mdash; Plan9 1.1ed' }
-      k.instance_variable_get('@source_lines')[0].sub!(%r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
+      k.define_singleton_method(:page_title, proc { 'Inferno Reference &mdash; Inferno 1.1ed' })
+      k.instance_variable_get('@source').lines[0].sub!(%r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
     when 'mpgs8.htm'
-      k.instance_variable_get('@source_lines')[50].sub!(%r{^<em>}, '</a>')
-      k.instance_variable_get('@source_lines')[55].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[50].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[55].sub!(%r{^<em>}, '</a>')
     when 'mpgs32.htm'
-      k.define_singleton_method :page_title, proc { 'Environmental Utilities &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Environmental Utilities &mdash; Inferno 1.1ed' })
     when 'mpgs46.htm'
-      k.define_singleton_method :page_title, proc { 'Limbo Keyring Modules &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Limbo Keyring Modules &mdash; Inferno 1.1ed' })
     when 'mpgs56.htm'
-      k.instance_variable_get('@source_lines')[50].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[50].sub!(%r{^<em>}, '</a>')
     when 'mpgs62.htm'
-      k.define_singleton_method :page_title, proc { 'Limbo Math Modules &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Limbo Math Modules &mdash; Inferno 1.1ed' })
     when 'mpgs66.htm'
-      k.define_singleton_method :page_title, proc { 'Limbo Prefab Modules &mdash; Plan9 1.1ed' }
-      k.instance_variable_get('@source_lines')[61].sub!(%r{^<em>}, '</a>')
+      k.define_singleton_method(:page_title, proc { 'Limbo Prefab Modules &mdash; Inferno 1.1ed' })
+      k.instance_variable_get('@source').lines[61].sub!(%r{^<em>}, '</a>')
     when 'mpgs71.htm'
-      k.define_singleton_method :page_title, proc { 'Limbo System Modules &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Limbo System Modules &mdash; Inferno 1.1ed' })
     when 'mpgs77.htm'
-      k.instance_variable_get('@source_lines')[31].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[31].sub!(%r{^<em>}, '</a>')
     when 'mpgs78.htm'
-      k.instance_variable_get('@source_lines')[145].sub!(%r{<em><a}, '<a')
+      k.instance_variable_get('@source').lines[145].sub!(%r{<em><a}, '<a')
     when 'mpgs79.htm'
-      k.instance_variable_get('@source_lines')[26].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[26].sub!(%r{^<em>}, '</a>')
     when 'mpgs81.htm'
-      k.instance_variable_get('@source_lines')[66].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[66].sub!(%r{^<em>}, '</a>')
     when 'mpgs82.htm'
-      k.instance_variable_get('@source_lines')[112].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[112].sub!(%r{^<em>}, '</a>')
     when 'mpgs86.htm'
-      k.instance_variable_get('@source_lines')[24].sub!(%r{^<em>}, '</a>')
+      k.instance_variable_get('@source').lines[24].sub!(%r{^<em>}, '</a>')
     when 'mpgs90.htm'
-      k.define_singleton_method :page_title, proc { 'Toolkit Graphic Interface Modules &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Toolkit Graphic Interface Modules &mdash; Inferno 1.1ed' })
     when 'mpgs93.htm'
-      k.define_singleton_method :page_title, proc { 'Miscellaneous Limbo Modules &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Miscellaneous Limbo Modules &mdash; Inferno 1.1ed' })
     when 'mpgs105.htm'
-      k.define_singleton_method :page_title, proc { 'Inferno Devices &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Inferno Devices &mdash; Inferno 1.1ed' })
     when 'mpgs113.htm'
-      k.define_singleton_method :page_title, proc { 'Inferno File Protocol &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Inferno File Protocol &mdash; Inferno 1.1ed' })
     when 'mpgs125.htm'
-      k.define_singleton_method :page_title, proc { 'Limbo Format Specifications &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Limbo Format Specifications &mdash; Inferno 1.1ed' })
     when 'mpgs131.htm'
-      k.define_singleton_method :page_title, proc { 'Limbo Daemons &mdash; Plan9 1.1ed' }
+      k.define_singleton_method(:page_title, proc { 'Limbo Daemons &mdash; Inferno 1.1ed' })
     end
-    # pick up changes to the source we rewrote
-    k.instance_variable_set('@source', Nokogiri::HTML(k.instance_variable_get('@source_lines').join))
   end
 
   def to_html
@@ -103,7 +103,7 @@ module Inferno_1_1ed
 
     <<~DOC
       <div class="title"><h1>#{title}</h1></div>
-      <div class="htbody"#{(' style="' + body_styles + '"') unless body_styles.empty?}>
+      <div class="htbody"#{%( style="#{body_styles}") unless body_styles.empty?}>
           <div id="man">
       #{body.children.to_xhtml(encoding: 'UTF-8')}
           </div>
@@ -112,6 +112,6 @@ module Inferno_1_1ed
   end
 
   def page_title
-    @source.xpath('//h1').first.text + ' &mdash; Plan9 1.1ed'
+    "#{@source.xpath('//h1').first.text} &mdash; Inferno 1.1ed"
   end
 end

@@ -10,7 +10,7 @@ module Troff
   #   figure out how that works. quoting, breaking, these are odd
 
   def request(req, argstr, breaking: true)
-    if Requests.include? req and respond_to?("req_#{req}") # it's not a macro and we haven't renamed it
+    if REQUESTS.include? req and respond_to?("req_#{req}") # it's not a macro and we haven't renamed it
       send "req_#{req}", __unesc_w(unescape(argstr, copymode: true)), breaking: breaking
     else
       send req, *(getargs argstr)

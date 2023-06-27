@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/05/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -80,7 +80,7 @@ module OpenDesktop_1_0_0y
          'xinit.X.z', 'xkill.X.z', 'xload.X.z', 'xlogo.X.z', 'xlsfonts.X.z', 'xlswins.X.z',
          'xmag.X.z', 'xpr.X.z', 'xprop.X.z', 'xrdb.X.z', 'xrefresh.X.z', 'xsetroot.X.z',
          'xwd.X.z', 'xwud.X.z'
-      k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[\d]+)\))\s+}
+      k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\d+)\))\s+}
       k.instance_variable_set '@related_info_heading', 'SEE ALSO'
       # TODO put back the numeric section linkify methods
     # ...really?
@@ -157,7 +157,7 @@ module OpenDesktop_1_0_0y
       k.instance_variable_set '@source', IO.readlines("| gzip_old -dc #{k.instance_variable_get '@source_dir'}/#{k.instance_variable_get '@input_filename'} | zcat")
       k.instance_variable_get('@source').define_singleton_method(:lines) { self }
       k.instance_variable_set '@heading_detection', %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-      k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[\d]+)\))\s+}
+      k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\d+)\))\s+}
       k.instance_variable_set '@related_info_heading', 'SEE ALSO'
       # TODO put back the numeric section linkify methods
     end

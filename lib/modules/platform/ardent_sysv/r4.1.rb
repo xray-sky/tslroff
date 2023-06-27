@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/05/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -21,10 +21,12 @@ module Ardent_SysV_R4_1
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      'Tt' => 'Titan 1500/3000',
-      ']D' => 'Kubota Pacfic Computer Inc.'
-    })
+    @state[:named_string].merge!(
+      {
+        'Tt' => 'Titan 1500/3000',
+        ']D' => 'Kubota Pacfic Computer Inc.'
+      }
+    )
   end
 
 end

@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/07/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -19,7 +19,7 @@ module AIX
       [ text, "#{text.split(/[,:]\s?/).first}.html" ]
     end.to_h
 
-    if line.count('"')%2 > 0 # an odd number of double quotes; some ref is split to next line
+    if line.count('"').odd # an odd number of double quotes; some ref is split to next line
       @refs_continue = :quoted_break
       line.scan(/"([^"]+),?\s*$/).map do |text, _x|
         @continued_ref = "#{text.split(/[,:]\s?/).first}.html"
@@ -47,15 +47,15 @@ module AIX
     end
 
     remainder = if rest
-      text.sub!(/([,.]?)\s*$/, '')
-      @continued_ref = nil
-      @refs_continue = :quoted
-      detect_links_quoted(rest)
-    else # the quoted ref might not end on this line (AIX RT 2.2.1 sockets(3))
-      @continued_ref = ref
-      @refs_continue = :quoted_break
-      {}
-    end
+                  text.sub!(/([,.]?)\s*$/, '')
+                  @continued_ref = nil
+                  @refs_continue = :quoted
+                  detect_links_quoted(rest)
+                else # the quoted ref might not end on this line (AIX RT 2.2.1 sockets(3))
+                  @continued_ref = ref
+                  @refs_continue = :quoted_break
+                  {}
+                end
 
     { text => ref }.merge(remainder)
   end
@@ -71,7 +71,7 @@ module AIX
   end
 
   def detect_links_unquoted_continue(line)
-    detect_links_unquoted('the ' + line.sub(/^and /, ''))
+    detect_links_unquoted "the #{line.sub(/^and /, '')}"
   end
 
 end

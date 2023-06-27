@@ -17,7 +17,6 @@ module Eqn
               when 'r' then 'right'
               when 'l' then 'left'
               when 'c' then 'center'
-              else nil
               end
     col = Column.new(justify: justify, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     col.style.css[:line_height] = '1.5em' if method.end_with?('col') # matrix
@@ -51,10 +50,10 @@ module Eqn
     selenium.style.css[:display] = 'block'
     Troff.webdriver.get selenium.to_html
     begin
-      height = to_em(to_u(Troff.webdriver.find_element(id: 'selenium').size.height.tap{|n|warn "selenium measured height #{n.inspect}px"}.to_s, default_unit: 'px'))
+      height = to_em(to_u(Troff.webdriver.find_element(id: 'selenium').size.height.tap { |n| warn "selenium measured height #{n.inspect}px" }.to_s, default_unit: 'px'))
     rescue Selenium::WebDriver::Error::NoSuchElementError => e
       warn e
-      'NaN' # REVIEW: side effects - returning nil - but what string makes sense?
+      'NaN' # REVIEW side effects - returning nil - but what string makes sense?
     end
 
     unless lbrk.empty?
@@ -75,7 +74,7 @@ module Eqn
                    when '\\(lc', '\\(lf' # just top
                      bvs = (((scaleheight - 0.75) * 0.75) + 1).to_i
                      [ lbrk ] + Array.new(bvs, '\\(bv')
-                   else  # DANGER REVIEW TODO
+                   else # DANGER REVIEW TODO
                      [ lbrk ]
                    end
       end
@@ -84,7 +83,7 @@ module Eqn
         warn "eqn bracket trying to make large #{lbrk.inspect}? HOW"
         unescape "\\f1#{lbrk}\\fP\\0"
       else
-        extheight = extended.count * 0.75
+        #extheight = extended.count * 0.75
         lineheight = 0.75 #- ((extheight - height) / extheight) # the extent to which we are too tall
         lbracket = Bracket.new(line_height: lineheight,
                                      style: @current_block.terminal_text_style.dup,
@@ -96,37 +95,35 @@ module Eqn
         end
         @current_block << lbracket
       end
-
     end # lbrk
 
     @current_block << blk
 
-    if rbrk
-      if height <= 1
-        unescape "\\0\\f1#{rbrk}\\fP"
-      else
-        # we can use all the calculations we did for the left bracket,
-        # just change the escapes. fortunately all the left/right handed
-        # characters differ only by \(l? vs. \(r?
-        extended = extended.map { |c| c.sub(/\(l/, '(r') }
-      end
+    return unless rbrk
 
-      if extended.count == 1 # punt, dunno how to make a tall one
-        warn "eqn bracket trying to make large #{rbrk.inspect}? HOW"
-        unescape "\\0\\f1#{rbrk}\\fP"
-      else
-        rbracket = Bracket.new(line_height: lineheight,
-                                     style: @current_block.terminal_text_style.dup,
-                                      font: Font::R.new(size: @register['.s'].value))
-        rbracket.style.css[:text_align] = 'left'
-        extended.each do |c|
-          rbracket << Text.new(font: rbracket.terminal_font.dup, style: rbracket.terminal_text_style.dup)
-          unescape c, output: rbracket
-        end
-        @current_block << rbracket
-      end
+    if height <= 1
+      unescape "\\0\\f1#{rbrk}\\fP"
+    else
+      # we can use all the calculations we did for the left bracket,
+      # just change the escapes. fortunately all the left/right handed
+      # characters differ only by \(l? vs. \(r?
+      extended = extended.map { |c| c.sub(/\(l/, '(r') }
+    end
 
-    end # lbrk
+    if extended.count == 1 # punt, dunno how to make a tall one
+      warn "eqn bracket trying to make large #{rbrk.inspect}? HOW"
+      unescape "\\0\\f1#{rbrk}\\fP"
+    else
+      rbracket = Bracket.new(line_height: lineheight,
+                                   style: @current_block.terminal_text_style.dup,
+                                    font: Font::R.new(size: @register['.s'].value))
+      rbracket.style.css[:text_align] = 'left'
+      extended.each do |c|
+        rbracket << Text.new(font: rbracket.terminal_font.dup, style: rbracket.terminal_text_style.dup)
+        unescape c, output: rbracket
+      end
+      @current_block << rbracket
+    end # rbrk
   end
 
 end

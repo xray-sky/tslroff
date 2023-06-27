@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/12/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -18,12 +18,10 @@ module RISC_os_5_01
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
     when /prom.1m$/ # these are symlinks to the 1prom entries
-      k.instance_variable_set '@manual_entry',
-        k.instance_variable_get('@input_filename').sub(/\.prom.1m$/, '')
+      k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.prom.1m$/, '')
       k.define_singleton_method :retarget_symlink, k.method(:retarget_symlink_prom)
     when /1prom$/
-      k.instance_variable_set '@manual_entry',
-        k.instance_variable_get('@input_filename').sub(/\.1prom$/, '')
+      k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.1prom$/, '')
     when 'newsetup.1', 'newsgroups.1', 'patch.1', 'Pnews.1', 'Rnmail.1'
       # have section as 'entry(1 LOCAL)'
       k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:\s(?<systype>\S+?))?\))}

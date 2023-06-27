@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -14,8 +14,7 @@ module OS_MP
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S*)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S*)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
     case k.instance_variable_get '@input_filename'
     when /^default\./
@@ -27,11 +26,13 @@ module OS_MP
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      ']W' => 'Solbourne Computer, Inc.',
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        #'Tm' => '&trade;',
+        ']W' => 'Solbourne Computer, Inc.',
+        footer: "\\*(]W"
+      }
+    )
   end
 
   def init_tr
@@ -45,7 +46,7 @@ module OS_MP
   end
 
   # index info - what even makes sense to do with this
-  define_method 'IX' do |*args| ; end
+  define_method 'IX' do |*_args| ; end
 
   define_method 'SB' do |*args|
     parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
@@ -151,13 +152,13 @@ module OS_MP
                    when 'KR'       then 'The C Programming Language'
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
                    end
-    )
+          )
     parse "\\fI\\*(Tx\\f1#{args[1]}"
   end
 
   # some pages call this, but the def is commented out all the way back to 0.3
   # defining it as a no-op suppresses the warning.
-  define_method 'UC' do |*args| ; end
+  define_method 'UC' do |*_args| ; end
 
   define_method 'VE' do |*args|
     # .if '\\$1'4' .mc \s12\(br\s0

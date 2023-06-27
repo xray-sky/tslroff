@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/17/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -20,17 +20,19 @@ module HPUX_5_20
 
   def self.extended(k)
     # .cm is not official nor in tmac.an but is apparently used in practice for comments
-    #k.define_singleton_method(:req_cm, k.method(:req_BsQuot)) if k.methods.include?(:req_BsQuot)
+    #k.define_singleton_method(:req_cm, k.method('req_\"')) if k.methods.include?('req_\"')
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      # uses )H but this is defined directly in }F so I don't see how it could ever not be HP Co.
-      :footer => "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        # uses )H but this is defined directly in }F so I don't see how it could ever not be HP Co.
+        footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W",
+        ']L' => '', # explicitly blanked in .TH before being conditionally redefined
+        ']W' => File.mtime(@source.filename).strftime("%B %d, %Y")
+      }
+    )
   end
 
   define_method 'TH' do |*args|

@@ -14,7 +14,7 @@
 #   .if !\n(.g apparently works as a test for groff
 #
 
-require_relative 'groff/tokenize.rb'
+require_relative 'groff/tokenize'
 
 module Groff
 

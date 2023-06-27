@@ -7,7 +7,7 @@ end
 # come up with a strict definition for the meanings of empty? and length
 
 class RoffControl < Text
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     # REVIEW the order of this might make it hard
     # to get the intended result in a subclass
     arg[:text] ||= ''
@@ -27,7 +27,7 @@ end
 # may need to subclass this further if we end up needing
 # other kinds of breaks? for Block.<< to do the right thing
 class LineBreak < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:text] = "\n"
     super(arg)
   end
@@ -83,7 +83,7 @@ class BellLogo < RoffControl
 end
 
 class NarrowSpace < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:text] = ' '
     super(arg)
   end
@@ -92,7 +92,7 @@ class NarrowSpace < RoffControl
 end
 
 class HalfNarrowSpace < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:text] = ' '
     super(arg)
   end
@@ -101,7 +101,7 @@ class HalfNarrowSpace < RoffControl
 end
 
 class HorizontalSpace < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:text] = ' '
     super(arg)
     @width = arg[:width]
@@ -111,7 +111,7 @@ class HorizontalSpace < RoffControl
 end
 
 class VerticalSpace < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     super(arg)
     @height = arg[:height]
   end
@@ -121,7 +121,7 @@ class VerticalSpace < RoffControl
 end
 
 class ExtraLineSpace < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     super(arg)
     @height = arg[:height]
   end
@@ -132,32 +132,32 @@ class ExtraLineSpace < RoffControl
 end
 
 class Overstrike < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     @chars = arg[:chars] || ['']
     arg[:text] = @chars[0]
     super(arg)
   end
   def to_html
-    %(<span role="overstrike" class="clash"#{@style.to_s}>#{@chars.collect(&:to_html).join('<br />')}</span>)
+    %(<span role="overstrike" class="clash"#{@style}>#{@chars.collect(&:to_html).join('<br />')}</span>)
   end
   def inspect ; "<<== overstrike: #{@chars.inspect} ==>> " ; end
 end
 
 class NonSpacing < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     super(arg)
     style.css[:display] = 'inline-block'
     style.css[:width] = 0
     style.css[:color] = 'green'
   end
   def to_html
-    %(<span role="non-spacing-character" #{@style.to_s}>#{@text.collect(&:to_html).join}</span>)
+    %(<span role="non-spacing-character" #{@style}>#{@text.collect(&:to_html).join}</span>)
   end
   def inspect ; "<<== non-spacing character: #{@text.inspect} ==>> " ; end
 end
 
 class Rule < RoffControl
-  def initialize(arg = Hash.new)
+  def initialize(arg = {})
     arg[:text] = '___'
     super(arg)
     @width = arg[:width] || 0

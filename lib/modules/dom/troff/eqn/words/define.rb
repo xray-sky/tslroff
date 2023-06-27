@@ -23,21 +23,21 @@ module Eqn
       nil
     else
       warn "eqn wants to define new word #{word.inspect} as #{defstr.inspect}"
-      define_singleton_method("eqn_#{word}") do |parse_tree|
+      define_singleton_method("eqn_#{word}") do #|parse_tree|
         gen_eqn eqn_parse_tree(defstr)
         #gen_eqn [parse_tree.shift]
       end
     end
   end
 
-  def eqn_ndefine(defstr) ; true ; end    # nroff-specific define
-  alias_method :eqn_tdefine, :eqn_define  # troff-specific define
+  def eqn_ndefine(_defstr) ; true ; end  # nroff-specific define
+  alias_method :eqn_tdefine, :eqn_define # troff-specific define
 
-  def eqn_mark(parse_tree)
+  def eqn_mark(_parse_tree)
     unescape "\\k(97"
   end
 
-  def eqn_lineup(parse_tree)
+  def eqn_lineup(_parse_tree)
     warn "eqn lineup - check interaction with tabs"
     insert_tab(width: to_em(@register['97'].value))
   end

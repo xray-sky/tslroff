@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2014 Typewritten Software. All rights reserved.
@@ -15,51 +15,52 @@ module Atari_SysV
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
     k.instance_variable_set '@heading_detection', %r{^\s{2,3}(?<section>[A-Z][A-Za-z\s]+)$}
-    k.instance_variable_set '@title_detection', %r{^\s{2,3}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}		# REVIEW now what?
+    k.instance_variable_set '@title_detection', %r{^\s{2,3}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
     k.instance_variable_set '@lines_per_page', 67
   end
 
 # looks like none of this matters much, as the provided pages are all nroff format except for X11.
+
   def init_ds
     super
-    @state[:named_string].merge!({
-      'U'  => 'Baker',
-      #'Tm' => '&trade;',
-      # "for UniSoft"
-      'sA' => '\\s-1UNIX\\s+1',
-      'sS' => '\\s-1USL UNIX\\s+1',
-      'sl' => '\\s-1UNIX\\s+1 System V/68 or V/88 Release 4',
-      'sL' => '\\s-1UNIX\\s-1\\u\\(rg\\d\\s+2 System V/68 or V/88 Release 4',
-      's3' => '\\s-1UNIX\\s-1\\u\\(rg\\d\\s+2 System V/68 and V/88 Release 4',
-      's4' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 for the 68040',
-      's5' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 for the 88100',
-      's6' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 68K',
-      's7' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 88K',
-      'v4' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0',
-      's1' => '\\s-1UNIX\\s+1 System V/68',
-      's2' => '\\s-1UNIX\\s+1 System V/88',
-      'hC' => 'Motorola',
-      'hs' => '\\s-1M\\s068000 or \\s-1M\\s088000 family of processors',
-      'hl' => 'supported DeltaSeries and DeltaServer reference platforms',
-      'h1' => '\\s-1M\\s068000 family of processors',
-      'h2' => '\\s-1M\\s068000 family of processors',
-      'h3' => '\\s-1M\\s088000 family of processors',
-      'h4' => '\\s-1M\\s068000 family of processors',
-      'rp' => 'reference platform',
-      ']D' => '', # explicitly blanked by .TH before conditionally re-defining
-      ']L' => '', # explicitly blanked by .TH before conditionally re-defining
-      ']W' => "(last mod. #{File.mtime(@source.filename).strftime("%B %d, %Y")})",
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*(]W",
+        'U'  => 'Baker',
+        #'Tm' => '&trade;',
+        # "for UniSoft"
+        'sA' => '\\s-1UNIX\\s+1',
+        'sS' => '\\s-1USL UNIX\\s+1',
+        'sl' => '\\s-1UNIX\\s+1 System V/68 or V/88 Release 4',
+        'sL' => '\\s-1UNIX\\s-1\\u\\(rg\\d\\s+2 System V/68 or V/88 Release 4',
+        's3' => '\\s-1UNIX\\s-1\\u\\(rg\\d\\s+2 System V/68 and V/88 Release 4',
+        's4' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 for the 68040',
+        's5' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 for the 88100',
+        's6' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 68K',
+        's7' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0 88K',
+        'v4' => 'UniSoft \\s-1UNIX\\s+1 System V Release 4.0',
+        's1' => '\\s-1UNIX\\s+1 System V/68',
+        's2' => '\\s-1UNIX\\s+1 System V/88',
+        'hC' => 'Motorola',
+        'hs' => '\\s-1M\\s068000 or \\s-1M\\s088000 family of processors',
+        'hl' => 'supported DeltaSeries and DeltaServer reference platforms',
+        'h1' => '\\s-1M\\s068000 family of processors',
+        'h2' => '\\s-1M\\s068000 family of processors',
+        'h3' => '\\s-1M\\s088000 family of processors',
+        'h4' => '\\s-1M\\s068000 family of processors',
+        'rp' => 'reference platform',
+        ']D' => '', # explicitly blanked by .TH before conditionally re-defining
+        ']L' => '', # explicitly blanked by .TH before conditionally re-defining
+        ']W' => "(last mod. #{File.mtime(@source.filename).strftime('%B %d, %Y')})"
+      }
+    )
   end
 
   def init_ta
-    @state[:tabs] = [ '3.6m', '7.2m', '10.8m', '14.4m', '18m', '21.6m', '25.2m', '28.8m',
-                      '32.4m', '36m', '39.6m', '43.2m', '46.8m' ].collect { |t| to_u(t).to_i }
+    @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
     true
   end
 
@@ -74,10 +75,10 @@ module Atari_SysV
   end
 
   # end of everything macros; irrelevant for us
-  def ee(*args) ; end
-  define_method 'Ee' do |*args| ; end
+  def ee(*_args) ; end
+  define_method 'Ee' do |*_args| ; end
 
-  define_method 'DT' do |*args|
+  define_method 'DT' do |*_args|
     init_ta
   end
 

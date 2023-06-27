@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/04/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -7,9 +7,11 @@
 # Bell UNIX V6 Platform Overrides
 #
 #   from GL2-W2.5 lib/macros/an6
+#   can't seem to find the 'an' macros from the v6 kit (look again)
 #   this ought to be interesting
 #
 # TODO
+#   redo as first-class macro package
 #   link detection - section in roman numerals
 #   is everything here ok? what's up with cc(i) ?
 #
@@ -30,22 +32,24 @@ module UNIX_V6
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      '_' => '_',
-      '-' => '\\-',
-      '|' => '\\|',
-      "'" => '\\(aa',
-      '>' => '\\(->',
-      'a' => '\\(aa',
-      'b' => '\\(*b',
-      'g' => '\\(ga',
-      'p' => '\\(*p',
-      'r' => '\\(rg',
-      'u' => '\\(*m',
-      'v' => '\\(bv',
-      'G' => '\\(*G',
-      'X' => '\\(mu'
-    })
+    @state[:named_string].merge!(
+      {
+        '_' => '_',
+        '-' => '\\-',
+        '|' => '\\|',
+        "'" => '\\(aa',
+        '>' => '\\(->',
+        'a' => '\\(aa',
+        'b' => '\\(*b',
+        'g' => '\\(ga',
+        'p' => '\\(*p',
+        'r' => '\\(rg',
+        'u' => '\\(*m',
+        'v' => '\\(bv',
+        'G' => '\\(*G',
+        'X' => '\\(mu'
+      }
+    )
   end
 
   def bd(*args)
@@ -89,16 +93,16 @@ module UNIX_V6
     req_ti "-#{args[1]}n"
   end
 
-  define_method 's1' do |*args|
+  define_method 's1' do |*_args|
     req_sp '1v'
     #req_ne '2'
   end
 
-  define_method 's2' do |*args|
+  define_method 's2' do |*_args|
     req_sp '.5v'
   end
 
-  define_method 's3' do |*args|
+  define_method 's3' do |*_args|
     req_sp '.5v'
     #req_ne '2'
   end

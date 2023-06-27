@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/23/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -15,40 +15,41 @@ module Interactive
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     k.instance_variable_set '@heading_detection', %r(^\s{10}(?<section>[A-Z][A-Za-z\s]+)$)
     k.instance_variable_set '@title_detection', %r{^\s{10}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.([n\d]\S*)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([n\d]\S*)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      'Tm' => '&trade;',
-      'E'  => '\\&.\|.\|.',
-      'T'  => "\t",
-      # these are probably version 4 specific
-      'U'  => 'INTERACTIVE UNIX System',
-      'U2' => 'INTERACTIVE UNIX System',
-      'UF' => 'INTERACTIVE UNIX System',
-      'UH' => 'INTERACTIVE UNIX System',
-      'UU' => 'INTERACTIVE UNIX System',
-      'sA' => 'Base', # System Accounting Subset
-      'sC' => 'Base', # Core Subset
-      'sF' => 'Text Processing', # Text Formatting Subset
-      'sG' => 'Base', # Games Subset
-      'sI' => 'Base', # INpackages
-      'sN' => 'Base', # Networking Subset
-      'sP' => 'Software Development', # Programming Subset
-      'sS' => 'Software Development', # SCCS Subset
-      'sT' => 'Text Processing', # Typesetting and Terminal Filters Subset
-      'Nn' => 'INTERACTIVE UNIX System 80386',
-      ']D' => '', # blanked for troff in .TH
-      ']L' => '', # conditionally defined in .TH
-      ']U' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      ']Y' => '\\*U',
-      ']Z' => 'Version \\|1.0',
-      :footer => '\\fB\\s-1\\*(]Y\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP'
-    })
+    @state[:named_string].merge!(
+      {
+        footer: '\\fB\\s-1\\*(]Y\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP',
+        'Tm' => '&trade;',
+        'E'  => '\\&.\|.\|.',
+        'T'  => "\t",
+        # these are probably version 4 specific
+        'U'  => 'INTERACTIVE UNIX System',
+        'U2' => 'INTERACTIVE UNIX System',
+        'UF' => 'INTERACTIVE UNIX System',
+        'UH' => 'INTERACTIVE UNIX System',
+        'UU' => 'INTERACTIVE UNIX System',
+        'sA' => 'Base', # System Accounting Subset
+        'sC' => 'Base', # Core Subset
+        'sF' => 'Text Processing', # Text Formatting Subset
+        'sG' => 'Base', # Games Subset
+        'sI' => 'Base', # INpackages
+        'sN' => 'Base', # Networking Subset
+        'sP' => 'Software Development', # Programming Subset
+        'sS' => 'Software Development', # SCCS Subset
+        'sT' => 'Text Processing', # Typesetting and Terminal Filters Subset
+        'Nn' => 'INTERACTIVE UNIX System 80386',
+        ']D' => '', # blanked for troff in .TH
+        ']L' => '', # conditionally defined in .TH
+        ']U' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+        ']Y' => '\\*U',
+        ']Z' => 'Version \\|1.0'
+      }
+    )
   end
 
   def init_nr
@@ -59,8 +60,7 @@ module Interactive
   end
 
   def init_ta
-    @state[:tabs] = [ '3.6m', '7.2m', '10.8m', '14.4m', '18m', '21.6m', '25.2m', '28.8m',
-                      '32.4m', '36m', '39.6m', '43.2m', '46.8m' ].collect { |t| to_u(t).to_i }
+    @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
     true
   end
 
@@ -83,8 +83,8 @@ module Interactive
   end
 
   define_method 'BX' do |*args|
-   warn ".BX wants to draw box from #{args.inspect} - punt"
-   unescape args.join(' ')
+    warn ".BX wants to draw box from #{args.inspect} - punt"
+    unescape args.join(' ')
   end
 
   define_method 'IN' do |*args|
@@ -130,7 +130,7 @@ module Interactive
   end
 
   # 4.0 aborts when encountering these macros; we'll just warn
-  def obsolete_macro(*args)
+  def obsolete_macro(*_args)
     warn "encountered obsolete macro #{__callee__}"
   end
 

@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -14,19 +14,20 @@ module Ardent_SysV
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      'Dd' => 'Dor&eacute;',
-      'Tm' => '&trade;',
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "\\*(]W",
+        'Dd' => 'Dor&eacute;',
+        'Tm' => '&trade;',
+        ']W' => File.mtime(@source.filename).strftime('%B %d, %Y')
+      }
+    )
   end
 
   def init_nr
@@ -35,8 +36,7 @@ module Ardent_SysV
   end
 
   def init_ta
-    @state[:tabs] = [ '3.6m', '7.2m', '10.8m', '14.4m', '18m', '21.6m', '25.2m', '28.8m',
-                      '32.4m', '36m', '39.6m', '43.2m', '46.8m' ].collect { |t| to_u(t).to_i }
+    @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
     true
   end
 
@@ -52,13 +52,13 @@ module Ardent_SysV
 
   # end of document processing (print final page number, etc.)
   # don't care.
-  def ee(*args) ; end
-  define_method 'Ee' do |*args| ; end
+  def ee(*_args) ; end
+  define_method 'Ee' do |*_args| ; end
 
   # assorted index processing
   # don't care.
-  def iX(*args) ; end
-  define_method 'IX' do |*args| ; end
+  def iX(*_args) ; end
+  define_method 'IX' do |*_args| ; end
 
   define_method 'PD' do |*args|
     req_nr "PD " + ((args[0] and !args[0].strip.empty?) ? "#{args[0]}v" : '.4v')

@@ -6,20 +6,20 @@
 #
 
 require 'forwardable'
-require_relative 'style.rb'
-require_relative 'text.rb'
-require_relative '../modules/immutable.rb'
+require_relative 'style'
+require_relative 'text'
+require_relative '../modules/immutable'
 
 class Block
   include Immutable
   extend Forwardable
 
+  def_delegators :@style, :immutable?, :immutable!
   attr_reader   :text, :last_tab_position, :last_tab_stop
   attr_accessor :style
-  def_delegators :@style, :immutable?, :immutable!
 
-  def initialize(arg = Hash.new)
-    self.style = (arg[:style] or Style.new({}, get_object_exception_class))
+  def initialize(arg = {})
+    self.style = (arg[:style] or Style.new({}, object_exception_class))
     self.text  = (arg[:text]  or Text.new)
     @last_tab_position = 0
     @last_tab_stop = 0
@@ -29,9 +29,9 @@ class Block
     text.reject(&:empty?).none?
   end
 
-  def text=(t)
-    immutable! unless t.empty?
-    @text = t.is_a?(Array) ? t : [t]
+  def text=(txt)
+    immutable! unless txt.empty?
+    @text = txt.is_a?(Array) ? txt : [txt]
   end
 
   # REVIEW smrtr? - does everything we might append to text[] have a style / font ?
@@ -63,7 +63,7 @@ class Block
       @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
     when Text, Block::TableCell, Block::Inline then @text << t
     when String then @text.last << t
-    when Block  # cruft catcher
+    when Block # cruft catcher
       raise RuntimeError "appending non-bare block #{t.inspect}" #unless t.class == Block::Bare # bare blocks used by vms for inserting pre-formatted html; TODO probably create a Link text class
       warn "we are in a degenerate part of the code - block.rb line 91"
       @text += t.text
@@ -93,7 +93,7 @@ class Block
     t = text.collect(&(type == :comment ? :to_s : :to_html)).join
 
     # insert related information references
-    # REVIEW: am I going to need to make overrides to this regexp?
+    # REVIEW am I going to need to make overrides to this regexp?
     # <br /> tags will be detected along with other styles we intend to include,
     # so we'll try to get the ones up front, so they can end up outside the <a>
     t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
@@ -122,7 +122,7 @@ class Block
 
   # override this from Immutable so that our subclasses
   # don't all try to dispatch their own unique exceptions
-  def get_object_exception_class
+  def object_exception_class
     Kernel.const_get("ImmutableBlockError")
   end
 

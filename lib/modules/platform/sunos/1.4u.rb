@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/06/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -20,15 +20,17 @@ module SunOS_1_4U
 
   def init_ds
     super
-    @state[:named_string].merge!({
+    @state[:named_string].merge!(
+      {
       ']W' => 'Sun Release 1.4'
-    })
+      }
+    )
   end
 
   # REVIEW
   # this is used seemingly to prevent processing the next line
   # as a request. but, it's not in tmac.an or the DWB manual.
-  def li(*args)
+  def li(*_args)
     parse("\\&" + next_line)
   end
 

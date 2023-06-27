@@ -26,11 +26,13 @@ module NEWS_os_3_3_en_US
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => "UNIX Programmer's Manual",
-      ']W' => "7th Edition",
-      :footer => "NEWS-OS\t\\s-2Release 3.3\\s+2"
-    })
+    @state[:named_string].merge!(
+      {
+        footer: "NEWS-OS\t\\s-2Release 3.3\\s+2",
+        ']D' => "UNIX Programmer's Manual",
+        ']W' => "7th Edition"
+      }
+    )
   end
 
 end

@@ -1,3 +1,69 @@
+# eqn(1)
+#
+#     use braces {} for grouping; generally speaking, anywhere you can use a single
+#     character such as x, you may use a complicated construction enclosed in braces instead.
+#
+#     when processing between .EQ/.EN it looks like no requests or macros are processed.
+#     no whitespace allowed; must end exactly with /^\.EN$/
+#
+#     Any argument to the .EQ macro will be placed at the right margin as an equation number.
+#
+#     Whitespace on input is not used to create space in the output. This includes newlines.
+#     Tabs output. Spaces should be put around separate parts of the input. "pi" is not
+#     recognized given the input, "f(pi)". It looks like maybe this is only important for
+#     "sequences of letters".
+#
+#     Digits, parentheses, brackets, punctuation marks, and the following mathematical words
+#     are converted to Roman font:
+#     %w(sin cos tan sinh cosh tanh arc max min lim log ln exp Re Im and if for det)
+#
+#     As with the "sub" and "sup" keywords, size and font changes affect only the string that
+#     follows and revert to the normal situation afterward.
+#
+#     'fat' is an allowed font style.
+#     Legal font sizes are %w(6 7 8 9 10 11 12 14 16 18 20 22 24 28 36)
+#     "In-line font changes must be closed before in-line equations are encountered."
+#
+#     If braces are not used to group functions, the eqn formatter will do operations in
+#     the following order:
+#
+#        dyad vec under bar tllde hat dot dotdot fwd back down up
+#        fat roman italic bold size
+#        sub sup sqrt over
+#        from to
+#
+#     The following operations group to the left:
+#
+#        over sqrt left right
+#
+#     All others group to the right.
+#
+#  words: sub sup over sqrt
+#         from to left right c f
+#         pile lpile cpile rpile matrix rcol
+#         dot dotdot hat tilde bar vec dyad under
+#         size roman italic bold font gsize gfont
+#         mark lineup
+#         define
+#         sum int inf >= != -> (greek letters spelled out in desired case; alpha, GAMMA)
+#         double quoted strings passed through untouched
+#         to embolden digits, parentheses, etc. it is necessary to quote them,
+#            as in bold "12.3", when used with the mm macro package.
+#         displayed equations must appear only inside displays
+#
+# &lceil; &rceil;  &lfloor; &rfloor; (combine these into left and right brackets?)
+#
+# &lmoust; upper left or lower right curly bracket section
+# &rmoust; upper right or lower left curly bracket section
+#
+# NOTE
+#   Be careful about side effects calling out to other methods --
+#   * unescape str vs. parse str (space adjust, breaks)
+#   * req_ft and req_ps vs. parse ".ft" and parse ".ps" (@output_indicator)
+#   * @register['.u'] vs. req_fi (blockproto)
+#   * etc.
+#
+
 Dir.glob("#{__dir__}/words/*.rb").each do |i|
   require_relative i
 end
@@ -11,8 +77,8 @@ module Eqn
     # save and set fonts
     @register['98'] = @register['.f'].dup
     @register['99'] = @register['.s'].dup
-    req_ft "#{@state[:eqn_gfont]}"
-    req_ps "#{@state[:eqn_gsize]}"
+    req_ft @state[:eqn_gfont].to_s
+    req_ps @state[:eqn_gsize].to_s
   end
 
   def eqn_restore
@@ -37,64 +103,55 @@ module Eqn
     # "Use braces for grouping; generally speaking, anywhere you can use a single character such as x, you may use a complicated constrution enclosed in braces instead."
     # "Tilde (~) represents a full space in the output, circumflex (^) half as much."
     words = line.split
-    if !inline and respond_to? "eqn_#{words[0]}" # avoid sending input lines with inline eqn, which start with e.g. 'from' to eqn_bounds
-      send "eqn_#{words[0]}", line[words[0].length + 1..-1]
-    else
-      case words[0]
-      #when '.EN'
-      #  raise EndOfEqn
-      when /^[\.']/ # is request
-        parse line
-      else
-        warn "eqn parsing #{line.inspect}"
-        # I think we will want to do the delim processing outside of here, and only send
-        # whatever's inside delim to parse_eqn. leave this to just doing eqn and nothing else.
-        #
-        # we don't, because piece-mealing the calls to unescape results in extraneous breaks
-        # we can assume, however, that if we got here, there is definitely eqn to parse.
-        #
-        # so, if there are no delimiters, then we are in .EQ/.EN and the whole line goes
 
-        resc = Regexp.quote @state[:escape_char]
-        eqnline = ''
+    # avoid sending input lines with inline eqn, which start with e.g. 'from' to eqn_bounds
+    return send("eqn_#{words[0]}", line[words[0].length + 1..-1]) if !inline and respond_to?("eqn_#{words[0]}")
 
-        unless @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
-          # we are parsing .EQ/.EN
-          #warn ".EQ parse_tree built #{eqn_parse_tree(line.dup).inspect}"
+    # is request TODO use cc/c2 chars - actually defer to 'request?' method
+    return parse(line) if words[0].match? %r(^[.'])
 
-          eqn_setup
-          gen_eqn eqn_parse_tree(line)
-          eqn_restore
+    warn "eqn parsing #{line.inspect}"
 
-        else
-          ## need to temporarily suppress :nofill
-          fill = @register['.u'].value
-          # req_fi breaks, has block-related side effects
-          @register['.u'].value = 1
-          loop do
-            break if line.empty?
-            rbeg = Regexp.escape @state[:eqn_start]
-            rend = Regexp.escape @state[:eqn_end]
-            mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rbeg}|(?<!#{resc})#{rbeg}/)
-            if mark
-              head = line.slice!(0..mark).chop
-              mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rend}|(?<!#{resc})#{rend}/)
-              #warn "eqn unterminated delim #{@state[:eqn_end].inspect}!" and break unless mark
-              unless mark
-                warn "eqn unterminated delim #{@state[:eqn_end].inspect}! -- pulling next line"
-                line << next_line
-              end
-              unescape head
-              eqn_setup
-              gen_eqn eqn_parse_tree(line.slice!(0..mark).chop)
-              eqn_restore
-            else
-              unescape line.slice!(0..-1)
-            end
+    # I think we will want to do the delim processing outside of here, and only send
+    # whatever's inside delim to parse_eqn. leave this to just doing eqn and nothing else.
+    #
+    # we don't, because piece-mealing the calls to unescape results in extraneous breaks
+    # we can assume, however, that if we got here, there is definitely eqn to parse.
+    #
+    # so, if there are no delimiters, then we are in .EQ/.EN and the whole line goes
+    resc = Regexp.quote @state[:escape_char]
+    if @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
+      ## need to temporarily suppress :nofill
+      fill = @register['.u'].value
+      # req_fi breaks, has block-related side effects
+      @register['.u'].value = 1
+      loop do
+        break if line.empty?
+        rbeg = Regexp.escape @state[:eqn_start]
+        rend = Regexp.escape @state[:eqn_end]
+        mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rbeg}|(?<!#{resc})#{rbeg}/)
+        if mark
+          head = line.slice!(0..mark).chop
+          mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rend}|(?<!#{resc})#{rend}/)
+          unless mark
+            warn "eqn unterminated delim #{@state[:eqn_end].inspect}! -- pulling next line"
+            line << next_line
           end
-          @register['.u'].value = fill
+          unescape head
+          eqn_setup
+          gen_eqn eqn_parse_tree(line.slice!(0..mark).chop)
+          eqn_restore
+        else
+          unescape line.slice!(0..-1)
         end
       end
+      @register['.u'].value = fill
+    else
+      # we are parsing .EQ/.EN
+      #warn ".EQ parse_tree built #{eqn_parse_tree(line.dup).inspect}"
+      eqn_setup
+      gen_eqn eqn_parse_tree(line)
+      eqn_restore
     end
   end
 
@@ -178,7 +235,8 @@ module Eqn
         eqn << [ :bracket, chr, close, encl ]
       when 'matrix', 'sqrt',
            'col', 'ccol', 'lcol', 'rcol',
-           'pile', 'cpile', 'lpile', 'rpile'
+           'pile', 'cpile', 'lpile', 'rpile',
+           'roman', 'bold', 'italic', 'fat'
         eqn << [ tok, eqn_parse_tree(str, limit: 1) ]
       when 'bar', 'under'
         eqn << [ tok, eqn.pop ]
@@ -190,8 +248,6 @@ module Eqn
         eqn << [ eqn.pop, [ tok, eqn_parse_tree(str, limit: 1) ] ]
       when 'over'
         eqn << [ tok, eqn.pop, eqn_parse_tree(str, limit: 1) ]
-      when 'sqrt', 'roman', 'bold', 'italic', 'fat' #'lim', 'sqrt'
-        eqn << [ tok, eqn_parse_tree(str, limit: 1) ]
       when 'fwd', 'back', 'up', 'down'
         eqn << [ tok, eqn_parse_tree(str, limit: 1), eqn_parse_tree(str, limit: 1) ]
       else

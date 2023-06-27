@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2014 Typewritten Software. All rights reserved.
@@ -21,18 +21,19 @@ module CX_UX
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S*)(?:\.z)?$/, '') # nroff pages are compressed
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S*)(?:\.z)?$/, '') # nroff pages are compressed
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      :footer => "\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        footer:"\\*(]W",
+        #'Tm' => '&trade;',
+        ']W' => File.mtime(@source.filename).strftime('%B %d, %Y')
+      }
+    )
   end
 
   def init_fp

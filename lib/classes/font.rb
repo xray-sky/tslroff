@@ -6,19 +6,18 @@
 #
 # TODO delegate text color to this class?
 
-require_relative '../modules/immutable.rb'
-require_relative 'styles/font.rb'
+require_relative '../modules/immutable'
+require_relative 'styles/font'
 
 class Font
   include Immutable
 
-  @@defaultsize = 12
+  Defaultsize = 12
 
   attr_reader :size
 
-  def initialize(arg = Hash.new)
-    @size   = (arg[:size] or @@defaultsize)
-    @warned = false
+  def initialize(size: Defaultsize)
+    @size = size
   end
 
   def tag ; 'span' ; end
@@ -31,9 +30,9 @@ class Font
 
   def style
     {
-      :tag => get_tag,
-      :class => css_class,
-      :styles => get_styles
+      tag: tag,
+      class: css_class,
+      styles: css_styles
     }
   end
 
@@ -50,22 +49,16 @@ class Font
     style != other.style
   end
 
-  alias family face
-  #alias size=  immutable_setter # REVIEW I think we're no longer trying to apply a size directly
-
   def self.defaultsize
-    @@defaultsize
+    Defaultsize
   end
+
+  alias_method :family, :face
 
   private
 
-  def get_tag
-    tag || ((css_class or get_styles) ? 'span' : nil)
-  end
-
-  def get_styles
-    styles = css_style || ''
-    styles << (@size == @@defaultsize ? '' : "font-size:#{@size}pt;")
+  def css_styles
+    styles = "#{css_style}#{@size == Defaultsize ? '' : "font-size:#{@size}pt;"}"
     styles.empty? ? nil : styles
   end
 

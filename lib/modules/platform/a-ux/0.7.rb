@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/28/22.
 # Copyright 2022 Typewritten Software. All rights reserved.

@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/28/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -10,8 +10,7 @@
 module A_UX_3_0_1
 
   def self.extended(k)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(?<section>\d\S*?)(?:\.[zZ])?$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(?<section>\d\S*?)(?:\.[zZ])?$/, '')
     k.instance_variable_set '@heading_detection', %r(^(?<section>[A-Z][A-Za-z\s]+)$)
     k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
     case k.instance_variable_get '@input_filename'

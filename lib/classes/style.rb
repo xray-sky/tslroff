@@ -7,18 +7,18 @@
 # TODO something (probably not here) to prevent over-precise values from being output
 #      (e.g. '0.0949391831209309em') -- ascii(5) [GL2-W2.5]
 
-require_relative '../modules/immutable.rb'
+require_relative '../modules/immutable'
 
 class Style
   include Immutable
   attr_accessor :css, :attributes
 
-  def initialize(arg = Hash.new, exceptionclass = nil)
-    @css = Hash.new
-    @attributes = Hash.new
+  def initialize(arg = {}, exceptionclass = nil)
+    @css = {}
+    @attributes = {}
     if exceptionclass
-      self.define_singleton_method('get_object_exception_class') { exceptionclass }
-      self.singleton_class.send(:private, :get_object_exception_class)
+      define_singleton_method('object_exception_class') { exceptionclass }
+      singleton_class.send(:private, :object_exception_class)
     end
     arg.each do |k, v|
       self[k] = v
@@ -27,7 +27,7 @@ class Style
 
   def inspect
     <<~MSG
-      #{keys.collect { |k| {k=>self[k]}}.inspect if keys.any?}
+      #{keys.collect { |k| { k=>self[k] } }.inspect if keys.any?}
       attributes: #{@attributes.inspect}
       css:        #{@css.inspect}
       immutable?: #{immutable?.inspect}
@@ -48,7 +48,6 @@ class Style
   end
 
   def dup
-    self.class.new(prototype, get_object_exception_class)
+    self.class.new(prototype, object_exception_class)
   end
-
 end

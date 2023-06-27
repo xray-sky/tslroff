@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/2/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -10,8 +10,7 @@
 module RISC_os
 
   def self.extended(k)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.([\dZz]\S?)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([\dZz]\S?)$/, '')
     k.instance_variable_set '@heading_detection', %r(^(?<section>[A-Z][A-Za-z\s]+)$)
     # some of these entries with longish names end up with clashes in the title line
     # so detect just on closing parenthesis, regardless of following whitespace
@@ -29,8 +28,7 @@ module RISC_os
 
   def parse_title
     title = super
-    unless @systype
-      @systype = case title&.[](:systype)
+    @systype ||= case title&.[](:systype)
                  when /bsd/i     then 'bsd'
                  when /sy.*v/i   then 'sysv' # somewhere in 4.52 there's a 'syv'
                  when /svr3/i    then 'svr3' # svr3/svr4 is new in 5.01; can they just be rolled up into 'sysv'?
@@ -42,7 +40,6 @@ module RISC_os
                  # All unexpected systypes are "LOCAL" => emacs(1), rn(1), top(1), vn(1)
                  # 5.01 also has "NEW", which I think we will disregard.
                  end
-    end
     @manual_entry << ".#{@systype}" if @systype
     title
   end

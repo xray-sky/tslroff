@@ -90,7 +90,7 @@ module Troff
   def __unesc_w(str)
     esc = @state[:escape_char]
     # TODO this is trying to parse \\w (which shouldn't, as it's a _printing_ escape) - zwgc(1) [AOS 4.3]
-    return str unless esc	# REVIEW how does this interact with copymode?
+    return str unless esc # REVIEW how does this interact with copymode?
     resc = Regexp.escape(esc)
     loop do
       break unless w = str.index(/(?<!#{resc})#{resc}w/)
@@ -100,23 +100,23 @@ module Troff
     str
   end
 
-# TODO: §7.2 Copy mode input interpretation
-#            During the definition and extension of strings and macros, the input is
-#            read in copy mode. The input is copied without interpretation except that
-#            * the contents of number registers, indicated by '\n', are substituted.
-#            * Strings, indicated by '\*x' and '\*(xx', are read into the text.
-#            * Arguments indicated by '\$' are replaced by the appropriate values at
-#              the current macro level.
-#            * Concealed new-lines indicated by '\(new-line)' are eliminated.
-#            * Comments indicated by '\"' are eliminated.
-#            * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
-#            * '\\' is interpreted as '\'.
-#            * '\.' is interpreted as '.'.
-#            These interpretations can be suppressed by prepending a \. For example,
-#            since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
-#            as a number register indicator when the macro or string is reread.
+# TODO §7.2 Copy mode input interpretation
+#           During the definition and extension of strings and macros, the input is
+#           read in copy mode. The input is copied without interpretation except that
+#           * the contents of number registers, indicated by '\n', are substituted.
+#           * Strings, indicated by '\*x' and '\*(xx', are read into the text.
+#           * Arguments indicated by '\$' are replaced by the appropriate values at
+#             the current macro level.
+#           * Concealed new-lines indicated by '\(new-line)' are eliminated.
+#           * Comments indicated by '\"' are eliminated.
+#           * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
+#           * '\\' is interpreted as '\'.
+#           * '\.' is interpreted as '.'.
+#           These interpretations can be suppressed by prepending a \. For example,
+#           since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
+#           as a number register indicator when the macro or string is reread.
 #
-# FIX: copy mode is currently expanding \\*(xx when it shouldn't be (double escaped)
+# FIX copy mode is currently expanding \\*(xx when it shouldn't be (double escaped)
 
   def __unesc_cm(str)
     copy = String.new
@@ -137,32 +137,32 @@ module Troff
                   else c[0..1] + __unesc_cm(c[2..-1] || '') # gotta go into e.g. \h'foo' and parse 'foo' in copymode too
                   end
         end
-        str.slice! 0, c.length    # remove processed esc from str
+        str.slice! 0, c.length # remove processed esc from str
       else
-        copy << str.slice!(0)     # remove processed chr from str
+        copy << str.slice!(0) # remove processed chr from str
       end
     end
     copy
   end
 
   def __unesc(str)
-    # REVIEW: are we meant to do a copy-mode pass first, then do everything else? is this how
-    #         to keep .ds with stuff like \h from vanishing prematurely?? (instead of unescaping
-    #         the output of \* directly in esc_star, which causes it to be parsed during assignment in .ds?)
+    # REVIEW are we meant to do a copy-mode pass first, then do everything else? is this how
+    #        to keep .ds with stuff like \h from vanishing prematurely?? (instead of unescaping
+    #        the output of \* directly in esc_star, which causes it to be parsed during assignment in .ds?)
 
     resc = Regexp.quote @state[:escape_char]
 
-    # TODO: lines with escape chars prior to tabs result in that text living outside the tab span!
-    #         csh(1) [GL2-W2.5]
+    # TODO lines with escape chars prior to tabs result in that text living outside the tab span!
+    #      csh(1) [GL2-W2.5]
     # - to this end, fix up the text block if we just broke. we oughtn't need to deal with
     #   a mid-unesc break.
     #
     # there's a special case if we just had a break. we don't want to set the tab width on that.
-    # REVIEW: is there a more orderly way of handling this?
+    # REVIEW is there a more orderly way of handling this?
     #
-    # TODO: split the output, with tabs and fields and translation, from unescape
-    #       that's going to be hard as long as we are spitting e.g. font changes out
-    #       directly into the document, instead of returning
+    # TODO split the output, with tabs and fields and translation, from unescape
+    #      that's going to be hard as long as we are spitting e.g. font changes out
+    #      directly into the document, instead of returning
 
     #if broke?
     #  @current_block << String.new
@@ -172,7 +172,7 @@ module Troff
 
     # start by breaking up fields, then re-entering for each field part, if fields are enabled
     # skip entirely if all field markers are preceeded by single escape.
-    # TODO: this is processing fields in too many places - in macro args, etc.
+    # TODO this is processing fields in too many places - in macro args, etc.
     if fields? and str =~ /(?<!(?<!#{resc})#{resc})#{Regexp.quote @state[:field_delimiter]}/
       warn "processing fields - #{str.inspect}"
       # don't match a field character preceeded by a single escape.
@@ -183,10 +183,10 @@ module Troff
       __unesc(fields.shift)
       stop = @state[:tabs].index(next_tab)
       fields.each_with_index do |field, index|
-		# this mostly mirrors tab processing
+        # this mostly mirrors tab processing
         warn "don't know how to do field padding except at right! #{@field.inspect}" unless !field.nil? or field.end_with?(@state[:field_pad_char]) # empty fields won't have padding
-		    __unesc(field.sub(/#{Regexp.escape(@state[:field_pad_char])}$/, '')) # TODO try with .tr instead?
-    		fpos = @state[:tabs][stop + index]
+	    __unesc(field.sub(/#{Regexp.escape(@state[:field_pad_char])}$/, '')) # TODO try with .tr instead?
+   		fpos = @state[:tabs][stop + index]
         if fpos.nil?
           # prevent exception on running out of tabs
           warn "out of fields with tabs=#{@state[:tabs].inspect}! (field: #{field.inspect})"
@@ -208,7 +208,7 @@ module Troff
         while str.start_with?("\t")
           get_char str
           str.slice!(0)
-          count = count + 1
+          count += 1
         end
         stop = next_tab(count)
         if stop
@@ -222,9 +222,8 @@ module Troff
       when @state[:escape_char]
         return '&shy;' if c == @state[:hyphenation_character]
         # we got the full escape back from get_char, as c
-        esc_method = "esc_#{c[1]}" #"esc_#{Troff.quote_method(c[1])}"
-        if respond_to? esc_method
-          # TODO: \* returns insead of outputting - I made this awful complex
+        if respond_to? esc_method = "esc_#{c[1]}"
+          # TODO \* returns insead of outputting - I made this awful complex
           #       perhaps I should just make all esc_ methods return String, empty or otherwise
           @current_block << send(esc_method, c[2..-1])
         else
@@ -239,10 +238,8 @@ module Troff
                             when '`' then '&#96;'                  # "typographically equivalent to \(ga" §23.
                             #when '&' then ''                      # "non-printing, zero-width character"
                             when '&' then @current_block.style[:numeric_align] ? '&zwj;' : '' # more useful as '' except we need &zwj; for numeric align in tbl
-                            when '|' then NarrowSpace.new(font: @current_block.terminal_font.dup,
-                                                         style: @current_block.terminal_text_style.dup)          # 1/6 em      narrow space char
-                            when '^' then HalfNarrowSpace.new(font: @current_block.terminal_font.dup,
-                                                             style: @current_block.terminal_text_style.dup)      # 1/12em half-narrow space char
+                            when '|' then NarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)          # 1/6 em      narrow space char
+                            when '^' then HalfNarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)      # 1/12em half-narrow space char
                             when 'c' # apparently everything past the \c is discarded
                               str.slice!(0..-1)
                               Continuation.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
@@ -265,12 +262,12 @@ module Troff
                             when @state[:escape_char] then @state[:escape_char]
                             else
                               warn "pointless escape #{c.inspect}"
-                              c[1..-1]                             # REVIEW: subject this to .tr, or not?
+                              c[1..-1] # REVIEW subject this to .tr, or not?
                             end
         end
-        str.slice! 0, c.length             # remove processed esc from str
+        str.slice! 0, c.length # remove processed esc from str
       else
-        translate str.slice!(0)            # remove processed chr from str
+        translate str.slice!(0) # remove processed chr from str
       end
     end
   end

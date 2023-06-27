@@ -74,7 +74,7 @@ module Troff
     Overstrike.new(chars: pile.text, font: @current_block.terminal_font.dup,
                                     style: @current_block.terminal_text_style.dup)
 =end
-    until pile.terminal_text_obj.length > 0
+    while pile.terminal_text_obj.empty?
       chr = s.slice!(0, get_char(s).length)
       warn "\\z trying to output #{chr.inspect} as non-spacing character"
       unescape chr, output: pile

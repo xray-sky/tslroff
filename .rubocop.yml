@@ -1,0 +1,57 @@
+inherit_from:
+- https://relaxed.ruby.style/rubocop.yml
+
+# get over it
+Layout/LeadingCommentSpace:
+  Enabled: false
+
+Layout/SpaceBeforeSemicolon:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false
+
+Style/AndOr:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/BlockComments:
+  Enabled: false
+
+# maybe
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: false
+
+Layout/EmptyLineBetweenDefs:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Layout/TrailingEmptyLines:
+  Enabled: false
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
+Layout/EmptyLineAfterMagicComment:
+  Enabled: false
+
+Layout/SpaceAfterComma:
+  Enabled: false
+
+Naming/ClassAndModuleCamelCase:
+  Enabled: false
+
+Style/CommentedKeyword:
+  Enabled: false
+
+# temporarily 
+Style/FrozenStringLiteralComment:
+  Enabled: false
+

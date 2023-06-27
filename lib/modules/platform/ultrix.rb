@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -20,8 +20,7 @@ module Ultrix
 
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.([n\d][^.\s]*)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([n\d][^.\s]*)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
     case k.instance_variable_get '@input_filename'
     when /^default\./
@@ -33,10 +32,12 @@ module Ultrix
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      #'Tm' => '&trade;',
-      :footer => '' # just a page number
-    })
+    @state[:named_string].merge!(
+      {
+        #'Tm' => '&trade;',
+        footer: '' # just a page number
+      }
+    )
   end
 
   def init_fp
@@ -57,19 +58,19 @@ module Ultrix
     parse "\\s-2<\\|CTRL\\|#{args[0]}\\|>\\s+2"
   end
 
-  define_method 'CW' do |*args|
+  define_method 'CW' do |*_args|
     req_ft 'CW'
     req_nr 'SF', '5'
   end
 
-  define_method 'EE' do |*args|
+  define_method 'EE' do |*_args|
     req_fi
     req_in '-.5i'
     req_sp '.5'
     req_ft '1'
   end
 
-  define_method 'EX' do |*args|
+  define_method 'EX' do |*_args|
     req_nf
     req_sp '.5'
     req_in '+.5i'
@@ -111,7 +112,7 @@ module Ultrix
     parse "\\f(TR\\|#{args[0]}\\|\\fP\\fR(#{args[2]})\\fP#{args[2]}"
   end
 
-  define_method 'NE' do |*args|
+  define_method 'NE' do |*_args|
     req_ce '0'
     req_in '-5n'
     req_sp '12p'
@@ -135,18 +136,18 @@ module Ultrix
   end
 
   # appears to be for indexing purposes
-  define_method 'NX' do |*args| ; end
+  define_method 'NX' do |*_args| ; end
 
   define_method 'PN' do |*args|
     parse "\\f(TR\\|#{args[0]}\\|\\fP#{args[1]}"
   end
 
-  define_method 'R' do |*args|
+  define_method 'R' do |*_args|
     req_ft '1'
     req_nr 'SF 1'
   end
 
-  define_method 'RN' do |*args|
+  define_method 'RN' do |*_args|
     parse "\\s-2<\\|RETURN\\|>\\s+2"
   end
 

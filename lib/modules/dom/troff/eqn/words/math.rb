@@ -1,6 +1,6 @@
 module Eqn
 
-  def eqn_word(parse_tree)
+  def eqn_word(_parse_tree)
     m = __callee__.to_s[4..-1] # strip eqn_
     unescape "\\^\\f1#{m}\\fP\\^"
   end
@@ -55,7 +55,9 @@ module Eqn
     unescape "\\s+3", output: bound
 
     # move ourselves into a new block containing all bounds, unless we've already done it
-    unless @current_block.text[-2]&.style&.css&.[](:whitespace)
+    if @current_block.text[-2]&.style&.css&.[](:whitespace)
+      container = @current_block.text[-2]
+    else
       container = EqnBlock.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
       container.style.css[:text_align] = 'center'
       container.style.css[:whitespace] = 'nowrap'
@@ -63,8 +65,6 @@ module Eqn
       container.style.css[:height] = '1em'
       container.text = @current_block.text.slice!(-2..-1)
       @current_block << container
-    else
-      container = @current_block.text[-2]
     end
 
     __callee__ == :eqn_from ? container << bound : container.text.insert(0, bound)

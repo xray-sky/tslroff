@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -25,14 +25,16 @@ module Ultrix_4_2_0
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']D' => 'UNIX Programmer\'s Manual',
-      ']W' => '7th Edition',
-      :footer => "\\fH\\*(]W\\fP"
-    })
+    @state[:named_string].merge!(
+      {
+        ']D' => 'UNIX Programmer\'s Manual',
+        ']W' => '7th Edition',
+        :footer => "\\fH\\*(]W\\fP"
+      }
+    )
   end
 
-  define_method 'CW' do |*args|
+  define_method 'CW' do |*_args|
     req_ft 'CW'
   end
 
@@ -49,16 +51,16 @@ module Ultrix_4_2_0
     req_ft 'R'
   end
 
-  define_method 'EE' do |*args|
+  define_method 'EE' do |*_args|
     req_fi
-    req_ps "#{Font.defaultsize}"
+    req_ps Font.defaultsize.to_s
     req_in "-#{@register['EX'].value}u"
     req_sp '.5'
     req_ft '1'
   end
 
   define_method 'EX' do |*args|
-    req_nr 'EX ' + to_u("#{args[0] || 0}n+#{@state[:base_indent]}u")
+    req_nr "EX #{to_u "#{args[0] || 0}n+#{@state[:base_indent]}u"}"
     req_nf
     req_sp '.5'
     req_in "+#{@register['EX'].value}u"
@@ -98,7 +100,7 @@ module Ultrix_4_2_0
     parse "\\&\\f(CW\\|#{args[0]}\\|\\fP#{args[1]}"
   end
 
-  define_method 'R' do |*args|
+  define_method 'R' do |*_args|
     req_ft 'R'
   end
 
@@ -110,7 +112,7 @@ module Ultrix_4_2_0
     heading = "#{args[0]}\\|(\\^#{args[1]}\\^)" # tmac.an uses \f(HB
     heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty? # tmac.an uses \fH
     # this would go below the top .tl if given, toward the spine. I think I'll put it in <h1> instead.
-    heading << '\\0\\0\\(em\\0\\0\\*(]D'  unless @state[:named_string][']D'].empty? # tmac.an uses \f(HB
+    heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty? # tmac.an uses \f(HB
 
     super(*args, heading: heading)
   end

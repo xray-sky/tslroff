@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/12/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -46,12 +46,12 @@ module AIX_2_2_1
     #src.lines.collect! { |k| k.force_encoding(Encoding::IBM437).encode!(Encoding::UTF_8) }
     src.lines.collect! do |l|
       l.force_encoding Encoding::ASCII_8BIT
-      l.sub(%r{(\214|\220|\272|\275)}) do |_cx|
+      l.sub(%r{(\u008C|\u0090|\u00BA|\u00BD)}) do |_cx|
         case Regexp.last_match[1]
-        when "\214" then "<\cH_"
-        when "\220" then "e\cH'"
-        when "\272" then "]"
-        when "\275" then "["
+        when "\u008C" then "<\cH_"
+        when "\u0090" then "e\cH'"
+        when "\u00BA" then "]"
+        when "\u00BD" then "["
         else Regexp.last_match[1]
         end
       end

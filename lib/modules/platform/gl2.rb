@@ -35,38 +35,40 @@ module GL2
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     # the Alias manual pages are *.man
-    k.instance_variable_set '@manual_entry',
-      k.instance_variable_get('@input_filename').sub(/\.(\d\S?|man)$/, '')
+    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?|man)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1]
   end
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      'Tm' => '&trade;',
-      ']D' => 'Silicon Graphics',
-      ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-      ']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-      #:footer => "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W"
-      :footer => "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W"
-    })
+    @state[:named_string].merge!(
+      {
+        #footer: "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W",
+        footer: "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W",
+        'Tm' => '&trade;',
+        ']D' => 'Silicon Graphics',
+        ']L' => '', # explicitly blanked in .TH before being conditionally redefined
+        ']W' => File.mtime(@source.filename).strftime("%B %d, %Y")
+      }
+    )
   end
 
   def init_nr
-    @register[')t'] = Troff::Register.new(1)	# 8.5" x 11" format (notionally enable) - used in ascii(5)
-    @register[')s'] = Troff::Register.new(0)	# 6" x 9" format (notionally disable)
+    @register[')t'] = Troff::Register.new(1) # 8.5" x 11" format (notionally enable) - used in ascii(5)
+    @register[')s'] = Troff::Register.new(0) # 6" x 9" format (notionally disable)
   end
 
   def init_sc
     super
-    @state[:special_char].merge!({
-      'ga'  => '&#96;'		# grave, U0060; this seems to be intended as a spacing character (non-spacing is default, U0300) - see csh(1)
-    })
+    @state[:special_char].merge!(
+      {
+        'ga' => '&#96;' # grave, U0060; this seems to be intended as a spacing character (non-spacing is default, U0300) - see csh(1)
+      }
+    )
   end
 
   def init_ta
-    @state[:tabs] = [ '3.6m', '7.2m', '10.8m', '14.4m', '18m', '21.6m', '25.2m', '28.8m',
-                      '32.4m', '36m', '39.6m', '43.2m', '46.8m' ].collect { |t| to_u(t).to_i }
+    @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
     true
   end
 

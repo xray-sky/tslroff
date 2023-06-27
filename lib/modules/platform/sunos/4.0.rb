@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/09/22.
 # Copyright 2022 Typewritten Software. All rights reserved.
@@ -27,9 +27,11 @@ module SunOS_4_0
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']W' => 'Sun Release 4.0'
-    })
+    @state[:named_string].merge!(
+      {
+        ']W' => 'Sun Release 4.0'
+      }
+    )
   end
 
   define_method 'SB' do |*args|
@@ -134,7 +136,7 @@ module SunOS_4_0
                    when 'KR'       then "The C Programming Language"
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
                    end
-    )
+          )
     parse "\\fI\\*(Tx\\f1#{args[1]}"
   end
 end

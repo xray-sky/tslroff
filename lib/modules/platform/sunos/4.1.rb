@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/10/14.
 # Copyright 2014 Typewritten Software. All rights reserved.
@@ -21,7 +21,7 @@ module SunOS_4_1
     k.instance_variable_set '@lines_per_page', nil
     case k.instance_variable_get '@input_filename'
     when 'ce_db_build.1', 'ce_db_merge.1' # nroff input; no title line
-      k.define_singleton_method(:get_title) { { :section => '1' } }
+      k.define_singleton_method(:get_title) { { section: '1' } }
       # TODO also has see also link w/ whitespace (e.g. "ref (section)")
     when 'default.1'
       k.instance_variable_set '@manual_entry', '_default'
@@ -32,9 +32,11 @@ module SunOS_4_1
 
   def init_ds
     super
-    @state[:named_string].merge!({
-      ']W' => 'Sun Release 4.1'
-    })
+    @state[:named_string].merge!(
+      {
+        ']W' => 'Sun Release 4.1'
+      }
+    )
   end
 
   define_method 'SB' do |*args|
@@ -139,7 +141,7 @@ module SunOS_4_1
                    when 'KR'       then "The C Programming Language"
                    else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
                    end
-    )
+          )
     parse "\\fI\\*(Tx\\f1#{args[1]}"
   end
 

@@ -21,7 +21,7 @@ module BeOS_R4
     when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
       k.instance_variable_get('@source').lines.each { |l| l.force_encoding Encoding::ISO_8859_1 }
     else
-      k.instance_variable_get('@source').lines.each { |l| l.gsub!(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;') }
+      k.patch(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;', global: true)
     end
   end
 

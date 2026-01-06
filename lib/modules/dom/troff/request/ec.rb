@@ -13,20 +13,20 @@
 # .eo           on        -         -       Turn escape mechanism off.
 #
 
-module Troff
-  def req_ec(argstr = '', breaking: nil)
+class Troff
+  def ec(argstr = '', breaking: nil)
     chr = argstr[0] || '\\'
     @state[:escape_char] = chr
   end
 
-  def req_eo(_argstr = '', breaking: nil)
+  def eo(_argstr = '', breaking: nil)
     warn "disabling escape mechanism"
     @state[:escape_char] = nil
     true
   end
 
   def xinit_ec
-    req_ec
+    ec
     true
   end
 end

@@ -4,14 +4,14 @@
 # ---------------
 #
 
-module Troff
+class Troff
 
   # TODO named strings can be invoked as macros! and vice versa!
   #   figure out how that works. quoting, breaking, these are odd
 
   def request(req, argstr, breaking: true)
-    if REQUESTS.include? req and respond_to?("req_#{req}") # it's not a macro and we haven't renamed it
-      send "req_#{req}", __unesc_w(unescape(argstr, copymode: true)), breaking: breaking
+    if Requests.include?(req) and respond_to?(req) # it's not a macro and we haven't renamed it
+      send req, __unesc_w(unescape(argstr, copymode: true)), breaking: breaking
     else
       send req, *(getargs argstr)
       # REVIEW necessary?
@@ -19,7 +19,7 @@ module Troff
     end
     rescue NoMethodError => e
       # Control lines with unrecognized names are ignored. §1.1
-      if e.message.match(/^undefined method .+ for #<Manual:/)
+      if e.message.match(/^undefined method .+ for #<#{self.class}:/)
         warn "Unrecognized request .#{req} #{argstr}"
       else
         # it's some other screwup; use the normal error reporting
@@ -71,9 +71,9 @@ module Troff
       # we should have already stripped any such spaces.
       #if line.match(/^ *$/)
       if line.empty?
-        req_br
+        br
         @current_block << '&nbsp;'
-        req_br
+        br
       else
 
         # initial spaces also cause a break. §4.1
@@ -81,7 +81,7 @@ module Troff
         # -- tabs don't count for this
         if line.start_with?(' ')
           line.prepend("\\")    # force this initial space to appear in the output
-          req_br
+          br
         end
 
         unescape(__unesc_w(__unesc_n(line))) # we actually want to do this in a better order than l->r because of ar(4) [SunOS 5.5.1] :: [30-31]
@@ -94,7 +94,7 @@ module Troff
         end
 
         # reset no-space mode, which is only in effect for one output line
-        req_rs if nospace?
+        rs if nospace?
 
         process_input_traps
 

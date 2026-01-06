@@ -51,9 +51,7 @@ module HPUX_10_20
     case k.instance_variable_get '@input_filename'
     when 'dcecp_cdsalias.1m'
       # until we can figure out how to make ourselves resilient to .rn'ing the same macro twice
-      k.instance_variable_get('@source').lines[7].sub!(/^/, '.\\"')
-      k.instance_variable_get('@source').lines[8].sub!(/^/, '.\\"')
-      k.instance_variable_get('@source').lines[9].sub!(/^/, '.\\"')
+      k.patch_lines(7..9, /^/, '.\\"')
     when 'default.4'
       k.instance_variable_set '@manual_entry', '_default'
     when 'x_open_800.5' # is nroff output (with ^H overstriking), despite starting with .\" and .nf

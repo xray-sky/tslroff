@@ -27,7 +27,7 @@
 #
 # TODO default unit 'm'
 
-module Troff
+class Troff
   def esc_h(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = __unesc_w(__unesc_n(s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1'))) # we may have come here without having getargsed

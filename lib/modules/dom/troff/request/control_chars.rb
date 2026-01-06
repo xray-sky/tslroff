@@ -15,21 +15,21 @@
 #    especially trap-invoked macros.
 #
 
-module Troff
-  def req_cc(argstr = '', breaking: nil)
+class Troff
+  def cc(argstr = '', breaking: nil)
     chr = argstr.empty? ? '.' : argstr[0]
     @state[:cc] = chr
     true
   end
 
-  def req_c2(argstr = '', breaking: nil)
+  def c2(argstr = '', breaking: nil)
     chr = argstr.empty? ? "'" : argstr[0]
     @state[:c2] = chr
     true
   end
 
   def init_cc
-    req_cc
-    req_c2
+    cc
+    c2
   end
 end

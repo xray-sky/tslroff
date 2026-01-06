@@ -55,12 +55,12 @@
 # "the last line must end with a right delimiter" apparently doesn't exclude whitespace/comments.
 #
 
-module Troff
-  def req_ie(argstr = '', breaking: nil, quiet: false)
-    @state[:else] = !req_if(argstr, breaking: breaking, quiet: quiet)
+class Troff
+  def ie(argstr = '', breaking: nil, quiet: false)
+    @state[:else] = !send(:if, argstr, breaking: breaking, quiet: quiet)
   end
 
-  def req_el(argstr = '', breaking: nil)
+  def el(argstr = '', breaking: nil)
     resc = Regexp.quote(@state[:escape_char])
     # we probably have a straight else block, .el \{ foo
     # but there is a crazy interaction if there is a block .if we are not going to execute
@@ -74,7 +74,7 @@ module Troff
     parse(argstr) if @state[:else]
   end
 
-  def req_if(argstr = '', breaking: nil, quiet: false)
+  define_method 'if' do |argstr = '', breaking: nil, quiet: false|
     resc = Regexp.quote(@state[:escape_char])
     test = argstr.slice!(0, get_char(argstr).length)
     predicate = if test == '!'

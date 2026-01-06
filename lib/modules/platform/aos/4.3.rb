@@ -39,35 +39,29 @@ module AOS_4_3
 
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
-    when 'bf77.1'
-      k.instance_variable_get('@source').lines[239].sub!(/^/, '\\\\&') # non-macro line starts with .
+    when 'bf77.1' then k.patch_line(239, /^/, '\\\\&') # non-macro line starts with .
     # REVIEW maybe this kind of thing should be left alone?
     # -- this appears to have been specific to the aek distrib
     #when 'f77.1'
-    #  k.instance_variable_get('@source').lines[277].sub!(/^/, "\\&") # non-macro line starts with .
+    #  k.patch_line(277, /^/, "\\&") # non-macro line starts with .
     when 'fpr.1' # there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
-      newsrc = k.instance_variable_get('@source').lines
-      (28..37).each { |i| newsrc[i].sub!(/^\.\\"\s/, '') }
-      (40..156).each { |i| newsrc[i] = '\"' }
+      k.patch_lines(28..37, /^\.\\"\s/, '')
+      k.patch_lines(40..156, /^/, '\"')
     # REVIEW maybe this kind of thing should be left alone?
-    when 'ftp.1c'
-      k.instance_variable_get('@source').lines[210].sub!(/f$/, 'fP')
+    when 'ftp.1c' then k.patch_line(210, /f$/, 'fP')
     when 'help.1' # also in olh.1 but uses .so
-      k.instance_variable_get('@source').lines[20].sub!(/^/, "\\&")	# non-macro line starts with '
+      k.patch_line(20, /^/, "\\&")	# non-macro line starts with '
     when 'mdtar.1'
-      k.instance_variable_get('@source').lines[96].sub!(/\\\*\s+$/, '*')
-      k.instance_variable_get('@source').lines[102].sub!(/\\\*$/, '*') # nroff ignores these, but they are intended to output
+      k.patch_line(96, /\\\*\s+$/, '*')
+      k.patch_line(102, /\\\*$/, '*') # nroff ignores these, but they are intended to output
     when 'async_daemon.2', 'setdomainname.2',
          'yp_all.3n', 'yp_bind.3n', 'yp_match.3n', 'yp_next.3n', 'yp_order.3n', 'yp_unbind.3n', 'yperr_string.3n', 'ypprot_err.3n'
-      k.instance_variable_get('@source').lines[0].sub!(/^#/, '.\\"')
-      k.instance_variable_get('@source').lines[1].sub!(/^#/, '.\\"')
-      k.instance_variable_get('@source').lines[2].sub!(/^#/, '.\\"')
+      k.patch_lines(0..2), /^#/, '.\\"'
     when 'index.3'
       k.instance_variable_set '@manual_entry', '_index'
     when 'mouse.4' # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead
-      newsrc = k.instance_variable_get('@source').lines
-      (122..140).each { |i| newsrc[i].sub!(/^\.\\"/, '') }
-      newsrc[254].sub!(/t/, 'n')
+      k.patch_lines(122..140, /^\.\\"/, '')
+      k.patch_line(254, /t/, 'n')
     #when 'Script', 'Scrit'
     #  raise ManualIsBlacklisted, 'not a manual entry'
     end

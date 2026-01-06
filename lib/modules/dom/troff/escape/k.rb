@@ -4,7 +4,7 @@
 # -------------
 #
 
-module Troff
+class Troff
   def esc_k(s)
     s.slice!(0) if s.start_with?('(')
     warn "using \\k to store a horizontal position in #{s}..."

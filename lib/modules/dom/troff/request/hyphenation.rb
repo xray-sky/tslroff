@@ -36,9 +36,9 @@
 #      looks like '\q' is parsed into 'q' before assigning it as discretionary hyphen
 #   => '.hc \(mu' is apparently possible (TODO?)
 
-module Troff
+class Troff
 
-  def req_hc(argstr = '', breaking: nil)
+  def hc(argstr = '', breaking: nil)
     chr = get_char argstr # TODO won't correctly handle e.g. '.hc \q'
     if chr
       warn "changing discretionary hyphen to #{chr.inspect}"
@@ -49,12 +49,12 @@ module Troff
     end
   end
 
-  def req_nh(_argstr = '', breaking: nil) ; end
-  def req_hw(_argstr = '', breaking: nil) ; end
-  def req_hy(_argstr = '', breaking: nil) ; end
+  def nh(_argstr = '', breaking: nil) ; end
+  def hw(_argstr = '', breaking: nil) ; end
+  def hy(_argstr = '', breaking: nil) ; end
 
   #def init_hc
-  #  req_hc
+  #  hc
   #end
 
 end

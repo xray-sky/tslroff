@@ -63,12 +63,14 @@
 #   * @register['.u'] vs. req_fi (blockproto)
 #   * etc.
 #
+# TODO "tabs output"
 
 Dir.glob("#{__dir__}/words/*.rb").each do |i|
   require_relative i
 end
 
-module Eqn
+class Troff
+  module Eqn
 
   def eqn_setup
     @state[:eqn_active] = true
@@ -77,8 +79,8 @@ module Eqn
     # save and set fonts
     @register['98'] = @register['.f'].dup
     @register['99'] = @register['.s'].dup
-    req_ft @state[:eqn_gfont].to_s
-    req_ps @state[:eqn_gsize].to_s
+    ft @state[:eqn_gfont].to_s
+    ps @state[:eqn_gsize].to_s
   end
 
   def eqn_restore
@@ -86,12 +88,12 @@ module Eqn
     @eqnhold << @current_block
     @current_block = @eqnhold
     # restore fonts
-    # seems to happen two or more times, through various strategies
+    # eqn seems to do it two or more times, through various strategies
     # I guess to make sure that \s0 and \fP get cleared?
-    req_ft @register['98'].to_s
-    req_ft @register['98'].to_s
-    req_ps @register['99'].to_s
-    req_ps @register['99'].to_s
+    ft @register['98'].to_s
+    ft @register['98'].to_s
+    ps @register['99'].to_s
+    ps @register['99'].to_s
   end
 
   def parse_eqn(line, inline: true)
@@ -105,7 +107,8 @@ module Eqn
     words = line.split
 
     # avoid sending input lines with inline eqn, which start with e.g. 'from' to eqn_bounds
-    return send("eqn_#{words[0]}", line[words[0].length + 1..-1]) if !inline and respond_to?("eqn_#{words[0]}")
+    # REVIEW why was this necessary? is it still, after redoing .EQ/.EN?
+    #return send("eqn_#{words[0]}", line[words[0].length + 1..-1]) if !inline and respond_to?("eqn_#{words[0]}")
 
     # is request TODO use cc/c2 chars - actually defer to 'request?' method
     return parse(line) if words[0].match? %r(^[.'])
@@ -145,18 +148,35 @@ module Eqn
           unescape line.slice!(0..-1)
         end
       end
+      # restore fill state
       @register['.u'].value = fill
     else
       # we are parsing .EQ/.EN
       #warn ".EQ parse_tree built #{eqn_parse_tree(line.dup).inspect}"
-      eqn_setup
-      gen_eqn eqn_parse_tree(line)
-      eqn_restore
+      #eqn_setup
+      #gen_eqn eqn_parse_tree(line)
+      #eqn_restore
+      #parse(line)
+      @current_block << "#{line} "
     end
   end
 
+  # new world order
+  def eqn_parse(line, output: nil)
+    warn "eqn_parse #{line.inspect}"
+
+    # is request TODO use cc/c2 chars - actually defer to 'request?' method
+    return parse(line) if words[0].match? %r(^[.'])
+
+    #case tok = eqn_get_token(line)
+
+    #end
+
+
+  end
+
   def gen_eqn(parse_tree, output: nil)
-    #warn "entered gen_eqn with #{parse_tree.inspect}"
+    warn "entered gen_eqn with #{parse_tree.inspect}"
     if output
       hold_block = @current_block
       @current_block = output
@@ -173,7 +193,7 @@ module Eqn
         when Array then gen_eqn elem
         when "\t" then unescape elem
         when /^"/ then unescape elem.sub(/^"(.*)"$/, '\1') # pass through
-        when '~'  then @current_block << '&nbsp;'
+        when '~'  then @current_block << '&numsp;' # '&nbsp;'
         when '^'  then @current_block << '&thinsp;'
         # these combining characters are meant to appear after the character they combine with
         # TODO they don't seem to combine with each other. but if we fix bar/under it probably won't matter in practice
@@ -216,14 +236,20 @@ module Eqn
     @current_block = hold_block if output
   end
 
-  def eqn_parse_tree(str, limit: -1, terminate: '')
+  def eqn_parse_tree(str, limit: -1, terminate: nil)
+  warn "parsing #{str.inspect} with terminate as #{terminate.inspect}"
     eqn = []
     loop do
+  warn "next token is #{eqn_get_token(str)}" # whoa, eqn_get_token is destructive
       break if str.empty? or eqn.length == limit
       case tok = str.slice!(0, get_eqn_token(str).length)
-      when terminate then return eqn
+      when terminate then return eqn << eqn_parse_tree(str)
       #when '~', '^', "\t" then eqn << tok
-      when '{' then eqn << [ eqn_parse_tree(str, terminate: '}') ]
+      when '{'
+        eqn << [ eqn_parse_tree(str, terminate: '}') ]
+        until eqn.last.empty?
+          eqn << [ eqn_parse_tree(next_line, terminate: '}') ]
+        end
       when 'right'
         chr = str.slice!(0, get_eqn_token(str).length)
         return [ eqn, chr, :close ]
@@ -399,4 +425,5 @@ module Eqn
       'OMEGA'    => '&Omega;'
     }
   end
+end
 end

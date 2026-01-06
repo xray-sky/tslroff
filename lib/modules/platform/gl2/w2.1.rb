@@ -11,8 +11,7 @@ module GL2_W2_1
 
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
-    when 'regexp.5'
-      k.instance_variable_get('@source').lines[418].sub!(/^\.in/, '.if')
+    when 'regexp.5' then k.patch_line(418, /^\.in/, '.if')
     end
   end
 

@@ -9,7 +9,7 @@
 #  special case for translating special characters, if one is in effect.
 #
 
-module Troff
+class Troff
   define_method 'esc_(' do |s|
     translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @state[:translate].key? "#{@state[:escape_char]}(#{s}"
     @state[:special_char][s] || ''.tap { warn "undefined special character #{s}" }
@@ -326,7 +326,10 @@ module Troff
       'ra'  => '&rang;',
       # 'bv'  => '&#9134;',  # approximate vertical extension, used in GL2-W2.5 fcntl(5)
       #'bv'  => '|',        # unfortunately this is used extensively in GL2-W2.5 to give a vertical bar, and #9134 doesn't exist in the 'normal' font.
-      'bv'  => '&boxv;',   # we need this for eqn. this character works together with the curly bracket parts. manual calls it "the bold vertical", distinguished from \(br, the vertical box rule
+      # we need this for eqn. this character works together with the curly bracket parts.
+      # manual calls it "the bold vertical", distinguished from \(br, the vertical box rule - BUT
+      # with our CM font and eqn, it does not give the right results with parens (maybe also curly brackets?)
+      'bv'  => '&boxv;',
       'lt'  => '&#9127;',  # brace left top
       'lk'  => '&#9128;',  # brace left mid
       'lb'  => '&#9129;',  # brace left bot

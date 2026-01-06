@@ -13,13 +13,13 @@ module SunOS_5_4
   def self.extended(k)
     #case k.instance_variable_get '@input_filename'
     #when 'ld.1'
-    #  k.instance_variable_get('@source').lines[767].sub!(/\\h/, 'h')
+    #  k.patch_line(767, /\\h/, 'h')
     #when 'a.out.4' # h4x: collapsed tbl cells due to line-height:0 from \u...\d
-    #  k.instance_variable_get('@source').lines[54].sub!(/(\\u.+?\\d)/, '\\ \1\\ ')
-    #  k.instance_variable_get('@source').lines[58].sub!(/(\\u.+?\\d)/, '\\ \1\\ ')
+    #  k.patch_line(54, /(\\u.+?\\d)/, '\\ \1\\ ')
+    #  k.patch_line(58, /(\\u.+?\\d)/, '\\ \1\\ ')
     #  k.instance_variable_get('@source').lines[60].gsub!(/(\\u.+?\\d)/, '\\ \1\\ ')
     #when 'ar.4' # h4x: missing single quote in input; not sure how troff copes - perhaps \(ga matches ' ?? ugh... TODO
-    #  k.instance_variable_get('@source').lines[41].sub!(/\\h\\\(ga/, "\\h'")
+    #  k.patch_line(41, /\\h\\\(ga/, "\\h'")
     #end
   end
 

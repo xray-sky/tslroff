@@ -1,4 +1,5 @@
-module Eqn
+class Troff
+  module Eqn
 
   def eqn_delim(delim)
     if delim == 'off'
@@ -7,6 +8,7 @@ module Eqn
       nil
     else
       (@state[:eqn_start], @state[:eqn_end]) = delim.chars
+      warn @state[:eqn_start].inspect
     end
   end
 
@@ -42,4 +44,5 @@ module Eqn
     insert_tab(width: to_em(@register['97'].value))
   end
 
+end
 end

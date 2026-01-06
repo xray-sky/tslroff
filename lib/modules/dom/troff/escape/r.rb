@@ -6,7 +6,7 @@
 #   reverse (up) 1 em veritcal motion
 #
 
-module Troff
+class Troff
   def esc_r(*)
     esc_v %('-1m')
   end

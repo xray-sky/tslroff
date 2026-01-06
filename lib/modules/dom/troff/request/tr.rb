@@ -43,8 +43,8 @@
 # for the output side. We should (SHOULD) never see an \x1B (\e) in legit input.
 #
 
-module Troff
-  def req_tr(argstr = '', breaking: nil)
+class Troff
+  def tr(argstr = '', breaking: nil)
     return nil if argstr.empty?
     warn "enabling .tr for #{argstr.inspect}"
     begin

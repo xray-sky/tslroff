@@ -10,13 +10,17 @@
 # √ vrestore(8) infinite loop - rewrite for page bug; loop in \* (get_def_str) also fixed
 #
 
-module OSF1_3_2c
+class Digital_UNIX
+  class V32c
+    class Troff < ::OSF1::Troff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'vrestore.8'
-      k.instance_variable_get('@source').lines[110].sub!(/\\\*\\-/, "\\*L\\-")
+      def source_init
+        case @source.file
+        when 'vrestore.8' then @source.patch_line 111, /\\\*\\-/, "\\*L\\-"
+        end
+        super
+      end
+
     end
   end
-
 end

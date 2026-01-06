@@ -38,7 +38,7 @@
 # TODO: details in §7.3 (including "arguments are copied in copy mode onto a stack")
 #
 
-module Troff
+class Troff
 
   def getargs(str)
     resc  = Regexp.quote(@state[:escape_char].to_s)	# escape mechanism may be disabled

@@ -12,7 +12,7 @@
 #  TODO: align this implementation with \n
 #
 
-module Troff
+class Troff
   define_method 'esc_*' do |s|
     s.slice!(0) if s.start_with?('(')
     s = __unesc_star(__unesc_n(s))

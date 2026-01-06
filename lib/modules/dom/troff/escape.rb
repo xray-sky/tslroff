@@ -6,7 +6,7 @@
 # TODO not happy about the proliferation of basically identical methods
 #
 
-module Troff
+class Troff
 
   private
 
@@ -283,9 +283,9 @@ module Troff
     #return __unesc(xlc.dup) unless xlc.start_with?("\e")
     return @current_block << xlc.dup unless xlc.start_with?("\e")
     oesc = @state[:escape_char]
-    req_ec "\e"
+    ec "\e"
     __unesc(xlc.dup)
-    req_ec oesc
+    ec oesc
   end
 
 end

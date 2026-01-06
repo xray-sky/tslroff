@@ -17,7 +17,7 @@
 # last tab stop. based on lex(1) [SunOS 5.5.1] we're still meant to position if possible
 #
 
-module Troff
+class Troff
 
   private
 

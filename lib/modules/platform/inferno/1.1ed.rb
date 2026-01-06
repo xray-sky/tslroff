@@ -34,35 +34,28 @@ module Inferno_1_1ed
     when 'index.htm'
       #k.instance_variable_set '@manual_entry', '_index'
       k.define_singleton_method(:page_title, proc { 'Inferno Reference &mdash; Inferno 1.1ed' })
-      k.instance_variable_get('@source').lines[0].sub!(%r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
+      k.patch_line(0, %r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
     when 'mpgs8.htm'
-      k.instance_variable_get('@source').lines[50].sub!(%r{^<em>}, '</a>')
-      k.instance_variable_get('@source').lines[55].sub!(%r{^<em>}, '</a>')
+      k.patch_line(50, %r{^<em>}, '</a>')
+      k.patch_line(55, %r{^<em>}, '</a>')
     when 'mpgs32.htm'
       k.define_singleton_method(:page_title, proc { 'Environmental Utilities &mdash; Inferno 1.1ed' })
     when 'mpgs46.htm'
       k.define_singleton_method(:page_title, proc { 'Limbo Keyring Modules &mdash; Inferno 1.1ed' })
-    when 'mpgs56.htm'
-      k.instance_variable_get('@source').lines[50].sub!(%r{^<em>}, '</a>')
+    when 'mpgs56.htm' then k.patch_line(50, %r{^<em>}, '</a>')
     when 'mpgs62.htm'
       k.define_singleton_method(:page_title, proc { 'Limbo Math Modules &mdash; Inferno 1.1ed' })
     when 'mpgs66.htm'
       k.define_singleton_method(:page_title, proc { 'Limbo Prefab Modules &mdash; Inferno 1.1ed' })
-      k.instance_variable_get('@source').lines[61].sub!(%r{^<em>}, '</a>')
+      k.patch_line(61, %r{^<em>}, '</a>')
     when 'mpgs71.htm'
       k.define_singleton_method(:page_title, proc { 'Limbo System Modules &mdash; Inferno 1.1ed' })
-    when 'mpgs77.htm'
-      k.instance_variable_get('@source').lines[31].sub!(%r{^<em>}, '</a>')
-    when 'mpgs78.htm'
-      k.instance_variable_get('@source').lines[145].sub!(%r{<em><a}, '<a')
-    when 'mpgs79.htm'
-      k.instance_variable_get('@source').lines[26].sub!(%r{^<em>}, '</a>')
-    when 'mpgs81.htm'
-      k.instance_variable_get('@source').lines[66].sub!(%r{^<em>}, '</a>')
-    when 'mpgs82.htm'
-      k.instance_variable_get('@source').lines[112].sub!(%r{^<em>}, '</a>')
-    when 'mpgs86.htm'
-      k.instance_variable_get('@source').lines[24].sub!(%r{^<em>}, '</a>')
+    when 'mpgs77.htm' then k.patch_line( 31, %r{^<em>}, '</a>')
+    when 'mpgs78.htm' then k.patch_line(145, %r{<em><a}, '<a')
+    when 'mpgs79.htm' then k.patch_line( 26, %r{^<em>}, '</a>')
+    when 'mpgs81.htm' then k.patch_line( 66, %r{^<em>}, '</a>')
+    when 'mpgs82.htm' then k.patch_line(112, %r{^<em>}, '</a>')
+    when 'mpgs86.htm' then k.patch_line( 24, %r{^<em>}, '</a>')
     when 'mpgs90.htm'
       k.define_singleton_method(:page_title, proc { 'Toolkit Graphic Interface Modules &mdash; Inferno 1.1ed' })
     when 'mpgs93.htm'

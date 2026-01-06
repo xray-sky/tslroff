@@ -36,19 +36,58 @@
 #      either "<p> </p>", or "<br /> <br />" - probably from space adjust?
 #      e.g. eqn(1) [SunOS 5.5.1]
 #
+# Request  Initial  If no     Notes   Explanation
+#  form     value   argument
+#
+# .vs N  1/6in;12pt previous  E,p     Set vertical base-line spacing size V. Transient
+#                                     extra vertical space available with \x'N'.
+#
+# default unit: points
+#
+# TODO: everything.
+#
+#
+# .ne
+#   need vertical space
+#   ignored in HTML context
+#
+#
+# .ns      space    -         D       No-space mode turned on. When on, the no-space
+#                                     mode inhibits .sp requests and .bp requests without
+#                                     a next page number. The no-space mode is turned off
+#                                     when a line of output occurs, or with .rs
+#
+# .rs      space    -         D       Restore spacing. The no-space mode is turned off.
+#
 
-module Troff
-  def req_sp(argstr = '', breaking: true)  # TODO everything is wrong?
+class Troff
+
+  def ne(_argstr = '', breaking: nil) ; end
+
+  def ns(_argstr = '', breaking: nil)
+    @state[:nospace] = true
+  end
+
+  def rs(_argstr = '', breaking: nil)
+    @state.delete(:nospace)
+  end
+
+  def sp(argstr = '', breaking: true)  # TODO everything is wrong?
     return if nospace?
     warn ".sp invoked in spacing mode with nobreak - how to?" unless breaking
     n = argstr.split.first || '1'
     v = to_em(to_u(n, default_unit: 'v')) # TODO hardcoding 1.2 em line height is bogus
     (warn "pathological output of .sp #{v}em" ; return) if v < 0
-    (req_br ; return) if v == 0
+    (br ; return) if v == 0
     @current_block << VerticalSpace.new(height: v, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
     # reset tab output position to 0 - TODO revisit what happens if we get a 'sp (non-breaking)
     # REVIEW .sp in tbl (.TS) context w/rt @current_block, etc.
     #        is it worth special casing to give row (bottom-)padding? I think it might be
     #@current_block.reset_output_indicator
   end
+
+  def vs(argstr = '', breaking: nil)
+    warn "don't know how to .vs #{argstr.inspect}"
+  end
+
 end

@@ -12,31 +12,45 @@
 #   greset.3 has something going on with the colormap table?
 #
 
-module GL2_W2_5
+class GL2
+  class W2_5 < ::GL2
+    class Troff < ::GL2::Troff
 
+=begin
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
     # REVIEW still necessary?
-    #when 'eqn.1'
-    #  k.instance_variable_get('@source').lines[45].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
+    #when 'eqn.1'    then k.patch_line(45, /\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
     #when 'ftp.1c'
-    #  k.instance_variable_get('@source').lines[210].sub!(/f$/, 'fP')
-    #  k.instance_variable_get('@source').lines[356].sub!(/f\\P$/, 'fP')
-    #when 'ls.1'
-    #  k.instance_variable_get('@source').lines[188].sub!(/4em$/, '4m')
-    when 'intro.2'
-      k.instance_variable_get('@source').lines[316].sub!(/\\x-1/, "\\s-1")
-    #when 'gps.4'
-    #  k.instance_variable_get('@source').lines[16].sub!(/f$/, 'fP')
-    when 'tz.4'
-      k.instance_variable_get('@source').lines[42].sub!(/center\./, 'center;')
-    when 'regexp.5'
-      k.instance_variable_get('@source').lines[418].sub!(/^\.in/, '.if')
-    when 'kmem.7'
-      k.instance_variable_get('@source').lines[0].sub!(/u_man/, 'a_man')
+    #  k.patch_line(210, /f$/, 'fP')
+    #  k.patch_line(356, /f\\P$/, 'fP')
+    #when 'ls.1'     then k.patch_line(188, /4em$/, '4m')
+    when 'intro.2'  then k.patch_line(316, /\\x-1/, "\\s-1")
+    #when 'gps.4'    then k.patch_line(16, /f$/, 'fP')
+    when 'tz.4'     then k.patch_line( 42, /center\./, 'center;')
+    when 'regexp.5' then k.patch_line(418, /^\.in/, '.if')
+    when 'kmem.7'   then k.patch_line(  0, /u_man/, 'a_man')
     end
   end
+=end
 
+      def initialize(source)
+        @version = "W2.5"
+        super(source)
+      end
+
+      def source_init
+        case @source.file
+        when 'intro.2'  then @source.patch_line 189, /4em$/, '4m'
+        when 'tz.4'     then @source.patch_line  43, /center\./, 'center;'
+        when 'regexp.5' then @source.patch_line 419, /^\.in/, '.if'
+        when 'kmem.7'   then @source.patch_line   1, /u_man/, 'a_man'
+        end
+        super
+      end
+
+    end
+  end
 end
 
 =begin

@@ -29,7 +29,7 @@
 # https://www.quackit.com/character_sets/unicode/versions/unicode_9.0.0/box_drawing_unicode_character_codes.cfm
 #
 
-module Troff
+class Troff
   def esc_l(s)
     # default unit 'm'
     quotechar = Regexp.quote(get_char(s))

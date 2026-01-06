@@ -42,7 +42,7 @@
 # REVIEW i'm in big trouble if I ever get a \w with a tab in it (why did I think this? seems ok maybe)
 #
 
-module Troff
+class Troff
   def esc_w(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')

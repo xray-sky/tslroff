@@ -19,10 +19,11 @@ end
 module SunOS_3_0
 
   def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'vpq.1'
-      raise ManualIsBlacklisted, 'empty file'
-    end
+    #case k.instance_variable_get '@input_filename'
+    # empty file blacklisting moved to Source class
+    #when 'vpq.1'
+    #  raise ManualIsBlacklisted, 'empty file'
+    #end
   end
 
   def init_ds

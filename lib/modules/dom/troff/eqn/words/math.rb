@@ -1,4 +1,5 @@
-module Eqn
+class Troff
+  module Eqn
 
   def eqn_word(_parse_tree)
     m = __callee__.to_s[4..-1] # strip eqn_
@@ -84,3 +85,5 @@ module Eqn
   end
 
 end
+end
+

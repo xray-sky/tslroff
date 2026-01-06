@@ -12,9 +12,9 @@
 #
 #
 
-module Troff
+class Troff
 
-  def req_ft(argstr = '', breaking: nil)
+  def ft(argstr = '', breaking: nil)
     argstr.slice!(0) if argstr.start_with? '(' # a two char font name from \f will have a ( up front
     pos = argstr.slice(0, 2).strip
     font = case pos
@@ -29,7 +29,7 @@ module Troff
     ''
   end
 
-  def req_ps(argstr = '', breaking: nil)
+  def ps(argstr = '', breaking: nil)
     ps = argstr.slice(0, 3).strip
     size = case ps.to_s # tolerate receiving Integer argument
            when '0', ''            then @register[:prev_ps].value
@@ -69,7 +69,7 @@ module Troff
     true
   end
 
-  alias_method :esc_f, :req_ft
-  alias_method :esc_s, :req_ps
+  alias_method :esc_f, :ft
+  alias_method :esc_s, :ps
 
 end

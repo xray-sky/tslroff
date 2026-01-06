@@ -39,10 +39,10 @@ module NEWS_os_4_1C_ja_JP
     #when 'lgamma.3m'
     #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
     when 'mwm.1' # TODO actually fix the code so that \n\- doesn't result in infinite loop. but the output would still be wrong...
-      k.instance_variable_get('@source').lines[79].sub!(/\\n/, '')
+      k.patch_line(79, /\\n/, '')
     when 'ntpq.8'
       # incorrectly recognized as nroff source as the first character is '@'
-      k.instance_variable_get('@source').lines[0].sub!(/^/, '.')
+      k.patch_line(0, /^/, '.')
     end
   end
 

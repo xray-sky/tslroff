@@ -32,10 +32,10 @@ module NEWS_os_4_2_1R_en_US
     #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
     when 'chgrp.1'
       # incorrectly recognized as nroff source as the first character is ' '
-      k.instance_variable_get('@source').lines[0].sub!(/^ /, '')
+      k.patch_line(0, /^ /, '')
     when 'prof.1'
       # incorrectly recognized as nroff source as the first character is 'p'
-      k.instance_variable_get('@source').lines[0].sub!(/^p/, '.')
+      k.patch_line(0, /^p/, '.')
     end
   end
 

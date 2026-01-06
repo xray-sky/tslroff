@@ -8,7 +8,10 @@
 
 class EndOfTbl < RuntimeError ; end
 
-module Troff
+class Troff
+  module Macros
+    module Tbl
+
   define_method 'T&' do |*args|
     formats_terminator = Regexp.new('\.\s*$')
     format_lines = []
@@ -16,7 +19,7 @@ module Troff
       break if @line.match?(formats_terminator)
       format_lines << next_line
     end
-    @state[:tbl_formats] = Tbl.formats(format_lines)
+    @state[:tbl_formats] = Troff::Tbl.formats(format_lines)
   end
 
   define_method 'TE' do |*_args|
@@ -271,4 +274,6 @@ module Troff
     @register.delete(:tbl_dsize)
     @document << @current_block
   end
+end
+end
 end

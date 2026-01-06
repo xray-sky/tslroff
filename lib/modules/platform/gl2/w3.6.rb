@@ -18,18 +18,12 @@ module GL2_W3_6
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
     # REVIEW still necessary?
-    #when 'eqn.1'
-    #  k.instance_variable_get('@source').lines[46].sub!(/\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
-    #when 'ftp.1c'
-    #  k.instance_variable_get('@source').lines[210].sub!(/f$/, 'fP')
-    #when 'ls.1'
-    #  k.instance_variable_get('@source').lines[189].sub!(/4em$/, '4m')
-    when 'intro.2'
-      k.instance_variable_get('@source').lines[317].sub!(/\\x-1/, "\\s-1")
-    when 'tz.4'
-      k.instance_variable_get('@source').lines[45].sub!(/center\./, 'center;')
-    when 'regexp.5'
-      k.instance_variable_get('@source').lines[419].sub!(/^\.in/, '.if')
+    #when 'eqn.1'    then k.patch_line(46, /\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
+    #when 'ftp.1c'   then k.patch_line(210, /f$/, 'fP')
+    #when 'ls.1'     then k.patch_line(189, /4em$/, '4m')
+    when 'intro.2'  then k.patch_line(317, /\\x-1/, '\s-1')
+    when 'tz.4'     then k.patch_line(45, /center\./, 'center;')
+    when 'regexp.5' then k.patch_line(419, /^\.in/, '.if')
     end
   end
 

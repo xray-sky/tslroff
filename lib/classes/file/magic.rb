@@ -27,12 +27,11 @@ class File
     # probably going to have to special-case A/UX 3.0.1 AutoLogin.4.Z in this event.
     # fortunately, haven't run into any other tar files
     #when "\116\105" then 'tar'	# tape archive (pre-POSIX) - this is not a tar magic number, but matches Autologin.4.Z [A/UX 3.0.1]
-    when "\037\036" then 'gz'	# pack/huffman
-    when "\037\037" then 'gz'	# pack/huffman, old
-    when "\037\213" then 'gz'	# gzip
-    when "\037\235" then 'gz'	# compress
-    #when "\037\240" then 'gz'	# SCO LZH - osx gzip no longer understands
-    when "\037\240" then 'ogz'	# SCO LZH - use 10.6 gzip in ~/Unix/bin
+    when "\037\036" then 'pack'	    # pack/huffman
+    when "\037\037" then 'oldpack'  # pack/huffman, old
+    when "\037\213" then 'gzip'	    # gzip
+    when "\037\235" then 'compress' # compress
+    when "\037\240" then 'lzh_sco'	# SCO LZH - use 10.6 gzip; dropped from gzip in newer OS X
     else                 'text'
     end
   end

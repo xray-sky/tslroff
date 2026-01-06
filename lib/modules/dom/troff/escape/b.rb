@@ -11,7 +11,7 @@
 #   adding css height:0 seems to help but then maybe there's some more vertical alignment to do
 #
 
-module Troff
+class Troff
   def esc_b(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')

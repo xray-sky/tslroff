@@ -18,7 +18,7 @@
 #
 #
 
-module Troff
+class Troff
   def esc_o(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')

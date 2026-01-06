@@ -16,8 +16,32 @@
 #   is everything here ok? what's up with cc(i) ?
 #
 
-module UNIX_V6
+class UNIX
+  class V6
 
+    class Block::Paragraph < ::Block
+      def to_html
+        # this used to happen before every block was processed.
+        # TODO something better.
+        #      something not tied to Block::Paragraph.
+        #      something that can be overridden.
+        #        => V6 manual refs are like "syscall (II)"
+        # NOTE Nroff Line class has its own link rewrite
+
+        t = @text.collect(&:to_html).join
+        t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)\s{0,1}(?:<[^<]+?>)*\s{0,1}\((?:<[^<]+?>)*(?<fullsec>(?<section>[IV]*?))(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
+          caps = Regexp.last_match
+          entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
+          %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
+        end if style[:linkify]
+
+        "<p#{@style}>\n#{t}\n</p>\n"
+      end
+    end
+
+    class Troff < ::UNIX::Troff
+
+=begin
   def self.extended(k)
     #k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     k.define_singleton_method(:Bd, k.method(:req_bd)) if k.methods.include?(:req_bd)
@@ -29,86 +53,136 @@ module UNIX_V6
     k.instance_eval "undef :req_dt"
     k.instance_eval "undef :req_it"
   end
+=end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        '_' => '_',
-        '-' => '\\-',
-        '|' => '\\|',
-        "'" => '\\(aa',
-        '>' => '\\(->',
-        'a' => '\\(aa',
-        'b' => '\\(*b',
-        'g' => '\\(ga',
-        'p' => '\\(*p',
-        'r' => '\\(rg',
-        'u' => '\\(*m',
-        'v' => '\\(bv',
-        'G' => '\\(*G',
-        'X' => '\\(mu'
-      }
-    )
-  end
+      alias :Bd :bd
+      alias :Dt :dt
+      alias :il :it
+      undef :bd
+      undef :dt
+      undef :it
 
-  def bd(*args)
-    req_ft '3'
-    if @register['V'] > 1
-      parse "_#{args[0]}_"
-    else
-      parse "\\&#{args[0]}"
+      alias :LP :P
+      alias :dt :DT
+      alias :sh :SH
+
+      #def initialize(source)
+      #  @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+      #  @title_detection ||= %r{^\s+(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
+      #  @related_info_heading ||= 'See Also'
+      #  super(source)
+      #end
+
+
+      def init_ds
+        super
+        @state[:named_string].merge!(
+          {
+            '_' => '_',
+            '-' => '\\-',
+            '|' => '\\|',
+            "'" => '\\(aa',
+            '>' => '\\(->',
+            'a' => '\\(aa',
+            'b' => '\\(*b',
+            'g' => '\\(ga',
+            'p' => '\\(*p',
+            'r' => '\\(rg',
+            'u' => '\\(*m',
+            'v' => '\\(bv',
+            'G' => '\\(*G',
+            'X' => '\\(mu'
+          }
+        )
+      end
+
+      def xinit_nr
+        super
+        @register.merge!({
+          '}I' => Register.new(to_u('5n')),
+          '}P' => Register.new(0, 1)
+        })
+      end
+
+      def source_init
+        case @source.file
+        when 'greek.5' then @source.patch_line(17, /\s([.1])/, ' +\1', global: true)
+        end
+        super
+      end
+
+      def bd(*args)
+        ft '3'
+        if @register['V'] > 1
+          parse "_#{args[0]}_"
+        else
+          parse "\\&#{args[0]}"
+        end
+        ft
+      end
+
+      def bn(*args)
+        ft '3'
+        if @register['V'] > 1
+          parse "_#{args[0]}_\t\\&\\c"
+        else
+          parse "\\&#{args[0]}\t\\&\\c"
+        end
+        ft
+      end
+
+      def i0(*_args)
+        parse ".in\\n(}Iu" #send 'in', "#{@register['I'].value}u"
+        dt
+      end
+
+      def it(*args)
+        # can't use req_ul as it calls req_it internally
+        #req_ul
+        ft '2'
+        if @register['V'] > 1
+          parse "_#{args[0]}_"
+        else
+          parse "\\&#{args[0]}"
+        end
+        # since we can't rely on .ul giving us a one-line input trap for .}f
+        ft
+      end
+
+      def lp(*args)
+        tc
+        i0
+        ta "#{args[1]}n"
+        send 'in', "#{args[0]}n"
+        ti "-#{args[1]}n"
+      end
+
+      define_method 's1' do |*_args|
+        sp '1v'
+        #ne '2'
+      end
+
+      define_method 's2' do |*_args|
+        sp '.5v'
+      end
+
+      define_method 's3' do |*_args|
+        sp '.5v'
+        #ne '2'
+      end
+
+      def th(*args)
+        send 'TH', args[0], args[1], heading: "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\*-\\0\\0PWB/UNIX\\| #{args[2]}"
+      end
+
+      def li(*_args)
+        warn "V6 manual invoked .li with #{_args.inspect} ? REVIEW"
+      end
+
+      define_method '..' do |*_args|
+        warn "V6 manual invoked ... with #{_args.inspect} ? REVIEW"
+      end
+
     end
-    req_ft
   end
-
-  def bn(*args)
-    req_ft '3'
-    if @register['V'] > 1
-      parse "_#{args[0]}_\t\\&\\c"
-    else
-      parse "\\&#{args[0]}\t\\&\\c"
-    end
-    req_ft
-  end
-
-  def it(*args)
-    # can't use req_ul as it calls req_it internally
-    #req_ul
-    req_ft '2'
-    if @register['V'] > 1
-      parse "_#{args[0]}_"
-    else
-      parse "\\&#{args[0]}"
-    end
-    # since we can't rely on .ul giving us a one-line input trap for .}f
-    req_ft
-  end
-
-  def lp(*args)
-    req_tc
-    send 'i0'
-    req_ta "#{args[1]}n"
-    req_in "#{args[0]}n"
-    req_ti "-#{args[1]}n"
-  end
-
-  define_method 's1' do |*_args|
-    req_sp '1v'
-    #req_ne '2'
-  end
-
-  define_method 's2' do |*_args|
-    req_sp '.5v'
-  end
-
-  define_method 's3' do |*_args|
-    req_sp '.5v'
-    #req_ne '2'
-  end
-
-  def th(*args)
-    send 'TH', args[0], args[1], heading: "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\*(em\\0\\0PWB/UNIX\\| #{args[2]}"
-  end
-
 end

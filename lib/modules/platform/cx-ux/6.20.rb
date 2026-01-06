@@ -27,18 +27,14 @@ module CX_UX_6_20
 
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
-    when 'cxref.1'
-      k.instance_variable_get('@source').lines[11].sub!(/$/, 'P') # suppress the warning, doesn't need action
+    when 'cxref.1'       then k.patch_line(11, /$/, 'P') # suppress the warning, doesn't need action
     when 'ftp.1c'
-      k.instance_variable_get('@source').lines[209].sub!(/$/, 'P') # suppress the warning, doesn't need action
-      k.instance_variable_get('@source').lines[355].sub!(/\\P/, 'P') # suppress the warning, doesn't need action
+      k.patch_line(209, /$/, 'P') # suppress the warning, doesn't need action
+      k.patch_line(355, /\\P/, 'P') # suppress the warning, doesn't need action
     when 'index.3c.z', 'index.3f.z', 'index.3x.z'
       k.instance_variable_set '@manual_entry', '_index'
-    when 'localeconv.3c'
-      k.instance_variable_get('@source').lines[37].sub!(/\\fp/, '') # suppress the warning, doesn't need action
-      k.instance_variable_get('@source').lines[41].sub!(/\\fp/, '') # suppress the warning, doesn't need action
-    when 'gps.4'
-      k.instance_variable_get('@source').lines[16].sub!(/$/, 'P') # suppress the warning, doesn't need action
+    when 'localeconv.3c' then k.patch_lines([37, 41], /\\fp/, '') # suppress the warning, doesn't need action
+    when 'gps.4'         then k.patch_line(16, /$/, 'P') # suppress the warning, doesn't need action
     end
   end
 

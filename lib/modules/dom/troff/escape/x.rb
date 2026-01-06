@@ -22,7 +22,7 @@
 # REVIEW same wart as \w w/rt extra delimiters. let's see what we run into.
 #
 
-module Troff
+class Troff
   def esc_x(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')

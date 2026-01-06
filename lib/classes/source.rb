@@ -9,41 +9,90 @@
 require_relative 'file/magic.rb'
 
 class Source
-  attr_reader :filename, :lines, :magic
+  attr_reader :path, :lines, :magic, :dir, :file
 
-  def initialize(file)
-    @filename = file
-    case File.magic(file)
-    when 'tar'
-      raise ArgumentError, "Input file is tape archive: #{file}"
-      # TODO
-      #
-      # this might be useful later for dealing productively with tar files.
-      # https://gist.github.com/sinisterchipmunk/1335041
-      #
-      # also I need to re-enter in case of a gzipped tar file.
-      # is this even worth doing?
-      #
-      # TODO need to re-enter in the case of the HP ANSI-C A.10.11-S700 manual,
-      #      which is gzipped compressed data. (WHY.)
-    when 'gz'
-      @lines = IO.readlines %(|gzip -dc "#{file}")	# gzip does it all, even if zlib won't.
-    when 'ogz'
-      @lines = IO.readlines %(|gzip_old -dc "#{file}")	# 10.6 gzip does it all, even if zlib won't.
-    else
-      @lines = IO.readlines file
-    end
+  def initialize(file, magic: nil, encoding: nil, record_separator: $/, &block)
+    @path = file
+    @file = File.basename(file)
+    @dir = File.dirname(file)
+    @target = File.readlink(file) if File.symlink?(file)
 
-    begin
-      @magic = case @lines.find { |l| !l.match(/^\s+$/) } # use the first non-blank line - cc(1) [GL2-W2.5]
-               when /^\s*<.+?>/ then :HTML   # html, probably
-               when /^[.']./    then :Troff  # troff source, probably
-               else                  :Nroff  # plain text with or without carriage control
-               end
-    rescue ArgumentError # invalid byte sequence
-      # give ourselves a chance to punt JUST IN CASE
-      # - e.g. BeOS R3 PressInfo/aboutbe/pressreleases/97-08-04_adamation.html
-      @magic = :Unknown
+    @lines = if block_given?
+               yield(file, record_separator: record_separator, encoding: encoding)
+             else
+               IO.readlines(stream_decompress, record_separator, external_encoding: encoding)
+             end
+
+    @magic = magic || infer_magic
+  end
+
+  def link?
+    !@target.nil?
+  end
+
+  # in-place edit - replaces re with repl on numbered line only, (uses gsub if global: true)
+
+  def patch_line(l, re, repl, global: false)
+    @lines[l-1].send((global ? :gsub! : :sub!), re, repl) # 0-indexed array => 1-indexed lines
+  end
+
+  # in-place edit - replaces re with repl on each numbered line, (uses gsub if global: true)
+
+  def patch_lines(lines, re, repl, global: false)
+    lines.each { |l| patch_line l, re, repl, global: global }
+  end
+
+  # in-place edit - replaces re with repl, full file (uses gsub if global: true)
+
+  def patch(re, repl, global: false)
+    @lines.each { |l| l.send((global ? :gsub! : :sub!), re, repl) }
+  end
+
+  private
+
+  # decompress/unpack
+  #
+  # TODO
+  #
+  # this might be useful later for dealing productively with tar files.
+  # https://gist.github.com/sinisterchipmunk/1335041
+  #
+  # also I need to re-enter in case of a gzipped tar file.
+  # is this even worth doing?
+  #
+  # TODO need to re-enter in the case of the HP ANSI-C A.10.11-S700 manual,
+  #      which is gzipped compressed data. (WHY.)
+  #
+
+  def stream_decompress
+    case File.magic @path
+    # OS X gzip does it all, even if zlib won't.
+    when 'compress' then %(|gzip -dc "#{@path}")
+    when 'gzip'     then %(|gzip -dc "#{@path}")
+    when 'oldpack'  then %(|gzip -dc "#{@path}")
+    when 'pack'     then %(|gzip -dc "#{@path}")
+    # OS X 10.6 gzip does it all, even if zlib won't.
+    when 'lzh_sco'  then %(|gzip_10.6 -dc "#{@path}")
+    when 'tar'      then raise ArgumentError, "#{@path}: is tape archive (skipped)"
+    else @path
     end
   end
+
+  # try to guess what sort of text format we are dealing with
+  # files containing only whitespace or null bytes are considered empty
+
+  def infer_magic
+    case @lines.detect { |l| l.match?(/[^\s\n\r\000]/) } # use the first non-blank line - cc(1) [GL2-W2.5]
+    when nil         then raise ManualIsBlacklisted, "#{@filename}: empty file (skipped)" # there weren't any
+    when /^\s*<.+?>/ then :HTML   # html, probably
+    when /^[.']./    then :Troff  # troff source, probably
+    else                  :Nroff  # plain text with or without carriage control
+    end
+  rescue ArgumentError => e # invalid byte sequence
+    # give ourselves a chance to punt JUST IN CASE
+    # - e.g. BeOS R3 PressInfo/aboutbe/pressreleases/97-08-04_adamation.html
+    warn "#{@filename}: exception inferring text format: #{e.message}"
+    :Unknown
+  end
+
 end

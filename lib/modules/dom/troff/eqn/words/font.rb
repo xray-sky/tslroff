@@ -1,4 +1,5 @@
-module Eqn
+class Troff
+  module Eqn
 
   def eqn_gfont(f)
     warn "eqn requests gfont #{f}"
@@ -11,7 +12,7 @@ module Eqn
   end
 
   def eqn_size(parse_tree)
-    req_ps "#{parse_tree.shift.to_i + 2}"
+    ps "#{parse_tree.shift.to_i + 2}"
   end
 
   def eqn_roman(parse_tree)
@@ -27,9 +28,9 @@ module Eqn
   end
 
   def eqn_font(parse_tree)
-    req_ft parse_tree.shift
+    ft parse_tree.shift
     gen_eqn [parse_tree.shift]
-    req_ft @state[:eqn_gfont]
+    ft @state[:eqn_gfont]
   end
 
   # bar and under are made the right length for the entire construct
@@ -50,4 +51,5 @@ module Eqn
     @current_block << bar
   end
 
+end
 end

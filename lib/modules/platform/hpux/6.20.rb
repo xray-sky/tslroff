@@ -23,7 +23,7 @@ module HPUX_6_20
     #k.define_singleton_method(:req_cm, k.method('req_\"')) if k.methods.include?('req_\"')
     case k.instance_variable_get '@input_filename'
     when 'wmove.3w' # has "upper-\left". how did that _ever_ work. REVIEW how does troff handle that pathological input?
-      k.instance_variable_get('@source').lines[16].sub!(/\\l/, 'l')
+      k.patch_line(16, /\\l/, 'l')
     end
   end
 

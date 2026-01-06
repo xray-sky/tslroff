@@ -9,32 +9,68 @@
 # TODO finish making the macro package selectable
 #
 
-%w[. request escape eqn tbl].each do |t|
+#%w[. request escape eqn tbl].each do |t|
 #%w[. request escape eqn tbl pic].each do |t|
-  Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
-    require_relative i
+#  Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
+#    require_relative i
+#  end
+#end
+
+#require_relative 'groff'
+#require_relative 'troff/tmac/an'
+
+class Troff < TextFormatter
+
+  %w[. request escape eqn tbl].each do |t|
+    Dir.glob("#{File.dirname(__FILE__)}/troff/#{t}/*.rb").each do |i|
+      require i
+    end
   end
-end
 
-require_relative 'groff'
-require_relative 'troff/tmac/an'
+  require_relative 'troff/tmac/an'
+  include Macros::An
+  include Eqn
+  include Macros::Eqn
+  include Tbl
+  include Macros::Tbl
 
-module Troff
+  Delimiters = %(\002\003\005\006\007"') # unused. REVIEW necessary? useful?
+  Requests = %w[ ab ad af am as bd bp br c2 cc ce cf ch cs cu da de di ds dt ec el em eo ev ex fc fi
+                 fl fp ft hc hw hy ie if ig in it lc lf lg ll ls lt mc mk na ne nf nh nm nn nr ns nx
+                 os pc pi pl pm pn po ps rd rm rn rr rs rt so sp ss sv ta tc ti tl tm tr ul vs wh \" ] # REVIEW \" isn't really a request but I want to not parse its args
+  #REQUESTS = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
 
-  DELIMITERS = %(\002\003\005\006\007"') # unused. REVIEW necessary? useful?
-  REQUESTS = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
-
-  def self.requests ; REQUESTS ; end # REVIEW smrtr?
+  def self.requests ; Requests ; end # REVIEW smrtr?
   def self.useGroff? ; false ; end
 
+=begin
   def self.extended(k)
-    k.extend ::Eqn
-    k.extend ::Tbl
+    k.extend Troff::Eqn
+    k.extend Troff::Tbl
     #k.extend ::Pic
-    k.extend ::Groff if Troff.useGroff?
+    #k.extend ::Groff if Troff.useGroff?
     k.instance_variable_set '@register', {}
     k.instance_variable_set '@state', { header: Block::Header.new, footer: Block::Footer.new }
     k.instance_variable_set '@related_info_heading', %r{SEE(?: |&nbsp;)+ALSO}
+  end
+=end
+
+  def initialize(source)
+    @source = source
+    @register = {}
+    @state = { header: Block::Header.new, footer: Block::Footer.new }
+    @related_info_heading = %r{SEE(?: |&nbsp;)+ALSO}
+
+    xinit_selenium
+    xinit_ec
+    xinit_nr
+    xinit_in
+
+    methods.each do |m|
+      send(m) if m.to_s.start_with? 'init_'
+    end
+
+    super(source)
   end
 
   def source_init

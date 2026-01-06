@@ -30,13 +30,25 @@
 # W2.1 and W2.3 Mail(1) want to use font T (times?)
 #
 
-module GL2
+class GL2
 
+  class Troff < ::Troff
+
+=begin
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     # the Alias manual pages are *.man
     k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?|man)$/, '')
     k.instance_variable_set '@manual_section', Regexp.last_match[1]
+  end
+=end
+
+  alias :LP :P
+
+  def initialize(source)
+    @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
+    @manual_section ||= Regexp.last_match[1]
+    super(source)
   end
 
   def init_ds
@@ -48,7 +60,7 @@ module GL2
         'Tm' => '&trade;',
         ']D' => 'Silicon Graphics',
         ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-        ']W' => File.mtime(@source.filename).strftime("%B %d, %Y")
+        ']W' => File.mtime(@source.path).strftime("%B %d, %Y")
       }
     )
   end
@@ -95,5 +107,4 @@ module GL2
   def req_UC(*); end
 
 end
-
-
+end

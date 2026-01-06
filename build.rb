@@ -92,6 +92,14 @@ collections = {
         basedir: 'apollo/domain_os/10.3.5',
         srcdirs: %w[sys/help/dpcc*.hlp] # TODO + doc/*release_notes
       },
+      'dsee_3.2': {
+        basedir: 'apollo/domain_os/unbundled/dsee_3.2',
+        srcdirs: %w[help/*] # TODO + doc/*release_notes
+      },
+      'dsee_3.3': {
+        basedir: 'apollo/domain_os/unbundled/dsee_3.3',
+        srcdirs: %w[help/* bsd4.3/usr/man/cat1 sys5.3/usr/catman/u_man/man1] # TODO + doc/*release_notes
+      },
       'ftn_10.9': {
         basedir: 'apollo/domain_os/10.3.5',
         srcdirs: %w[sys/help/ftn.hlp] # TODO + doc/*release_notes
@@ -128,22 +136,144 @@ collections = {
       }
     },
     'Aegis': {
+      'SR7.B': {
+        basedir: 'apollo/domain_os/7.b',
+        srcdirs: %w[sys/help/*]
+      },
+      'SR8.0': {
+        basedir: 'apollo/domain_os/8.0',
+        srcdirs: %w[sys/help/*]
+      },
+      'SR8.1_update': {
+        basedir: 'apollo/domain_os/8.1_upd',
+        srcdirs: %w[sys/help/*]
+      },
+      'SR9.0': {
+        basedir: 'apollo/domain_os/9.0',
+        srcdirs: %w[sys/help/*]
+      },
+      'SR9.0.020': {
+        # REVIEW this is just the release notes
+        basedir: 'apollo/domain_os/9.0.020/sr9.0.020/',
+        srcdirs: %w[ doc ]
+      },
+      'SR9.5.1': {
+        basedir: 'apollo/domain_os/9.5.1',
+        srcdirs: %w[sys/help/*]
+      },
+      'SR9.6': {
+        # TODO (what though?) unbundled products for sure (lisp)
+        basedir: 'apollo/domain_os/9.6',
+        srcdirs: %w[sys/help/*]
+      },
+      'SR9.7': {
+        basedir: 'apollo/domain_os/9.7',
+        srcdirs: %w[sys/help/*]
+      },
+      'SR9.7.1': {
+        basedir: 'apollo/domain_os/9.7.1',
+        srcdirs: %w[sys/help/*]
+      },
       'SR9.7.5': {
         # TODO (what though?) unbundled products for sure (lisp)
         basedir: 'apollo/domain_os/9.7.5',
         srcdirs: %w[sys/help/*]
       }
     },
+    'AUX': {
+      'SR8.0': {
+        # TODO usr/man/docs
+        basedir: 'apollo/domain_os/8.0',
+        srcdirs: %w[ aux/usr/man/man[1-8] ]
+      },
+      'SR8.1_update': {
+        # REVIEW this is just the release notes
+        basedir: 'apollo/domain_os/8.1_upd',
+        srcdirs: %w[ aux/doc ]
+      }
+    },
     'DomainIX': {
+      'SR9.0': {
+        basedir: 'apollo/domain_os/9.0',
+        srcdirs: %w[
+          bsd4.2/usr/man/man[1-8]
+          sys5/usr/catman/?_man/man[1-8]
+        ]
+      },
+      'SR9.2.3': {
+        basedir: 'apollo/domain_os/9.2.3',
+        srcdirs: %w[
+          bsd4.2/usr/man/man[1-8]
+          sys5/usr/catman/?_man/man[1-8]
+        ]
+      },
       'SR9.5': {
         basedir: 'apollo/domain_os/9.5',
+        # REVIEW bsd cat/man mostly identical, but not entirely?
         srcdirs: %w[
           bsd4.2/usr/man/cat[1-8]
+          bsd4.2/usr/man/man[1-8]
           sys5/usr/catman/?_man/man[1-8]
         ]
       }
     },
     'DomainOS': {
+      # REVIEW extra content (install, dex, systest, etc.), multiple releases
+      'SR10.0': {
+        basedir: 'apollo/domain_os/10.3.5',
+        srcdirs: %w[
+          sys/help/*
+          bsd4.3/usr/man/cat[1-8]
+          sys5/usr/catman/?_man/man[1-8]
+          usr/apollo/man/mana
+          usr/new/mann
+          usr/X11/man/cat*
+        ]
+      },
+      'SR10.1': {
+        basedir: 'apollo/domain_os/10.1',
+        srcdirs: %w[
+          sys/help/*
+          bsd4.3/usr/man/cat[1-8]
+          sys5/usr/catman/?_man/man[1-8]
+          usr/apollo/man/mana
+          usr/new/mann
+          usr/X11/man/cat*
+        ]
+      },
+      'SR10.1_PSK4': {
+        basedir: 'apollo/domain_os/10.1_psk4',
+        srcdirs: %w[
+          sys/help/*
+          bsd4.3/usr/man/cat[1-8]
+          sys5/usr/catman/?_man/man[1-8]
+          usr/apollo/man/mana
+          usr/new/mann
+          usr/X11/man/cat*
+        ]
+      },
+      'SR10.2': {
+        basedir: 'apollo/domain_os/10.2',
+        srcdirs: %w[
+          sys/help/*
+          bsd4.3/usr/man/cat[1-8]
+          sys5/usr/catman/?_man/man[1-8]
+          usr/apollo/man/mana
+          usr/new/mann
+          usr/X11/man/cat*
+        ]
+      },
+      'SR10.3': {
+        basedir: 'apollo/domain_os/10.3',
+        srcdirs: %w[
+          sys/help/*
+          bsd4.3/usr/man/cat[1-8]
+          sys5/usr/catman/?_man/man[1-8]
+          usr/apollo/man/mana
+          usr/new/mann
+          usr/X11/man/cat*
+        ]
+      },
       'SR10.3.5': {
         # TODO (what though?) unbundled products for sure (lisp)
         basedir: 'apollo/domain_os/10.3.5',
@@ -943,7 +1073,6 @@ collections = {
       }
     },
     'Tru64': {
-      module_override: 'OSF1',
       '4.0f': {
         basedir: 'dec/tru64/4.0f',
         srcdirs: %w[
@@ -1024,6 +1153,17 @@ collections = {
       '5.5-2H4': {
         basedir: 'dec/vms/5.5-2H4',
         srcdirs: %w[sys0/syshlp]
+      }
+    }
+  },
+  'Dell': {
+    'SVR4': { # CX/UX
+      'Issue2.2': {
+        basedir: 'dell/svr4_iss2.2',
+        srcdirs: %w[
+          usr/share/man/cat[1-8]
+          usr/share/manx/cat[1-8]
+        ]
       }
     }
   },
@@ -1154,7 +1294,7 @@ collections = {
       },
       'Network-Peripheral-Interface_A.02.00': {
         version_override: '8.05',
-        basedir: 'sun/sunos/unbundled/hp_npi_a.02.00',
+        basedir: 'sun/sunos/thirdparty/hp_npi_a.02.00',
         srcdirs: %w[usr/lib/hpnp/hp-man/man[14]*.Z]
       },
       'PersonalVisualizer_2.11/S700': {
@@ -1502,11 +1642,11 @@ collections = {
     }
   },
   'Sequent': {
-    disabled: true,
+    #disabled: true,
     # TODO macros, etc.
     # TODO blacklist Makefile, RCS dir
     # TODO extra docs (BSD), maybe
-    'DYNIX': {
+    'DYNIX_ptx': {
       '3.0.17': {
         basedir: 'sequent/dynix/3.0.17',
         srcdirs: %w[
@@ -1578,12 +1718,16 @@ collections = {
         basedir: 'sgi/gl2/w2.5',
         srcdirs: %w[man/?_man/man[1-8]]
       },
-      'W2.5r1': { # REVIEW incomplete? options, update only (1183 entries though)
+      'W2.5r1': { # REVIEW incomplete? options (missing fortran), update only (1183 entries though)
         basedir: 'sgi/gl2/w2.5r1',
         srcdirs: %w[
           update_only/usr/man/?_man/man[1-8]
           options/usr/man/?_man/man[1-8]
         ]
+      },
+      'W3.3.1': { # REVIEW provenance?
+        basedir: 'sgi/gl2/w3.3.1',
+        srcdirs: %w[usr/man/?_man/man[1-8]]
       },
       'W3.5r1': {
         basedir: 'sgi/gl2/w3.5r1',
@@ -1598,6 +1742,10 @@ collections = {
       }
     },
     'IRIX': {
+      '2.0': {
+        basedir: 'sgi/irix/2.0',
+        srcdirs: %w[usr/catman/?_man/cat[1-8]]
+      },
       '6.5.3f': { # TODO re-extraction
         basedir: 'sgi/irix/6.5.3f',
         srcdirs: %w[
@@ -1964,6 +2112,11 @@ collections = {
         basedir: 'sun/sunos/thirdparty/ixi_motif_devpack_1.2.2a',
         srcdirs: %w[man/man[135]]
       },
+      'Legato/PrestoServe_1.1': {
+        version_override: '4.0',
+        basedir: 'sun/sunos/thirdparty/legato_prestoserve_1.1',
+        srcdirs: %w[*.[0-9]*]
+      },
       'Lotus/1-2-3_1.0': {
         version_override: '4.0',
         basedir: 'sun/sunos/thirdparty/lotus_123_1.0',
@@ -2033,10 +2186,16 @@ collections = {
         srcdirs: %w[doc]
         # TODO nroff for terminal (short screen, 24 or 25 line page length)
       },
+      'SAS/C_370_5.50.12': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/thirdparty/sas_c_370_5.50.12',
+        srcdirs: %w[man1]
+      },
       'Transarc/AFS_3.2': {
         version_override: '4.1.4',
         basedir: 'sun/sunos/thirdparty/transarc_afs_3.2',
         srcdirs: %w[man/man1]
+        # TODO .TH footer (not a revision date)
       }
     },
     'SunOS': {

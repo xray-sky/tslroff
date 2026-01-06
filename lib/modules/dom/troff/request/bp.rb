@@ -18,8 +18,8 @@
 # breaks. TODO can be suppressed with '
 #
 
-module Troff
-  def req_bp(_argstr = '', breaking: true)
+class Troff
+  def bp(_argstr = '', breaking: true)
     warn 'explicit page break. check paragraph fill.'
   end
 end

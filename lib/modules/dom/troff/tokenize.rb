@@ -11,7 +11,7 @@
 # these methods are _not_ destructive of s
 #
 
-module Troff
+class Troff
 
 # return one or more input characters.
 # \P counts as one character, as does \*(xx.
@@ -41,6 +41,7 @@ module Troff
           when '"'                     then s[1..-1]
           when 'z'                     then get_printing_char(s[1..-1])
           when '('                     then get_char(s[1..-1], count: 2)
+          when 'n'                     then get_reg_str(s[1..-1])
           when 'f', 'g', 'k', 'n', '*' then get_def_str(s[1..-1])
           when 's'                     then get_size_str(s[1..-1])
           when 'b', 'h', 'l', 'o', 'v', 'w', 'x',
@@ -52,10 +53,21 @@ module Troff
 
 # return one definition
 # either a single character, or a two-character definition preceeded by (
-# as accepted by \f, \g, \k, \n, \*, \(, etc.
+# as accepted by \f, \g, \k, \*, \(, etc.
 # \n may have a + or - in front of the register name
 
   def get_def_str(s)
+    req = get_char(s)
+    n = 1
+    req << get_char(s[n..-1], count: 2) if req.end_with? '('
+    req
+  end
+
+# return one register
+# either a single character, or a two-character definition preceeded by (
+# may have a + or - in front of the register name
+
+  def get_reg_str(s)
     req = get_char(s)
     n = 1
     req << get_char(s[n]) and n = 2 if %[- +].include? req
@@ -120,7 +132,6 @@ module Troff
     end
     req << s.slice!(0, get_char(s).length)
   end
-end
 
 # get one expression
 # used for \l to read a width
@@ -129,3 +140,5 @@ end
     #s.scan(/^[-|]?[\d.]+[cimnPpuv]?/).first
     s.scan(%r(^[-|]?[\d\.cimnPpuv]+|[-+/*%<>=&:]+)).first
   end
+
+end

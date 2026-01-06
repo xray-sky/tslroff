@@ -21,8 +21,8 @@
 #  TODO implement something (...?)
 #
 
-module Troff
-  def req_lg(_argstr = '', breaking: nil)
+class Troff
+  def lg(_argstr = '', breaking: nil)
     # TODO: whoops
     warn "unimplemented ligature mode #{_argstr.inspect}"
   end

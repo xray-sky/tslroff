@@ -12,8 +12,8 @@
 #                                     output).
 #
 
-module Troff
-  def req_tm(argstr = '', breaking: nil)
+class Troff
+  def tm(argstr = '', breaking: nil)
     warn(".tm: #{argstr}")
   end
 end

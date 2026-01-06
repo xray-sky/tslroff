@@ -9,7 +9,7 @@
 #       otherwise, it returns 0.
 #
 
-module Troff
+class Troff
   def esc_g(s)
     warn "use of \\g - #{s.inspect} (check)"
     s.slice!(0) if s.start_with?('(')

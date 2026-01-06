@@ -1,6 +1,9 @@
 class Font
   class R < Font
-    def tag ; nil ; end
+    # prevent losing styles (e.g. font size - see eqn sub/superscripts) on R fonts
+    def tag
+      css_styles ? 'span' : nil
+    end
     def css_class ; nil ; end
   end
   class I < Font

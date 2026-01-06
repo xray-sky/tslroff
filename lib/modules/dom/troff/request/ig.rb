@@ -22,8 +22,8 @@
 #  REVIEW ^^ still?
 #
 
-module Troff
-  def req_ig(argstr = '', breaking: nil)
+class Troff
+  def ig(argstr = '', breaking: nil)
     delim = argstr.split.first || '.'
     # like .de, it's not actually a method invocation
     # and in fact '.ig foooobar' will .ig until '.foooobar' occurs

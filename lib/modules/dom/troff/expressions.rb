@@ -66,7 +66,7 @@
 # level of precision may be achieved by mixing scales within expressions.
 #
 
-module Troff
+class Troff
 
   @@units_per_inch = 1200	# REVIEW: does this even matter?
 

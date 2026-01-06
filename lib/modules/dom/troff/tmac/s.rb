@@ -8,7 +8,9 @@
 #   ...everything!
 #
 
-module Troff
+class Troff
+  module Macros
+    module S
 
   define_method 'RT' do |*args| # reset everything to normal state
   end
@@ -224,7 +226,7 @@ module Troff
   end
 
   define_method 'TA' do |*args| # tabs set in ens or chars
-    req_ta(args.join('n ') + 'n')
+    ta(args.join('n ') + 'n')
   end
 
   define_method 'SM' do |*args| # make smaller size
@@ -233,11 +235,11 @@ module Troff
   end
 
   define_method 'LG' do |*args| # make larger size
-    req_ps '+2'
+    ps '+2'
   end
 
   define_method 'NL' do |*args| # return to normal size
-    req_ps '\\n(PS'
+    ps '\\n(PS'
   end
 
   define_method 'DA' do |*args| # force date; ND - no date or new date.
@@ -386,14 +388,14 @@ module Troff
   end
 
   define_method 'QS' do |*args|
-    req_br
+    br
     send 'LP'
-    req_in '+\\n(QIu'
+    in '+\\n(QIu'
   end
 
   define_method 'QE' do |*args|
-    req_br
-    req_in '-\\n(QIu'
+    br
+    send 'in', '-\\n(QIu'
     send 'LP'
   end
 
@@ -432,14 +434,14 @@ module Troff
   end
 
   define_method 'AT' do |*args|
-    req_nf
-    req_sp
+    nf
+    sp
     parse 'Attached:'
   end
 
   define_method 'CT' do |*args|
-    req_nf
-    req_sp
+    nf
+    sp
     parse args.any? ? "Copy to #{args[0]}:" : 'Copy to:'
   end
 
@@ -584,4 +586,6 @@ module Troff
   end
 
 
+end
+end
 end

@@ -8,7 +8,7 @@
 #   appears as though an otherwise uninitialized register has a value of 0
 #
 
-module Troff
+class Troff
   def esc_n(s)
     incr = case s.slice!(0)
            when '+' then :incr

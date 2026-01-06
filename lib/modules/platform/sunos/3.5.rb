@@ -23,19 +23,17 @@ module SunOS_3_5
     when 'default.1'
       k.instance_variable_set '@manual_entry', '_default'
     when 'erf.3m'
-      src = k.instance_variable_get '@source'
       # troff switches font size to do the baseline shift, and I can't get that in html.
       # the ouput shift is in em, at the (smaller) size of the outputted text.
-      src.lines[30].gsub!(/\\s10/, "\\s12")
-      src.lines[30].gsub!(/(\\u)/, '\\v@-0.5v@')
-      src.lines[30].gsub!(/(\\d)/, '\\v@0.5v@')
+      k.patch_line(30, /\\s10/, '\s12', global: true)
+      k.patch_line(30, /(\\u)/, '\\v@-0.5v@', global: true)
+      k.patch_line(30, /(\\d)/, '\\v@0.5v@', global: true)
     when 'lgamma.3m' # REVIEW gamma.3m? (doesn't exist, so isn't a problem?)
-      src = k.instance_variable_get '@source'
       # troff switches font size to do the baseline shift, and I can't get that in html.
       # the ouput shift is in em, at the (smaller) size of the outputted text.
-      src.lines[26].gsub!(/\\s10/, "\\s12")
-      src.lines[26].gsub!(/(\\u)/, '\\v@-0.5v@')
-      src.lines[26].gsub!(/(\\d)/, '\\v@0.5v@')
+      k.patch_line(26, /\\s10/, '\s12', global: true)
+      k.patch_line(26, /(\\u)/, '\\v@-0.5v@', global: true)
+      k.patch_line(26, /(\\d)/, '\\v@0.5v@', global: true)
     when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
       raise ManualIsBlacklisted, 'not a manual entry'
     when 'eqn.eqn', 'eqnchar.eqn'

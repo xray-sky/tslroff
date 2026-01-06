@@ -65,7 +65,8 @@ template = File.read("#{assets}/manual.erb")
 loop do
   file = files.next
   ifile = File.basename(file)
-  src = Manual.new(file, os, ver)
+  #src = Manual.new(file, os, ver)
+  src = Manual.new(file, vendor_class: UNIX::V6)
 
   # TODO defining this here, after just a Manual.new, means I can't override odir/manual_entry
   #       and that I'm married to parse_title in source_init. I want to delay this until after
@@ -83,7 +84,7 @@ loop do
   # TODO needs 50% more directory structure. get it back from Manual after parsing (name, section).
   #ofile = "#{odir}/#{src.manual_entry}.html"
 
-  if src.symlink?
+  if src.link?
     new_link = src.retarget_symlink
     begin
       File.symlink(new_link[:target], "#{odir.call}/#{new_link[:link]}") if new_link

@@ -9,8 +9,10 @@
 # TODO:
 #
 
-module DomainIX_SR9_5
+class DomainIX
+  class SR9_5
 
+=begin
   def self.extended(k)
     k.instance_variable_set '@lines_per_page', 66	# REVIEW: at least for /IX
     k.instance_variable_set '@related_info_heading', 'RELATED INFORMATION'
@@ -24,9 +26,28 @@ module DomainIX_SR9_5
       raise ManualIsBlacklisted, 'not a manual entry'
     end
   end
+=end
+    class Nroff < ::DomainIX::Nroff
 
-  def page_title
-    super << " Domain/IX SR9.5"
+      def initialize(source)
+        @related_info_heading ||= 'RELATED INFORMATION'
+        super(source)
+      end
+
+      def source_init
+        case @source.file
+        when 'root.3m' then raise ManualIsBlacklisted, 'not a manual entry'
+        end
+        super
+      end
+
+      def page_title
+        super << " Domain/IX SR9.5"
+      end
+
+    end
+
+    class Troff < ::DomainIX::Troff ; end
+
   end
-
 end

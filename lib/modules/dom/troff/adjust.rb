@@ -4,7 +4,7 @@
 # ---------------
 #
 
-module Troff
+class Troff
 
   private
 

@@ -3,12 +3,10 @@
 #
 #
 # Manual class
-# Just a delegation to input format specific methods
-#
-# TODO
-# √ at some point I broke the way overriding @magic from platform/version overrides was working
+#  interface specification for format-specific implementations
 #
 
+require 'forwardable'
 require 'pathname'
 require_relative 'block'
 require_relative 'source'
@@ -25,61 +23,31 @@ require_relative 'styles/tab'
 
 ManualIsBlacklisted = Class.new(RuntimeError)
 
-class Manual
+class TextFormatter
+  extend Forwardable
 
-  attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
-  attr_reader   :platform, :version, :magic,
-                :manual_entry, :manual_section, :output_directory,
-                :language, :lines, :links
+  attr_reader :input_line_number, :page_title, :manual_entry, :manual_section, :output_directory
+  def_delegators :@source, :patch, :patch_line, :patch_lines
 
-  def initialize(file, os, ver)
-    @platform = os
-    @version  = ver
-    @input_filename   = File.basename(file)
-    @source_dir       = File.dirname(file)
-    # REVIEW why did I stop initializing these? - because I wanted them to happen in parse_title
-    #@manual_entry     = String.new
-    #@manual_section   = String.new
-    #@output_directory = String.new
-    @manual_entry     = @input_filename
-    @language         = 'en' # English
+  def initialize(source)
+    @input_line_number = 0
+    @source = source
 
-    @document = []
-    @related  = []
+    @language      ||= 'en' # English
+    @manual_entry  ||= ''
+    @related       ||= []
+    @document      ||= []
+    @current_block ||= Block.new
 
-    @symlink = File.readlink(file) if File.symlink?(file)
-    @source = Source.new(file)
-    @current_block = Block.new
-
-    doctype_extend
-
-    @lines = @source.lines.each
-    source_init
-  rescue Errno::ENOENT, Errno::EISDIR
-    # these things should still be exceptions, if we aren't dealing with a symlink
-    raise unless @symlink
-
-    # broken symlink (or symlink to directory) -- defer this to platform override code
-    # don't rely on anything that needs @source! (magic, parse_title, etc.)
-    @lines = [].each
-    doctype_extend
-  end
-
-  def symlink?
-    !@symlink.nil?
+    @lines ||= @source.lines.each
   end
 
   def warn(msg)
-    super("#{@input_filename} [#{input_line_number}]: #{msg}")
+    super("#{@source.file} [#{input_line_number}]: #{msg}")
   end
 
   def page_title
     "#{@manual_entry}(#{@manual_section}) &mdash; #{@platform} #{@version}"
-  end
-
-  def output_filename
-    # REVIEW maybe this method also useful for related/symlink problems ?
-    @manual_entry.tr('/', '_') # for coping with VMS pages e.g. EDIT vs. /EDIT
   end
 
   def apply(&block)
@@ -93,6 +61,73 @@ class Manual
     retry
   rescue ImmutableStyleError => e
     warn "!!! rescuing #{e.class.name} (??)"
+  end
+
+end
+
+require_relative '../modules/dom/nroff'
+require_relative '../modules/dom/troff'
+#require_relative '../modules/dom/html'
+#require_relative '../modules/dom/unknown'
+
+#warn "vendor:"
+[ "#{File.dirname(__FILE__)}/../modules/platform/unix.rb", Dir.glob("#{File.dirname(__FILE__)}/../modules/platform/unix/*.rb") ].flatten.each do |i|
+#[ "#{File.dirname(__FILE__)}/../modules/platform/irix.rb" ].flatten.each do |i|
+  #warn i
+  require i
+end
+
+class Manual
+  extend Forwardable
+
+  attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
+  attr_reader   :platform, :version, :magic,
+                #:manual_entry, :manual_section, :output_directory,
+                :language, :lines, :links
+  def_delegators :@source, :patch, :patch_line, :patch_lines, :link?
+  def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory
+
+  def initialize(file, vendor_class: nil, source_args: {})
+    @input_filename = file
+    @input_line_number = 0
+    @source = Source.new(file, source_args)
+    document_class = Kernel.const_get(vendor_class ? "#{vendor_class}::#{@source.magic}" : "::#{@source.magic}")
+
+    #warn "#{document_class} #{@input_filename}"
+    @document ||= document_class.send(:new, @source)#.tap {|x| warn x}
+
+    #@platform ||= os
+    #@version  ||= ver
+    # REVIEW why did I stop initializing these? - because I wanted them to happen in parse_title
+    #@manual_entry     = String.new
+    #@manual_section   = String.new
+    #@output_directory = String.new
+    #@manual_entry     ||= @source.file
+    @language         ||= 'en' # English
+
+    @document ||= []
+    @related  ||= []
+
+    @source ||= Source.new(file)
+    @current_block ||= Block.new
+
+    #doctype_extend
+
+    @lines ||= @source.lines.each
+    @document.source_init # TODO this is why I have to ||= the init. do better.
+  rescue Errno::ENOENT, Errno::EISDIR
+    # these things should still be exceptions, if we aren't dealing with a symlink
+    raise unless @symlink
+
+    # broken symlink (or symlink to directory) -- defer this to platform override code
+    # don't rely on anything that needs @source! (magic, parse_title, etc.)
+    @lines ||= [].each
+    #doctype_extend
+  end
+
+  def output_filename
+    # REVIEW maybe this method also useful for related/symlink problems ?
+    manual_entry.tr('/', '_') # for coping with VMS pages e.g. EDIT vs. /EDIT
   end
 
   # Try to establish some simplistic default behavior for
@@ -126,6 +161,7 @@ class Manual
     warn "encountered unsupported link type, #{@source_dir}/#{@input_filename} => #{@symlink}"
   end
 
+=begin
   def doctype_extend
     begin
       require_relative "../modules/platform/#{@platform.downcase}.rb"
@@ -151,4 +187,5 @@ class Manual
     extend platform_module if platform_module
     extend version_module  if version_module
   end
+=end
 end

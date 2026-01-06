@@ -1,12 +1,16 @@
-# de.rb
+# rm.rb
 # -------------
 #   troff
 # -------------
+#
+#   remove request, macro, or string
 #
 #   §7.5
 #
 # Request       Initial   If no     Notes   Explanation
 #  form          value    argument
+#
+# .am xx yy     -         yy=..     -       Append to macro (append version of .de)
 #
 # .de xx yy     -         yy=..     -       Define or redefine the macro xx. The contents
 #                                           of the macro begin on the next line. Input
@@ -21,8 +25,19 @@
 #                                           be concealed as "\\.." which will copy as
 #                                           "\.." and be reread as "..".
 #
-# .am xx yy     -         yy=..     -       Append to macro (append version of .de)
+# .as xx string  ignored  -         -       Append string to xx (append version of .ds)
 #
+# .ds xx string  ignored  -         -       Define a string 'xx' containing 'string'.
+#                                           Any initial double-quote in 'string' is
+#                                           stripped off to permit initial blanks.
+#
+#
+#  .as can be used on a string that doesn't already exist.
+#  Undefined strings (or ones that have been .rm'ed) output as blank.
+#
+#  groff ignores invalid names (e.g. '.ds xxfoobar crap' will define nothing)
+#  troff just takes the first two characters as the request name (above will define 'xx' as 'foobar crap')
+#  REVIEW will we ever need to accomodate this?
 #
 #   TODO  Request, macro, and string names share the same name list.
 #         Macro and string names may be one or two characters long and may
@@ -42,9 +57,52 @@
 #
 #    REVIEW does it work correctly with non-default delim?
 #
+# Request  Initial  If no     Notes   Explanation
+#  form     value   argument
+#
+#  .rm xx     -     ignored   u       Remove request, macro, or string. The name xx is
+#                                     removed from the name list and any related storage
+#                                     is freed. Subsequent references will have no effect.
+#
+# We have separate namespaces for requests/macros and strings. In practice probably it
+# doesn't matter, since troff input must assume they're the same namespace. Whatever
+# we find, disable it.
+#
+#
+#  REVIEW fpr.1 [AOS-4.3] what is even going on there?!
+#
+# .rn xx yy     -         ignored   -       Rename request, macro, or string xx to yy.
+#                                           If yy exists, it is first removed.
+#
+#   TODO  Request, macro, and string names share the same name list.
+#         Macro and string names may be one or two characters long and may
+#         usurp previously defined request, macro, or string names. Any
+#         of these entities may be renamed with .rn or removed with .rm
+#
 
-module Troff
-  def req_am(argstr = '', breaking: nil)
+class Troff
+  def as(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    name = argstr.slice!(0, 2).rstrip
+    defstr = argstr.sub(/^ *"?/, '') # a leading tab is preserved
+
+    @state[:named_string][name] ||= String.new
+    #@state[:named_string][name] << unescape(args.sub(/^"/, ''), :copymode => true)
+    @state[:named_string][name] << defstr
+    #warn "appended to named string #{name.inspect}: #{@state[:named_string][name].inspect}"
+  end
+
+  def ds(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    name = argstr.slice!(0, 2).rstrip
+    defstr = argstr.sub(/^ *"?/, '') # a leading tab is preserved
+
+    #@state[:named_string][name] = unescape(defstr.sub(/^"/, ''), copymode: true)
+    @state[:named_string][name] = defstr
+    #warn "defined string #{name} as #{@state[:named_string][name].inspect}" if name.start_with? '%'
+  end
+
+  def am(argstr = '', breaking: nil)
     return nil if argstr.empty?
     name = argstr.slice!(0, 2).strip
     delim = argstr.sub(/^ */, '').slice(0, 2)
@@ -57,7 +115,7 @@ module Troff
     begin
       # find the old method - might be a request, or a macro
       oldmethod = name
-      oldmethod = "req_#{name}" if REQUESTS.include? name
+      #oldmethod = "req_#{name}" if REQUESTS.include? name
 
       savemethod = "#{oldmethod}#{@input_filename}#{@register['.c']}"
       define_singleton_method savemethod, method(oldmethod)
@@ -82,11 +140,11 @@ module Troff
       end
     rescue NameError # we didn't already have one to append to
       warn ".am couldn't find #{name} to append - delegating to .de"
-      req_de "#{name} #{delim}", breaking: nil
+      de "#{name} #{delim}", breaking: nil
     end
   end
 
-  def req_de(argstr = '', breaking: nil)
+  def de(argstr = '', breaking: nil)
 
     (name, delim) = argstr.split
     return nil unless name
@@ -132,7 +190,7 @@ module Troff
       odol = @register['.$'].dup
       @register['.$'] = Register.new(args.count, nil, :ro => true)
       @register['.c'] = Register.new(0, 1, :ro => true)
-      @input_filename << " [#{opos}] => #{__callee__}"
+      #@input_filename << " [#{opos}] => #{__callee__}" # TODO make this work properly across class refactoring (finish separating input filename / output filename, class concern, etc.)
       @lines = macro.each
 
       loop do
@@ -154,5 +212,63 @@ module Troff
     end
   end
 
-end
+  def rm(argstr = '', *args, breaking: nil)
+    return nil if argstr.empty?
+    arg = argstr.slice(0, 2).strip
+    #@state[:named_string].delete(string) or define_singleton_method("req_#{string}") { |*args| true } # REVIEW instance_eval(':undef req_foo') instead?
+    #warn arg.inspect
+    @state[:named_string].delete(arg) or instance_eval("undef #{arg.to_sym.inspect}") # REVIEW need to update Requests?
+    rescue NameError
+      warn "attempt to .rm undefined macro #{arg}"
+  end
 
+  def rn(argstr = '', breaking: nil)
+    oldname = argstr.slice!(0, 2).strip
+    newname = argstr.lstrip!.slice(0, 2)
+    return nil if oldname.empty? or newname.empty?
+
+    # since we don't share the same namelist...
+    if @state[:named_string][oldname]
+      warn ".rn renaming string #{name.inspect} as #{newname.inspect}"
+      @state[:named_string][newname] = @state[:named_string][oldname]
+      @state[:named_string].delete oldname
+      return true
+    end
+
+    # find the old method - might be a request, or a macro
+    oldmethod = oldname
+    #oldmethod = "req_#{oldname}" if REQUESTS.include? oldname
+    # TODO correctly update the Requests array
+
+    if respond_to? oldmethod
+      warn ".rn renaming request/macro #{oldname.inspect} as #{newname.inspect}"
+      define_singleton_method newname, method(oldmethod)
+      # if it's one of ours (not one we .defined at runtime), it's
+      # not a singleton method, and removing it kills it entirely
+      # instead, _pretend_ it's gone. parse rescues NoMethodError,
+      # so the effect should be the same.
+      #define_singleton_method(oldmethod) { |*_args| raise NoMethodError }
+      # -- surprise (test this, it removes object singleton_methods;
+      #    none of the other conventional wisdom about singleton_class.remove_method
+      #    would work; the methods are instance_methods of the singleton_class that
+      #    remove_method wouldn't touch) ALSO update .rm. or better, implement that
+      #    and call it here
+      instance_eval "undef #{oldmethod.to_sym.inspect}"
+      return true
+    end
+
+    warn ".rn couldn't find #{oldname.inspect} to rename as #{newname.inspect}"
+  end
+
+  def init_ds
+    @state[:named_string] = {
+      'R'  => '&reg;',
+      'S'  => "\\s#{Font.defaultsize}",
+      'lq' => '&ldquo;',
+      'rq' => '&rdquo;',
+      '.T' => 'html'   # name of output device
+    }
+    true
+  end
+
+end

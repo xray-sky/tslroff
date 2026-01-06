@@ -28,7 +28,11 @@
 #    -- try to put section breadcrumbs in anchors, maybe
 #   maybe try to detect monospace vs. paragraph, table, example, external links (if there are any?)
 #   maybe try to detect in-text links (e.g. "See the SET command for [...]")
-#   ANSI escapes (e.g. tpuhelp.hlb)
+#   ANSI escapes (e.g. tpuhelp.hlb; [7m in aclhelp.hlb) - log/report on usage
+#      [m / [0m - clear		[1m - bold		[2m - low intensity		[4m - bold
+#      [5m - blink			[7m - reverse	[8m - invisible
+#   box drawing w/typebox? (e.g. tpuhelp.hlb)
+#   translate filenames with % (e.g. debug/$label)
 #
 # REVIEW whether the µVMS 4.6 RUNOFF help refs actually cut out the extra parameter text (/FOO[=bar])
 #
@@ -134,6 +138,8 @@ module VMS
     # TODO increase heading level of qualifiers by one (...probably?)
     #        ==> counterargument: exchnghlp (qualifiers are not subheads of Description)
     #            maybe only do this if we are children of a section named "Qualifiers"?
+    # TODO get qualifier alts in heading (all lines starting with / until first that doesn't);
+    #      can separate with <br /> for intended effect -- see µVMS 4.6 helplib e.g. /LIBRARY/HELP
     depth = mod.depth
     pagelinks = {}
     modulehead = ''

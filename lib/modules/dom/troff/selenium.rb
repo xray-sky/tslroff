@@ -21,7 +21,7 @@
 
 require 'selenium-webdriver'
 
-module Troff
+class Troff
 
   private
 

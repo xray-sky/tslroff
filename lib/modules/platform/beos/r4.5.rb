@@ -31,8 +31,7 @@ end
 module BeOS_R4_5
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
-    when 'rcs.html'
-      k.instance_variable_get('@source').lines[0].sub!(/^\s+{/, '')
+    when 'rcs.html' then k.patch_line(0, /^\s+{/, '')
     when 'doc'
       # this is a plain text file. correctly magicked, but no title, etc.
       k.define_singleton_method(:parse_title, proc { 'Synchronization: Semaphores vs. Spinlocks' })
@@ -43,15 +42,13 @@ module BeOS_R4_5
       # maybe the features are regular enough we can just... fudge it.
       # * none of the pages have titles
       # * all have navigation content before <body>
-      source_lines = k.instance_variable_get('@source').lines
-      source_lines.each do |l|
-        # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
-        l.gsub!(%r{(</?)kbd>}, '\1tt>')
-        # looks like these are the only two external links appearing in the metrowerks manual
-        l.sub!(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1')
-        l.sub!(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1')
-      end
-      source_lines.delete_at(source_lines.index { |n| n.match?(%r{^\s*<body bgcolor=#ffffff BACKGROUND="images/arnoldbg.gif">\s*$}) })
+      #
+      k.patch(%r{^\s*<body bgcolor=#ffffff BACKGROUND="images/arnoldbg.gif">\s*$}, '')
+      # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
+      k.patch(%r{(</?)kbd>}, '\1tt>', global: true)
+      # looks like these are the only two external links appearing in the metrowerks manual
+      k.patch(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1', global: true)
+      k.patch(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1', global: true)
       k.instance_variable_set('@content_start', source_lines.index { |l| l.match? %r{<a name="Top">} })
       k.instance_variable_set('@content_end', source_lines.index { |l| l.match? %r{<a name="Bottom">} })
       k.define_singleton_method :to_html, k.method(:to_html_metrowerks)

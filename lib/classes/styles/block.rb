@@ -10,6 +10,11 @@ class Block
   class Inline < Block
   end
 
+  # non-printing, non-comment (used by eqn to collect block-form eqn text)
+  class Null < Block::Inline
+    def to_html ; end
+  end
+
   class Bare < Block::Inline
     def to_html
       @text
@@ -187,7 +192,9 @@ class Block
       # TODO something better.
       #      something not tied to Block::Paragraph.
       #      something that can be overridden.
+      #        => REVIEW THIS CLASS CLONED IN UNIX V6 for "syscall (II)" style refs
       # NOTE Nroff Line class has its own link rewrite
+
       t = @text.collect(&:to_html).join
       t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
         caps = Regexp.last_match

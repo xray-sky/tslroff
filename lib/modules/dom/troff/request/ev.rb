@@ -53,9 +53,9 @@
 #      TODO - everything
 #
 
-module Troff
+class Troff
   # how is this different from .ab? just exit code?
-  def req_ev(argstr = '', breaking: nil)
+  def ev(argstr = '', breaking: nil)
     warn ".ev wants to switch environments (#{argstr.inspect})‘"
   end
 end

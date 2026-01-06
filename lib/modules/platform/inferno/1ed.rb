@@ -34,42 +34,27 @@ module Inferno_1ed
     case k.instance_variable_get '@input_filename'
     when 'index.htm'
       k.define_singleton_method(:page_title, proc { 'Inferno Reference &mdash; Inferno 1ed' })
-      k.instance_variable_get('@source').lines[0].sub!(%r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
+      k.patch_line(0, %r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
     when 'cmd6.htm', 'md_math1.htm',
          'md_sec4.htm', 'md_sec8.htm', 'md_sec9.htm', 'md_sec12.htm', 'md_sec13.htm', 'md_sec14.htm',
          'md_sec19.htm', 'md_sys1.htm', 'md_sys4.htm'
-      k.instance_variable_get('@source').lines[7].gsub!(%r{</a>}, '') << '</a>'
-      k.instance_variable_get('@source').lines[9].sub!(%r{^<pre>}, '') # _sec14 only
-    when 'devices.htm'
-      k.instance_variable_get('@source').lines[201].sub!(%r{^<em>}, '</a>')
-    when 'md_misc4.htm'
-      k.instance_variable_get('@source').lines[53].sub!(%r{^<em>}, '</a>')
-    when 'md_pref.htm'
-      k.instance_variable_get('@source').lines[55].sub!(%r{^<em>}, '</a>')
-    when 'md_pref4.htm'
-      k.instance_variable_get('@source').lines[76].sub!(%r{^<em>}, '</a>')
-    when 'md_sys6.htm'
-      k.instance_variable_get('@source').lines[27].sub!(%r{^<em>}, '</a>')
-    when 'md_sys7.htm'
-      k.instance_variable_get('@source').lines[162].sub!(%r{^<em>}, '</a>')
-    when 'md_sys8.htm'
-      k.instance_variable_get('@source').lines[22].sub!(%r{^<em>}, '</a>')
-    when 'md_sys10.htm'
-      k.instance_variable_get('@source').lines[84].sub!(%r{^<em>}, '</a>')
-    when 'md_sys11.htm'
-      k.instance_variable_get('@source').lines[218].sub!(%r{^<em>}, '</a>')
-    when 'md_sys15.htm'
-      k.instance_variable_get('@source').lines[20].sub!(%r{^<em>}, '</a>')
-    when 'proto.htm'
-      k.instance_variable_get('@source').lines[390].sub!(%r{^<em>}, '</a>')
-    when 'proto5.htm'
-      k.instance_variable_get('@source').lines[29].sub!(%r{^<em>}, '</a>')
-    when 'proto6.htm'
-      k.instance_variable_get('@source').lines[114].sub!(%r{^<em>}, '</a>')
-      k.instance_variable_get('@source').lines[117].sub!(%r{^<em>}, '</a>')
-      k.instance_variable_get('@source').lines[120].sub!(%r{^<em>}, '</a>')
-    when 'proto7.htm'
-      k.instance_variable_get('@source').lines[43].sub!(%r{^<em>}, '</a>')
+      k.patch_line(7, %r{</a>}, '', global: true)
+      k.patch_line(7, /$/, '</a>')
+      k.patch_line(9, %r{^<pre>}, '') # _sec14 only
+    when 'devices.htm'  then k.patch_line(201, %r{^<em>}, '</a>')
+    when 'md_misc4.htm' then k.patch_line( 53, %r{^<em>}, '</a>')
+    when 'md_pref.htm'  then k.patch_line( 55, %r{^<em>}, '</a>')
+    when 'md_pref4.htm' then k.patch_line( 76, %r{^<em>}, '</a>')
+    when 'md_sys6.htm'  then k.patch_line( 27, %r{^<em>}, '</a>')
+    when 'md_sys7.htm'  then k.patch_line(162, %r{^<em>}, '</a>')
+    when 'md_sys8.htm'  then k.patch_line( 22, %r{^<em>}, '</a>')
+    when 'md_sys10.htm' then k.patch_line( 84, %r{^<em>}, '</a>')
+    when 'md_sys11.htm' then k.patch_line(218, %r{^<em>}, '</a>')
+    when 'md_sys15.htm' then k.patch_line( 20, %r{^<em>}, '</a>')
+    when 'proto.htm'    then k.patch_line(390, %r{^<em>}, '</a>')
+    when 'proto5.htm'   then k.patch_line( 29, %r{^<em>}, '</a>')
+    when 'proto6.htm'   then k.patch_lines([114, 117, 120], %r{^<em>}, '</a>')
+    when 'proto7.htm'   then k.patch_line( 43, %r{^<em>}, '</a>')
     end
   end
 

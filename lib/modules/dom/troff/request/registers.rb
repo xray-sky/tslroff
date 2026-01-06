@@ -10,13 +10,25 @@
 # Request  Initial  If no     Notes   Explanation
 #  form     value   argument
 #
+#  .af R c  Arabic   -        -       Assign format c to register R. The available formats are
+#
+#                                       1   0,1,2,3,4,5,...
+#                                     001   000,001,002,003,004,005,...
+#                                       i   0,i,ii,iii,iv,v,...
+#                                       I   0,I,II,III,IV,V,...
+#                                       a   0,a,b,c,...,z,aa,bb,...,zz,aaa,...
+#                                       A   0,A,B,C,...,Z,AA,BB,...,ZZ,AAA,...
+#
+#                                     An Arabic format having N digits specifies a field width
+#                                     of N digits. The read-only registers and the width function
+#                                     are always Arabic.
+#
 #  .nr R ±N M -     -         u       The number register R is assigned the value ±N with
 #                                     respect to the previous value, if any. The increment
 #                                     for auto-incrementing is set to M.
 #
 #  incrementing is done when processing the \n escape, rather than at output, because
 #  it may be a positive or negative increment, or none at all
-#
 #
 #  if we set up an increment, and subsequently .nr without one, is it held? - yes.
 #
@@ -27,12 +39,27 @@
 #  - ignored. doesn't set anything. same as if no number passed at all.
 #  TODO which means bad interaction from to_u returning '0' in that case
 #
+#  Registers are always arabic until changed by .af
+#
+#  .rr R     -      ignored   -       Remove register R. If many registers are being
+#                                     created dynamically, it may become necessary to
+#                                     remove unneeded registers to recapture internal
+#                                     storage space for new registers.
+#
 
 require 'forwardable'
 
-module Troff
+class Troff
 
-  def req_nr(argstr = '', breaking: nil)
+  def af(argstr = '', breaking: nil)
+    (reg, fmt) = argstr.split
+    return nil unless reg and fmt
+    unless reg.match(/s[tb]/) or @register[reg].read_only?
+      @register[reg].format = fmt
+    end
+  end
+
+  def nr(argstr = '', breaking: nil)
     (reg, value, increment) = argstr.split
     return nil unless reg and value
 
@@ -45,6 +72,12 @@ module Troff
       end
       @register[reg].increment = increment.to_i if increment
     end
+  end
+
+  def rr(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    reg = reqstr.slice(0, 2).strip
+    @register.delete(reg)
   end
 
   def xinit_nr
@@ -74,7 +107,7 @@ module Troff
       '$$' => Register.new(Process.pid, ro: true),                        # process id of troff.
       '.$' => Register.new(0, ro: true),                                  # # of args avail at current macro level.
       '.A' => Register.new(0, ro: true),                                  # 1 in troff if -a option used; always 1 in nroff.
-      '.F' => Register.new(File.basename(@source.filename), ro: true),    # name of current input file.
+      '.F' => Register.new(File.basename(@source.file), ro: true),        # name of current input file.
       #.H                                                                 # avail horizontal resolution in u.
       '.L' => Register.new(1, ro: true),                                  # current line spacing parameter (.ls).
       #.P                                                                 # 1 if current page is being printed; otherwise 0.

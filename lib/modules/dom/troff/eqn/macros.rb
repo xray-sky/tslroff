@@ -4,19 +4,24 @@
 #
 #     Begin equation (eqn) processing
 #
-#     troff does not alter .EQ/.EN lines, so they may be defined in macro packages to get
+#     eqn does not alter .EQ/.EN lines, so they may be defined in macro packages to get
 #     centering, numbering, etc.
 #
 # TODO
 # √ correctly space adjust (or don't) - use eqn(1) [NEWS-os 4.2.1R] lines 246, 248, 250 to test.
 #   can something be done to the css to prevent breaking between Eqn and punctuation?
 #     eqn(1) [SunOS 3.5] can give e.g. a sub i sup 2 with , on the next line.
+#   .EQ/.EN is not line-by-line (words grouped with {} can span lines)
+#
 
 class EndOfEqn < RuntimeError ; end
 
-module Troff
+class Troff
+  module Macros
+    module Eqn
 
-  define_method 'EN' do |*_args|
+  define_method 'EN' do |*args|
+    warn ".EN received #{args.inspect} (why?)" unless args.empty?
     raise EndOfEqn
   end
 
@@ -25,12 +30,18 @@ module Troff
 
     @state[:eqn_gfont] ||= '2' # appears the default font is italic.
     @state[:eqn_gsize] ||= Font.defaultsize
+    @current_block = Block::Null.new
 
     loop do
       parse_eqn(next_line, inline: false)
     end
   rescue EndOfEqn => e
-    true
+    eqntext = @current_block.text.collect(&:text).collect(&:strip).join.tap{|x| warn "have eqntext #{x.inspect}"}
+    eqn_setup
+    gen_eqn eqn_parse_tree(eqntext).tap{|x| warn "have parse tree #{x.inspect}" }
+    eqn_restore
   end
 
+end
+end
 end

@@ -9,8 +9,9 @@
 # TODO
 #
 
-module DYNIX
+class DYNIX_ptx
 
+=begin
   def self.extended(k)
     k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
     k.instance_variable_set '@manual_entry',
@@ -23,82 +24,118 @@ module DYNIX
       raise ManualIsBlacklisted, 'not a manual entry'
     end
   end
+=end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        # tmac.an.new
-        footer: "\\*(]W",
-        ']D' => "UNIX Programmer's Manual", # default set by .TH
-        ']W' => '7th Edition', # default set by .TH
-        #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-        'V)' => ''
-      }
-    )
+  class Nroff < ::Nroff
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super(source)
+    end
+
+    def source_init
+      case @source.file
+      when 'Makefile' then raise ManualIsBlacklisted, 'not a manual entry'
+      end
+      super
+      @output_directory = "man#{@manual_section}"
+    end
   end
 
-  def init_tr
-    super
-    @state[:translate]['*'] = "\e(**"
+  class Troff < ::Troff
+
+    alias :LP :P
+
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super(source)
+    end
+
+    def source_init
+      case @source.file
+      when 'Makefile' then raise ManualIsBlacklisted, 'not a manual entry'
+      end
+      super
+      @output_directory = "man#{@manual_section}"
+    end
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          # tmac.an.new
+          footer: "\\*(]W",
+          ']D' => "UNIX Programmer's Manual", # default set by .TH
+          ']W' => '7th Edition', # default set by .TH
+          #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
+          'V)' => ''
+        }
+      )
+    end
+
+    def init_tr
+      super
+      @state[:translate]['*'] = "\e(**"
+    end
+
+    # .so with absolute path, headers in /usr/include
+    #def so(name, breaking: nil)
+    #  osdir = @source_dir.dup
+    #  @source_dir << '/..'
+    #  super(name, breaking: breaking)
+    #  @source_dir = osdir
+    #end
+
+    define_method 'TH' do |*args|
+      rm '}C' if @state[:named_string]['V)'].empty?
+      nr 'IN .5i'
+      ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
+      ds "]L #{args[2]}"
+      ds "]W Revision #{args[2]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+      ds "]D Dynix Programmer's Manual" unless @state[:named_string]['V)'].empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+
+      heading = "\\*(]H\\0\\0\\(em\\0\\0\\*(]D"
+      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
+    # tmac.an.new
+    define_method 'UC' do |v = '', *args|
+      ds(']W ' + case v
+                 when ''  then '3rd Berkeley Distribution'
+                 when '4' then '4th Berkeley Distribution'
+                 else "#{args[1]} #{args[0]} BSD".tap { |m| warn "REVIEW .UC #{v.inspect} / #{args.inspect}" } # REVIEW #{args[0]} #{v} BSD ??
+                 end
+            )
+    end
+
+    define_method 'VE' do |*_args|
+      warn ".VE can't yet draw margin characters (.mc)"
+    end
+
+    define_method 'VS' do |*_args|
+      warn ".VS can't yet draw margin characters (.mc)"
+    end
+
+    define_method 'Ps' do |*args|
+      warn "REVIEW .Ps #{args.inspect}"
+      ft '5'
+      sp
+      nf
+      send :in, '+0.5i'
+    end
+
+    define_method 'Pe' do |*args|
+      warn "REVIEW .Pe #{args.inspect}"
+      sp
+      fi
+      send :in, '-0.5i'
+      ft 'P'
+    end
+
   end
-
-  # .so with absolute path, headers in /usr/include
-  #def req_so(name, breaking: nil)
-  #  osdir = @source_dir.dup
-  #  @source_dir << '/..'
-  #  super(name, breaking: breaking)
-  #  @source_dir = osdir
-  #end
-
-  define_method 'TH' do |*args|
-    req_rm '}C' if @state[:named_string]['V)'].empty?
-    req_nr 'IN .5i'
-    req_ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
-    req_ds "]L #{args[2]}"
-    req_ds "]W Revision #{args[2]}"
-    req_ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-    req_ds "]D Dynix Programmer's Manual" unless @state[:named_string]['V)'].empty?
-    req_ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
-
-    heading = "\\*(]H\\0\\0\\(em\\0\\0\\*(]D"
-    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(heading: heading)
-  end
-
-  # tmac.an.new
-  define_method 'UC' do |v = '', *_args|
-    req_ds(']W ' + case v
-                   when ''  then '3rd Berkeley Distribution'
-                   when '4' then '4th Berkeley Distribution'
-                   else "#{args[1]} #{args[0]} BSD"
-                   end
-          )
-  end
-
-  define_method 'VE' do |*_args|
-    warn ".VE can't yet draw margin characters (.mc)"
-  end
-
-  define_method 'VS' do |*_args|
-    warn ".VS can't yet draw margin characters (.mc)"
-  end
-
-  define_method 'Ps' do |*args|
-    warn "REVIEW .Ps #{args.inspect}"
-    req_ft '5'
-    req_sp
-    req_nf
-    req_in '+0.5i'
-  end
-
-  define_method 'Pe' do |*args|
-    warn "REVIEW .Pe #{args.inspect}"
-    req_sp
-    req_fi
-    req_in '-0.5i'
-    req_ft 'P'
-  end
-
 end

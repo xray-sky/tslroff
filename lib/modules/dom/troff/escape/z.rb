@@ -44,7 +44,7 @@
 #   lgamma(3m) [SunOS 3.5] same issue - "\(is\d\s8\z0\s10\u\u\s8\(if"
 #
 
-module Troff
+class Troff
   def esc_z(s)
     pile = Block::Bare.new(text: Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup))
 =begin

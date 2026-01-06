@@ -32,9 +32,7 @@ module Interactive_3_2r4_1
     when /intro\.nfs\.(\d)/ # easier to just override these than mess with the regex
       k.instance_variable_set '@manual_entry', 'intro.nfs'
       k.instance_variable_set '@manual_section', Regexp.last_match[1]
-    when 'i596.7'
-      # misidentified as nroff
-      k.instance_variable_get('@source').lines[0].insert(0, '.\\"')
+    when 'i596.7' k.patch_line(0, /^/, '.\\"') # misidentified as nroff
     end
   end
 

@@ -6,7 +6,9 @@
 #   separate the preprocessor methods
 #
 
-module Troff
+class Troff
+  module Macros
+    module An
 
   def init_RS
     @register[')R'] = Register.new(0)
@@ -29,13 +31,13 @@ module Troff
   %w[B I].each do |a|
     define_method a do |*args|
       if args.any?
-        req_ft "#{@state[:fonts].index(a)}"
+        ft "#{@state[:fonts].index(a)}"
         parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
         #send '}N' # see note re: \n()E below
         send '}f'
       else
-        #req_it('1', '}N')
-        req_it '1 }f'
+        #it('1', '}N')
+        it '1 }f'
       end
     end
   end
@@ -47,8 +49,8 @@ module Troff
   end
 
   define_method '}f' do |*_args|
-    req_ps "#{Font.defaultsize}"
-    req_ft '1'
+    ps "#{Font.defaultsize}"
+    ft '1'
   end
 
   # the same, whether .B or .I
@@ -57,8 +59,8 @@ module Troff
   # REVIEW do we _need_ to use )E?
 
   define_method '}N' do |*_args|
-    req_br if @register[')E'] > 0
-    req_di
+    br if @register[')E'] > 0
+    di
     send '}f' if @register[')E'].zero? # .}S
     send '}1' if @register[')E'] == 1 # .TP
     send '}2' if @register[')E'] == 2 # .SH, .SS
@@ -68,20 +70,20 @@ module Troff
   #
   # recursive .}S causes bad interactions with stray double-quotes :: restore(1m) [ HP-UX 10.20 ]
   # this means we have to be intentional about the way things like .if '\f2'' evaluate true
-  #  - defer our conditionals to req_if
+  #  - defer our conditionals to if
 
   define_method '}S' do |*args|
-    #req_ds "]F #{(args[0] == '2' and !args[4].empty?) ? '\\^' : ''}"
+    #ds "]F #{(args[0] == '2' and !args[4].empty?) ? '\\^' : ''}"
     #if !args[3].empty?
     #  parse %(.}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}").tap { |n| warn ".}S :: #{n.inspect}" }
     #else
     #  parse args[2]
     #end
 
-    req_ds ']F'
-    req_if(%(!\007#{args[4]}\007\007 .ds ]F\\^), quiet: true) if args[0] == '2'
-    req_ie(%(!\007#{args[3]}\007\007 .}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}"), quiet: true)
-    req_el args[2]
+    ds ']F'
+    send(:if, %(!\007#{args[4]}\007\007 .ds ]F\\^), quiet: true) if args[0] == '2'
+    ie(%(!\007#{args[3]}\007\007 .}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}"), quiet: true)
+    el args[2]
     send '}f'
   end
 
@@ -100,7 +102,7 @@ module Troff
 #     Restore default tab settings (every 7.2en in troff(1), 5en in nroff(1))
 
   define_method 'DT' do |*_args|
-    req_ta('.5i 1i 1.5i 2i 2.5i 3i 3.5i 4i 4.5i 5i 5.5i 6i 6.5i')
+    ta('.5i 1i 1.5i 2i 2.5i 3i 3.5i 4i 4.5i 5i 5.5i 6i 6.5i')
   end
 
 #   .HP in			Begin paragraph with hanging indent.
@@ -284,8 +286,8 @@ module Troff
 #  turns fill mode on, if it's off (at least on GL2-W2.5 - REVIEW)
 
   define_method 'SH' do |*args|
-    req_fi
-    req_nr(')R 0')
+    fi
+    nr(')R 0')
     xinit_in
     #apply { @current_block.type = :sh }
     @current_block = blockproto Block::Head
@@ -301,12 +303,12 @@ module Troff
 #
 
   define_method 'SM' do |*args|
-    req_ps "#{Font.defaultsize - 1}"
+    ps "#{Font.defaultsize - 1}"
     if !args[0]&.empty?
       parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
       send '}f'
     else
-      req_it('1 }f')
+      it('1 }f')
     end
   end
 
@@ -317,8 +319,8 @@ module Troff
 # REVIEW .ti \n()Ru+\n(INu - sunos tmac.an
 
   define_method 'SS' do |*args|
-    req_fi
-    req_nr(')R 0')
+    fi
+    nr(')R 0')
     xinit_in
     #apply { @current_block.type = :ss }
     @current_block = blockproto Block::SubHead
@@ -383,9 +385,9 @@ module Troff
                                     # it will automatically when we fix .nr to abort non-numeric and make this follow tmac.an
     # can't do this anymore, after rewriting the req/macro parsing to work with Interactive
     # TODO probably ought to eventually rewrite closer to actual tmac.an with \n()E, .ns, .di, and .}N
-    #req_it('1', :finalize_TP, indent)
+    #it('1', :finalize_TP, indent)
     @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
-    req_it '1 }1'
+    it '1 }1'
     @document << blockproto
     @current_block = Block::Bare.new # for receiving the tag text
   end
@@ -408,12 +410,12 @@ module Troff
 
       # reset the font (in case it wasn't reverted cleanly in the tag - nis+(1) [SunOS 5.5.1])
       # so our unit conversions aren't affected.
-      req_ft '1'
-      req_ps "#{Font.defaultsize}"
+      ft '1'
+      ps "#{Font.defaultsize}"
 
       # is the tag wider than 3 points less than the indent?
       if @register[')I'] < tag_width + @state[:tag_padding]
-        req_br
+        br
       else
         tab_width = to_em("#{@register[')I']}u")
 
@@ -423,4 +425,7 @@ module Troff
   end
 
   alias_method 'PP', 'P'
+
+end
+end
 end

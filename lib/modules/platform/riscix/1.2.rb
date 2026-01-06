@@ -37,9 +37,7 @@ module RISCiX_1_2
 
   def self.extended(k)
     case k.instance_variable_get '@input_filename'
-    when 'sticky.8'
-      # misidentified as nroff
-      k.instance_variable_get('@source').lines[0].insert(0, '.\\"')
+    when 'sticky.8' then k.patch_line 0, /^/, '.\\"'  # misidentified as nroff
     end
   end
 

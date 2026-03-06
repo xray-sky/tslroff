@@ -16,23 +16,28 @@
 #   exit.hlp has help topics in quotes - HELP 'FOR'
 #
 
-module DomainOS_SR9_7_5
+class Aegis::SR9_7_5
+  class Nroff < ::Aegis::Nroff
 
-  def self.extended(k)
-    k.instance_variable_set '@base_indent', 2
-    k.instance_variable_set '@related_info_heading', 'RELATED TOPICS'
-    case k.instance_variable_get '@input_filename'
-    when 'index.hlp'
-      k.instance_variable_set '@manual_entry', '_index'
-    when 'edacl.hlp'
-      k.instance_variable_set '@heading_detection', %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
-    when 'cc.hlp', 'lisp.hlp', 'pas.hlp'
-      raise ManualIsBlacklisted, 'is unbundled'
+    def initialize(source)
+      @base_indent = 2
+      @related_info_heading = 'RELATED TOPICS'
+
+      case source.file
+      when 'index.hlp'
+        @manual_entry = '_index'
+      when 'edacl.hlp'
+        @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
+      when 'cc.hlp', 'lisp.hlp', 'pas.hlp'
+        raise ManualIsBlacklisted, 'is unbundled'
+      end
+
+      super(source)
     end
-  end
 
-  def page_title
-    super << " Aegis SR9.7.5"
-  end
+    def page_title
+      super << " Aegis SR9.7.5"
+    end
 
+  end
 end

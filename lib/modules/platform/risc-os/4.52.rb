@@ -9,22 +9,25 @@
 # TODO:
 #
 
-module RISC_os_4_52
+class RISC_os::V4_52
+  class Nroff < ::RISC_os::Nroff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when /1prom$/
-      k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.1prom$/, '')
-      k.instance_variable_set '@heading_detection', %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
-      k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:-(?<systype>\S+?))?\))\s.+?\s\k<manentry>$}
-    when 'newsetup.1', 'newsgroups.1', 'patch.1', 'Pnews.1', 'Rnmail.1'
-      # have section as 'entry(1 LOCAL)'
-      k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:\s(?<systype>\S+?))?\))}
+    def source_init
+      case @source.file
+      when /1prom$/
+        @manual_entry = @source.file.sub(/\.1prom$/, '')
+        @heading_detection = %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
+        @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:-(?<systype>\S+?))?\))\s.+?\s\k<manentry>$}
+      when 'newsetup.1', 'newsgroups.1', 'patch.1', 'Pnews.1', 'Rnmail.1'
+        # have section as 'entry(1 LOCAL)'
+        @title_detection = %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:\s(?<systype>\S+?))?\))}
+      end
+      super
     end
-  end
 
-  def page_title
-    super.sub(/\S+$/, 'UMIPS RISC/os 4.52')
-  end
+    def page_title
+      super.sub(/\S+$/, 'UMIPS RISC/os 4.52')
+    end
 
+  end
 end

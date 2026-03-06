@@ -44,7 +44,8 @@ require_relative '../dom/troff/expressions'
 require_relative '../dom/troff/tabs'
 require_relative '../dom/troff/util'
 
-module VMS
+class VMS
+  class Help < ::Nroff
   def self.extended(k)
     k.instance_variable_set '@lines_per_page', nil
     k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.hl.$/, '')

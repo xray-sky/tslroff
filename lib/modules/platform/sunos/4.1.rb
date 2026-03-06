@@ -15,172 +15,162 @@
 #   xview.7 -- wants LB font (geneva light bold, presumably, but referred to as "Listing Font")
 #
 
-module SunOS_4_1
+class SunOS::V4_1
 
-  def self.extended(k)
-    k.instance_variable_set '@lines_per_page', nil
-    case k.instance_variable_get '@input_filename'
-    when 'ce_db_build.1', 'ce_db_merge.1' # nroff input; no title line
-      k.define_singleton_method(:get_title) { { section: '1' } }
-      # TODO also has see also link w/ whitespace (e.g. "ref (section)")
-    when 'default.1'
-      k.instance_variable_set '@manual_entry', '_default'
-    when 'index.3'
-      k.instance_variable_set '@manual_entry', '_index'
+  class Nroff < ::SunOS::Nroff
+
+    def initialize(source)
+      super(source)
+      @lines_per_page = nil
     end
+
+    def source_init
+      case @source.file
+      when 'ce_db_build.1', 'ce_db_merge.1' # no title line
+        define_singleton_method(:get_title) { { section: '1' } }
+        # TODO also has see also link w/ whitespace (e.g. "ref (section)")
+      end
+      super
+    end
+
   end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        ']W' => 'Sun Release 4.1'
-      }
-    )
+  class Troff < ::SunOS::Troff
+
+    MANUAL_NAMES = {
+      'GSBG'     => 'Getting Started ',
+      'SUBG'     => 'Customizing SunOS',
+      'SHBG'     => 'Basic Troubleshooting',
+      'SVBG'     => 'SunView User\'s Guide',
+      'MMBG'     => 'Mail and Messages',
+      'DMBG'     => 'Doing More with SunOS',
+      'UNBG'     => 'Using the Network',
+      'GDBG'     => 'Games, Demos & Other Pursuits',
+      'CHANGE'   => 'SunOS 4.1 Release Manual',
+      'INSTALL'  => 'Installing SunOS 4.1',
+      'ADMIN'    => 'System and Network Administration',
+      'SECUR'    => 'Security Features Guide',
+      'PROM'     => 'PROM User\'s Manual',
+      'DIAG'     => 'Sun System Diagnostics',
+      'SUNDIAG'  => 'Sundiag User\'s Guide',
+      'MANPAGES' => 'SunOS Reference Manual',
+      'REFMAN'   => 'SunOS Reference Manual',
+      'SSI'      => 'Sun System Introduction',
+      'SSO'      => 'System Services Overview',
+      'TEXT'     => 'Editing Text Files',
+      'DOCS'     => 'Formatting Documents',
+      'TROFF'    => 'Using \\&\\fBnroff\\fP and \\&\\fBtroff\\fP',
+      'INDEX'    => 'Global Index',
+      'CPG'      => 'C Programmer\'s Guide',
+      'CREF'     => 'C Reference Manual',
+      'ASSY'     => 'Assembly Language Reference',
+      'PUL'      => 'Programming Utilities and Libraries',
+      'DEBUG'    => 'Debugging Tools',
+      'NETP'     => 'Network Programming',
+      'DRIVER'   => 'Writing Device Drivers',
+      'STREAMS'  => 'STREAMS Programming',
+      'SBDK'     => 'SBus Developer\'s Kit',
+      'WDDS'     => 'Writing Device Drivers for the SBus',
+      'FPOINT'   => 'Floating-Point Programmer\'s Guide',
+      'SVPG'     => 'SunView\\ 1 Programmer\'s Guide',
+      'SVSPG'    => 'SunView\\ 1 System Programmer\'s Guide',
+      'PIXRCT'   => 'Pixrect Reference Manual',
+      'CGI'      => 'SunCGI Reference Manual',
+      'CORE'     => 'SunCore Reference Manual',
+      '4ASSY'    => 'Sun-4 Assembly Language Reference',
+      'SARCH'    => '\\s-1SPARC\\s0 Architecture Manual',
+            # non-Sun titles
+      'KR'       => "The C Programming Language"
+    }
+
+    MANUAL_SECTION_NAMES = {
+      '1'  => 'USER COMMANDS',
+      '1C' => 'USER COMMANDS',
+      '1G' => 'USER COMMANDS',
+      '1S' => 'USER COMMANDS',
+      '1V' => 'USER COMMANDS',
+      '2'  => 'SYSTEM CALLS',
+      '2V' => 'SYSTEM CALLS',
+      '3'  => 'C LIBRARY FUNCTIONS',
+      '3C' => 'COMPATIBILITY FUNCTIONS',
+      '3F' => 'FORTRAN LIBRARY ROUTINES',
+      '3K' => 'KERNEL VM LIBRARY FUNCTIONS',
+      '3L' => 'LIGHTWEIGHT PROCESSES LIBRARY',
+      '3M' => 'MATHEMATICAL LIBRARY',
+      '3N' => 'NETWORK FUNCTIONS',
+      '3R' => 'RPC SERVICES LIBRARY',
+      '3S' => 'STANDARD I/O FUNCTIONS',
+      '3V' => 'C LIBRARY FUNCTIONS',
+      '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
+      '4'  => 'DEVICES AND NETWORK INTERFACES',
+      '4F' => 'PROTOCOL FAMILIES',
+      '4I' => 'DEVICES AND NETWORK INTERFACES',
+      '4M' => 'DEVICES AND NETWORK INTERFACES',
+      '4N' => 'DEVICES AND NETWORK INTERFACES',
+      '4P' => 'PROTOCOLS',
+      '4S' => 'DEVICES AND NETWORK INTERFACES',
+      '4V' => 'DEVICES AND NETWORK INTERFACES',
+      '5'  => 'FILE FORMATS',
+      '5V' => 'FILE FORMATS',
+      '6'  => 'GAMES AND DEMOS',
+      '7'  => 'ENVIRONMENTS, TABLES, AND TROFF MACROS',
+      '7V' => 'ENVIRONMENTS, TABLES, AND TROFF MACROS',
+      '8'  => 'MAINTENANCE COMMANDS',
+      '8C' => 'MAINTENANCE COMMANDS',
+      '8S' => 'MAINTENANCE COMMANDS',
+      '8V' => 'MAINTENANCE COMMANDS',
+      'L'  => 'LOCAL COMMANDS'
+    }
+
+    MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
+    MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
+
+    def source_init
+      case @source.file
+      when 'default.1' then @manual_entry = '_default'
+      when 'index.3'   then @manual_entry = '_index'
+      end
+    end
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          ']W' => 'Sun Release 4.1'
+        }
+      )
+    end
+
+    define_method 'SB' do |*args|
+      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+    end
+
+    define_method 'TH' do |*args|
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+      req_ds "]L Last change: #{args[2]}"
+      req_ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+      req_ds "]W #{args[3]}" if args[3] and !args[3].empty?
+      req_ds "]D #{args[4]}" if args[4] and !args[4].empty?
+
+      req_ds "]L Last change: #{args[2]}"
+      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
+    define_method 'TX' do |*args|
+      ds "Tx #{MANUAL_NAMES[args[0]]}"
+      parse "\\fI\\*(Tx\\f1#{args[1]}"
+    end
+
   end
-
-  define_method 'SB' do |*args|
-    parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-  end
-
-  define_method 'TH' do |*args|
-    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-    req_ds "]L Last change: #{args[2]}"
-    req_ds ']D ' + case args[1]
-                   when '1'  then 'USER COMMANDS'
-                   when '1C' then 'USER COMMANDS'
-                   when '1G' then 'USER COMMANDS'
-                   when '1S' then 'USER COMMANDS'
-                   when '1V' then 'USER COMMANDS'
-                   when '2'  then 'SYSTEM CALLS'
-                   when '2V' then 'SYSTEM CALLS'
-                   when '3'  then 'C LIBRARY FUNCTIONS'
-                   when '3C' then 'COMPATIBILITY FUNCTIONS'
-                   when '3F' then 'FORTRAN LIBRARY ROUTINES'
-                   when '3K' then 'KERNEL VM LIBRARY FUNCTIONS'
-                   when '3L' then 'LIGHTWEIGHT PROCESSES LIBRARY'
-                   when '3M' then 'MATHEMATICAL LIBRARY'
-                   when '3N' then 'NETWORK FUNCTIONS'
-                   when '3R' then 'RPC SERVICES LIBRARY'
-                   when '3S' then 'STANDARD I/O FUNCTIONS'
-                   when '3V' then 'C LIBRARY FUNCTIONS'
-                   when '3X' then 'MISCELLANEOUS LIBRARY FUNCTIONS'
-                   when '4'  then 'DEVICES AND NETWORK INTERFACES'
-                   when '4F' then 'PROTOCOL FAMILIES'
-                   when '4I' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4M' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4N' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4P' then 'PROTOCOLS'
-                   when '4S' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4V' then 'DEVICES AND NETWORK INTERFACES'
-                   when '5'  then 'FILE FORMATS'
-                   when '5V' then 'FILE FORMATS'
-                   when '6'  then 'GAMES AND DEMOS'
-                   when '7'  then 'ENVIRONMENTS, TABLES, AND TROFF MACROS'
-                   when '7V' then 'ENVIRONMENTS, TABLES, AND TROFF MACROS'
-                   when '8'  then 'MAINTENANCE COMMANDS'
-                   when '8C' then 'MAINTENANCE COMMANDS'
-                   when '8S' then 'MAINTENANCE COMMANDS'
-                   when '8V' then 'MAINTENANCE COMMANDS'
-                   when 'L'  then 'LOCAL COMMANDS'
-                   else 'MISC REFERENCE MANUAL PAGES'
-                   end
-    req_ds "]W #{args[3]}" if args[3] and !args[3].empty?
-    req_ds "]D #{args[4]}" if args[4] and !args[4].empty?
-
-    req_ds "]L Last change: #{args[2]}"
-    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(*args, heading: heading)
-  end
-
-  define_method 'TX' do |*args|
-    req_ds('Tx ' + case args[0]
-                   when 'GSBG'     then 'Getting Started '
-                   when 'SUBG'     then 'Customizing SunOS'
-                   when 'SHBG'     then 'Basic Troubleshooting'
-                   when 'SVBG'     then 'SunView User\'s Guide'
-                   when 'MMBG'     then 'Mail and Messages'
-                   when 'DMBG'     then 'Doing More with SunOS'
-                   when 'UNBG'     then 'Using the Network'
-                   when 'GDBG'     then 'Games, Demos & Other Pursuits'
-                   when 'CHANGE'   then 'SunOS 4.1 Release Manual'
-                   when 'INSTALL'  then 'Installing SunOS 4.1'
-                   when 'ADMIN'    then 'System and Network Administration'
-                   when 'SECUR'    then 'Security Features Guide'
-                   when 'PROM'     then 'PROM User\'s Manual'
-                   when 'DIAG'     then 'Sun System Diagnostics'
-                   when 'SUNDIAG'  then 'Sundiag User\'s Guide'
-                   when 'MANPAGES' then 'SunOS Reference Manual'
-                   when 'REFMAN'   then 'SunOS Reference Manual'
-                   when 'SSI'      then 'Sun System Introduction'
-                   when 'SSO'      then 'System Services Overview'
-                   when 'TEXT'     then 'Editing Text Files'
-                   when 'DOCS'     then 'Formatting Documents'
-                   when 'TROFF'    then 'Using \\&\\fBnroff\\fP and \\&\\fBtroff\\fP'
-                   when 'INDEX'    then 'Global Index'
-                   when 'CPG'      then 'C Programmer\'s Guide'
-                   when 'CREF'     then 'C Reference Manual'
-                   when 'ASSY'     then 'Assembly Language Reference'
-                   when 'PUL'      then 'Programming Utilities and Libraries'
-                   when 'DEBUG'    then 'Debugging Tools'
-                   when 'NETP'     then 'Network Programming'
-                   when 'DRIVER'   then 'Writing Device Drivers'
-                   when 'STREAMS'  then 'STREAMS Programming'
-                   when 'SBDK'     then 'SBus Developer\'s Kit'
-                   when 'WDDS'     then 'Writing Device Drivers for the SBus'
-                   when 'FPOINT'   then 'Floating-Point Programmer\'s Guide'
-                   when 'SVPG'     then 'SunView\\ 1 Programmer\'s Guide'
-                   when 'SVSPG'    then 'SunView\\ 1 System Programmer\'s Guide'
-                   when 'PIXRCT'   then 'Pixrect Reference Manual'
-                   when 'CGI'      then 'SunCGI Reference Manual'
-                   when 'CORE'     then 'SunCore Reference Manual'
-                   when '4ASSY'    then 'Sun-4 Assembly Language Reference'
-                   when 'SARCH'    then '\\s-1SPARC\\s0 Architecture Manual'
-          # non-Sun titles
-                   when 'KR'       then "The C Programming Language"
-                   else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
-                   end
-          )
-    parse "\\fI\\*(Tx\\f1#{args[1]}"
-  end
-
 end
 
 # all literally identical
 
-module SunOS_4_1_1
-  def self.extended(k)
-    k.extend SunOS_4_1
-  end
-end
-
-module SunOS_4_1_2
-  def self.extended(k)
-    k.extend SunOS_4_1
-  end
-end
-
-module SunOS_4_1_3
-  def self.extended(k)
-    k.extend SunOS_4_1
-  end
-end
-
-module SunOS_4_1_3B
-  def self.extended(k)
-    k.extend SunOS_4_1
-  end
-end
-
-module SunOS_4_1_3_U1
-  def self.extended(k)
-    k.extend SunOS_4_1
-  end
-end
-
-module SunOS_4_1_4
-  def self.extended(k)
-    k.extend SunOS_4_1
-  end
-end
+class SunOS::V4_1_1 < SunOS::V4_1 ; end
+class SunOS::V4_1_2 < SunOS::V4_1 ; end
+class SunOS::V4_1_3 < SunOS::V4_1 ; end
+class SunOS::V4_1_3B < SunOS::V4_1 ; end
+class SunOS::V4_1_3_U1 < SunOS::V4_1 ; end
+class SunOS::V4_1_4 < SunOS::V4_1 ; end

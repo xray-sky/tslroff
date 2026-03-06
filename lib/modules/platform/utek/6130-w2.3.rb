@@ -7,14 +7,17 @@
 # UTek W2.3 Platform Overrides
 #
 
-module UTek_6130_W2_3
+class UTek::W2_3_6130
+  class Nroff < ::UTek::Nroff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'access.5n'
-      # malformed title line: ACCESS (dfs)(5N)
-      k.instance_variable_set '@output_directory', 'man5n'
+    def source_init
+      case @source.file
+      when 'access.5n'
+        # malformed title line: ACCESS (dfs)(5N)
+        @output_directory = 'man5n'
+      end
+      super
     end
-  end
 
+  end
 end

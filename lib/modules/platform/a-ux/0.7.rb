@@ -10,21 +10,21 @@
 #    postscript pages have RCSID text?
 #
 
-module A_UX_0_7
+class A_UX::V0_7
+  class Nroff < ::Nroff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'updater.1.z'
+    def source_init
+      case @source.file
       # title line: 'updater()     updater()'
-      k.define_singleton_method :parse_title, k.method(:parse_title_updater)
+      when 'updater.1.z'
+        define_singleton_method :parse_title, {
+          @manual_section = '1'
+          @output_directory = 'man1'
+          true
+        }
+      end
+      super
     end
-  end
 
-  def parse_title_updater
-    @manual_section = '1'
-    @output_directory = 'man1'
-    true
   end
 end
-
-

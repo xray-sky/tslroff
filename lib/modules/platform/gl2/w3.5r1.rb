@@ -7,6 +7,14 @@
 # SGI GL2-W3.5r1 Platform Overrides
 #
 
-module GL2_W3_5r1
+class GL2::W3_5r1
+  class Troff < ::GL2::Troff
 
+    def initialize(source)
+      @version = "W3.5r1"
+      super(source)
+    end
+
+  end
 end
+

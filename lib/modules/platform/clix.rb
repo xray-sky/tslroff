@@ -7,15 +7,18 @@
 # Intergraph CLIX Platform Overrides
 #
 
-module CLIX
+class CLIX
+  class Nroff < ::Nroff
 
-  def self.extended(k)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([\dZz]\S*?)$/, '')
-    k.instance_variable_set '@heading_detection', %r(^\s{2}(?<section>[A-Z][A-Za-z\s]+)$)
-    k.instance_variable_set '@title_detection', %r{^\s{2}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
-    k.instance_variable_set '@related_info_heading', 'RELATED INFORMATION'
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.([\dZz]\S*?)$/, '')
+      @heading_detection ||= %r(^\s{2}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^\s{2}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
+      @related_info_heading ||= 'RELATED INFORMATION'
+      super(source)
+    end
+
   end
-
 end
 
 

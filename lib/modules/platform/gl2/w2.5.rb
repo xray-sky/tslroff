@@ -12,44 +12,24 @@
 #   greset.3 has something going on with the colormap table?
 #
 
-class GL2
-  class W2_5 < ::GL2
-    class Troff < ::GL2::Troff
+class GL2::W2_5
+  class Troff < ::GL2::Troff
 
-=begin
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    # REVIEW still necessary?
-    #when 'eqn.1'    then k.patch_line(45, /\\\*$/, '') # REVIEW nroff ignores these, but ought they be changed to * here?
-    #when 'ftp.1c'
-    #  k.patch_line(210, /f$/, 'fP')
-    #  k.patch_line(356, /f\\P$/, 'fP')
-    #when 'ls.1'     then k.patch_line(188, /4em$/, '4m')
-    when 'intro.2'  then k.patch_line(316, /\\x-1/, "\\s-1")
-    #when 'gps.4'    then k.patch_line(16, /f$/, 'fP')
-    when 'tz.4'     then k.patch_line( 42, /center\./, 'center;')
-    when 'regexp.5' then k.patch_line(418, /^\.in/, '.if')
-    when 'kmem.7'   then k.patch_line(  0, /u_man/, 'a_man')
+    def initialize(source)
+      @version = "W2.5"
+      super(source)
     end
-  end
-=end
 
-      def initialize(source)
-        @version = "W2.5"
-        super(source)
+    def source_init
+      case @source.file
+      when 'intro.2'  then @source.patch_line 189, /4em$/, '4m'
+      when 'tz.4'     then @source.patch_line  43, /center\./, 'center;'
+      when 'regexp.5' then @source.patch_line 419, /^\.in/, '.if'
+      when 'kmem.7'   then @source.patch_line   1, /u_man/, 'a_man'
       end
-
-      def source_init
-        case @source.file
-        when 'intro.2'  then @source.patch_line 189, /4em$/, '4m'
-        when 'tz.4'     then @source.patch_line  43, /center\./, 'center;'
-        when 'regexp.5' then @source.patch_line 419, /^\.in/, '.if'
-        when 'kmem.7'   then @source.patch_line   1, /u_man/, 'a_man'
-        end
-        super
-      end
-
+      super
     end
+
   end
 end
 

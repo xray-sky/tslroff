@@ -19,26 +19,33 @@
 require_relative '../sunos'
 require_relative '../sunos/4.0'
 
-module NEWS_os_5_0_1
-
-  def self.extended(k)
-    if k.instance_variable_get('@magic') == :Troff
-      k.extend SunOS
-      k.extend SunOS_4_0
+class NEWS_os::V5_0_1
+  class Nroff < ::NEWS_os::Nroff
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      @heading_detection ||= %r{^(?<section>[A-Z][A-Za-z\s]+)$}
+      @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
+      super(source)
     end
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
-    k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
-    k.instance_variable_set '@heading_detection', %r{^(?<section>[A-Z][A-Za-z\s]+)$}
-    k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
   end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        ']W' => File.mtime(@source.filename).strftime('%B %d, %Y'),
-      }
-    )
-  end
+  class Troff < ::SunOS::V4_0::Troff
 
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super(source)
+    end
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          ']W' => File.mtime(@source.file).strftime('%B %d, %Y'),
+        }
+      )
+    end
+
+  end
 end

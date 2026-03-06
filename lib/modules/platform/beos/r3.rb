@@ -14,36 +14,45 @@
 #   symlink rewrite (index.html [*]: encountered unsupported link type, /Volumes/Museum/Manual/in/be/beos/r4/beos/documentation/User's Guide/index.html => 00_FrontMatter/index.html)
 #
 
-class Source
-  def magic
-    case File.basename(@filename)
-    when '97-08-04_adamation.html' then 'HTML'
-    else @magic
+class BeOS::R3
+
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when '97-08-04_adamation.html'
+        @source = Source.new(file, magic: 'HTML', source_args: source_args)
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
-end
 
-module BeOS_R3
-  def self.extended(k)
-    # press releases (and others?) have ^M line endings which are vanishing in nokogiri,
-    # causing whitespace collapse
-    if k.instance_variable_get('@source_dir').include? 'PressInfo'
-      k.instance_variable_get('@source').lines.collect! do |l|
-        l.split("\r").join("\n")
+  class HTML < ::BeOS::HTML
+
+    def initialize(source)
+      # press releases (and others?) have ^M line endings which are vanishing in nokogiri,
+      # causing whitespace collapse
+      if source.dir.include? 'PressInfo'
+        source.lines.collect! { |l| l.split("\r").join("\n") }
       end
     end
-    case k.instance_variable_get '@input_filename'
-    when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html',
-         'BeOS_Software.html', '97-08-04_adamation.html'
-      k.instance_variable_get('@source').lines.each { |l| l.force_encoding Encoding::ISO_8859_1 }
-    end
-  end
 
-  def source_init
-    super
-    case @input_filename
-    when 'mailinglists.html' then  @source.xpath('//body').css('form').each { |form| form['action'] = '' }
-    when '97-08-04_adamation.html' then @source.xpath('//body').css('a[@href="http//www.bespecific.com"]').each { |a| a.replace a.text }
+    def source_init
+      file = @source.file
+      case file
+      when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html',
+           'BeOS_Software.html', '97-08-04_adamation.html'
+        @source.lines.each { |l| l.force_encoding Encoding::ISO_8859_1 }
+      end
+
+      super
+
+      case file
+      when 'mailinglists.html'
+        @source.xpath('//body').css('form').each { |form| form['action'] = '' }
+      when '97-08-04_adamation.html'
+        @source.xpath('//body').css('a[@href="http//www.bespecific.com"]').each { |a| a.replace a.text }
+      end
     end
+
   end
 end

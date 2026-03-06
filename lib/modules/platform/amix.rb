@@ -10,156 +10,163 @@
 #   type clashes in openlook entries - can't parse title
 #
 
-module AMIX
+class AMIX
+  class Troff < ::Troff
 
-  def self.extended(k)
-    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.Z$/, '')
-    #k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
-  end
+    MANUAL_NAMES = {
+      'DOCBOX'   => "Documentation Set"
+      'BGBOX'    => "Beginner's Guides Minibox"
+      'GSBG'     => "Getting Started with Amiga Unix: Beginner's Guide"
+      'SUBG'     => "Setting Up Your Amiga Unix Environment: Beginner's Guide"
+      'SHBG'     => "Self Help with Problems: Beginner's Guide"
+      'SVBG'     => "SunView\\ 1 Beginner's Guide"
+      'MMBG'     => "Mail and Messages: Beginner's Guide"
+      'DMBG'     => "Doing More with Amiga Unix: Beginner's Guide"
+      'UNBG'     => "Using the Network: Beginner's Guide"
+      'GDBG'     => "Games, Demos & Other Pursuits"
+      'SABOX'    => "System Administration Manuals Minibox"
+      'CHANGE'   => "Release 4.0 Change Notes"
+      'INSTALL'  => "Installing Amiga Unix"
+      'ADMIN'    => "System and Network Administration"
+      'SECUR'    => "Security Features Guide"
+      'PROM'     => "PROM User's Manual"
+      'DIAG'     => "Amiga Unix System Diagnostics Manual"
+      'SUNDIAG'  => "Sundiag User's Guide"
+      'REFBOX'   => "Reference Manuals Minibox"
+      'MANPAGES' => "Amiga Unix Reference Manual"
+      'REFMAN'   => "Amiga Unix Reference Manual"
+      'SSI'      => "Amiga Unix System Introduction"
+      'SSO'      => "System Services Overview"
+      'TEXT'     => "Editing Text Files"
+      'DOCS'     => "Formatting Documents"
+      'TROFF'    => "Using \\&\\fLnroff\\fP and \\&\\fLtroff\\fP"
+      'INDEX'    => "Global Index"
+      'PTBOX'    => "Programmer's Tools Manuals Minibox"
+      'CPG'      => "C Programmer's Guide"
+      'CREF'     => "C Reference Manual"
+      'ASSY'     => "Assembly Language Manual"
+      'PUL'      => "Programming Utilities and Libraries"
+      'DEBUG'    => "Debugging Tools"
+      'NETP'     => "Network Programming"
+      'DRIVER'   => "Writing Device Drivers"
+      'FPOINT'   => "Floating Point Programmers Guide"
+      'SVPG'     => "SunView\\ 1 Programmer's Guide"
+      'SVSPG'    => "SunView\\ 1 System Programmer's Guide"
+      'PIXRCT'   => "Pixrect Reference Manual"
+      'CGI'      => "SunCGI Reference Manual"
+      'CORE'     => "Amiga Unix Core Reference Manual"
+      '4ASSY'    => "Sun-4 Assembly Language Reference Manual"
+            # non-Sun titles
+      'KR'       => "The C Programming Language"
+    }
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L",
-        #'Tm' => '&trade;',
-        ']W' => 'Amiga Unix'
-      }
-    )
-  end
+    MANUAL_SECTION_NAMES = {
+      '1'  => 'USER COMMANDS'
+      '1C' => 'USER COMMANDS'
+      '1G' => 'USER COMMANDS'
+      '1S' => 'USER COMMANDS'
+      '1V' => 'USER COMMANDS'
+      '2'  => 'SYSTEM CALLS'
+      '2V' => 'SYSTEM CALLS'
+      '3'  => 'C LIBRARY FUNCTIONS'
+      '3C' => 'COMPATIBILITY FUNCTIONS'
+      '3F' => 'FORTRAN LIBRARY ROUTINES'
+      '3K' => 'KERNEL VM LIBRARY FUNCTIONS'
+      '3L' => 'LIGHTWEIGHT PROCESSES LIBRARY'
+      '3M' => 'MATHEMATICAL LIBRARY'
+      '3N' => 'NETWORK FUNCTIONS'
+      '3R' => 'RPC SERVICES LIBRARY'
+      '3S' => 'STANDARD I/O FUNCTIONS'
+      '3V' => 'SYSTEM V LIBRARY'
+      '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS'
+      '4'  => 'DEVICES AND NETWORK INTERFACES'
+      '4F' => 'PROTOCOL FAMILIES'
+      '4I' => 'DEVICES AND NETWORK INTERFACES'
+      '4M' => 'DEVICES AND NETWORK INTERFACES'
+      '4N' => 'DEVICES AND NETWORK INTERFACES'
+      '4P' => 'PROTOCOLS'
+      '4S' => 'DEVICES AND NETWORK INTERFACES'
+      '4V' => 'DEVICES AND NETWORK INTERFACES'
+      '5'  => 'FILE FORMATS'
+      '5V' => 'FILE FORMATS'
+      '6'  => 'GAMES AND DEMOS'
+      '7'  => 'PUBLIC FILES, TABLES, AND TROFF MACROS'
+      '8'  => 'MAINTENANCE COMMANDS'
+      '8C' => 'MAINTENANCE COMMANDS'
+      '8S' => 'MAINTENANCE COMMANDS'
+      '8V' => 'MAINTENANCE COMMANDS'
+      'L'  => 'LOCAL COMMANDS'
+    }
 
-  def init_tr
-    super
-    @state[:translate]['*'] = "\e(**"
-  end
+    MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
+    MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
 
-  def init_TH
-    #super
-    @register['IN'] = Troff::Register.new(@state[:base_indent])
-  end
+    alias :LP :P
 
-  # .so with absolute path, headers in /usr/include
-  def req_so(name, breaking: nil)
-    osdir = @source_dir.dup
-    @source_dir << '/../..' if name.start_with?('/')
-    super(name, breaking: breaking)
-    @source_dir = osdir
-  end
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.Z$/, '')
+    end
 
-  define_method 'TH' do |*args|
-    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-    req_ds ']D ' + case args[1]
-                   when '1'  then 'USER COMMANDS'
-                   when '1C' then 'USER COMMANDS'
-                   when '1G' then 'USER COMMANDS'
-                   when '1S' then 'USER COMMANDS'
-                   when '1V' then 'USER COMMANDS'
-                   when '2'  then 'SYSTEM CALLS'
-                   when '2V' then 'SYSTEM CALLS'
-                   when '3'  then 'C LIBRARY FUNCTIONS'
-                   when '3C' then 'COMPATIBILITY FUNCTIONS'
-                   when '3F' then 'FORTRAN LIBRARY ROUTINES'
-                   when '3K' then 'KERNEL VM LIBRARY FUNCTIONS'
-                   when '3L' then 'LIGHTWEIGHT PROCESSES LIBRARY'
-                   when '3M' then 'MATHEMATICAL LIBRARY'
-                   when '3N' then 'NETWORK FUNCTIONS'
-                   when '3R' then 'RPC SERVICES LIBRARY'
-                   when '3S' then 'STANDARD I/O FUNCTIONS'
-                   when '3V' then 'SYSTEM V LIBRARY'
-                   when '3X' then 'MISCELLANEOUS LIBRARY FUNCTIONS'
-                   when '4'  then 'DEVICES AND NETWORK INTERFACES'
-                   when '4F' then 'PROTOCOL FAMILIES'
-                   when '4I' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4M' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4N' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4P' then 'PROTOCOLS'
-                   when '4S' then 'DEVICES AND NETWORK INTERFACES'
-                   when '4V' then 'DEVICES AND NETWORK INTERFACES'
-                   when '5'  then 'FILE FORMATS'
-                   when '5V' then 'FILE FORMATS'
-                   when '6'  then 'GAMES AND DEMOS'
-                   when '7'  then 'PUBLIC FILES, TABLES, AND TROFF MACROS'
-                   when '8'  then 'MAINTENANCE COMMANDS'
-                   when '8C' then 'MAINTENANCE COMMANDS'
-                   when '8S' then 'MAINTENANCE COMMANDS'
-                   when '8V' then 'MAINTENANCE COMMANDS'
-                   when 'L'  then 'LOCAL COMMANDS'
-                   else 'MISC REFERENCE MANUAL PAGES'
-                   end
-    req_ds "]L Last change: #{args[2]}"
-    req_ds "]W #{args[4]}" if args[4] and !args[4].empty?
-    req_ds "]D #{args[5]}" if args[5] and !args[5].empty?
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L",
+          #'Tm' => '&trade;',
+          ']W' => 'Amiga Unix'
+        }
+      )
+    end
 
-    super(*args, heading: heading)
-  end
+    def init_tr
+      super
+      @state[:translate]['*'] = "\e(**"
+    end
 
-  define_method 'TX' do |*args|
-    req_ds('Tx ' + case args[0]
-                   when 'DOCBOX'   then "Documentation Set"
-                   when 'BGBOX'    then "Beginner's Guides Minibox"
-                   when 'GSBG'     then "Getting Started with Amiga Unix: Beginner's Guide"
-                   when 'SUBG'     then "Setting Up Your Amiga Unix Environment: Beginner's Guide"
-                   when 'SHBG'     then "Self Help with Problems: Beginner's Guide"
-                   when 'SVBG'     then "SunView\\ 1 Beginner's Guide"
-                   when 'MMBG'     then "Mail and Messages: Beginner's Guide"
-                   when 'DMBG'     then "Doing More with Amiga Unix: Beginner's Guide"
-                   when 'UNBG'     then "Using the Network: Beginner's Guide"
-                   when 'GDBG'     then "Games, Demos & Other Pursuits"
-                   when 'SABOX'    then "System Administration Manuals Minibox"
-                   when 'CHANGE'   then "Release 4.0 Change Notes"
-                   when 'INSTALL'  then "Installing Amiga Unix"
-                   when 'ADMIN'    then "System and Network Administration"
-                   when 'SECUR'    then "Security Features Guide"
-                   when 'PROM'     then "PROM User's Manual"
-                   when 'DIAG'     then "Amiga Unix System Diagnostics Manual"
-                   when 'SUNDIAG'  then "Sundiag User's Guide"
-                   when 'REFBOX'   then "Reference Manuals Minibox"
-                   when 'MANPAGES' then "Amiga Unix Reference Manual"
-                   when 'REFMAN'   then "Amiga Unix Reference Manual"
-                   when 'SSI'      then "Amiga Unix System Introduction"
-                   when 'SSO'      then "System Services Overview"
-                   when 'TEXT'     then "Editing Text Files"
-                   when 'DOCS'     then "Formatting Documents"
-                   when 'TROFF'    then "Using \\&\\fLnroff\\fP and \\&\\fLtroff\\fP"
-                   when 'INDEX'    then "Global Index"
-                   when 'PTBOX'    then "Programmer's Tools Manuals Minibox"
-                   when 'CPG'      then "C Programmer's Guide"
-                   when 'CREF'     then "C Reference Manual"
-                   when 'ASSY'     then "Assembly Language Manual"
-                   when 'PUL'      then "Programming Utilities and Libraries"
-                   when 'DEBUG'    then "Debugging Tools"
-                   when 'NETP'     then "Network Programming"
-                   when 'DRIVER'   then "Writing Device Drivers"
-                   when 'FPOINT'   then "Floating Point Programmers Guide"
-                   when 'SVPG'     then "SunView\\ 1 Programmer's Guide"
-                   when 'SVSPG'    then "SunView\\ 1 System Programmer's Guide"
-                   when 'PIXRCT'   then "Pixrect Reference Manual"
-                   when 'CGI'      then "SunCGI Reference Manual"
-                   when 'CORE'     then "Amiga Unix Core Reference Manual"
-                   when '4ASSY'    then "Sun-4 Assembly Language Reference Manual"
-          # non-Sun titles
-                   when 'KR'       then "The C Programming Language"
-                   else "UNKNOWN TITLE ABBREVIATION: #{args[0]}"
-                   end
-          )
-    parse "\\fI\\*(Tx\\fP#{args[1]}"
-  end
+    def init_TH
+      #super
+      @register['IN'] = Troff::Register.new(@state[:base_indent])
+    end
 
-  # some pages call this, but the def is commented out
-  # defining it as a no-op suppresses the warning.
-  define_method 'UC' do |*_args| ; end
+    # .so with absolute path, headers in /usr/include
+    def so(name, breaking: nil)
+      osdir = @source_dir.dup
+      @source_dir << '/../..' if name.start_with?('/')
+      super(name, breaking: breaking)
+      @source_dir = osdir
+    end
 
-  # good news - margin characters don't seem to be used anywhere in the Sun manual
-  define_method 'VE' do |*args|
-    # .if '\\$1'4' .mc \s12\(br\s0
-    # draws a 12pt box rule as right margin character
-    warn "can't yet .VE #{args.inspect}"
-  end
+    define_method 'TH' do |*args|
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+      ds("]D #{MANUAL_SECTION_NAMES[args[1]]}")
+      ds("]L Last change: #{args[2]}")
+      ds("]W #{args[4]}") if args[4] and !args[4].empty?
+      ds("]D #{args[5]}") if args[5] and !args[5].empty?
 
-  define_method 'VS' do |*args|
-    # .mc
-    # clears box rule margin character
-    warn "can't yet .VS #{args.inspect}"
+      super(*args, heading: heading)
+    end
+
+    define_method 'TX' do |*args|
+      ds("Tx #{MANUAL_NAMES[args[0]]}")
+      parse "\\fI\\*(Tx\\fP#{args[1]}"
+    end
+
+    # some pages call this, but the def is commented out
+    # defining it as a no-op suppresses the warning.
+    define_method 'UC' do |*_args| ; end
+
+    # good news - margin characters don't seem to be used anywhere in the Sun manual
+    define_method 'VE' do |*args|
+      # .if '\\$1'4' .mc \s12\(br\s0
+      # draws a 12pt box rule as right margin character
+      warn "can't yet .VE #{args.inspect}"
+    end
+
+    define_method 'VS' do |*args|
+      # .mc
+      # clears box rule margin character
+      warn "can't yet .VS #{args.inspect}"
+    end
+
   end
 end

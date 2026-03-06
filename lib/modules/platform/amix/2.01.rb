@@ -7,6 +7,6 @@
 # Amiga SVR4 Platform Overrides
 #
 
-module AMIX_2_01
-
+class AMIX::V2_01
+  class Troff < ::AMIX::Troff ; end
 end

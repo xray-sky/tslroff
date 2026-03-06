@@ -7,100 +7,110 @@
 # SunOS 3.5 Platform Overrides
 #
 
-class Source
-  def magic
-    case File.basename(@filename)
-    when 'mc68881version.8' then 'Troff'
-    else @magic
-    end
-  end
-end
+class SunOS::V3_5
 
-module SunOS_3_5
-
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'default.1'
-      k.instance_variable_set '@manual_entry', '_default'
-    when 'erf.3m'
-      # troff switches font size to do the baseline shift, and I can't get that in html.
-      # the ouput shift is in em, at the (smaller) size of the outputted text.
-      k.patch_line(30, /\\s10/, '\s12', global: true)
-      k.patch_line(30, /(\\u)/, '\\v@-0.5v@', global: true)
-      k.patch_line(30, /(\\d)/, '\\v@0.5v@', global: true)
-    when 'lgamma.3m' # REVIEW gamma.3m? (doesn't exist, so isn't a problem?)
-      # troff switches font size to do the baseline shift, and I can't get that in html.
-      # the ouput shift is in em, at the (smaller) size of the outputted text.
-      k.patch_line(26, /\\s10/, '\s12', global: true)
-      k.patch_line(26, /(\\u)/, '\\v@-0.5v@', global: true)
-      k.patch_line(26, /(\\d)/, '\\v@0.5v@', global: true)
-    when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
-      raise ManualIsBlacklisted, 'not a manual entry'
-    when 'eqn.eqn', 'eqnchar.eqn'
-      raise ManualIsBlacklisted, 'eqn preprocessed entries'
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when 'mc68881version.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        ']W' => 'Sun Release 3.5'
-      }
-    )
+  class Troff < ::SunOS::Troff
+
+    MANUAL_SECTION_NAMES = {
+      '1'  => 'USER COMMANDS',
+      '1C' => 'USER COMMANDS',
+      '1G' => 'USER COMMANDS',
+      '1S' => 'SUN-SPECIFIC USER COMMANDS',
+      '1V' => 'USER COMMANDS',
+      '2'  => 'SYSTEM CALLS',
+      '2V' => 'SYSTEM CALLS',
+      '3'  => 'C LIBRARY FUNCTIONS',
+      '3C' => 'COMPATIBILITY ROUTINES',
+      '3F' => 'FORTRAN LIBRARY ROUTINES',
+      '3M' => 'MATHEMATICAL FUNCTIONS',
+      '3N' => 'NETWORK FUNCTIONS',
+      '3R' => 'RPC SERVICES',
+      '3S' => 'STANDARD I/O LIBRARY',
+      '3X' => 'MISCELLANEOUS FUNCTIONS',
+      '4'  => 'SPECIAL FILES',
+      '4F' => 'SPECIAL FILES',
+      '4I' => 'SPECIAL FILES',
+      '4N' => 'SPECIAL FILES',
+      '4P' => 'SPECIAL FILES',
+      '4S' => 'SPECIAL FILES',
+      '4V' => 'SPECIAL FILES',
+      '5'  => 'FILE FORMATS',
+      '5V' => 'FILE FORMATS',
+      '6'  => 'GAMES AND DEMOS',
+      '7'  => 'TABLES',
+      '8'  => 'MAINTENANCE COMMANDS',
+      '8C' => 'MAINTENANCE COMMANDS',
+      '8S' => 'MAINTENANCE COMMANDS'
+    }
+
+    MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
+
+    def initialize(source)
+      case source.file
+      when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
+        raise ManualIsBlacklisted, 'not a manual entry'
+      when 'eqn.eqn', 'eqnchar.eqn'
+        raise ManualIsBlacklisted, 'eqn preprocessed entries'
+      end
+      super(source)
+    end
+
+    def source_init
+      case @source.file
+      when 'default.1' then @manual_entry = '_default'
+      when 'erf.3m'
+        # troff switches font size to do the baseline shift, and I can't get that in html.
+        # the ouput shift is in em, at the (smaller) size of the outputted text.
+        @source.patch_line(31, /\\s10/, '\s12', global: true)
+        @source.patch_line(31, /(\\u)/, '\\v@-0.5v@', global: true)
+        @source.patch_line(31, /(\\d)/, '\\v@0.5v@', global: true)
+      when 'lgamma.3m' # REVIEW gamma.3m? (doesn't exist, so isn't a problem?)
+        # troff switches font size to do the baseline shift, and I can't get that in html.
+        # the ouput shift is in em, at the (smaller) size of the outputted text.
+        @source.patch_line(27, /\\s10/, '\s12', global: true)
+        @source.patch_line(27, /(\\u)/, '\\v@-0.5v@', global: true)
+        @source.patch_line(27, /(\\d)/, '\\v@0.5v@', global: true)
+      end
+      super
+    end
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          ']W' => 'Sun Release 3.5'
+        }
+      )
+    end
+
+    # REVIEW
+    # this is used seemingly to prevent processing the next line
+    # as a request. but, it's not in tmac.an or the DWB manual.
+    # still used in 3.5, but only for binmail(1)
+    def li(*_args)
+      parse("\\&" + next_line)
+    end
+
+    define_method 'TH' do |*args|
+      ds "]L Last change: #{args[2]}"
+      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].empty?
+
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
   end
-
-  # REVIEW
-  # this is used seemingly to prevent processing the next line
-  # as a request. but, it's not in tmac.an or the DWB manual.
-  # still used in 3.5, but only for binmail(1)
-  def li(*_args)
-    parse("\\&" + next_line)
-  end
-
-  define_method 'TH' do |*args|
-    req_ds "]L Last change: #{args[2]}"
-    req_ds ']D ' + case args[1]
-                   when '1'  then 'USER COMMANDS'
-                   when '1C' then 'USER COMMANDS'
-                   when '1G' then 'USER COMMANDS'
-                   when '1S' then 'SUN-SPECIFIC USER COMMANDS'
-                   when '1V' then 'USER COMMANDS'
-                   when '2'  then 'SYSTEM CALLS'
-                   when '2V' then 'SYSTEM CALLS'
-                   when '3'  then 'C LIBRARY FUNCTIONS'
-                   when '3C' then 'COMPATIBILITY ROUTINES'
-                   when '3F' then 'FORTRAN LIBRARY ROUTINES'
-                   when '3M' then 'MATHEMATICAL FUNCTIONS'
-                   when '3N' then 'NETWORK FUNCTIONS'
-                   when '3R' then 'RPC SERVICES'
-                   when '3S' then 'STANDARD I/O LIBRARY'
-                   when '3X' then 'MISCELLANEOUS FUNCTIONS'
-                   when '4'  then 'SPECIAL FILES'
-                   when '4F' then 'SPECIAL FILES'
-                   when '4I' then 'SPECIAL FILES'
-                   when '4N' then 'SPECIAL FILES'
-                   when '4P' then 'SPECIAL FILES'
-                   when '4S' then 'SPECIAL FILES'
-                   when '4V' then 'SPECIAL FILES'
-                   when '5'  then 'FILE FORMATS'
-                   when '5V' then 'FILE FORMATS'
-                   when '6'  then 'GAMES AND DEMOS'
-                   when '7'  then 'TABLES'
-                   when '8'  then 'MAINTENANCE COMMANDS'
-                   when '8C' then 'MAINTENANCE COMMANDS'
-                   when '8S' then 'MAINTENANCE COMMANDS'
-                   else 'UNKNOWN SECTION OF THE MANUAL'
-                   end
-    req_ds "]W #{args[3]}" if args[3] and !args[3].empty?
-    req_ds "]D #{args[4]}" if args[4] and !args[4].empty?
-
-    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(*args, heading: heading)
-  end
-
 end
-
-

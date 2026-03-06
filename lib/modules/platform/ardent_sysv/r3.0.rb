@@ -12,21 +12,18 @@
 #   gamma(3m) has font size issues (leaving inline eqn? because \s10 and not \s+2 or \s\n(.s ?)
 #
 
-module Ardent_SysV_R3_0
+class Ardent_SysV::R3_0
+  class Troff < ::Ardent_SysV::Troff
 
-  #def self.extended(k)
-  #
-  #end
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          'Tt' => 'Stardent 1500/3000',
+          ']D' => 'Stardent Computer Inc.',
+        }
+      )
+    end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        'Tt' => 'Stardent 1500/3000',
-        ']D' => 'Stardent Computer Inc.',
-      }
-    )
   end
-
 end
-

@@ -13,98 +13,108 @@
 #   lost the img files?
 #
 
-module Inferno_1_1ed
+class Inferno::FirstEd_1
+  class HTML < ::Inferno::HTML
 
-  def self.extended(k)
-    k.instance_variable_set('@output_directory', '') #+ k.instance_variable_get('@source_dir')) # wrong
-    k.instance_variable_set('@manual_entry', k.instance_variable_get('@input_filename').sub(/\.htm$/, ''))
-    k.instance_variable_get('@source').lines.each do |l|
-      # some of the pages have extended characters encoded Windows-1252
-      l.force_encoding Encoding::Windows_1252
-      # nokogiri is inserting extra whitespace at the beginning of <pre>,
-      # if followed (pointelessly?) by <tt>
-      l.gsub!(%r{<pre><tt>}, '<pre>')
-      # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
-      l.gsub!(%r{(</?)kbd>}, '\1tt>')
-      # they've used gifs for some greek letters
-      l.gsub!(%r{<img src="chars/capgamma.gif">}, '&Gamma;')
-      l.gsub!(%r{<img src="chars/(.+?).gif">}, '&\1;')
-    end
-    case k.instance_variable_get '@input_filename'
-    when 'index.htm'
-      #k.instance_variable_set '@manual_entry', '_index'
-      k.define_singleton_method(:page_title, proc { 'Inferno Reference &mdash; Inferno 1.1ed' })
-      k.patch_line(0, %r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
-    when 'mpgs8.htm'
-      k.patch_line(50, %r{^<em>}, '</a>')
-      k.patch_line(55, %r{^<em>}, '</a>')
-    when 'mpgs32.htm'
-      k.define_singleton_method(:page_title, proc { 'Environmental Utilities &mdash; Inferno 1.1ed' })
-    when 'mpgs46.htm'
-      k.define_singleton_method(:page_title, proc { 'Limbo Keyring Modules &mdash; Inferno 1.1ed' })
-    when 'mpgs56.htm' then k.patch_line(50, %r{^<em>}, '</a>')
-    when 'mpgs62.htm'
-      k.define_singleton_method(:page_title, proc { 'Limbo Math Modules &mdash; Inferno 1.1ed' })
-    when 'mpgs66.htm'
-      k.define_singleton_method(:page_title, proc { 'Limbo Prefab Modules &mdash; Inferno 1.1ed' })
-      k.patch_line(61, %r{^<em>}, '</a>')
-    when 'mpgs71.htm'
-      k.define_singleton_method(:page_title, proc { 'Limbo System Modules &mdash; Inferno 1.1ed' })
-    when 'mpgs77.htm' then k.patch_line( 31, %r{^<em>}, '</a>')
-    when 'mpgs78.htm' then k.patch_line(145, %r{<em><a}, '<a')
-    when 'mpgs79.htm' then k.patch_line( 26, %r{^<em>}, '</a>')
-    when 'mpgs81.htm' then k.patch_line( 66, %r{^<em>}, '</a>')
-    when 'mpgs82.htm' then k.patch_line(112, %r{^<em>}, '</a>')
-    when 'mpgs86.htm' then k.patch_line( 24, %r{^<em>}, '</a>')
-    when 'mpgs90.htm'
-      k.define_singleton_method(:page_title, proc { 'Toolkit Graphic Interface Modules &mdash; Inferno 1.1ed' })
-    when 'mpgs93.htm'
-      k.define_singleton_method(:page_title, proc { 'Miscellaneous Limbo Modules &mdash; Inferno 1.1ed' })
-    when 'mpgs105.htm'
-      k.define_singleton_method(:page_title, proc { 'Inferno Devices &mdash; Inferno 1.1ed' })
-    when 'mpgs113.htm'
-      k.define_singleton_method(:page_title, proc { 'Inferno File Protocol &mdash; Inferno 1.1ed' })
-    when 'mpgs125.htm'
-      k.define_singleton_method(:page_title, proc { 'Limbo Format Specifications &mdash; Inferno 1.1ed' })
-    when 'mpgs131.htm'
-      k.define_singleton_method(:page_title, proc { 'Limbo Daemons &mdash; Inferno 1.1ed' })
-    end
-  end
-
-  def to_html
-    title = @source.title
-    body = @source.xpath('//body')
-
-    body_styles = ''
-    bgcolor = body.attribute('bgcolor')
-    background = body.attribute('background')
-    body_styles << %(background-color:#{bgcolor.value};) if bgcolor
-    body_styles << %(background-image:url('#{background.value}');background-repeat:repeat;) if background
-
-    # ditch external links (e.g. to www.be.com)
-    # rewrite relative links to *.htm as *.html (many anchors include # hrefs)
-    body.css('a').each do |link|
-      link.replace(link.text) if link['href']&.include?('://') or link['href']&.start_with?('mailto:') # should cover http://, https://, ftp://, etc.
-      link['href'] &&= link['href']&.sub!(%r{\.htm(#.*)?$}, '.html\1')
+    def initialize(source)
+      @output_directory ||= '' #+ k.instance_variable_get('@source_dir')) # wrong
+      @manual_entry ||= source.file.sub(/\.htm$/, ''))
+      super(source)
     end
 
-    # warn about page assets
-    #asset_locations = body.css('img').collect do |img|
-    #  File.dirname(img['src'])
-    #end.compact
-    #warn "asset locations: #{asset_locations.sort.uniq.inspect}" if asset_locations.any?
+    def source_init
+      @source.lines.each do |l|
+        # some of the pages have extended characters encoded Windows-1252
+        l.force_encoding Encoding::Windows_1252
+        # nokogiri is inserting extra whitespace at the beginning of <pre>,
+        # if followed (pointelessly?) by <tt>
+        l.gsub!(%r{<pre><tt>}, '<pre>')
+        # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
+        l.gsub!(%r{(</?)kbd>}, '\1tt>')
+        # they've used gifs for some greek letters
+        l.gsub!(%r{<img src="chars/capgamma.gif">}, '&Gamma;')
+        l.gsub!(%r{<img src="chars/(.+?).gif">}, '&\1;')
+      end
 
-    <<~DOC
-      <div class="title"><h1>#{title}</h1></div>
-      <div class="htbody"#{%( style="#{body_styles}") unless body_styles.empty?}>
-          <div id="man">
-      #{body.children.to_xhtml(encoding: 'UTF-8')}
-          </div>
-      </div>
-    DOC
-  end
+      case @source.file
+      when 'index.htm'
+        #k.instance_variable_set '@manual_entry', '_index'
+        define_singleton_method :page_title, proc { 'Inferno Reference &mdash; Inferno 1.1ed' }
+        @source.patch_line(1, %r{<title></title>}, '<title>Inferno Reference HTML &mdash; Release 1.0</title>')
+      when 'mpgs8.htm'
+        @source.patch_line(51, %r{^<em>}, '</a>')
+        @source.patch_line(56, %r{^<em>}, '</a>')
+      when 'mpgs32.htm'
+        define_singleton_method :page_title, proc { 'Environmental Utilities &mdash; Inferno 1.1ed' }
+      when 'mpgs46.htm'
+        define_singleton_method :page_title, proc { 'Limbo Keyring Modules &mdash; Inferno 1.1ed' }
+      when 'mpgs56.htm' then @source.patch_line(51, %r{^<em>}, '</a>')
+      when 'mpgs62.htm'
+        define_singleton_method :page_title, proc { 'Limbo Math Modules &mdash; Inferno 1.1ed' }
+      when 'mpgs66.htm'
+        define_singleton_method :page_title, proc { 'Limbo Prefab Modules &mdash; Inferno 1.1ed' }
+        @source.patch_line(62, %r{^<em>}, '</a>')
+      when 'mpgs71.htm'
+        define_singleton_method(:page_title, proc { 'Limbo System Modules &mdash; Inferno 1.1ed' }
+      when 'mpgs77.htm' then @source.patch_line( 32, %r{^<em>}, '</a>')
+      when 'mpgs78.htm' then @source.patch_line(146, %r{<em><a}, '<a')
+      when 'mpgs79.htm' then @source.patch_line( 27, %r{^<em>}, '</a>')
+      when 'mpgs81.htm' then @source.patch_line( 67, %r{^<em>}, '</a>')
+      when 'mpgs82.htm' then @source.patch_line(113, %r{^<em>}, '</a>')
+      when 'mpgs86.htm' then @source.patch_line( 25, %r{^<em>}, '</a>')
+      when 'mpgs90.htm'
+        define_singleton_method :page_title, proc { 'Toolkit Graphic Interface Modules &mdash; Inferno 1.1ed' }
+      when 'mpgs93.htm'
+        define_singleton_method :page_title, proc { 'Miscellaneous Limbo Modules &mdash; Inferno 1.1ed' }
+      when 'mpgs105.htm'
+        define_singleton_method :page_title, proc { 'Inferno Devices &mdash; Inferno 1.1ed' }
+      when 'mpgs113.htm'
+        define_singleton_method :page_title, proc { 'Inferno File Protocol &mdash; Inferno 1.1ed' }
+      when 'mpgs125.htm'
+        define_singleton_method :page_title, proc { 'Limbo Format Specifications &mdash; Inferno 1.1ed' }
+      when 'mpgs131.htm'
+        define_singleton_method :page_title, proc { 'Limbo Daemons &mdash; Inferno 1.1ed' }
+      end
 
-  def page_title
-    "#{@source.xpath('//h1').first.text} &mdash; Inferno 1.1ed"
+      super
+    end
+
+    def to_html
+      title = @source.title
+      body = @source.xpath('//body')
+
+      body_styles = ''
+      bgcolor = body.attribute('bgcolor')
+      background = body.attribute('background')
+      body_styles << %(background-color:#{bgcolor.value};) if bgcolor
+      body_styles << %(background-image:url('#{background.value}');background-repeat:repeat;) if background
+
+      # ditch external links (e.g. to www.be.com)
+      # rewrite relative links to *.htm as *.html (many anchors include # hrefs)
+      body.css('a').each do |link|
+        link.replace(link.text) if link['href']&.include?('://') or link['href']&.start_with?('mailto:') # should cover http://, https://, ftp://, etc.
+        link['href'] &&= link['href']&.sub!(%r{\.htm(#.*)?$}, '.html\1')
+      end
+
+      # warn about page assets
+      #asset_locations = body.css('img').collect do |img|
+      #  File.dirname(img['src'])
+      #end.compact
+      #warn "asset locations: #{asset_locations.sort.uniq.inspect}" if asset_locations.any?
+
+      <<~DOC
+        <div class="title"><h1>#{title}</h1></div>
+        <div class="htbody"#{%( style="#{body_styles}") unless body_styles.empty?}>
+            <div id="man">
+        #{body.children.to_xhtml(encoding: 'UTF-8')}
+            </div>
+        </div>
+      DOC
+    end
+
+    def page_title
+      "#{@source.xpath('//h1').first.text} &mdash; Inferno 1.1ed"
+    end
+
   end
 end

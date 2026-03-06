@@ -7,12 +7,15 @@
 # Data General DG/UX 4.30 Version Overrides
 #
 
-module DG_UX_4_30
+class DG_UX::V4_30
+  class Nroff < ::DG_UX::Nroff
 
-  def self.extended(k)
-    k.instance_variable_set '@heading_detection', %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+    def initialize(source)
+      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+      super(source)
+    end
+
   end
-
 end
 
 

@@ -11,22 +11,21 @@
 # √ manual section may be e.g. 4f or 4n (currently output directory is just man4/)
 #
 
-module BSD_2_11
+class BSD::V2_11
+  class Troff < ::BSD::Troff
 
-  def self.extended(k)
+    # tmac.an.new
+    define_method 'UC' do |v = nil, *_args|
+      ds(']W ' + case v
+                 when '2' then '2nd Berkeley Distribution' # is actually "2rd" in tmac.an.new
+                 when '4' then '4th Berkeley Distribution'
+                 when '5' then '4.2 Berkeley Distribution'
+                 when '6' then '4.3 Berkeley Distribution'
+                 when '7' then '4.4 Berkeley Distribution'
+                 else '3rd Berkeley Distribution'
+                 end
+        )
+    end
+
   end
-
-  # tmac.an.new
-  define_method 'UC' do |v = nil, *_args|
-    req_ds(']W ' + case v
-                   when '2' then '2nd Berkeley Distribution' # is actually "2rd" in tmac.an.new
-                   when '4' then '4th Berkeley Distribution'
-                   when '5' then '4.2 Berkeley Distribution'
-                   when '6' then '4.3 Berkeley Distribution'
-                   when '7' then '4.4 Berkeley Distribution'
-                   else '3rd Berkeley Distribution'
-                   end
-          )
-  end
-
 end

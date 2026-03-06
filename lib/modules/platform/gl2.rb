@@ -31,80 +31,70 @@
 #
 
 class GL2
-
   class Troff < ::Troff
 
-=begin
-  def self.extended(k)
-    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    # the Alias manual pages are *.man
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?|man)$/, '')
-    k.instance_variable_set '@manual_section', Regexp.last_match[1]
+    alias :LP :P
+
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
+      @manual_section ||= Regexp.last_match[1]
+      super(source)
+    end
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          #footer: "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W",
+          footer: "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W",
+          'Tm' => '&trade;',
+          ']D' => 'Silicon Graphics',
+          ']L' => '', # explicitly blanked in .TH before being conditionally redefined
+          ']W' => File.mtime(@source.path).strftime("%B %d, %Y")
+        }
+      )
+    end
+
+    def init_nr
+      @register[')t'] = Troff::Register.new(1) # 8.5" x 11" format (notionally enable) - used in ascii(5)
+      @register[')s'] = Troff::Register.new(0) # 6" x 9" format (notionally disable)
+    end
+
+    def init_sc
+      super
+      @state[:special_char].merge!(
+        {
+          'ga' => '&#96;' # grave, U0060; this seems to be intended as a spacing character (non-spacing is default, U0300) - see csh(1)
+        }
+      )
+    end
+
+    def init_ta
+      @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
+      true
+    end
+
+    def init_PD
+      super
+      @register['PD'] = @register[')P']
+      @register['IN'] = Troff::Register.new(@state[:base_indent])
+    end
+
+    # index info - what even makes sense to do with this
+    # probably nothing, as it seems to be for bound manuals (absolute page number)
+    define_method 'IX' do |*args| ; end
+
+    define_method 'TH' do |*args|
+      ds "]L #{args[2]}" if args[2] and !args[2].strip.empty?
+      ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
+
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"
+      heading << ' \\|\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
+    define_method 'UC' do |*_args| ; end
+
   end
-=end
-
-  alias :LP :P
-
-  def initialize(source)
-    @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
-    @manual_section ||= Regexp.last_match[1]
-    super(source)
-  end
-
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        #footer: "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W",
-        footer: "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W",
-        'Tm' => '&trade;',
-        ']D' => 'Silicon Graphics',
-        ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-        ']W' => File.mtime(@source.path).strftime("%B %d, %Y")
-      }
-    )
-  end
-
-  def init_nr
-    @register[')t'] = Troff::Register.new(1) # 8.5" x 11" format (notionally enable) - used in ascii(5)
-    @register[')s'] = Troff::Register.new(0) # 6" x 9" format (notionally disable)
-  end
-
-  def init_sc
-    super
-    @state[:special_char].merge!(
-      {
-        'ga' => '&#96;' # grave, U0060; this seems to be intended as a spacing character (non-spacing is default, U0300) - see csh(1)
-      }
-    )
-  end
-
-  def init_ta
-    @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
-    true
-  end
-
-  def init_PD
-    super
-    @register['PD'] = @register[')P']
-    @register['IN'] = Troff::Register.new(@state[:base_indent])
-  end
-
-  # index info - what even makes sense to do with this
-  # probably nothing, as it seems to be for bound manuals (absolute page number)
-  define_method 'IX' do |*args| ; end
-
-  define_method 'TH' do |*args|
-    req_ds "]L #{args[2]}" if args[2] and !args[2].strip.empty?
-    req_ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
-
-    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"
-    heading << ' \\|\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(*args, heading: heading)
-  end
-
-  def req_UC(*); end
-
-end
 end

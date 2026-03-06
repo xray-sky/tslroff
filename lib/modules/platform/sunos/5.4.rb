@@ -8,41 +8,166 @@
 #
 #
 
-module SunOS_5_4
+class SunOS::V5_4
+  class Troff < ::SunOS::Troff
 
-  def self.extended(k)
-    #case k.instance_variable_get '@input_filename'
-    #when 'ld.1'
-    #  k.patch_line(767, /\\h/, 'h')
-    #when 'a.out.4' # h4x: collapsed tbl cells due to line-height:0 from \u...\d
-    #  k.patch_line(54, /(\\u.+?\\d)/, '\\ \1\\ ')
-    #  k.patch_line(58, /(\\u.+?\\d)/, '\\ \1\\ ')
-    #  k.instance_variable_get('@source').lines[60].gsub!(/(\\u.+?\\d)/, '\\ \1\\ ')
-    #when 'ar.4' # h4x: missing single quote in input; not sure how troff copes - perhaps \(ga matches ' ?? ugh... TODO
-    #  k.patch_line(41, /\\h\\\(ga/, "\\h'")
-    #end
-  end
+    HARDCOPY_TITLES = {
+          # Hard Copy Docs Only
+      'HC_DRIVERINSTALL' => "Driver Developer Kit Installation Guide",
+      'HC_OPENNEWSDDR' => "Driver Developer Kit Open Issues and Late-Breaking News",
+      'HC_ENCRYPTINST' => "Encryption Kit Installation Guide",
+      'HC_SPARCHW' => "SPARC Hardware Platform Guide",
+      'HC_DEVINSTALL' => "Software Developer Kit Installation Guide",
+      'HC_OPENNEWSDEV' => "Software Developer Kit Open Issues and Late-Breaking News",
+      'HC_OPENNEWSUSER' => "Solaris 2.4 Open Issues and Late-Breaking News",
+      'HC_x86DUG' => "Solaris 2.4 x86 Driver Update Guide",
+      'HC_x86HW' => "Solaris 2.4 x86 Hardware Compatibility List",
+      'HC_DESKSETQREF' => "Solaris QuickStart Guide",
+      'HC_ROADMAP' => "Solaris Roadmap",
+      'HC_MEDIAPREPGU' => "Solaris Source Installation and Media Preparation Guide",
+      'HC_SRCENCRYPT' => "Source Encryption Supplement",
+      'HC_HWCONFIG' => "x86 Device Configuration Guide"
+    }
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        ']W' => "SunOS #{@version}",
-        '||' => '/usr/share/lib/tmac'
-      }
-    )
-  end
+    MANUAL_NAMES = {
+      'ABADMIN' => "Software and AnswerBook Packages Administration Guide",
+      'ADMINREF' => "Administration Application Reference Manual",
+      'ADMINSUPP' => "Administration Supplement for Solaris Platforms",
+      'ADVOSUG' => "Solaris Advanced User's Guide",
+      'ASPA' => "Security, Performance, and Accounting Administration",
+      'BINARY' => "Solaris Binary Compatibility Guide",
+      'CAT' => "Common Administration Tasks",
+      'DDADD' => "Peripherals Administration",
+      'DIRXLIBUG' => "Direct Xlib User's Guide",
+      'DRIVER' => "Writing Device Drivers",
+      'FCODE' => "Writing FCode Programs",
+      'I18N' => "Developer's Guide to Internationalization",
+      'INTRODEV' => "Software Developer Kit Introduction",
+      'INTRODRIVER' => "Driver Developer Kit Introduction",
+      'INTROUSER' => "Solaris 2.4 Introduction",
+      'LLM' => "Linker and Libraries Guide",
+      'MOTIFTRANS' => "OPENLOOK to Motif GUI Transition Guide",
+      'MTP' => "Multithreaded Programming",
+      'NETCOM' => "TCP/IP Network Administration Guide",
+      'NETNAME' => "Name Services Administration Guide",
+      'NETP' => "Network Interfaces Programmer's Guide",
+      'NETSHARE' => "NFS Administration Guide",
+      'NETTRANS' => "NIS+ Transition Guide",
+      'NISQSTART' => "Name Service Setup and Configuration Guide",
+      'OLITREF' => "OLIT Reference Manual",
+      'OLITSTART' => "OLIT QuickStart Programmer's Guide",
+      'OPENBOOTCMDREF' => "OpenBoot Command Reference Manual",
+      'OWDDG' => "OpenWindows Server Device Developer's Guide",
+      'OWPG' => "OpenWindows Server Programmer's Guide",
+      'OWREFMAN' => "OpenWindows Reference Manual",
+      'PACKINSTALL' => "Application Packaging Developer's Guide",
+      'PROGUTILS' => "Programming Utilities Guide",
+      'REFMAN1' => "man Pages(1): User Commands",
+      'REFMAN1M' => "man Pages(1M): System Administration Commands",
+      'REFMAN2' => "man Pages(2): System Calls",
+      'REFMAN3' => "man Pages(3): Library Routines",
+      'REFMAN4' => "man Pages(4): File Formats",
+      'REFMAN5' => "man Pages(5): Headers, Tables and Macros",
+      'REFMAN6' => "man Pages(6): Demos",
+      'REFMAN7' => "man Pages(7): Special Files",
+      'REFMAN9' => "man Pages(9): DDI and DKI Overview",
+      'REFMAN9E' => "man Pages(9E): DDI and DKI Driver Entry Points",
+      'REFMAN9F' => "man Pages(9F): DDI and DKI Kernel Functions",
+      'REFMAN9S' => "man Pages(9S): DDI and DKI Data Structures",
+      'RSAG' => "File System Administration",
+      'SHIELD' => "SunSHIELD Basic Security Module Guide",
+      'SOURCE' => "Solaris Source Compatibility Guide",
+      'SPARC' => "SPARC Assembly Language Reference Manual",
+      'SPARCINSTALL' => "SPARC: Installing Solaris Software",
+      'SS' => "System Services Guide",
+      'SSDIG' => "Desktop Integration Guide",
+      'SSUG' => "Solaris User's Guide",
+      'STANDARDS' => "Standards Conformance Reference Manual",
+      'STREAMS' => "STREAMS Programmer's Guide",
+      'SUNDIAG' => "SunDiag User's Guide",
+      'SUUPAM' => "User Accounts, Printers, and Mail Administration",
+      'SVCONVERT' => "XView Developer's Notes",
+      'TELEOVERVIEW' => "XTL Architecture Guide",
+      'TRANSITION' => "Solaris 1.x to Solaris 2.x Transition Guide",
+      'TTREF' => "ToolTalk Reference Manual",
+      'TTUG' => "ToolTalk User's Guide",
+      'XTELADMIN' => "XTL Administrator's Guide",
+      'XTELPG' => "XTL Application Programmer's Guide",
+      'XTELPROVIDER' => "XTL Provider Programmer's Guide",
+      'x86' => "x86 Assembly Language Reference Manual",
+      'x86INSTALL' => "x86: Installing Solaris Software",
+          # SPARCstorage Array
+      'VOLMGRREFMAN' => "Manpages For The Volume Manager",
+      'ARRAYCONFG' => "SPARCstorage Array Configuration Guide",
+      'ARRAYUG' => "SPARCstorage Array User's Guide",
+          # SPARCworks
+      'BROWSESC' => "Browsing Source Code",
+      'DEBUGAPROG' => "Debugging a Program",
+      'TOOLSET' => "Managing the Toolset",
+      'MAKETOOL' => "Building Programs with MakeTool",
+      'MERGE' => "Merging Source Files",
+      'PERFTUNAPP' => "Performance Tuning an Application",
+      'SPARCWTR' => "SPARCworks/ProWorks Tutorial",
+          # Languages - C
+      'CTRANSITION' => "C 3.0.1 Transition Guide for SPARC Systems",
+      'CUG' => "C 3.0.1 User's Guide",
+          # Languages - C++
+      'CLANGREF' => "C++ 4.0.1 Language System Product Reference Manual",
+      'CPPLIBREF' => "C++ 4.0.1 Library Reference Manual",
+      'CPPPUG' => "C++ 4.0.1 User's Guide",
+          # Languages - Fortran
+      'FORTRANREF' => "FORTRAN 3.0.1 Reference Manual",
+      'FORTRANUG' => "FORTRAN 3.0.1 Users Guide",
+          # Languages - Pascal
+      'PASCALREF' => "SPARCompiler Pascal 3.0.3 Reference Manual",
+      'PASCALUG' => "SPARCompiler Pascal 3.0.3 User Guide",
+          # Languages - Common to all
+      'NUMCOMPGD' => "Numerical Computation Guide",
+      'PROGTOOLS' => "Profiling Tools",
+      'SWSC2' => "Installing SunPro Software on Solaris",
+          # DiagExec
+      'BASICSDIAG' => "Basic System Diagnostics",
+      'GRAPHDIAG' => "Graphics Diagnostics",
+      'NETDIAG' => "Networking Diagnostics",
+      'PERIPHDIAG' => "Peripheral Diagnostics",
+      'SDIAGEXECPG' => "SunDiagnostic Executive Programmer's Guide",
+      'SDIAGEXECUG' => "Using the SunDiagnostic Executive",
+      'SDIAGEXECINST' => "SunDiagnostics Answerbook Install",
+      'MPDQREF' => "MPDiag Quick Reference Guide",
+      'MPDUG' => "MPDiag User's Guide",
+          # NeWSprint
+      'NPUSING' => "Using NeWSprint Printers",
+      'SPUSER' => "Using SunPics AnswerBook",
+      'NPINSTALL' => "Installing NeWSprint",
+      'NPADMIN' => "NeWSprint Printer Administrator's Guide",
+      'PRELIMN' => "PreLimn Reference Guide",
+      'NPREFERENCE' => "NeWSprint Reference",
+      'NPDEVGUIDE' => "NeWSprint Developer's Guide",
+      'NPRELEASE' => "NeWSprint Release Notes",
+      'SPINSTALL' => "SPARCprinter Installation and User's Guide",
+      'NP20INSTALL' => "NeWSprinter 20 Installation and User's Guide",
+      'SBUSINSTALL' => "SBus Printer Card Installation Guide",
+          # DevGuide
+      'XVIEWCODEGEN' => "OpenWindows Developer's Guide: XView Code Generator Programmer's Guide",
+      'OLITCODEGEN' => "OpenWindows Developer's Guide: OLIT Code Generator Programmer's Guide",
+      'DEVGUIDEUG' => "OpenWindows Developer's Guide: User's Guide",
+      'MOTIFUTIL' => "OpenWindows Developer's Guide: Motif Conversion Utilities Guide",
+          # XGL
+      'XGLARCH' => "XGL Architecture Guide",
+      'XGLPORTGU' => "XGL Device Pipeline Porting Guide",
+      'XGLPG' => "XGL Programmer's Guide",
+      'XGLREFMAN' => "XGL Reference Manual",
+      'XGLTESTUG' => "XGL Test Suite User's Guide",
+          # XIL
+      'XILPG' => "XIL Programmer's Guide",
+      'XILREFMAN' => "XIL Reference Manual",
+      'XILSYSPG' => "XIL Device Porting and Extensibility Guide",
+      'XILTESTUG' => "XIL Test Suite User's Guide",
+          # non-Sun titles
+      'KR' => "The C Programming Language"
+    }
 
-  def init_fp
-    # Palatino family for postscript output (PA, PI, PB)
-    super
-    @state[:fonts][4] = 'B'
-    @state[:fonts][5] = 'R'
-    @state[:fonts][6] = 'B'
-  end
-
-  def init_sunos54
-    @state[:sections] = {
+    MANUAL_SECTION_NAMES = {
       '1'   => 'User Commands',
       '1b'  => 'SunOS/BSD Compatibility Package Commands',
       '1c'  => 'Communication Commands',
@@ -83,190 +208,55 @@ module SunOS_5_4
       '9s'  => 'DDI and DKI Data Structures',
       'l'   => 'Local Commands'
     }
+
+    HARDCOPY_TITLES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
+    MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          ']W' => "SunOS #{@version}",
+          '||' => '/usr/share/lib/tmac'
+        }
+      )
+    end
+
+    def init_fp
+      # Palatino family for postscript output (PA, PI, PB)
+      super
+      @state[:fonts][4] = 'B'
+      @state[:fonts][5] = 'R'
+      @state[:fonts][6] = 'B'
+    end
+
+    define_method 'SB' do |*args|
+      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+    end
+
+    define_method 'TH' do |*args|
+      ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
+      ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
+      ds "]L Last change: #{args[2]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+
+      heading = '\\*(]H'
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
+      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(heading: heading)
+    end
+
+    define_method 'TZ' do |*args|
+      ds "Tz #{MANUAL_NAMES[args[0]]}"
+      parse "\\fI\\*(Tz\\f1#{args[1]}"
+    end
+
+    define_method 'HC' do |*args|
+      ds "Hc #{HARDCOPY_TITLES[args[0]]}"
+      parse "\\fI\\*(Hc\\f1#{args[1]}"
+    end
+
   end
-
-  define_method 'SB' do |*args|
-    parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-  end
-
-  define_method 'TH' do |*args|
-    req_ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
-    req_ds "]D #{@state[:sections][args[1].downcase]}" if args[1]
-    req_ds "]L Last change: #{args[2]}"
-    req_ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-    req_ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
-
-    heading = '\\*(]H'
-    heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
-    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(heading: heading)
-  end
-
-  define_method 'TZ' do |*args|
-    req_ds('Tz ' + case args[0]
-                   when 'ABADMIN' then "Software and AnswerBook Packages Administration Guide"
-                   when 'ADMINREF' then "Administration Application Reference Manual"
-                   when 'ADMINSUPP' then "Administration Supplement for Solaris Platforms"
-                   when 'ADVOSUG' then "Solaris Advanced User's Guide"
-                   when 'ASPA' then "Security, Performance, and Accounting Administration"
-                   when 'BINARY' then "Solaris Binary Compatibility Guide"
-                   when 'CAT' then "Common Administration Tasks"
-                   when 'DDADD' then "Peripherals Administration"
-                   when 'DIRXLIBUG' then "Direct Xlib User's Guide"
-                   when 'DRIVER' then "Writing Device Drivers"
-                   when 'FCODE' then "Writing FCode Programs"
-                   when 'I18N' then "Developer's Guide to Internationalization"
-                   when 'INTRODEV' then "Software Developer Kit Introduction"
-                   when 'INTRODRIVER' then "Driver Developer Kit Introduction"
-                   when 'INTROUSER' then "Solaris 2.4 Introduction"
-                   when 'LLM' then "Linker and Libraries Guide"
-                   when 'MOTIFTRANS' then "OPENLOOK to Motif GUI Transition Guide"
-                   when 'MTP' then "Multithreaded Programming"
-                   when 'NETCOM' then "TCP/IP Network Administration Guide"
-                   when 'NETNAME' then "Name Services Administration Guide"
-                   when 'NETP' then "Network Interfaces Programmer's Guide"
-                   when 'NETSHARE' then "NFS Administration Guide"
-                   when 'NETTRANS' then "NIS+ Transition Guide"
-                   when 'NISQSTART' then "Name Service Setup and Configuration Guide"
-                   when 'OLITREF' then "OLIT Reference Manual"
-                   when 'OLITSTART' then "OLIT QuickStart Programmer's Guide"
-                   when 'OPENBOOTCMDREF' then "OpenBoot Command Reference Manual"
-                   when 'OWDDG' then "OpenWindows Server Device Developer's Guide"
-                   when 'OWPG' then "OpenWindows Server Programmer's Guide"
-                   when 'OWREFMAN' then "OpenWindows Reference Manual"
-                   when 'PACKINSTALL' then "Application Packaging Developer's Guide"
-                   when 'PROGUTILS' then "Programming Utilities Guide"
-                   when 'REFMAN1' then "man Pages(1): User Commands"
-                   when 'REFMAN1M' then "man Pages(1M): System Administration Commands"
-                   when 'REFMAN2' then "man Pages(2): System Calls"
-                   when 'REFMAN3' then "man Pages(3): Library Routines"
-                   when 'REFMAN4' then "man Pages(4): File Formats"
-                   when 'REFMAN5' then "man Pages(5): Headers, Tables and Macros"
-                   when 'REFMAN6' then "man Pages(6): Demos"
-                   when 'REFMAN7' then "man Pages(7): Special Files"
-                   when 'REFMAN9' then "man Pages(9): DDI and DKI Overview"
-                   when 'REFMAN9E' then "man Pages(9E): DDI and DKI Driver Entry Points"
-                   when 'REFMAN9F' then "man Pages(9F): DDI and DKI Kernel Functions"
-                   when 'REFMAN9S' then "man Pages(9S): DDI and DKI Data Structures"
-                   when 'RSAG' then "File System Administration"
-                   when 'SHIELD' then "SunSHIELD Basic Security Module Guide"
-                   when 'SOURCE' then "Solaris Source Compatibility Guide"
-                   when 'SPARC' then "SPARC Assembly Language Reference Manual"
-                   when 'SPARCINSTALL' then "SPARC: Installing Solaris Software"
-                   when 'SS' then "System Services Guide"
-                   when 'SSDIG' then "Desktop Integration Guide"
-                   when 'SSUG' then "Solaris User's Guide"
-                   when 'STANDARDS' then "Standards Conformance Reference Manual"
-                   when 'STREAMS' then "STREAMS Programmer's Guide"
-                   when 'SUNDIAG' then "SunDiag User's Guide"
-                   when 'SUUPAM' then "User Accounts, Printers, and Mail Administration"
-                   when 'SVCONVERT' then "XView Developer's Notes"
-                   when 'TELEOVERVIEW' then "XTL Architecture Guide"
-                   when 'TRANSITION' then "Solaris 1.x to Solaris 2.x Transition Guide"
-                   when 'TTREF' then "ToolTalk Reference Manual"
-                   when 'TTUG' then "ToolTalk User's Guide"
-                   when 'XTELADMIN' then "XTL Administrator's Guide"
-                   when 'XTELPG' then "XTL Application Programmer's Guide"
-                   when 'XTELPROVIDER' then "XTL Provider Programmer's Guide"
-                   when 'x86' then "x86 Assembly Language Reference Manual"
-                   when 'x86INSTALL' then "x86: Installing Solaris Software"
-          # SPARCstorage Array
-                   when 'VOLMGRREFMAN' then "Manpages For The Volume Manager"
-                   when 'ARRAYCONFG' then "SPARCstorage Array Configuration Guide"
-                   when 'ARRAYUG' then "SPARCstorage Array User's Guide"
-          # SPARCworks
-                   when 'BROWSESC' then "Browsing Source Code"
-                   when 'DEBUGAPROG' then "Debugging a Program"
-                   when 'TOOLSET' then "Managing the Toolset"
-                   when 'MAKETOOL' then "Building Programs with MakeTool"
-                   when 'MERGE' then "Merging Source Files"
-                   when 'PERFTUNAPP' then "Performance Tuning an Application"
-                   when 'SPARCWTR' then "SPARCworks/ProWorks Tutorial"
-          # Languages - C
-                   when 'CTRANSITION' then "C 3.0.1 Transition Guide for SPARC Systems"
-                   when 'CUG' then "C 3.0.1 User's Guide"
-          # Languages - C++
-                   when 'CLANGREF' then "C++ 4.0.1 Language System Product Reference Manual"
-                   when 'CPPLIBREF' then "C++ 4.0.1 Library Reference Manual"
-                   when 'CPPPUG' then "C++ 4.0.1 User's Guide"
-          # Languages - Fortran
-                   when 'FORTRANREF' then "FORTRAN 3.0.1 Reference Manual"
-                   when 'FORTRANUG' then "FORTRAN 3.0.1 Users Guide"
-          # Languages - Pascal
-                   when 'PASCALREF' then "SPARCompiler Pascal 3.0.3 Reference Manual"
-                   when 'PASCALUG' then "SPARCompiler Pascal 3.0.3 User Guide"
-          # Languages - Common to all
-                   when 'NUMCOMPGD' then "Numerical Computation Guide"
-                   when 'PROGTOOLS' then "Profiling Tools"
-                   when 'SWSC2' then "Installing SunPro Software on Solaris"
-          # DiagExec
-                   when 'BASICSDIAG' then "Basic System Diagnostics"
-                   when 'GRAPHDIAG' then "Graphics Diagnostics"
-                   when 'NETDIAG' then "Networking Diagnostics"
-                   when 'PERIPHDIAG' then "Peripheral Diagnostics"
-                   when 'SDIAGEXECPG' then "SunDiagnostic Executive Programmer's Guide"
-                   when 'SDIAGEXECUG' then "Using the SunDiagnostic Executive"
-                   when 'SDIAGEXECINST' then "SunDiagnostics Answerbook Install"
-                   when 'MPDQREF' then "MPDiag Quick Reference Guide"
-                   when 'MPDUG' then "MPDiag User's Guide"
-          # NeWSprint
-                   when 'NPUSING' then "Using NeWSprint Printers"
-                   when 'SPUSER' then "Using SunPics AnswerBook"
-                   when 'NPINSTALL' then "Installing NeWSprint"
-                   when 'NPADMIN' then "NeWSprint Printer Administrator's Guide"
-                   when 'PRELIMN' then "PreLimn Reference Guide"
-                   when 'NPREFERENCE' then "NeWSprint Reference"
-                   when 'NPDEVGUIDE' then "NeWSprint Developer's Guide"
-                   when 'NPRELEASE' then "NeWSprint Release Notes"
-                   when 'SPINSTALL' then "SPARCprinter Installation and User's Guide"
-                   when 'NP20INSTALL' then "NeWSprinter 20 Installation and User's Guide"
-                   when 'SBUSINSTALL' then "SBus Printer Card Installation Guide"
-          # DevGuide
-                   when 'XVIEWCODEGEN' then "OpenWindows Developer's Guide: XView Code Generator Programmer's Guide"
-                   when 'OLITCODEGEN' then "OpenWindows Developer's Guide: OLIT Code Generator Programmer's Guide"
-                   when 'DEVGUIDEUG' then "OpenWindows Developer's Guide: User's Guide"
-                   when 'MOTIFUTIL' then "OpenWindows Developer's Guide: Motif Conversion Utilities Guide"
-          # XGL
-                   when 'XGLARCH' then "XGL Architecture Guide"
-                   when 'XGLPORTGU' then "XGL Device Pipeline Porting Guide"
-                   when 'XGLPG' then "XGL Programmer's Guide"
-                   when 'XGLREFMAN' then "XGL Reference Manual"
-                   when 'XGLTESTUG' then "XGL Test Suite User's Guide"
-          # XIL
-                   when 'XILPG' then "XIL Programmer's Guide"
-                   when 'XILREFMAN' then "XIL Reference Manual"
-                   when 'XILSYSPG' then "XIL Device Porting and Extensibility Guide"
-                   when 'XILTESTUG' then "XIL Test Suite User's Guide"
-          # non-Sun titles
-                   when 'KR' then "The C Programming Language"
-                   else "UNKNOWN TITLE ABBREVIATION: #{args[0]}".tap { |x| warn "Tz => #{x}" }
-                   end
-          )
-    parse "\\fI\\*(Tz\\f1#{args[1]}"
-  end
-
-  define_method 'HC' do |*args|
-    req_ds('Hc ' + case args[0]
-          # Hard Copy Docs Only
-                   when 'HC_DRIVERINSTALL' then "Driver Developer Kit Installation Guide"
-                   when 'HC_OPENNEWSDDR' then "Driver Developer Kit Open Issues and Late-Breaking News"
-                   when 'HC_ENCRYPTINST' then "Encryption Kit Installation Guide"
-                   when 'HC_SPARCHW' then "SPARC Hardware Platform Guide"
-                   when 'HC_DEVINSTALL' then "Software Developer Kit Installation Guide"
-                   when 'HC_OPENNEWSDEV' then "Software Developer Kit Open Issues and Late-Breaking News"
-                   when 'HC_OPENNEWSUSER' then "Solaris 2.4 Open Issues and Late-Breaking News"
-                   when 'HC_x86DUG' then "Solaris 2.4 x86 Driver Update Guide"
-                   when 'HC_x86HW' then "Solaris 2.4 x86 Hardware Compatibility List"
-                   when 'HC_DESKSETQREF' then "Solaris QuickStart Guide"
-                   when 'HC_ROADMAP' then "Solaris Roadmap"
-                   when 'HC_MEDIAPREPGU' then "Solaris Source Installation and Media Preparation Guide"
-                   when 'HC_SRCENCRYPT' then "Source Encryption Supplement"
-                   when 'HC_HWCONFIG' then "x86 Device Configuration Guide"
-                   else "UNKNOWN TITLE ABBREVIATION: #{args[0]}".tap { |x| warn "Hc => #{x}" }
-                   end
-          )
-    parse "\\fI\\*(Hc\\f1#{args[1]}"
-  end
-
 end

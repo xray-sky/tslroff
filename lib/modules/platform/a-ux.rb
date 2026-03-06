@@ -14,17 +14,19 @@
 # local .TH for 0.7 transcript, if we have tmac.an
 #
 
-module A_UX
+class A_UX
+  class Nroff < ::Nroff
 
-  def self.extended(k)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(?:\d\S?)(?:\.[zZ])?$/, '') # REVIEW: would this be better & more generic as a 'scan' call? everything after the section?
-    k.instance_variable_set '@heading_detection', %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-    k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
-  end
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(?:\d\S?)(?:\.[zZ])?$/, '') # REVIEW: would this be better & more generic as a 'scan' call? everything after the section?
+      @heading_detction ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
+      super(source)
+    end
 
-  def page_title
-    "#{@manual_entry}(#{@manual_section}) &mdash; A/UX #{@version}"
+    def page_title
+      "#{@manual_entry}(#{@manual_section}) &mdash; A/UX #{@version}"
+    end
+
   end
 end
-
-

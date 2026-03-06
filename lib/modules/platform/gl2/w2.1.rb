@@ -7,12 +7,21 @@
 # SGI GL1-W2.1 Platform Overrides
 #
 
-module GL2_W2_1
+class GL2::W2_1
+  class Troff < ::GL2::Troff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'regexp.5' then k.patch_line(418, /^\.in/, '.if')
+    def initialize(source)
+      @version = "W2.1"
+      super(source)
     end
-  end
 
+    def source_init
+      case @source.file
+      when 'regexp.5' then @source.patch_line 418, /^\.in/, '.if'
+      end
+      super
+    end
+
+  end
 end
+

@@ -27,42 +27,48 @@
 
 require_relative './en_us'
 
-class Source
-  def magic
-    case File.basename(@filename)
-    when 'ntpq.8' then 'Troff'
-    else @magic
+class NEWS_os::V4_2_1R_ja_JP
+
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when 'ntpq.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
+  end
+
+  class Troff < ::NEWS_os::V4_2_1R_en_US::Troff
+
+    def initialize(source)
+      @language = 'ja'
+      source.lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
+      @related_info_heading ||= %r{関連事項}u
+      super(source)
+    end
+
+    # REVIEW patch interaction with super (4.2.1R en_US)
+    def source_init
+      case @source.file
+      when 'index.3', 'index.3f7768'
+        @manual_entry = '_index'
+      # TODO when we resolve the baseline/font issue with \u, \d, and \s
+      # current status in un-messed-with state is, ugly but not broken. tried to fix it and achieved broken.
+      # also there's the issue of doing rewrites in .so for gamma.3m
+      #when 'lgamma.3m'
+      #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
+      when 'ntpq.8'
+        # incorrectly recognized as nroff source as the first character is '@'
+        @source.patch_line(1, /^/, '.')
+      end
+      super
+    end
+
+    def so(name, breaking: nil)
+      super(name, breaking: breaking) do |lines|
+        lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
+      end
+    end
+
   end
 end
-
-module NEWS_os_4_2_1R_ja_JP
-
-  def self.extended(k)
-    k.extend NEWS_os_4_2_1R_en_US
-    k.instance_variable_set '@language', 'ja'
-    k.instance_variable_get('@source').lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
-    k.instance_variable_set '@related_info_heading', %r{関連事項}u
-    case k.instance_variable_get '@input_filename'
-    when 'index.3', 'index.3f7768'
-      k.instance_variable_set '@manual_entry', '_index'
-    # TODO when we resolve the baseline/font issue with \u, \d, and \s
-    # current status in un-messed-with state is, ugly but not broken. tried to fix it and achieved broken.
-    # also there's the issue of doing rewrites in .so for gamma.3m
-    #when 'lgamma.3m'
-    #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
-    when 'ntpq.8'
-      # incorrectly recognized as nroff source as the first character is '@'
-      k.patch_line(0, /^/, '.')
-    end
-  end
-
-  def req_so(name, breaking: nil)
-    super(name, breaking: breaking) do |lines|
-      lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
-    end
-  end
-
-end
-
-

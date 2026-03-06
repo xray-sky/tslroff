@@ -1,14 +1,36 @@
-# n.rb
+# registers.rb
 # -------------
 #   troff
 # -------------
 #
-#   number registers
+#   \g - format of number registers
+#   \n - number registers
+#
+
+class Troff
+
+#   \g - format of number registers
+#
+# TODO: \g will only return a value if the stated register has been set or used;
+#       otherwise, it returns 0.
+#
+
+  def esc_g(s)
+    warn "use of \\g - #{s.inspect} (check)"
+    s.slice!(0) if s.start_with?('(')
+    if @register[s]
+      @register[s].format
+    else
+      warn "unselected number register #{s} from #{s.inspect}"
+      0
+    end.to_s
+  end
+
+#   \n - number registers
 #
 #   appears as though an otherwise uninitialized register has a value of 0
 #
 
-class Troff
   def esc_n(s)
     incr = case s.slice!(0)
            when '+' then :incr
@@ -23,4 +45,5 @@ class Troff
     @register[s].send(incr).tap { warn "auto incrementing register #{s.inspect}" } if incr
     @register[s].to_s
   end
+
 end

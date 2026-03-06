@@ -23,118 +23,95 @@
 #   some other pages do too, like stlicense(1)
 #
 
-module HPUX_9_05
+class HPUX::V9_05
+  class Troff < ::HPUX::Troff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'default.4'
-      k.instance_variable_set '@manual_entry', '_default'
+    def source_init
+      case @source.file
+      when 'default.4'
+        @manual_entry = '_default'
+      end
+      super
     end
-  end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
-        'Tm' => '&trade;',
-        ')H' => '', # .TH sets this to \&. Some pages define it.
-        #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
-        # REVIEW is this what actually goes in the footer in the printed manual?
-        ']V' => File.mtime(@source.filename).strftime("%B %d, %Y")
-      }
-    )
-  end
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
+          'Tm' => '&trade;',
+          ')H' => '', # .TH sets this to \&. Some pages define it.
+          #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
+          # REVIEW is this what actually goes in the footer in the printed manual?
+          ']V' => File.mtime(@source.file).strftime("%B %d, %Y")
+        }
+      )
+    end
 
-  def init_fp
-    super
-    @state[:fonts][4] = 'C'
-  end
+    def init_fp
+      super
+      @state[:fonts][4] = 'C'
+    end
 
-  # .so with absolute path, headers in /usr/include
-  def req_so(name, breaking: nil)
-    osdir = @source_dir.dup
-    @source_dir << '/../..' if name.start_with?('/')
-    super(name, breaking: breaking)
-    @source_dir = osdir
-  end
+    # .so with absolute path, headers in /usr/include
+    def req_so(name, breaking: nil)
+      osdir = @source_dir.dup
+      @source_dir << '/../..' if name.start_with?('/')
+      super(name, breaking: breaking)
+      @source_dir = osdir
+    end
 
-  %w[C B I].each do |a|
-    define_method a do |*args|
-      if args.any?
-        req_ft @state[:fonts].index(a).to_s
-        parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
-        #send '}N'
-        send '}f'
-      else
-        #req_it '1 }N'
-        req_it '1 }f'
+    %w[C B I].each do |a|
+      define_method a do |*args|
+        if args.any?
+          req_ft @state[:fonts].index(a).to_s
+          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+          #send '}N'
+          send '}f'
+        else
+          #req_it '1 }N'
+          req_it '1 }f'
+        end
       end
     end
-  end
 
-  %w[C B I R].permutation(2).each do |a, b|
-    define_method(a + b) do |*args|
-      parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
+    %w[C B I R].permutation(2).each do |a, b|
+      define_method(a + b) do |*args|
+        parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
+      end
     end
-  end
 
-  define_method 'TH' do |*args|
-    req_ds "]W #{__unesc_star('\\*(]V')}"
-    req_ds "]O #{args[2]}"
-    req_ds "]L #{args[3]}"
-    req_ds "]J #{args[4]}"
+    define_method 'TH' do |*args|
+      req_ds "]W #{__unesc_star('\\*(]V')}"
+      req_ds "]O #{args[2]}"
+      req_ds "]L #{args[3]}"
+      req_ds "]J #{args[4]}"
 
-    # ]J and ]O follow the title (if given), each centered on their own line.
-    # .sp .3v between, .sp 1.5v following.
-    #space = false
-    %w( ]J ]O ).each do |s|
-      next if @state[:named_string][s].empty?
-      #space = true
-      byline = Block::Footer.new
-      byline.style.css[:margin_top] = '0.5em' # TODO not working?
-      unescape "\\f3\\*(#{s}\\fP", output: byline
-      @document << byline
+      # ]J and ]O follow the title (if given), each centered on their own line.
+      # .sp .3v between, .sp 1.5v following.
+      #space = false
+      %w( ]J ]O ).each do |s|
+        next if @state[:named_string][s].empty?
+        #space = true
+        byline = Block::Footer.new
+        byline.style.css[:margin_top] = '0.5em' # TODO not working?
+        unescape "\\f3\\*(#{s}\\fP", output: byline
+        @document << byline
+      end
+      #req_sp('1.5v') if space # probably this is overkill, actually
+
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
     end
-    #req_sp('1.5v') if space # probably this is overkill, actually
 
-    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-    heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(*args, heading: heading)
   end
-
 end
-
 # all the same tmac.an
 
-module HPUX_8_07
-  def self.extended(k)
-    k.extend HPUX_9_05
-  end
-end
-
-module HPUX_9_00
-  def self.extended(k)
-    k.extend HPUX_9_05
-  end
-end
-
-module HPUX_9_03
-  def self.extended(k)
-    k.extend HPUX_9_05
-  end
-end
-
-module HPUX_9_04
-  def self.extended(k)
-    k.extend HPUX_9_05
-  end
-end
-
-module HPUX_9_10
-  def self.extended(k)
-    k.extend HPUX_9_05
-  end
-end
-
+class HPUX::V8_07 < HPUX::V9_05 ; end
+class HPUX::V9_00 < HPUX::V9_05 ; end
+class HPUX::V9_03 < HPUX::V9_05 ; end
+class HPUX::V9_04 < HPUX::V9_05 ; end
+class HPUX::V9_10 < HPUX::V9_05 ; end

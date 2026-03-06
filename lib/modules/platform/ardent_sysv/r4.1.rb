@@ -10,24 +10,26 @@
 # TODO
 #
 
-module Ardent_SysV_R4_1
+class Ardent_SysV::R4_1
+  class Troff < ::Ardent_SysV::Troff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'tdore.sid'
-      raise ManualIsBlacklisted, 'is metadata'
+    def source_init
+      case @source.file
+      when 'tdore.sid' then raise ManualIsBlacklisted, 'is metadata'
+      end
+      super
     end
-  end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        'Tt' => 'Titan 1500/3000',
-        ']D' => 'Kubota Pacfic Computer Inc.'
-      }
-    )
-  end
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          'Tt' => 'Titan 1500/3000',
+          ']D' => 'Kubota Pacfic Computer Inc.'
+        }
+      )
+    end
 
+  end
 end
 

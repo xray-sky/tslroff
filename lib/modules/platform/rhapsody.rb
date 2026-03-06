@@ -10,13 +10,6 @@
 #   _actually_ using mdoc/doc-* macros. gadzooks. looks like all versions share the same macros though
 #
 
-module Troff
-  def self.useGroff?
-    true
-  end
-end
-
-module Rhapsody
-  def self.extended(k)
-  end
+class Rhapsody
+  class Groff < ::Groff ; end
 end

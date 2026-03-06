@@ -11,12 +11,15 @@
 #
 # TODO getting extra section info in filename for e.g. 1csh, 1sccs (not 1m, etc.)
 
-module UTek
+class UTek
+  class Nroff < ::Nroff
 
-  def self.extended(k)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.([\dZz][^.]*)$/, '')
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.([\dZz][^.]*)$/, '')
+      super(source)
+    end
+
   end
-
 end
 
 

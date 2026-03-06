@@ -84,7 +84,7 @@ class Manual
   attr_reader   :platform, :version, :magic,
                 #:manual_entry, :manual_section, :output_directory,
                 :language, :lines, :links
-  def_delegators :@source, :patch, :patch_line, :patch_lines, :link?
+  def_delegators :@source, :patch, :patch_line, :patch_lines, :link?, :xpath
   def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory
 
   def initialize(file, vendor_class: nil, source_args: {})

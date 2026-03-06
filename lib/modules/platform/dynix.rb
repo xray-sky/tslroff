@@ -10,23 +10,8 @@
 #
 
 class DYNIX_ptx
-
-=begin
-  def self.extended(k)
-    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry',
-       k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
-    k.instance_variable_set '@manual_section', Regexp.last_match[1]
-    k.instance_variable_set '@output_directory', "man#{k.instance_variable_get '@manual_section'}"
-    #k.instance_variable_get('@state')[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
-    case k.instance_variable_get '@input_filename'
-    when 'Makefile'
-      raise ManualIsBlacklisted, 'not a manual entry'
-    end
-  end
-=end
-
   class Nroff < ::Nroff
+
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
@@ -40,6 +25,7 @@ class DYNIX_ptx
       super
       @output_directory = "man#{@manual_section}"
     end
+
   end
 
   class Troff < ::Troff

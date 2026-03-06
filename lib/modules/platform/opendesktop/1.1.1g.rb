@@ -20,22 +20,34 @@ end
 
 module OpenDesktop_1_1_1g
 
-  def self.extended(k)
-    k.instance_variable_set '@heading_detection', %r(^\s{4,5}(?<section>[A-Z][A-Za-z\s]+)$)
-    k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
-    k.instance_variable_set '@related_info_heading', 'See Also'
-    case k.instance_variable_get '@input_filename'
-    when 'ksh.C.z', 'messages.M.z',
-         'terminfo.M.z', 'X.X.z', 'mwm.X.z', 'scoterm.X.z', 'xdm.X.z', 'xterm.X.z'
-      k.instance_variable_set '@source', IO.readlines("| gzip_old -dc #{k.instance_variable_get '@source_dir'}/#{k.instance_variable_get '@input_filename'} | zcat")
-      k.instance_variable_get('@source').define_singleton_method(:lines) { self }
-    when 'bdftosnf.X.z', 'ico.X.z', 'mkfontdir.X.z', 'oclock.X.z', 'showsnf.X.z',
-         'xdpyinfo.X.z', 'xev.X.z', 'xeyes.X.z', 'xmodmap.X.z', 'xset.X.z', 'xwininfo.X.z'
-      k.instance_variable_set '@title_detection', %r{^\s{4}(?<manentry>(?<cmd>\S+?)\s\((?<section>[A-Z]+)\))\s+}
-      k.instance_variable_set '@related_info_heading', 'SEE ALSO'
+  class Manual < ::Manual
+    ZEXTRA = %w[ ksh.C.z messages.M.z terminfo.M.z X.X.z mwm.X.z scoterm.X.z xdm.X.z xterm.X.z ]
+
+    def initialize(file, vendor_class: nil, source_args: {})
+      if ZEXTRA.include? File.basename(file)
+        @source = Source.new(file, magic: 'Nroff', source_args: source_args) { |f| IO.readlines("| gzip_old -dc #{f} | zcat") }
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
+  class Nroff < ::OpenDesktop::Nroff
+    def initialize(source)
+      @heading_detection ||= %r(^\s{4,5}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
+      @related_info_heading ||= 'See Also'
+      super(source)
+    end
+
+    def source_init
+      case @source.file
+      when 'bdftosnf.X.z', 'ico.X.z', 'mkfontdir.X.z', 'oclock.X.z', 'showsnf.X.z',
+           'xdpyinfo.X.z', 'xev.X.z', 'xeyes.X.z', 'xmodmap.X.z', 'xset.X.z', 'xwininfo.X.z'
+        @title_detection = %r{^\s{4}(?<manentry>(?<cmd>\S+?)\s\((?<section>[A-Z]+)\))\s+}
+        @related_info_heading = 'SEE ALSO'
+      end
+      super
+    end
+
+  end
 end
-
-

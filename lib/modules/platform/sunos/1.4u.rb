@@ -13,64 +13,64 @@
 # TODO
 #
 
-module SunOS_1_4U
+class SunOS::V1_4U
+  class Troff < ::SunOS::Troff
 
-  def self.extended(k)
+    MANUAL_SECTION_NAMES = {
+      '1'  => 'USER COMMANDS',
+      '1C' => 'USER COMMANDS',
+      '1G' => 'USER COMMANDS',
+      '1S' => 'SUN-SPECIFIC USER COMMANDS',
+      '1V' => 'VAX-SPECIFIC USER COMMANDS',
+      '2'  => 'SYSTEM CALLS',
+      '3'  => 'SUBROUTINES',
+      '3C' => 'COMPATIBILITY ROUTINES',
+      '3F' => 'FORTRAN LIBRARY ROUTINES',
+      '3M' => 'MATHEMATICAL FUNCTIONS',
+      '3N' => 'NETWORK FUNCTIONS',
+      '3S' => 'STANDARD I/O LIBRARY',
+      '3X' => 'MISCELLANEOUS FUNCTIONS',
+      '4'  => 'SPECIAL FILES',
+      '4I' => 'SPECIAL FILES',
+      '4N' => 'SPECIAL FILES',
+      '4P' => 'SPECIAL FILES',
+      '4S' => 'SPECIAL FILES',
+      '4V' => 'SPECIAL FILES',
+      '5'  => 'FILE FORMATS',
+      '6'  => 'GAMES AND DEMOS',
+      '7'  => 'TABLES',
+      '8'  => 'MAINTENANCE COMMANDS',
+      '8C' => 'MAINTENANCE COMMANDS',
+      '8S' => 'MAINTENANCE COMMANDS'
+    }
+
+    MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+        ']W' => 'Sun Release 1.4'
+        }
+      )
+    end
+
+    # REVIEW
+    # this is used seemingly to prevent processing the next line
+    # as a request. but, it's not in tmac.an or the DWB manual.
+    def li(*_args)
+      parse("\\&" + next_line)
+    end
+
+    define_method 'TH' do |*args|
+      ds "]L Last change: #{args[2]}"
+      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
   end
-
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-      ']W' => 'Sun Release 1.4'
-      }
-    )
-  end
-
-  # REVIEW
-  # this is used seemingly to prevent processing the next line
-  # as a request. but, it's not in tmac.an or the DWB manual.
-  def li(*_args)
-    parse("\\&" + next_line)
-  end
-
-  define_method 'TH' do |*args|
-    req_ds "]L Last change: #{args[2]}"
-    req_ds ']D ' + case args[1]
-                   when '1'  then 'USER COMMANDS'
-                   when '1C' then 'USER COMMANDS'
-                   when '1G' then 'USER COMMANDS'
-                   when '1S' then 'SUN-SPECIFIC USER COMMANDS'
-                   when '1V' then 'VAX-SPECIFIC USER COMMANDS'
-                   when '2'  then 'SYSTEM CALLS'
-                   when '3'  then 'SUBROUTINES'
-                   when '3C' then 'COMPATIBILITY ROUTINES'
-                   when '3F' then 'FORTRAN LIBRARY ROUTINES'
-                   when '3M' then 'MATHEMATICAL FUNCTIONS'
-                   when '3N' then 'NETWORK FUNCTIONS'
-                   when '3S' then 'STANDARD I/O LIBRARY'
-                   when '3X' then 'MISCELLANEOUS FUNCTIONS'
-                   when '4'  then 'SPECIAL FILES'
-                   when '4I' then 'SPECIAL FILES'
-                   when '4N' then 'SPECIAL FILES'
-                   when '4P' then 'SPECIAL FILES'
-                   when '4S' then 'SPECIAL FILES'
-                   when '4V' then 'SPECIAL FILES'
-                   when '5'  then 'FILE FORMATS'
-                   when '6'  then 'GAMES AND DEMOS'
-                   when '7'  then 'TABLES'
-                   when '8'  then 'MAINTENANCE COMMANDS'
-                   when '8C' then 'MAINTENANCE COMMANDS'
-                   when '8S' then 'MAINTENANCE COMMANDS'
-                   else 'UNKNOWN SECTION OF THE MANUAL'
-                   end
-
-    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(*args, heading: heading)
-  end
-
 end
-
-

@@ -29,19 +29,19 @@
 #   hier(7) links Functions:‍symlink‍(2) -- lack of whitespace; other pages WITH whitespace still linking this way
 #
 
-# OSF1/Digital UNIX/Tru64 custom fonts
-# Gothic/Geneva and Triumvirate are all essentially Helvetica
-class Font
-  class TR < Font::H ; end
-  class TB < Font::HB ; end
-  class TI < Font::HI ; end
-  class G  < Font::H ; end
-  class GB < Font::HB ; end
-  class GL < Font::HI ; end
-end
-
 class OSF1
   class Troff < ::Troff
+
+    # OSF1/Digital UNIX/Tru64 custom fonts
+    # Gothic/Geneva and Triumvirate are all essentially Helvetica
+    class Font
+      class TR < Font::H ; end
+      class TB < Font::HB ; end
+      class TI < Font::HI ; end
+      class G  < Font::H ; end
+      class GB < Font::HB ; end
+      class GL < Font::HI ; end
+    end
 
     alias :LP :P
 

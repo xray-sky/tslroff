@@ -1,15 +1,36 @@
-# (.rb
+# defs.rb
 # -------------
 #   troff
 # -------------
 #
-#   basic definitions of the \( (special character) escape
-#  most of these are groff-only (man groff_chars) -- REVIEW should they be separated?
+#   \* - named string
+#   \( - special character
+#
+
+class Troff
+
+#   \* - named string
+#
+#  the string could contain escapes that need further processing
+#          e.g. '.dsS \s\n()S'
+#    so we send back the expanded string, so that it might be unescaped
+#
+#  TODO: align this implementation with \n
+#
+
+  define_method 'esc_*' do |s|
+    s.slice!(0) if s.start_with?('(')
+    s = __unesc_star(__unesc_n(s))
+    @state[:named_string][s] || ''.tap { warn "undefined named string #{s}" }
+  end
+
+#   \( - special character
+#
+#  most of these are groff-only (man groff_chars) -- TODO separate
 #
 #  special case for translating special characters, if one is in effect.
 #
 
-class Troff
   define_method 'esc_(' do |s|
     translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @state[:translate].key? "#{@state[:escape_char]}(#{s}"
     @state[:special_char][s] || ''.tap { warn "undefined special character #{s}" }
@@ -22,9 +43,7 @@ class Troff
       'rg'  => '&reg;',
       'tm'  => '&trade;',
       'OK'  => '&#10003;',  # check mark
-      #'bs'  => '&roffctl_unsupp;TO DO: (BELL LABS LOGO)&roffctl_endspan;',  # TODO: bell labs logo, not used in groff (cute.)
-      #'bs'  => '&roffctl_bell;',
-      'bs'  => BellLogo.new, # TODO inserting this in unescape will actually fail because it's not a string
+      'bs'  => BellLogo.new, # TODO inserting this in unescape will actually fail because it's not a string; not used in groff.
       'Do'  => '\$',
       'ct'  => '&cent;',
       'eu'  => '&euro;',
@@ -353,4 +372,5 @@ class Troff
     }
     true
   end
+
 end

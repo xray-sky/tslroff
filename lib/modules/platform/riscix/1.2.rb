@@ -24,21 +24,18 @@
 #   sccstorcs(8) SEE ALSO refs with space between name and section
 #
 
-class Source
-  def magic
-    case File.basename(@filename)
-    when 'sticky.8' then 'Troff'
-    else @magic
+class RISCiX::V1_2
+
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when 'sticky.8'
+        @source = Source.new(file, magic: 'Troff', source_args: source_args).patch_line(1, /^/, '.\\"')
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
-end
 
-module RISCiX_1_2
-
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'sticky.8' then k.patch_line 0, /^/, '.\\"'  # misidentified as nroff
-    end
-  end
+  class Troff < ::Troff ; end
 
 end

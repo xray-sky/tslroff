@@ -11,14 +11,17 @@
 #   .L* is probably font 'L'; might also be font pos 5
 #
 
-module Inferno_4ed
+class Inferno::FourthEd
+  class Troff << ::Inferno::Troff
 
-  def self.extended(k)
-    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    case k.instance_variable_get '@input_filename'
-    when 'INDEX'
-      raise ManualIsBlacklisted, 'is nonsense'
+    alias :LP :P
+
+    def initialize(source)
+      case @source.file
+      when 'INDEX' then raise ManualIsBlacklisted, 'is nonsense'
+      end
+      super(source)
     end
-  end
 
+  end
 end

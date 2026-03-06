@@ -7,15 +7,24 @@
 # SGI GL2-W2.3 Platform Overrides
 #
 
-module GL2_W2_3
+class GL2::W2_3
+  class Troff < ::GL2::Troff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'trenter.1' # is nroff
-      k.instance_variable_set '@heading_detection', %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
-      k.instance_variable_set '@title_detection', %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
-    when 'regexp.5' then k.patch_line(418, /^\.in/, '.if')
+    def initialize(source)
+      @version = "W2.3"
+      super(source)
     end
-  end
 
+    def source_init
+      case @source.file
+      when 'trenter.1'  # is nroff
+        @heading_detection = %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
+        @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
+      when 'regexp.5' then @source.patch_line 418, /^\.in/, '.if'
+      end
+      super
+    end
+
+  end
 end
+

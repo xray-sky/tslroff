@@ -9,8 +9,30 @@
 # TODO:
 #
 
-class DomainIX
-  class SR9_5
+class DomainIX::SR9_5
+  class Nroff < ::DomainIX::Nroff
+
+    def initialize(source)
+      @related_info_heading ||= 'RELATED INFORMATION'
+      super(source)
+    end
+
+    def source_init
+      case @source.file
+      when 'root.3m' then raise ManualIsBlacklisted, 'not a manual entry'
+      end
+      super
+    end
+
+    def page_title
+      super << " Domain/IX SR9.5"
+    end
+
+  end
+
+  class Troff < ::DomainIX::Troff ; end
+
+end
 
 =begin
   def self.extended(k)
@@ -27,27 +49,4 @@ class DomainIX
     end
   end
 =end
-    class Nroff < ::DomainIX::Nroff
 
-      def initialize(source)
-        @related_info_heading ||= 'RELATED INFORMATION'
-        super(source)
-      end
-
-      def source_init
-        case @source.file
-        when 'root.3m' then raise ManualIsBlacklisted, 'not a manual entry'
-        end
-        super
-      end
-
-      def page_title
-        super << " Domain/IX SR9.5"
-      end
-
-    end
-
-    class Troff < ::DomainIX::Troff ; end
-
-  end
-end

@@ -1,7 +1,45 @@
-# l.rb
+# drawing.rb
 # -------------
 #   troff
 # -------------
+#
+#   \b - bracket
+#   \l - repeated characters
+#   \D - figure drawing
+#   \L - vertical line drawing
+#
+
+class Troff
+
+#   \b - bracket
+#
+# TODO
+#   these are just splatted on the page apparently without regard to text flow
+#   i.e. text just prints around them -- what can be done about this? mh-chart(n) [NEWS-os 4.2.1R]
+#   adding css height:0 seems to help but then maybe there's some more vertical alignment to do
+#
+
+  def esc_b(s)
+    quotechar = Regexp.quote(get_char(s))
+    req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
+    warn "\\b trying to draw brackets #{req_str.inspect}"
+
+    justify = req_str.match?(/\(l/) ? 'right' : 'left'
+    bracket = Bracket.new(style: @current_block.terminal_text_style.dup, font: Font::R.new(size: @register['.s'].value))
+    bracket.style.css[:text_align] = justify
+    bracket.style.css.delete :color
+    until req_str.empty?
+      chr = req_str.slice!(0, get_char(req_str).length)
+      warn "\\b unescaping #{chr.inspect}"
+      bracket << Text.new(font: bracket.terminal_font.dup, style: bracket.terminal_text_style.dup)
+      unescape chr, output: bracket
+    end
+
+    @current_block << bracket
+    ''
+  end
+
+#   \l - repeated characters
 #
 #   §12.4
 #
@@ -29,7 +67,6 @@
 # https://www.quackit.com/character_sets/unicode/versions/unicode_9.0.0/box_drawing_unicode_character_codes.cfm
 #
 
-class Troff
   def esc_l(s)
     # default unit 'm'
     quotechar = Regexp.quote(get_char(s))
@@ -59,6 +96,9 @@ class Troff
     ''
   end
 
+#   \L - vertical line drawing
+#
+
   def esc_L(s)
     # default unit 'v'
     quotechar = Regexp.quote(get_char(s))
@@ -68,6 +108,9 @@ class Troff
     ''
   end
 
+#   \D - figure drawing
+#
+
   def esc_D(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
@@ -75,4 +118,5 @@ class Troff
     #unescape(req_str)
     ''
   end
+
 end

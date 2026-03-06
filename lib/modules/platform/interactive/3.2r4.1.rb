@@ -14,26 +14,30 @@
 #   ksh(1) :: wtf
 #
 
-class Source
-  def magic
-    case File.basename(@filename)
-    when 'i596.7' then 'Troff'
-    else @magic
-    end
-  end
-end
+class Interactive::V3_2r4_1
 
-module Interactive_3_2r4_1
-
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'file'
-      raise ManualIsBlacklisted, 'is shell script'
-    when /intro\.nfs\.(\d)/ # easier to just override these than mess with the regex
-      k.instance_variable_set '@manual_entry', 'intro.nfs'
-      k.instance_variable_set '@manual_section', Regexp.last_match[1]
-    when 'i596.7' k.patch_line(0, /^/, '.\\"') # misidentified as nroff
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when 'i596.7' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
+  class Troff < ::Interactive::Troff
+
+    def initialize(source)
+      case source.file
+      when 'file' then raise ManualIsBlacklisted, 'is shell script'
+      when /intro\.nfs\.(\d)/ # easier to just override these than mess with the regex
+        k.instance_variable_set '@manual_entry', 'intro.nfs'
+        k.instance_variable_set '@manual_section', Regexp.last_match[1]
+      when 'i596.7' @source.patch_line(1, /^/, '.\\"') # misidentified as nroff
+      end
+
+      super(source)
+    end
+
+  end
 end

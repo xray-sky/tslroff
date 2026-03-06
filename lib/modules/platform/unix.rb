@@ -10,15 +10,6 @@
 #
 
 class UNIX
-
-=begin
-  def self.extended(k)
-    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
-    k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
-  end
-=end
-
   class Troff < ::Troff
 
     alias :LP :P

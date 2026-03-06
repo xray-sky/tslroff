@@ -15,106 +15,112 @@
 #   a few pages want to .rm }C for some reason
 #
 
-module Motorola_SysV
+class Motorola_SysV
+  class Nroff < ::Nroff ; end
 
-  def self.extended(k)
-    #k.instance_variable_set '@heading_detection', %r{^\s{2,3}(?<section>[A-Z][A-Za-z\s]+)$}
-    #k.instance_variable_set '@title_detection', %r{^\s{2,3}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}		# REVIEW now what?
-    #k.instance_variable_set '@lines_per_page', 67
-    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)$/, '')
-    k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
-  end
+  # looks like none of this matters much, as the provided pages are all nroff format except for X11.
+  class Troff < ::Troff
 
-# looks like none of this matters much, as the provided pages are all nroff format except for X11.
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        footer: "\\*(]W",
-        #'Tm' => '&trade;',
-        # DocString_MOT
-        'sS' => 'UNIX',
-        'sl' => 'UNIX SYSTEM V/68 or V/88 Release 4',
-        'sL' => 'UNIX SYSTEM V/68 or V/88 Release 4',
-        's3' => 'UNIX SYSTEM V/68 and V/88 Release 4',
-        's4' => 'UNIX SYSTEM V/68 and V/88 Release 4',
-        's1' => 'UNIX SYSTEM V/68',
-        's2' => 'UNIX SYSTEM V/88',
-        'hC' => 'Motorola',
-        'hs' => 'M68000 or M88000 family of processors',
-        'h1' => 'M68000 family of processors',
-        'h2' => 'M68000 family of processors',
-        'h4' => 'M68000 family of processors',
-        'h3' => 'M88000 family of processors',
-        'hl' => 'supported Delta Series and DeltaSERVER platforms',
-        'rp' => 'platform',
-        # For internal Motorola use only
-        'rL' => 'RM01',
-        ']W' => ''
-      }
-    )
-  end
+    MANUAL_SECTION_NAMES = {
+      '1'  => 'USER COMMANDS ',
+      '1C' => 'BASIC NETWORKING COMMANDS',
+      '1F' => 'FMLI UTILITIES',
+      '1G' => 'GOLD UTILITIES',
+      '1M' => 'ADMINISTRATOR COMMANDS ',
+      '2'  => 'SYSTEM CALLS',
+      '3'  => 'LIBRARY FUNCTIONS',
+      '3C' => 'C LIBRARY FUNCTIONS',
+      '3E' => 'ELF LIBRARY FUNCTIONS',
+      '3G' => 'GENERAL LIBRARY FUNCTIONS',
+      '3M' => 'MATHEMATICAL LIBRARY',
+      '3N' => 'NETWORK FUNCTIONS',
+      '3S' => 'STANDARD I/O FUNCTIONS',
+      '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
+      '4'  => 'FILE FORMATS',
+      '5'  => 'PUBLIC FILES, TABLES, AND TROFF MACROS',
+      '7'  => 'SPECIAL FILES AND DEVICES',
+      'L'  => 'LOCAL COMMANDS'
+    }
 
-  def init_fp
-    super
-    # REVIEW
-    @state[:fonts][4] = 'BI'
-    @state[:fonts][5] = 'CW'
-  end
+    MANUAL_SECTION_NAMES.default = 'MISC. REFERENCE MANUAL PAGES'
 
-  def init_tr
-    super
-    @state[:translate]['*'] = "\e(**"
-  end
+    alias :LP :P
 
-  def init_TH
-    #super
-    @register['IN'] = Troff::Register.new(@state[:base_indent])
-  end
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super(source)
+    end
 
-  define_method 'TH' do |*args|
-    req_ds ']D ' + case args[1]&.strip
-                   when '1'  then 'USER COMMANDS '
-                   when '1C' then 'BASIC NETWORKING COMMANDS'
-                   when '1F' then 'FMLI UTILITIES'
-                   when '1G' then 'GOLD UTILITIES'
-                   when '1M' then 'ADMINISTRATOR COMMANDS '
-                   when '2'  then 'SYSTEM CALLS'
-                   when '3'  then 'LIBRARY FUNCTIONS'
-                   when '3C' then 'C LIBRARY FUNCTIONS'
-                   when '3E' then 'ELF LIBRARY FUNCTIONS'
-                   when '3G' then 'GENERAL LIBRARY FUNCTIONS'
-                   when '3M' then 'MATHEMATICAL LIBRARY'
-                   when '3N' then 'NETWORK FUNCTIONS'
-                   when '3S' then 'STANDARD I/O FUNCTIONS'
-                   when '3X' then 'MISCELLANEOUS LIBRARY FUNCTIONS'
-                   when '4'  then 'FILE FORMATS'
-                   when '5'  then 'PUBLIC FILES, TABLES, AND TROFF MACROS'
-                   when '7'  then 'SPECIAL FILES AND DEVICES'
-                   when 'L'  then 'LOCAL COMMANDS'
-                   else 'MISC. REFERENCE MANUAL PAGES'
-                   end
-    req_ds "]L #{args[2]}"
-    req_ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-    req_ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          footer: "\\*(]W",
+          #'Tm' => '&trade;',
+          # DocString_MOT
+          'sS' => 'UNIX',
+          'sl' => 'UNIX SYSTEM V/68 or V/88 Release 4',
+          'sL' => 'UNIX SYSTEM V/68 or V/88 Release 4',
+          's3' => 'UNIX SYSTEM V/68 and V/88 Release 4',
+          's4' => 'UNIX SYSTEM V/68 and V/88 Release 4',
+          's1' => 'UNIX SYSTEM V/68',
+          's2' => 'UNIX SYSTEM V/88',
+          'hC' => 'Motorola',
+          'hs' => 'M68000 or M88000 family of processors',
+          'h1' => 'M68000 family of processors',
+          'h2' => 'M68000 family of processors',
+          'h4' => 'M68000 family of processors',
+          'h3' => 'M88000 family of processors',
+          'hl' => 'supported Delta Series and DeltaSERVER platforms',
+          'rp' => 'platform',
+          # For internal Motorola use only
+          'rL' => 'RM01',
+          ']W' => ''
+        }
+      )
+    end
 
-    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+    def init_fp
+      super
+      # REVIEW
+      @state[:fonts][4] = 'BI'
+      @state[:fonts][5] = 'CW'
+    end
 
-    super(*args, heading: heading)
-  end
+    def init_tr
+      super
+      @state[:translate]['*'] = "\e(**"
+    end
 
-  define_method 'VE' do |*args|
-    # .if '\\$1'4' .mc \s12\(br\s0
-    # draws a 12pt box rule as right margin character
-    warn "can't yet .VE #{args.inspect}"
-  end
+    def init_TH
+      #super
+      @register['IN'] = Troff::Register.new(@state[:base_indent])
+    end
 
-  define_method 'VS' do |*args|
-    # .mc
-    # clears box rule margin character
-    warn "can't yet .VS #{args.inspect}"
+    define_method 'TH' do |*args|
+      ds "]D #{MANUAL_SECTION_NAMES[args[1]&.strip]}"
+      ds "]L #{args[2]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
+    define_method 'VE' do |*args|
+      # .if '\\$1'4' .mc \s12\(br\s0
+      # draws a 12pt box rule as right margin character
+      warn "can't yet .VE #{args.inspect}"
+    end
+
+    define_method 'VS' do |*args|
+      # .mc
+      # clears box rule margin character
+      warn "can't yet .VS #{args.inspect}"
+    end
+
   end
 end
-

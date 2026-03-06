@@ -16,55 +16,56 @@
 #   wpan.3w :: links ',wmove(3W)' saw a couple other pages with goofy links, e.g. 'stty (1)'
 #
 
-module HPUX_6_20
+class HPUX::V6_20
+  class Troff < ::HPUX::Troff
 
-  def self.extended(k)
-    # .cm is not official nor in tmac.an but is apparently used in practice for comments
-    #k.define_singleton_method(:req_cm, k.method('req_\"')) if k.methods.include?('req_\"')
-    case k.instance_variable_get '@input_filename'
-    when 'wmove.3w' # has "upper-\left". how did that _ever_ work. REVIEW how does troff handle that pathological input?
-      k.patch_line(16, /\\l/, 'l')
-    end
-  end
-
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        # uses )H but this is defined directly in }F so I don't see how it could ever not be HP Co.
-        footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W",
-        'Tm' => '&trade;',
-        # REVIEW is this what actually goes in the footer in the printed manual?
-        ']V' => File.mtime(@source.filename).strftime("%B %d, %Y")
-      }
-    )
-  end
-
-  define_method 'TH' do |*args|
-    req_ds "]D #{args[5]}"
-    req_ds "]L #{args[3]}"
-    req_as "]L \" \\|(\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty? # attend: append ]L
-    req_ds "]W #{__unesc_star('\\*(]V')}"
-    if args[4] == 'HP-UX'
-      req_ds ']L HP-UX'
-      # TODO REVIEW
-      # not really sure what is going on with the second part of this:
-      #.\*(]V
-      # ??
+    def source_init
+      # .cm is not official nor in tmac.an but is apparently used in practice for comments
+      #k.define_singleton_method(:req_cm, k.method('req_\"')) if k.methods.include?('req_\"')
+      case @source.file
+      when 'wmove.3w' # has "upper-\left". how did that _ever_ work. REVIEW how does troff handle that pathological input?
+        @source.patch_line(17, /\\l/, 'l')
+      end
     end
 
-    # ]D follows the title (if given), centered on its own line.
-    unless @state[:named_string][']D'].empty?
-      byline = Block::Footer.new
-      byline.style.css[:margin_top] = '0.5em' # TODO not working? getting 4em from css
-      unescape "\\f3\\*(]D\\fP", output: byline
-      @document << byline
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          # uses )H but this is defined directly in }F so I don't see how it could ever not be HP Co.
+          footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W",
+          'Tm' => '&trade;',
+          # REVIEW is this what actually goes in the footer in the printed manual?
+          ']V' => File.mtime(@source.file).strftime("%B %d, %Y")
+        }
+      )
     end
 
-    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-    heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+    define_method 'TH' do |*args|
+      ds "]D #{args[5]}"
+      ds "]L #{args[3]}"
+      as "]L \" \\|(\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty? # attend: append ]L
+      ds "]W #{__unesc_star('\\*(]V')}"
+      if args[4] == 'HP-UX'
+        ds ']L HP-UX'
+        # TODO REVIEW
+        # not really sure what is going on with the second part of this:
+        #.\*(]V
+        # ??
+      end
 
-    super(*args, heading: heading)
+      # ]D follows the title (if given), centered on its own line.
+      unless @state[:named_string][']D'].empty?
+        byline = Block::Footer.new
+        byline.style.css[:margin_top] = '0.5em' # TODO not working? getting 4em from css
+        unescape "\\f3\\*(]D\\fP", output: byline
+        @document << byline
+      end
+
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
   end
-
-end

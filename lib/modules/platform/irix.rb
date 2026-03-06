@@ -22,7 +22,7 @@ class IRIX
     end
   end
 
-  class V6_5_3f
+  class V6_5
     class Nroff < ::IRIX::Nroff
       def initialize(source)
         @manual_entry ||= source.file.sub(/\.z$/, '')

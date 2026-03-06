@@ -66,6 +66,7 @@ class Troff < TextFormatter
     xinit_nr
     xinit_in
 
+    # Remember there are init_ methods in the Macros modules, too
     methods.each do |m|
       send(m) if m.to_s.start_with? 'init_'
     end

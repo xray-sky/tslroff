@@ -35,119 +35,133 @@
 #   restore(1m) [402]: are we bug compatible now with formatting through .CI (too many quotes: 'blocks' should be C but is I, check if troff does the same)
 #
 
-class Source
-  def magic
-    case File.basename(@filename)
-    when 'x_open_800.5' then 'Nroff'
-    else @magic
+class HPUX::V10_20
+
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when 'x_open_800.5' then @source = Source.new(file, magic: 'Nroff', source_args: source_args)
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
-end
 
+  class Nroff < ::HPUX::Nroff
+    def initialize(source)
+      super(source)
 
-module HPUX_10_20
-
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'dcecp_cdsalias.1m'
-      # until we can figure out how to make ourselves resilient to .rn'ing the same macro twice
-      k.patch_lines(7..9, /^/, '.\\"')
-    when 'default.4'
-      k.instance_variable_set '@manual_entry', '_default'
-    when 'x_open_800.5' # is nroff output (with ^H overstriking), despite starting with .\" and .nf
+      # is nroff output (with ^H overstriking), despite starting with .\" and .nf
       # lines per page is not consistent? deleting these extra lines doesn't help
       #k.instance_variable_get('@source').lines.delete_at(3887)
       #k.instance_variable_get('@source').lines.delete_at(3886)
       #k.instance_variable_get('@source').lines.delete_at(3885)
       #k.instance_variable_get('@source').lines.delete_at(1)
       #k.instance_variable_get('@source').lines.delete_at(0)
-      k.instance_variable_set '@lines_per_page', nil
+      @lines_per_page = nil if source.file == 'x_open_800.5'
+      end
     end
   end
 
-  %w[C B I].each do |a|
-    define_method a do |*args|
-      if args.any?
-        req_ft @state[:fonts].index(a).to_s
-        parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
-        #send '}N'
-        send '}f'
+  class Troff < ::HPUX::Troff
+
+    def initialize(source)
+      case source.file
+      when 'dcecp_cdsalias.1m'
+        # REVIEW until we can figure out how to make ourselves resilient to .rn'ing the same macro twice
+        source.patch_lines(8..10, /^/, '.\\"')
+      when 'default.4'
+        @manual_entry = '_default'
+      end
+
+      super(source)
+    end
+
+    # REVIEW why is this defined special in 10.20?
+    %w[C B I].each do |a|
+      define_method a do |*args|
+        if args.any?
+          ft @state[:fonts].index(a).to_s
+          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+          #send '}N'
+          send '}f'
+        else
+          #it '1 }N'
+          it '1 }f'
+        end
+      end
+    end
+
+    %w[C B I R].permutation(2).each do |a, b|
+      define_method (a + b) do |*args|
+        parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
+      end
+    end
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
+          'Tm' => '&trade;',
+          ')H' => '', # .TH sets this to \&. Some pages define it.
+          #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
+          # REVIEW is this what actually goes in the footer in the printed manual?
+          ']V' => File.mtime(@source.file).strftime("%B %d, %Y")
+        }
+      )
+    end
+
+    def init_fp
+      super
+      @state[:fonts][4] = 'C'
+    end
+
+    # .so with absolute path, headers in /usr/include
+    # REVIEW interaction with @source_dir (@source.dir?) after refactors
+    def so(name, breaking: nil)
+      osdir = @source.dir.dup
+      @source.dir << '/../..' if name.start_with?('/')
+      if %w[sml rsml osfhead.rsml].include? File.basename(name)
+        ds ']L Open Software Foundation'
+        super(name, breaking: breaking) do |lines|
+          lines.reject! { |l| l.start_with? '...\\"' }
+        end
       else
-        #req_it '1 }N'
-        req_it '1 }f'
+        super(name, breaking: breaking)
       end
+      @source.dir = osdir
     end
-  end
 
-  %w[C B I R].permutation(2).each do |a, b|
-    define_method (a + b) do |*args|
-      parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
-    end
-  end
+    # undocumented, not in tmac.an
+    # appears to take one arg, matching the first letter of the command the manual entry is for?
+    # (not accounting for .so -- so bg(1) has '.TA s', because of '.so sh.1'
+    # ...seems irrelevant to us. suppress the warning on every page by defining.
+    define_method 'TA' do |*_args| ; end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
-        'Tm' => '&trade;',
-        ')H' => '', # .TH sets this to \&. Some pages define it.
-        #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
-        # REVIEW is this what actually goes in the footer in the printed manual?
-        ']V' => File.mtime(@source.filename).strftime("%B %d, %Y")
-      }
-    )
-  end
+    define_method 'TH' do |*args|
+      ds "]W #{__unesc_star('\\*(]V')}"
+      ds "]O #{args[2]}"
+      ds "]L #{args[3]}"
+      ds "]J #{args[4]}"
 
-  def init_fp
-    super
-    @state[:fonts][4] = 'C'
-  end
-
-  # .so with absolute path, headers in /usr/include
-  def req_so(name, breaking: nil)
-    osdir = @source_dir.dup
-    @source_dir << '/../..' if name.start_with?('/')
-    if %w[sml rsml osfhead.rsml].include? File.basename(name)
-      req_ds ']L Open Software Foundation'
-      super(name, breaking: breaking) do |lines|
-        lines.reject! { |l| l.start_with? '...\\"' }
+      # ]J and ]O follow the title (if given), each centered on their own line.
+      # .sp .3v between, .sp 1.5v following.
+      #space = false
+      %w( ]J ]O ).each do |s|
+        next if @state[:named_string][s].empty?
+        #space = true
+        byline = Block::Footer.new
+        byline.style.css[:margin_top] = '0.5em' # TODO not working?
+        unescape "\\f3\\*(#{s}\\fP", output: byline
+        @document << byline
       end
-    else
-      super(name, breaking: breaking)
+      #req_sp('1.5v') if space # probably this is overkill, actually
+
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+
+      super(*args, heading: heading)
     end
-    @source_dir = osdir
+
   end
-
-  # undocumented, not in tmac.an
-  # appears to take one arg, matching the first letter of the command the manual entry is for?
-  # (not accounting for .so -- so bg(1) has '.TA s', because of '.so sh.1'
-  # ...seems irrelevant to us. suppress the warning on every page by defining.
-  define_method 'TA' do |*_args| ; end
-
-  define_method 'TH' do |*args|
-    req_ds "]W #{__unesc_star('\\*(]V')}"
-    req_ds "]O #{args[2]}"
-    req_ds "]L #{args[3]}"
-    req_ds "]J #{args[4]}"
-
-    # ]J and ]O follow the title (if given), each centered on their own line.
-    # .sp .3v between, .sp 1.5v following.
-    #space = false
-    %w( ]J ]O ).each do |s|
-      next if @state[:named_string][s].empty?
-      #space = true
-      byline = Block::Footer.new
-      byline.style.css[:margin_top] = '0.5em' # TODO not working?
-      unescape "\\f3\\*(#{s}\\fP", output: byline
-      @document << byline
-    end
-    #req_sp('1.5v') if space # probably this is overkill, actually
-
-    heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-    heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-
-    super(*args, heading: heading)
-  end
-
 end

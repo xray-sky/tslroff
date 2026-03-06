@@ -16,25 +16,24 @@
 #   cdc(1) loses monospaced font in the middle of the last EXAMPLE?
 #
 
-module Ultrix_2_0_0
+class Ultrix::V2_0_0
+  class Troff < ::Ultrix::Troff
 
-  def self.extended(k)
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          ']D' => 'UNIX Programmer\'s Manual',
+          ']W' => '7th Edition',
+          :footer => '' # just a page number
+        }
+      )
+    end
+
+    define_method 'TH' do |*args|
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)" # tmac.an uses \f(TB
+      super(*args, heading: heading)
+    end
+
   end
-
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        ']D' => 'UNIX Programmer\'s Manual',
-        ']W' => '7th Edition',
-        :footer => '' # just a page number
-      }
-    )
-  end
-
-  define_method 'TH' do |*args|
-    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)" # tmac.an uses \f(TB
-    super(*args, heading: heading)
-  end
-
 end

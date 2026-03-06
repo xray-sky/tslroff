@@ -14,14 +14,17 @@
 # REVIEW how did I end up with a bunch of zero length .z files in 5.4R3.00 ?
 #
 
-module DG_UX
+class DG_UX
+  class Nroff < ::Nroff
 
-  def self.extended(k)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S?)\.g?[zZ]$/, '')
-    k.instance_variable_set '@heading_detection', %r(^(?<section>[A-Z][A-Za-z\s]+)$)
-    k.instance_variable_set '@title_detection', %r{\s(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))$}
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(?:\d\S?)\.g?[zZ]$/, '')
+      @heading_detection ||= %r(^(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{\s(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))$}
+      super(source)
+    end
+
   end
-
 end
 
 

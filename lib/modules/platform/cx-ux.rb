@@ -17,55 +17,68 @@
 #   use of \f3 in ar(4), fs(4)
 #
 
-module CX_UX
+class CX_UX
 
-  def self.extended(k)
-    k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S*)(?:\.z)?$/, '') # nroff pages are compressed
-    k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
+  class Nroff < ::Nroff
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S*)(?:\.z)?$/, '') # nroff pages are compressed
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super(source)
+    end
   end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        footer:"\\*(]W",
-        #'Tm' => '&trade;',
-        ']W' => File.mtime(@source.filename).strftime('%B %d, %Y')
-      }
-    )
+  class Troff < ::Troff
+
+    alias :LP :P
+
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S*)(?:\.z)?$/, '') # nroff pages are compressed
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super(source)
+    end
+
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          footer:"\\*(]W",
+          #'Tm' => '&trade;',
+          ']W' => File.mtime(@source.file).strftime('%B %d, %Y')
+        }
+      )
+    end
+
+    def init_fp
+      super
+      # REVIEW - going with solaris troff assignments:
+      @state[:fonts][4] = 'BI' # not fully convinced of this one
+      @state[:fonts][5] = 'CW'
+      # still don't know what \fl is
+    end
+
+    def init_tr
+      super
+      @state[:translate]['*'] = "\e(**"
+    end
+
+    def init_TH
+      #super
+      @register['IN'] = Troff::Register.new(@state[:base_indent])
+    end
+
+    define_method 'TH' do |*args|
+      #ds ']W 7th Edition' # tmac.an.new
+      #ds ']D 32B Virtual UNIX Programmer\'s Manual' # tmac.an.new
+      ds "]L #{args[2]}"
+      ds "]W #{args[3]}"
+      ds "]D #{args[4]}"
+
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
+
+      super(*args, heading: heading)
+    end
+
   end
-
-  def init_fp
-    super
-    # REVIEW - going with solaris troff assignments:
-    @state[:fonts][4] = 'BI' # not fully convinced of this one
-    @state[:fonts][5] = 'CW'
-    # still don't know what \fl is
-  end
-
-  def init_tr
-    super
-    @state[:translate]['*'] = "\e(**"
-  end
-
-  def init_TH
-    #super
-    @register['IN'] = Troff::Register.new(@state[:base_indent])
-  end
-
-  define_method 'TH' do |*args|
-    #req_ds ']W 7th Edition' # tmac.an.new
-    #req_ds ']D 32B Virtual UNIX Programmer\'s Manual' # tmac.an.new
-    req_ds "]L #{args[2]}"
-    req_ds "]W #{args[3]}"
-    req_ds "]D #{args[4]}"
-
-    heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
-    heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-    @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
-
-    super(*args, heading: heading)
-  end
-
 end

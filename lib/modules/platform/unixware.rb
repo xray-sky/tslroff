@@ -16,24 +16,25 @@
 #           59
 #
 
-module UnixWare
+class UnixWare
+  class Nroff < ::Nroff
 
-  def self.extended(k)
-    k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
-    k.instance_variable_set '@heading_detection', %r(^\s{6,7}(?<section>[A-Z][A-Za-z\s]+)$)
-    k.instance_variable_set '@title_detection', %r{^       (?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
-    k.instance_variable_set '@related_info_heading', 'REFERENCES'
-  end
-
-  def parse_title
-    if @input_filename =~ /_to_.+\.3/
-      @manual_section = '3BSD'
-      @output_directory = 'man3bsd'
-      ''
-    else
-      super
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
+      @heading_detection ||= %r(^\s{6,7}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^       (?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
+      @related_info_heading ||= 'REFERENCES'
+      super(source)
     end
+
+    def source_init
+      if @source.file =~ /_to_.+\.3/
+        @manual_section = '3BSD'
+        @output_directory = 'man3bsd'
+        ''
+      end
+      super # REVIEW didn't used to super if above true
+    end
+
   end
 end
-
-

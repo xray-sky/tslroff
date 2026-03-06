@@ -9,31 +9,33 @@
 # TODO
 #
 
-module NEWS_os_4_1C_en_US
+class NEWS_os::V4_1C_en_US
+  class Troff < ::NEWS_os::Troff
 
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'index.3', 'index.3f'
-      k.instance_variable_set '@manual_entry', '_index'
-    # TODO when we resolve the baseline/font issue with \u, \d, and \s
-    # current status in un-messed-with state is, ugly but not broken. tried to fix it and achieved broken.
-    # also there's the issue of doing rewrites in .so for gamma.3m
-    #when 'lgamma.3m'
-    #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
+    def source_init
+      case @source.file
+      when 'index.3', 'index.3f'
+        @manual_entry = '_index'
+      # TODO when we resolve the baseline/font issue with \u, \d, and \s
+      # current status in un-messed-with state is, ugly but not broken. tried to fix it and achieved broken.
+      # also there's the issue of doing rewrites in .so for gamma.3m
+      #when 'lgamma.3m'
+      #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
+      end
+      super
     end
-  end
 
-  def init_ds
-    super
-    @state[:named_string].merge!(
-      {
-        footer: "NEWS-OS\t\\s-2Release 4.1C\\s+2",
-        ']D' => "NEWS-OS Programmer's Manual",
-        ']W' => "7th Edition"
-      }
-    )
-  end
+    def init_ds
+      super
+      @state[:named_string].merge!(
+        {
+          footer: "NEWS-OS\t\\s-2Release 4.1C\\s+2",
+          ']D' => "NEWS-OS Programmer's Manual",
+          ']W' => "7th Edition"
+        }
+      )
+    end
 
+  end
 end
-
 

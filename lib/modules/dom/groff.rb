@@ -14,9 +14,11 @@
 #   .if !\n(.g apparently works as a test for groff
 #
 
+require_relative 'troff'
 require_relative 'groff/tokenize'
 
-module Groff
+# REVIEW this inheritance relationship
+class Groff < ::Troff
 
   def init_nr_groff
     @register['.g'] = Register.new(1, ro: true)

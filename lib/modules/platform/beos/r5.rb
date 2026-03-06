@@ -28,38 +28,44 @@
 #      ...but where is it defined in their manual? no css I can see.
 #
 
-class Source
-  def magic
-    case File.basename(@filename)
-    when 'gcc.html', 'rcs.html', 'rcsfile.html', 'rcsintro.html', 'uuencode.html' then 'HTML'
-    else @magic
+class BeOS::R5
+
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when 'gcc.html', 'rcs.html', 'rcsfile.html', 'rcsintro.html', 'uuencode.html'
+        @source = Source.new(file, magic: 'HTML', source_args: source_args)
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
-end
 
-module BeOS_R5
-  def self.extended(k)
-    case k.instance_variable_get '@input_filename'
-    when 'gcc.html', 'rcsfile.html', 'rcsintro.html'
-      k.instance_variable_get('@source').lines[0] = ''
-    when 'rcs.html' then k.patch_line(0, /^\s+{/, '')
-    when 'uuencode.html'
-      k.instance_variable_get('@source').lines.slice!(0, 40)
-    when /fm.html/, 'Metrowerks_License.html' # metrowerks
-      # the metrowerks source is too heinous for nokogiri, too much malicious compliance to cope with
-      # maybe the features are regular enough we can just... fudge it.
-      # * none of the pages have titles
-      # * all have navigation content before <body>
-      #
-      k.patch(%r{^\s*<body bgcolor=#ffffff BACKGROUND="images/arnoldbg.gif">\s*$}, '')
-      # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
-      k.patch(%r{(</?)kbd>}, '\1tt>', global: true)
-      # looks like these are the only two external links appearing in the metrowerks manual
-      k.patch(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1', global: true)
-      k.patch(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1', global: true)
-      k.instance_variable_set('@content_start', source_lines.index { |l| l.match? %r{<a name="Top">} })
-      k.instance_variable_set('@content_end', source_lines.index { |l| l.match? %r{<a name="Bottom">} })
-      k.define_singleton_method :to_html, k.method(:to_html_metrowerks)
+  class HTML < ::BeOS::HTML
+
+    def source_init
+      case @source.file
+      when 'gcc.html', 'rcsfile.html', 'rcsintro.html'
+        @source.patch_line(1, /^.*$/, '')
+      when 'rcs.html'      then @source.patch_line(1, /^\s+{/, '')
+      when 'uuencode.html' then @source.lines.slice!(0, 40)
+      when /fm.html/, 'Metrowerks_License.html' # metrowerks
+        # the metrowerks source is too heinous for nokogiri, too much malicious compliance to cope with
+        # maybe the features are regular enough we can just... fudge it.
+        # * none of the pages have titles
+        # * all have navigation content before <body>
+        #
+        @source.patch(%r{^\s*<body bgcolor=#ffffff BACKGROUND="images/arnoldbg.gif">\s*$}, '')
+        # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
+        @source.patch(%r{(</?)kbd>}, '\1tt>', global: true)
+        # looks like these are the only two external links appearing in the metrowerks manual
+        @source.patch(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1', global: true)
+        @source.patch(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1', global: true)
+        @content_start = @source.lines.index { |l| l.match? %r{<a name="Top">} })
+        @content_end = @source.lines.index { |l| l.match? %r{<a name="Bottom">} })
+        define_singleton_method :to_html, k.method(:to_html_metrowerks)
+      end
+      super
     end
+
   end
 end

@@ -13,7 +13,7 @@ class RISCiX
     alias :LP :P
 
     def initialize(source)
-      @manual_entry ||= k.instance_variable_get('@input_filename').sub(/\.(\d\S*)$/, '')
+      @manual_entry ||= @input_filename.sub(/\.(\d\S*)$/, '')
       @manual_section ||= Regexp.last_match[1]
       super(source)
     end
@@ -89,9 +89,9 @@ class RISCiX
     define_method 'UX' do |*_args| ; end # defined in tmac.s
 
     define_method 'TH' do |*args|
-      req_ds "]L #{args[2]}"
-      req_ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-      req_ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+      ds "]L #{args[2]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
       @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?

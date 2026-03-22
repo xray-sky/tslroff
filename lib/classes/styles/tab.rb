@@ -2,7 +2,7 @@ class Tab < Text
   attr_reader :width, :stop
   def initialize(arg)
     super(arg)
-    @width = arg[:width]
+    @width = arg[:width].round(3)
     @stop = arg[:stop]
     immutable!
   end

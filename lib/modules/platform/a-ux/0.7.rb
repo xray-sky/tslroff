@@ -17,7 +17,7 @@ class A_UX::V0_7
       case @source.file
       # title line: 'updater()     updater()'
       when 'updater.1.z'
-        define_singleton_method :parse_title, {
+        define_singleton_method :parse_title, proc {
           @manual_section = '1'
           @output_directory = 'man1'
           true
@@ -28,3 +28,5 @@ class A_UX::V0_7
 
   end
 end
+
+class A_UX::V2_0 < ::A_UX ; end

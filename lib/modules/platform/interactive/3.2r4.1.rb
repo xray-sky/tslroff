@@ -33,7 +33,7 @@ class Interactive::V3_2r4_1
       when /intro\.nfs\.(\d)/ # easier to just override these than mess with the regex
         k.instance_variable_set '@manual_entry', 'intro.nfs'
         k.instance_variable_set '@manual_section', Regexp.last_match[1]
-      when 'i596.7' @source.patch_line(1, /^/, '.\\"') # misidentified as nroff
+      when 'i596.7' then @source.patch_line(1, /^/, '.\\"') # misidentified as nroff
       end
 
       super(source)

@@ -44,8 +44,7 @@ class SunOS::V1_1
 
     def initialize(source)
       case source.file
-      when 'temp',
-        raise ManualIsBlacklisted, 'is RCS history file'
+      when 'temp' then raise ManualIsBlacklisted, 'is RCS history file'
       end
       super(source)
     end

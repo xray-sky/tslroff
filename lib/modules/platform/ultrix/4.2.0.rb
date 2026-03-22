@@ -121,6 +121,7 @@ class Ultrix::V4_2_0
     end
 
   end
+end
 
 # all the same tmac.an
 # 4.0 still has NO NOTE in .NT, a couple of indent changes for nroff, and slightly

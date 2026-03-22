@@ -58,7 +58,7 @@ class AOS::V4_3
       when 'async_daemon.2', 'setdomainname.2',
            'yp_all.3n', 'yp_bind.3n', 'yp_match.3n', 'yp_next.3n', 'yp_order.3n',
            'yp_unbind.3n', 'yperr_string.3n', 'ypprot_err.3n'
-        @source.patch_lines(1..3), /^#/, '.\\"'
+        @source.patch_lines(1..3, /^#/, '.\\"')
       when 'index.3' then @manual_entry = '_index'
       when 'mouse.4' # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead
         @source.patch_lines(123..141, /^\.\\"/, '')

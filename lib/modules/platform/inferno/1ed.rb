@@ -15,12 +15,12 @@
 #   lost the img files?
 #
 
-class Inferno::FirstEed
+class Inferno::FirstEd
   class HTML < ::Inferno::HTML
 
     def initialize(source)
       @output_directory ||= '' #+ k.instance_variable_get('@source_dir')) # wrong
-      @manual_entry ||= source.file.sub(/\.htm$/, ''))
+      @manual_entry ||= source.file.sub(/\.htm$/, '')
       super(source)
     end
 
@@ -66,7 +66,9 @@ class Inferno::FirstEed
       super
     end
 
-    def to_html
+    def to_html(halt_on: nil)
+      return nil if halt_on
+      source_init
       title = @source.title.sub(%r{^(Inferno|Limbo)([^/\s])}, '\1 \2')
       body = @source.xpath('//body')
 

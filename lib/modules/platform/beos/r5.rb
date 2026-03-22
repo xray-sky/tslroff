@@ -34,12 +34,13 @@ class BeOS::R5
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'gcc.html', 'rcs.html', 'rcsfile.html', 'rcsintro.html', 'uuencode.html'
-        @source = Source.new(file, magic: 'HTML', source_args: source_args)
+        @source = Source.new file, source_args.merge({magic: 'HTML'})
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
+  class Nroff < ::BeOS::Nroff ; end
   class HTML < ::BeOS::HTML
 
     def source_init
@@ -60,8 +61,8 @@ class BeOS::R5
         # looks like these are the only two external links appearing in the metrowerks manual
         @source.patch(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1', global: true)
         @source.patch(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1', global: true)
-        @content_start = @source.lines.index { |l| l.match? %r{<a name="Top">} })
-        @content_end = @source.lines.index { |l| l.match? %r{<a name="Bottom">} })
+        @content_start = @source.lines.index { |l| l.match? %r{<a name="Top">} }
+        @content_end = @source.lines.index { |l| l.match? %r{<a name="Bottom">} }
         define_singleton_method :to_html, k.method(:to_html_metrowerks)
       end
       super

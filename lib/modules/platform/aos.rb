@@ -55,7 +55,7 @@ class AOS
     end
 
     # .so with absolute path, headers in /usr/include
-    def req_so(name, breaking: nil)
+    def so(name, breaking: nil)
       osdir = @source_dir.dup
       @source_dir << '/..'
       super(name, breaking: breaking)

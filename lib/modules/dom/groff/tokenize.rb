@@ -6,7 +6,7 @@
 # these methods are _not_ destructive of s
 #
 
-class Groff
+class Groff < ::Troff
 
 # return one definition
 # either a single character, or a two-character definition preceeded by (

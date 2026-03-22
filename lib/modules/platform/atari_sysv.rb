@@ -17,7 +17,7 @@ class Atari_SysV
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      @heading_detection|| = %r{^\s{2,3}(?<section>[A-Z][A-Za-z\s]+)$}
+      @heading_detection ||= %r{^\s{2,3}(?<section>[A-Z][A-Za-z\s]+)$}
       @title_detection ||= %r{^\s{2,3}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
       @lines_per_page ||= 67
       super(source)

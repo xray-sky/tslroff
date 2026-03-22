@@ -78,7 +78,7 @@ class SunOS::V4_0
       '3L' => 'LIGHTWEIGHT PROCESSES LIBRARY',
       '3M' => 'MATHEMATICAL LIBRARY',
       '3N' => 'NETWORK FUNCTIONS',
-      '3P' => 'SUNPHIGS LIBRARY' # unbundled,
+      '3P' => 'SUNPHIGS LIBRARY', # unbundled
       '3R' => 'RPC SERVICES LIBRARY',
       '3S' => 'STANDARD I/O FUNCTIONS',
       '3V' => 'SYSTEM V LIBRARY',
@@ -95,7 +95,7 @@ class SunOS::V4_0
       '5V' => 'FILE FORMATS',
       '6'  => 'GAMES AND DEMOS',
       '7'  => 'PUBLIC FILES, TABLES, AND TROFF MACROS',
-      '7P' => 'SUNPHIGS LIBRARY' # unbundled,
+      '7P' => 'SUNPHIGS LIBRARY', # unbundled
       '8'  => 'MAINTENANCE COMMANDS',
       '8C' => 'MAINTENANCE COMMANDS',
       '8S' => 'MAINTENANCE COMMANDS',

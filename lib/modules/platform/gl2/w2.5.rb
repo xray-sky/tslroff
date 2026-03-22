@@ -11,6 +11,15 @@
 #   ar.4 wants to include /usr/include/ar.h
 #   greset.3 has something going on with the colormap table?
 #
+class GL2::W2_4
+  class Troff < ::GL2::Troff
+
+    def initialize(source)
+      @version = "W2.4"
+      super(source)
+    end
+  end
+end
 
 class GL2::W2_5
   class Troff < ::GL2::Troff
@@ -30,6 +39,16 @@ class GL2::W2_5
       super
     end
 
+  end
+end
+
+class GL2::W2_5r1
+  class Troff < ::GL2::Troff
+
+    def initialize(source)
+      @version = "W2.5r1"
+      super(source)
+    end
   end
 end
 

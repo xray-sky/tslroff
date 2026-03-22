@@ -50,3 +50,23 @@ end
   end
 =end
 
+class AUX < :: DomainIX ; end
+class AUX::SR8_0 < :: AUX ; end
+class AUX::SR8_1_update < :: AUX ; end
+class Aegis::SR7_B < ::Aegis ; end
+class Aegis::SR8_0 < ::Aegis ; end
+class Aegis::SR8_1 < ::Aegis ; end
+class Aegis::SR8_1_update < ::Aegis ; end
+class Aegis::SR9_0 < ::Aegis ; end
+class Aegis::SR9_0_020 < ::Aegis ; end
+class Aegis::SR9_2 < ::Aegis ; end
+class Aegis::SR9_5 < ::DomainIX::SR9_5 ; end
+class Aegis::SR9_6 < ::Aegis ; end
+class Aegis::SR9_7 < ::Aegis ; end
+class Aegis::SR9_7_1 < ::Aegis ; end
+class DomainIX::SR9_2_3 < ::DomainIX ; end
+class DomainOS::SR10_0 < ::DomainOS ; end
+class DomainOS::SR10_1 < ::DomainOS ; end
+class DomainOS::SR10_1_PSK4 < ::DomainOS ; end
+class DomainOS::SR10_2 < ::DomainOS ; end
+class DomainOS::SR10_3 < ::DomainOS ; end

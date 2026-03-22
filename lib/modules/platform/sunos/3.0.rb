@@ -12,7 +12,7 @@ class SunOS::V3_0
   class Manual < ::Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
-      when 'skyversion.8' => @source = Source.new(file, magic: 'Troff', source_args: source_args),
+      when 'skyversion.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end

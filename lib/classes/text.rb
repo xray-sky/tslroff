@@ -70,7 +70,7 @@ class Text
 
     # tab separately, as it may encompass several Text objects
     # this relies on all other spans being closed tidily within a single Text object
-    tab = @tab_width ? %(<span class="tab" style="width:#{@tab_width};">) : ''
+    tab = @tab_width ? %(<span class="tab" style="width:#{@tab_width.round(3)};">) : ''
 
     if text.is_a?(RoffControl) or text.is_a?(Block::Inline)
       ent = text.to_html#.tap {|n| warn "Control to html #{self.inspect}" }
@@ -108,9 +108,9 @@ class Text
       if @style.keys.any?
         tags += style.collect do |t, v| # TODO consolidate multiple styles??
           case t
-          when :baseline         then %(<span style="position:relative;top:#{v}em;line-height:0;">)
-          when :horizontal_shift then %(<span style="position:relative;left:#{v}em;">)
-          when :word_spacing     then %(<span style="word-spacing:#{v}em;">) # REVIEW this seems to give wider spaces than I'd expect - jot(1) [AOS-4.3]
+          when :baseline         then %(<span style="position:relative;top:#{v.round(3)}em;line-height:0;">)
+          when :horizontal_shift then %(<span style="position:relative;left:#{v.round(3)}em;">)
+          when :word_spacing     then %(<span style="word-spacing:#{v.round(3)}em;">) # REVIEW this seems to give wider spaces than I'd expect - jot(1) [AOS-4.3]
           when :eqn              then %(<span style="color:steelblue;">)
           when :comment          then return %(<!--\n   #{@text}\n-->)
           else                        %(<span style="color:white;background:red;">WTF? #{t}: #{v} =&gt; ).tap { warn "text module WTF oops #{t.inspect} => #{v.inspect}" }

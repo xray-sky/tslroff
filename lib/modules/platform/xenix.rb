@@ -8,8 +8,19 @@
 #
 # TODO
 #   machine(hw) - See Also not detected because of tbl shme
+# √ master.list(C) - blacklist (not a manual page)
 #
 class Xenix
+
+  class Manual < ::Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
+      when 'master.list.C' then raise ManualIsBlacklisted, "not a manual entry"
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
+    end
+  end
+
   class Nroff < ::Nroff
 
     def initialize(source)

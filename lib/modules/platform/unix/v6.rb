@@ -12,29 +12,35 @@
 #
 # TODO
 #   redo as first-class macro package
-#   link detection - section in roman numerals
+# √ link detection - section in roman numerals
 #   is everything here ok? what's up with cc(i) ?
 #
 
 class UNIX::V6
 
-  class Block::Paragraph < ::Block
-    def to_html
-      # this used to happen before every block was processed.
-      # TODO something better.
-      #      something not tied to Block::Paragraph.
-      #      something that can be overridden.
-      #        => V6 manual refs are like "syscall (II)"
-      # NOTE Nroff Line class has its own link rewrite
+  # this is working to avoid killing ::Block::Paragraph (`class Block::Paragraph < ::Block` did this)
+  # but neither was the UNIX::V6 Troff making use of it.
+  # overriding blockproto() was sufficient to fix, but fragile.
 
-      t = @text.collect(&:to_html).join
-      t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)\s{0,1}(?:<[^<]+?>)*\s{0,1}\((?:<[^<]+?>)*(?<fullsec>(?<section>[IV]*?))(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
-        caps = Regexp.last_match
-        entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
-        %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
-      end if style[:linkify]
+  class Block
+    class Paragraph < ::Block
+      def to_html
+        # this used to happen before every block was processed.
+        # TODO something better.
+        #      something not tied to Block::Paragraph.
+        #      something that can be overridden.
+        #        => V6 manual refs are like "syscall (II)"
+        # NOTE Nroff Line class has its own link rewrite
 
-      "<p#{@style}>\n#{t}\n</p>\n"
+        t = @text.collect(&:to_html).join
+        t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)\s{0,1}(?:<[^<]+?>)*\s{0,1}\((?:<[^<]+?>)*(?<fullsec>(?<section>[IV]*?))(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
+          caps = Regexp.last_match
+          entry = caps[:entry].sub(/&minus;/, '-')  # this was interfering with link generation - ali(1) [AOS 4.3]
+          %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
+        end if style[:linkify]
+
+        "<p#{@style}>\n#{t}\n</p>\n"
+      end
     end
   end
 
@@ -50,14 +56,6 @@ class UNIX::V6
     alias :LP :P
     alias :dt :DT
     alias :sh :SH
-
-    #def initialize(source)
-    #  @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-    #  @title_detection ||= %r{^\s+(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
-    #  @related_info_heading ||= 'See Also'
-    #  super(source)
-    #end
-
 
     def init_ds
       super
@@ -96,6 +94,10 @@ class UNIX::V6
       super
     end
 
+    def blockproto(type = Block::Paragraph)
+      super(type)
+    end
+
     def bd(*args)
       ft '3'
       if @register['V'] > 1
@@ -122,8 +124,8 @@ class UNIX::V6
     end
 
     def it(*args)
-      # can't use req_ul as it calls req_it internally
-      #req_ul
+      # can't use .ul as it calls .it internally
+      #ul
       ft '2'
       if @register['V'] > 1
         parse "_#{args[0]}_"

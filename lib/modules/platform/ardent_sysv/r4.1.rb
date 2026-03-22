@@ -33,3 +33,4 @@ class Ardent_SysV::R4_1
   end
 end
 
+class Ardent_SysV::R4_2 < Ardent_SysV::R4_1 ; end

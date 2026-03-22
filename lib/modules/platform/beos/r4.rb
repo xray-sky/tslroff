@@ -21,7 +21,7 @@ class BeOS::R4
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
-        @source = Source.new(file, encoding: Encoding::ISO_8859_1, source_args: source_args)
+        @source = Source.new file, source_args.merge({encoding: Encoding::ISO_8859_1})
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
@@ -30,9 +30,10 @@ class BeOS::R4
   class HTML < ::BeOS::HTML
 
     def source_init
+      dir = @source.dir
       @source.patch(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;', global: true)
       super
-      @source.xpath('//body').css('form').each { |form| form['action'] = '' } if @source.dir.include?('The_Be_FAQs')
+      @source.xpath('//body').css('form').each { |form| form['action'] = '' } if dir.include?('The_Be_FAQs')
     end
 
   end

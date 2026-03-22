@@ -27,7 +27,7 @@ class Troff
     delim = argstr.split.first || '.'
     # like .de, it's not actually a method invocation
     # and in fact '.ig foooobar' will .ig until '.foooobar' occurs
-    #terminating_method = "req_#{Troff.quote_method delim}"
+    #terminating_method = Troff.quote_method delim
     #define_singleton_method(terminating_method) { |*_args| true }
 
     #save_block = @current_block

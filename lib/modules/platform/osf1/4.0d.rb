@@ -10,7 +10,7 @@
 # √ vrestore(8) infinite loop - rewrite for page bug; loop in \* (get_def_str) also fixed
 #
 
-class Digital_UNIX::V40d
+class Digital_UNIX::V4_0d
   class Troff < ::Digital_UNIX::Troff
 
     def source_init

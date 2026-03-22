@@ -180,5 +180,4 @@ class OS_MP
       warn "can't yet .VS #{args.inspect}"
     end
   end
-
-
+end

@@ -58,7 +58,6 @@ class HPUX::V10_20
       #k.instance_variable_get('@source').lines.delete_at(1)
       #k.instance_variable_get('@source').lines.delete_at(0)
       @lines_per_page = nil if source.file == 'x_open_800.5'
-      end
     end
   end
 

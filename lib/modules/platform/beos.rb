@@ -28,13 +28,18 @@
 #
 
 class BeOS
-  class HTML < ::HtML
-    def initialize(source)
-      @output_directory = './' + source.dir.sub(%r{^.+(?:beos/documentation|develop)/?}, '')) # wrong
-      @manual_entry = source.file.sub(/\.html$/, ''))
+  class Nroff < ::Nroff ; end
+  class HTML < ::HTML
+    def initialize source, vendor_class: nil, source_args: {}
+      super source, vendor_class: vendor_class, source_args: source_args
+      #@output_directory = './' + source.dir.sub(%r{^.+(?:beos/documentation|develop)/?}, '') # wrong
+      @manual_entry = @source.file.sub(/\.html$/, '')
+      #@manual_section = ""
     end
 
-    def to_html
+    def to_html(halt_on: nil)
+      return nil if halt_on
+      source_init
       title = @source.title
       body = @source.xpath('//body')
 

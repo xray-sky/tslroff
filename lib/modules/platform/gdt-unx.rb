@@ -116,7 +116,7 @@ class GDT_UNX
     # .NOP - does nothing but I would like to insert this text as a comment
     define_method 'NO' do |*args|
       comment = *args.join(' ').slice(1..-1) # kill the initial P (from .NOP)
-      send 'req_\\"', comment
+      send '\\"', comment
     end
 
   end

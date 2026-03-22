@@ -31,11 +31,13 @@
 #
 
 class GL2
+  class Nroff < ::Nroff ; end  # This is temporarily supporting 4D1 ThirdParty
   class Troff < ::Troff
 
     alias :LP :P
 
     def initialize(source)
+      @version ||= "."  # TODO (temporarily supporting 4D1 ThirdParty, but also need to fix os/version for Rake)
       @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
       @manual_section ||= Regexp.last_match[1]
       super(source)

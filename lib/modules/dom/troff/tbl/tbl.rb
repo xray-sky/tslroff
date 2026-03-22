@@ -191,7 +191,7 @@ module Troff::Tbl
           fontreq.insert(1, '(') if fontreq.length == 3 # avoid messing with last_match
           unescape "#{@state[:escape_char]}#{fontreq}", output: cell
 
-        when /^(p([-+123]?\d))/ #then req_ps(Regexp.last_match[2])
+        when /^(p([-+123]?\d))/ #then ps(Regexp.last_match[2])
           # sysconf(3c) [SunOS 5.5.1] has bare 'p' with no number following. tbl doc suggests this
           # is invalid, does nothing. REVIEW does it?
           unescape @state[:escape_char] + 's' + Regexp.last_match[2], output: cell
@@ -254,9 +254,9 @@ module Troff::Tbl
       row << cell
     end
 
-    #req_ft('R')
+    #ft('R')
     # reset font and size to default - this didn't seem to be working in all circumstances? sysconf(3c) [SunOS 5.5.1]
-    #req_ps(Font.defaultsize)
+    #ps(Font.defaultsize)
 
     @state[:tbl_formats].next_row
 

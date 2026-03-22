@@ -21,18 +21,18 @@ class BeOS::PR2
   class Manual < ::Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
-      when 'Release Notes'
-        @source = Source.new(file, magic: 'Nroff', encoding: Encoding::ISO_8859_1, source_args: source_args)
+      when 'Release Notes', 'Upgrading from DR8 or AA'
+        @source = Source.new file, source_args.merge({magic: 'Nroff', encoding: Encoding::ISO_8859_1})
       when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
-        @source = Source.new(file, encoding: Encoding::ISO_8859_1, source_args: source_args)
-      when 'Upgrading from DR8 or AA'
-        @source = Source.new(file, magic: 'Nroff', source_args: source_args)
+        @source = Source.new file, source_args.merge({encoding: Encoding::ISO_8859_1})
       when 'rcs.html'
-        @source = Source.new(file, magic: 'HTML', source_args: source_args)
+        @source = Source.new file, source_args.merge({magic: 'HTML'})
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
+
+  class Nroff < ::BeOS::Nroff ; end
 
   class HTML < ::BeOS::HTML
 

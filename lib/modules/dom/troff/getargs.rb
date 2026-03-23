@@ -35,20 +35,20 @@
 #
 # good.
 #
-# TODO: details in §7.3 (including "arguments are copied in copy mode onto a stack")
+# TODO details in §7.3 (including "arguments are copied in copy mode onto a stack")
 #
 
 class Troff
 
   def getargs(str)
-    resc  = Regexp.quote(@state[:escape_char].to_s)	# escape mechanism may be disabled
-    args = Array.new
+    resc = Regexp.quote(@escape_character.to_s) # escape mechanism may be disabled
+    args = []
     #argstr = str.sub(%r{\s*\\".*$}, '')	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
     # Interactive makes it pretty clear that we process the args in copymode first, _then_ split them up
     # and also that double quotes need preserving into .ds
     # it APPEARS as though double quotes are only lost passing args to macros??
     # - I guess that helps with .if/.ie argparsing but it means I need to take care about macros vs. requests!
-    argstr = __unesc_w(unescape(str.sub(%r{\s*\\".*$}, ''), copymode: true))
+    argstr = __unesc_w(unescape(str.sub(%r{\s*\\".*$}, ''), copymode: true)) # TODO programmable escape char / disabled escapes
     until argstr.empty?
       # eat leading space
       arg = argstr.slice!(0, get_char(argstr).length)

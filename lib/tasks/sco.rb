@@ -1,17 +1,4 @@
 collectionNamespace 'SCO' do
-  collectionNamespace 'unbundled' do
-    manualNamespace 'LLI_3.1.0j',
-      vendor_class: OpenDesktop,
-      idir: 'sco/unbundled/lli-r3.1.0j',
-      odir: 'SCO/unbundled/LLI_3.1.0j',
-      sources: %w[usr/man/cat.*]
-    manualNamespace 'TCPIP_1.2.0i',
-      vendor_class: OpenDesktop,
-      idir: 'sco/unbundled/tcpip-1.2.0i',
-      odir: 'SCO/unbundled/TCPIP_1.2.0i',
-      sources: %w[usr/man/cat.*]
-  end
-
   collectionNamespace 'OpenDesktop' do
     manualNamespace '1.0.0y',
       vendor_class: OpenDesktop::V1_0_0y,
@@ -33,10 +20,23 @@ collectionNamespace 'SCO' do
       idir: 'sco/odt/x11r4-efs-r4.1.1b',
       odir: 'SCO/OpenDesktop/X11R4-EFS-4.1.1b',
       sources: %w[usr/man/cat.*]
+    manualNamespace '2.0.0a',
+      vendor_class: OpenDesktop,
+      idir: 'sco/odt/2.0.0a',
+      odir: 'SCO/OpenDesktop/2.0.0a',
+      sources: %w[man/cat.*]
     manualNamespace '3.0.0',
       vendor_class: OpenDesktop,
       idir: 'sco/odt/3.0.0',
       odir: 'SCO/OpenDesktop/3.0.0',
+      sources: %w[man/cat.*]
+  end
+
+  collectionNamespace 'SystemV/386' do
+    manualNamespace '3.2v2.0n',
+      vendor_class: SCO_SysV386,
+      idir: 'sco/systemv/3.2v2.0n',
+      odir: 'SCO/SystemV:386/3.2v2.0n',
       sources: %w[man/cat.*]
   end
 
@@ -54,4 +54,7 @@ collectionNamespace 'SCO' do
         man/cat.*
       ]
   end
+
+  require_relative 'sco/thirdparty'
+  require_relative 'sco/unbundled'
 end

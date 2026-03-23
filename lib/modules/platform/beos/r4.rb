@@ -21,7 +21,7 @@ class BeOS::R4
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
-        @source = Source.new file, source_args.merge({encoding: Encoding::ISO_8859_1})
+        source_args.merge!({encoding: Encoding::ISO_8859_1})
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end

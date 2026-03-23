@@ -30,7 +30,6 @@ class Troff
   end
 
   def eqn_bracket(parse_tree)
-    # TODO make these into the "appropriate sized" brackets, with a little extra padding space inside maybe
     lbrk = case x = parse_tree.shift
            when 'c' then "\\(lc"
            when 'f' then "\\(lf"
@@ -50,12 +49,12 @@ class Troff
     selenium = Block::Selenium.new(text: blk)
     selenium.style.css[:display] = 'block'
     Troff.webdriver.get selenium.to_html
-    begin
-      height = to_em(to_u(Troff.webdriver.find_element(id: 'selenium').size.height.tap { |n| warn "selenium measured height #{n.inspect}px" }.to_s, default_unit: 'px'))
-    rescue Selenium::WebDriver::Error::NoSuchElementError => e
-      warn e
-      'NaN' # REVIEW side effects - returning nil - but what string makes sense?
-    end
+    height = begin
+               to_em(to_u(Troff.webdriver.find_element(id: 'selenium').size.height.tap { |n| warn "selenium measured bracket inside height #{n.inspect}px" }.to_s, default_unit: 'px'))
+             rescue Selenium::WebDriver::Error::NoSuchElementError => e
+               warn e
+              'NaN' # REVIEW side effects - returning nil - but what string makes sense?
+             end
 
     # minimum number of bracket pieces needed - next higher integer value
     pieces = (height + 1).to_i
@@ -102,8 +101,6 @@ class Troff
     if height <= 1
       unescape "\\0\\f1#{rbrk}\\fP"
     else
-      # minimum number of bracket pieces needed - next higher integer value
-      #pieces = (height + 1).to_i
       extended = case rbrk
                  when ')'  # top, bottom
                    [ '&#9118;' ] + Array.new([0, pieces - 2].max, '&#9119;') + [ '&#9120;' ]
@@ -117,7 +114,6 @@ class Troff
                  else # DANGER REVIEW TODO
                    [ rbrk ]
                  end
-
     end
 
     if extended.count == 1 # punt, dunno how to make a tall one

@@ -10,15 +10,15 @@ class Troff
   module Macros
     module An
 
-  def init_RS
-    @register[')R'] = Register.new(0)
-    @register[')p'] = Register.new(0, 1)
-    ('1'..'9').each do |n|
-      [')', ']'].each do |i|
-        @register[i+n] = Register.new
+      def init_RS
+        @register[')R'] = Register.new(0)
+        @register[')p'] = Register.new(0, 1)
+        ('1'..'9').each do |n|
+          [')', ']'].each do |i|
+            @register[i+n] = Register.new
+          end
+        end
       end
-    end
-  end
 
 #   .B text			Make text bold.
 #   .I text			Make text italic.
@@ -28,64 +28,64 @@ class Troff
 #
 #   tmac.an defines behavior where a shift out of I inserts \^ except after the last arg
 
-  %w[B I].each do |a|
-    define_method a do |*args|
-      if args.any?
-        ft "#{@state[:fonts].index(a)}"
-        parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
-        #send '}N' # see note re: \n()E below
-        send '}f'
-      else
-        #it('1', '}N')
-        it '1 }f'
+      %w[B I].each do |a|
+        define_method a do |*args|
+          if args.any?
+            ft "#{@mounted_fonts.index(a)}"
+            parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+            #send '}N' # see note re: \n()E below
+            send '}f'
+          else
+            #it('1', '}N')
+            it '1 }f'
+          end
+        end
       end
-    end
-  end
 
-  %w[B I R].permutation(2).each do |a, b|
-    define_method "#{a + b}" do |*args|
-      parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
-    end
-  end
+      %w[B I R].permutation(2).each do |a, b|
+        define_method "#{a + b}" do |*args|
+          parse %(.}S #{@mounted_fonts.index(a)} #{@mounted_fonts.index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
+        end
+      end
 
-  define_method '}f' do |*_args|
-    ps "#{Font.defaultsize}"
-    ft '1'
-  end
+      define_method '}f' do |*_args|
+        ps "#{Font.defaultsize}"
+        ft '1'
+      end
 
-  # the same, whether .B or .I
-  # "handle end of 1-line features"
-  # uses \n()E, set by .SH, .SS, .TP, etc.
-  # REVIEW do we _need_ to use )E?
+      # the same, whether .B or .I
+      # "handle end of 1-line features"
+      # uses \n()E, set by .SH, .SS, .TP, etc.
+      # REVIEW do we _need_ to use )E?
 
-  define_method '}N' do |*_args|
-    br if @register[')E'] > 0
-    di
-    send '}f' if @register[')E'].zero? # .}S
-    send '}1' if @register[')E'] == 1 # .TP
-    send '}2' if @register[')E'] == 2 # .SH, .SS
-  end
+      define_method '}N' do |*_args|
+        br if @register[')E'] > 0
+        di
+        send '}f' if @register[')E'].zero? # .}S
+        send '}1' if @register[')E'] == 1 # .TP
+        send '}2' if @register[')E'] == 2 # .SH, .SS
+      end
 
-  # special case for shift out of italic
-  #
-  # recursive .}S causes bad interactions with stray double-quotes :: restore(1m) [ HP-UX 10.20 ]
-  # this means we have to be intentional about the way things like .if '\f2'' evaluate true
-  #  - defer our conditionals to if
+# special case for shift out of italic
+#
+# recursive .}S causes bad interactions with stray double-quotes :: restore(1m) [ HP-UX 10.20 ]
+# this means we have to be intentional about the way things like .if '\f2'' evaluate true
+#  - defer our conditionals to if
 
-  define_method '}S' do |*args|
-    #ds "]F #{(args[0] == '2' and !args[4].empty?) ? '\\^' : ''}"
-    #if !args[3].empty?
-    #  parse %(.}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}").tap { |n| warn ".}S :: #{n.inspect}" }
-    #else
-    #  parse args[2]
-    #end
+      define_method '}S' do |*args|
+        #ds "]F #{(args[0] == '2' and !args[4].empty?) ? '\\^' : ''}"
+        #if !args[3].empty?
+        #  parse %(.}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}").tap { |n| warn ".}S :: #{n.inspect}" }
+        #else
+        #  parse args[2]
+        #end
 
-    ds ']F'
-    send(:if, %(!\007#{args[4]}\007\007 .ds ]F\\^), quiet: true) if args[0] == '2'
-    ie(%(!\007#{args[3]}\007\007 .}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}"), quiet: true)
-    el args[2]
-    send '}f'
-  end
+        ds ']F'
+        send(:if, %(!\007#{args[4]}\007\007 .ds ]F\\^), quiet: true) if args[0] == '2'
+        ie(%(!\007#{args[3]}\007\007 .}S #{args[1]} #{args[0]} "#{args[2]}\\f#{args[0]}#{args[3]}\\*\(]F" "#{args[4]}" "#{args[5]}" "#{args[6]}" "#{args[7]}" "#{args[8]}"), quiet: true)
+        el args[2]
+        send '}f'
+      end
 
 #   .CD
 #
@@ -93,30 +93,30 @@ class Troff
 #
 #  TODO everything
 
-  define_method 'CD' do |*_args|
-    warn "requires preprocessing by cw(1)"
-  end
+      define_method 'CD' do |*_args|
+        warn "requires preprocessing by cw(1)"
+      end
 
 #   .DT
 #
 #     Restore default tab settings (every 7.2en in troff(1), 5en in nroff(1))
 
-  define_method 'DT' do |*_args|
-    ta('.5i 1i 1.5i 2i 2.5i 3i 3.5i 4i 4.5i 5i 5.5i 6i 6.5i')
-  end
+      define_method 'DT' do |*_args|
+        ta('.5i 1i 1.5i 2i 2.5i 3i 3.5i 4i 4.5i 5i 5.5i 6i 6.5i')
+      end
 
 #   .HP in			Begin paragraph with hanging indent.
 #
 #
 #  e.g. paragraph has indent in, first line doesn't
 
-  define_method 'HP' do |indent = nil, *_args|
-    @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
-    @current_block = blockproto
-    @document << @current_block
-    indent(@state[:base_indent] + @register[')R'] + @register[')I'])
-    temp_indent -@register[')I']
-  end
+      define_method 'HP' do |indent = nil, *_args|
+        @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
+        @current_block = blockproto
+        @document << @current_block
+        indent(@state[:base_indent] + @register[')R'] + @register[')I'])
+        temp_indent -@register[')I']
+      end
 
 #   .IP t in
 #
@@ -128,32 +128,37 @@ class Troff
 # REVIEW .IP/.PP/.IP with no further args is giving inconsistent indents, ar(1) Examples [GL2-W2.5]
 #        -- that first .IP is holding over from .TP in previous section; should .SH reset like .PP does? porbly
 
-  def init_IP
-    # called from .RS - TODO maybe find a better way to do it that allows us to merge init_ methods
-    @register[')I'] = Register.new(to_u('0.5i'))
-    # this is effectively a constant. nothing changes it.
-    @state[:tag_padding] = to_u('3p').to_i
-  end
+      def init_IP
+        # called from .RS - TODO maybe find a better way to do it that allows us to merge init_ methods
+        @register[')I'] = Register.new(to_u('0.5i'))
+        # this is effectively a constant. nothing changes it.
+        # @state[:tag_padding] = to_u('3p').to_i
+        # CMU font hack; was: 3p (50u)
+        # seems to improve page outcomes
+        # 37u was enough to fix bullets in c89(1) [ OSF/1 3.0 ]
+        # 12u to fix intro(1) [ GL2-W2.5 ] - still gives reasonable gap
+        @state[:tag_padding] = 12
+      end
 
-  define_method 'IP' do |tag = '', indent = nil, *_args|	# )I reg holds carryover indent
-    warn "received extra args to .IP ?? - #{_args.inspect}" if _args.any?
-    @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
+      define_method 'IP' do |tag = '', indent = nil, *_args|	# )I reg holds carryover indent
+        warn "received extra args to .IP ?? - #{_args.inspect}" if _args.any?
+        @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
 
-    # give us a block if we need one. doing it here keeps the paragraph spacing
-    # the test prevents us from losing paragraph spacing we already got:
-    # e.g. .PP -> .PD 0 -> .TP foo -- adb(1) [GL2-W2.5]
-    #
-    # TODO: but then we lose it at the other end - ugh how
-    #       .RE -> .PD -> .TP foo
-    #       the problem is that .PP outputs vertical space. but in HTML context, this is
-    #       an empty container! REVIEW are we grown up enough to not skip empty blocks?
-    #                                  we aren't pushing any "unnecessary" ones into the doc?
+        # give us a block if we need one. doing it here keeps the paragraph spacing
+        # the test prevents us from losing paragraph spacing we already got:
+        # e.g. .PP -> .PD 0 -> .TP foo -- adb(1) [GL2-W2.5]
+        #
+        # TODO: but then we lose it at the other end - ugh how
+        #       .RE -> .PD -> .TP foo
+        #       the problem is that .PP outputs vertical space. but in HTML context, this is
+        #       an empty container! REVIEW are we grown up enough to not skip empty blocks?
+        #                                  we aren't pushing any "unnecessary" ones into the doc?
 
-    @current_block = blockproto
-    @document << @current_block
+        @current_block = blockproto
+        @document << @current_block
 
-    tagpara(tag)
-  end
+        tagpara(tag)
+      end
 
 #   .IX
 #
@@ -170,13 +175,13 @@ class Troff
 #  REVIEW this is interacting with .in, not resetting that indent. correct? mkfs(1m) [GL2-W2.5]
 #         it's also causing margin_top to collapse to 0 - bfs(1) [GL2-W2.5]
 
-  define_method 'P' do |*_args|
-    send '}f'   # .PP resets font, by way of .}E (also line length, don't care)
-    init_IP		# .PP resets \n()I to 0.5i
-    @current_block = blockproto
-    @document << @current_block
-    indent(@state[:base_indent] + @register[')R'])
-  end
+      define_method 'P' do |*_args|
+        send '}f'   # .PP resets font, by way of .}E (also line length, don't care)
+        init_IP		# .PP resets \n()I to 0.5i
+        @current_block = blockproto
+        @document << @current_block
+        indent(@state[:base_indent] + @register[')R'])
+      end
 
 #   .PD v
 #
@@ -193,14 +198,14 @@ class Troff
 #  TODO .PD 0 followed immediately by .TP anything is resulting in extra space
 #       see bfs(1) Description, xbz/xbn [GL2-W2.5]
 
-  def init_PD
-    @state[:default_pd] = to_u('1m').to_i
-    @register[')P'] = Register.new(@state[:default_pd])
-  end
+      def init_PD
+        @state[:default_pd] = to_u('1m').to_i
+        @register[')P'] = Register.new(@state[:default_pd])
+      end
 
-  define_method 'PD' do |v = nil, *_args|
-    v ? @register[')P'].value = to_u(v, default_unit: 'v') : init_PD
-  end
+      define_method 'PD' do |v = nil, *_args|
+        v ? @register[')P'].value = to_u(v, default_unit: 'v') : init_PD
+      end
 
 #   .PM m
 #
@@ -217,25 +222,25 @@ class Troff
 #   this works like a stack (see .RS)
 #   kermit(1c) [GL2-W2.5] seems to call it repeatedly without ever having called .RS.
 
-  define_method 'RE' do |k = nil, *_args|
-    return if @register[')p'].zero?		# never .RS'd.
-    case k
-    when nil then true
-    when '0' then @register[')p'] = Register.new(1, 1)
-    else          @register[')p'] = Register.new(k, 1)
-    end
+      define_method 'RE' do |k = nil, *_args|
+        return if @register[')p'].zero?		# never .RS'd.
+        case k
+        when nil then true
+        when '0' then @register[')p'] = Register.new(1, 1)
+        else          @register[')p'] = Register.new(k, 1)
+        end
 
-    @register[')I'].value = @register["]#{@register[')p']}"].value
-    @register[')R'].value = @register[")#{@register[')p']}"].value
-    @register[')p'].decr if @register[')p'] > 0
+        @register[')I'].value = @register["]#{@register[')p']}"].value
+        @register[')R'].value = @register[")#{@register[')p']}"].value
+        @register[')p'].decr if @register[')p'] > 0
 
-    if @current_block.immutable?
-      @current_block = blockproto
-      @current_block.style.css[:margin_top] = '0'
-      @document << @current_block
-    end
-    indent(@state[:base_indent] + @register[')R'])
-  end
+        if @current_block.immutable?
+          @current_block = blockproto
+          @current_block.style.css[:margin_top] = '0'
+          @document << @current_block
+        end
+        indent(@state[:base_indent] + @register[')R'])
+      end
 
 #   .RS in
 #
@@ -252,32 +257,32 @@ class Troff
 #
 #   note: "all output"
 
-  define_method 'RS' do |indent = nil, *_args|
-    # troff won't tolerate more than 9 levels of indent even though theoretically we could
-    #raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'] == 9
-    # It doesn't fail though, it just does the simple thing of only using the first digit of )p, and the second digit goes uninterpreted
+      define_method 'RS' do |indent = nil, *_args|
+        # troff won't tolerate more than 9 levels of indent even though theoretically we could
+        #raise RuntimeError "out of stack space for indents in .RS at line #{input_line_number}" if @register[')p'] == 9
+        # It doesn't fail though, it just does the simple thing of only using the first digit of )p, and the second digit goes uninterpreted
 
-    # push old values onto stack
-    @register[')p'].incr
-    @register["]#{@register[')p']}"].value = @register[')I'].value
-    @register[")#{@register[')p']}"].value = @register[')R'].value
+        # push old values onto stack
+        @register[')p'].incr
+        @register["]#{@register[')p']}"].value = @register[')I'].value
+        @register[")#{@register[')p']}"].value = @register[')R'].value
 
-    # increase relative indent by arg, or by )I if arg not given
-    @register[')R'].value += if indent
-      to_u(indent, :default_unit => 'n').to_i
-    else
-      @register[')I'].value
-    end
+        # increase relative indent by arg, or by )I if arg not given
+        @register[')R'].value += if indent
+          to_u(indent, :default_unit => 'n').to_i
+        else
+          @register[')I'].value
+        end
 
-    init_IP
-    if @current_block.immutable?
-      @current_block = blockproto
-      @current_block.style.css[:margin_top] = '0'
-      @document << @current_block
-    end
-    indent(@state[:base_indent] + @register[')R'])
+        init_IP
+        if @current_block.immutable?
+          @current_block = blockproto
+          @current_block.style.css[:margin_top] = '0'
+          @document << @current_block
+        end
+        indent(@state[:base_indent] + @register[')R'])
 
-  end
+      end
 
 #   .SH text
 #
@@ -285,32 +290,32 @@ class Troff
 #
 #  turns fill mode on, if it's off (at least on GL2-W2.5 - REVIEW)
 
-  define_method 'SH' do |*args|
-    fi
-    nr(')R 0')
-    xinit_in
-    #apply { @current_block.type = :sh }
-    @current_block = blockproto Block::Head
-    @document << @current_block
-    unescape(args.join(' '))
-    @state[:section] = @current_block.to_s
-    send 'P'
-  end
+      define_method 'SH' do |*args|
+        fi
+        nr(')R 0')
+        xinit_in
+        #apply { @current_block.type = :sh }
+        @current_block = blockproto Block::Head
+        @document << @current_block
+        unescape(args.join(' '))
+        @state[:section] = @current_block.to_s
+        send 'P'
+      end
 
 #   .SM text
 #
 #     Make text 1 point smaller than default point size.
 #
 
-  define_method 'SM' do |*args|
-    ps "#{Font.defaultsize - 1}"
-    if !args[0]&.empty?
-      parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
-      send '}f'
-    else
-      it('1 }f')
-    end
-  end
+      define_method 'SM' do |*args|
+        ps "#{Font.defaultsize - 1}"
+        if !args[0]&.empty?
+          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+          send '}f'
+        else
+          it('1 }f')
+        end
+      end
 
 #   .SS text
 #
@@ -318,16 +323,16 @@ class Troff
 #
 # REVIEW .ti \n()Ru+\n(INu - sunos tmac.an
 
-  define_method 'SS' do |*args|
-    fi
-    nr(')R 0')
-    xinit_in
-    #apply { @current_block.type = :ss }
-    @current_block = blockproto Block::SubHead
-    @document << @current_block
-    unescape(args.join(' '))
-    send 'P'
-  end
+      define_method 'SS' do |*args|
+        fi
+        nr(')R 0')
+        xinit_in
+        #apply { @current_block.type = :ss }
+        @current_block = blockproto Block::SubHead
+        @document << @current_block
+        unescape(args.join(' '))
+        send 'P'
+      end
 
 #   .TH t s c n
 #
@@ -350,17 +355,17 @@ class Troff
 #      when some info is missing. I know we tried a bunch of nonsense ages ago, and didn't really solve it.
 #
 
-  define_method 'TH' do |*args, heading: nil|
-    #@manual_section ||= args[1]
-    # I want the section inferred from the filename to be a default
-    # in case we don't get or can't parse the one from .TH
-    @manual_section = args[1] if args[1] and !args[1].strip.empty?   # REVIEW ...do I? - I'm doing it that way in nroff. but this also means I can't override in platform/version
-    #@output_directory = "man#{@manual_section.downcase}" if @manual_section
-    send 'DT'
-    @state[:named_string][:header] = heading || "#{args[0]}\\^(\\^#{args[1]}\\^)"
-    @current_block = blockproto
-    @document << @current_block
-  end
+      define_method 'TH' do |*args, heading: nil|
+        #@manual_section ||= args[1]
+        # I want the section inferred from the filename to be a default
+        # in case we don't get or can't parse the one from .TH
+        @manual_section = args[1] if args[1] and !args[1].strip.empty?   # REVIEW ...do I? - I'm doing it that way in nroff. but this also means I can't override in platform/version
+        #@output_directory = "man#{@manual_section.downcase}" if @manual_section
+        send 'DT'
+        @named_strings[:header] = heading || "#{args[0]}\\^(\\^#{args[1]}\\^)"
+        @current_block = blockproto
+        @document << @current_block
+      end
 
 #   .TP in
 #
@@ -379,53 +384,53 @@ class Troff
 #      restore.tape(8) [AOS 4.3] gives .TP - 5 which causes '-' to try to be evaluated as an expression. this throws an exception.
 #
 
-  define_method 'TP' do |indent = nil, *_args|
-    warn "pointlessly received extra arguments to .TP #{_args.inspect} - why??" unless _args.empty?
-    indent = nil if indent == '&'	# TODO: ??? -- this isn't a special case, it's just an invalid expression. REVIEW does our expression handling cover it now?
-                                    # it will automatically when we fix .nr to abort non-numeric and make this follow tmac.an
-    # can't do this anymore, after rewriting the req/macro parsing to work with Interactive
-    # TODO probably ought to eventually rewrite closer to actual tmac.an with \n()E, .ns, .di, and .}N
-    #it('1', :finalize_TP, indent)
-    @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
-    it '1 }1'
-    @document << blockproto
-    @current_block = Block::Bare.new # for receiving the tag text
-  end
-
-  #def finalize_TP(indent)
-  #  @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
-  define_method '}1' do |*_args|
-    tag = @current_block.text
-    @current_block = @document.last
-    tagpara(tag)
-  end
-
-  def tagpara(tag)
-    indent(@state[:base_indent] + @register[')R'] + @register[')I'])
-    unless tag.empty?
-      temp_indent(-@register[')I'])
-      tag.class == String ? unescape(tag) : @current_block.text = tag
-
-      tag_width = typesetter_width(Block::Selenium.new(text: @current_block.text)).to_i
-
-      # reset the font (in case it wasn't reverted cleanly in the tag - nis+(1) [SunOS 5.5.1])
-      # so our unit conversions aren't affected.
-      ft '1'
-      ps "#{Font.defaultsize}"
-
-      # is the tag wider than 3 points less than the indent?
-      if @register[')I'] < tag_width + @state[:tag_padding]
-        br
-      else
-        tab_width = to_em("#{@register[')I']}u")
-
-        insert_tab(width: tab_width, stop: @register[')I'])
+      define_method 'TP' do |indent = nil, *_args|
+        warn "pointlessly received extra arguments to .TP #{_args.inspect} - why??" unless _args.empty?
+        indent = nil if indent == '&'	# TODO: ??? -- this isn't a special case, it's just an invalid expression. REVIEW does our expression handling cover it now?
+                                        # it will automatically when we fix .nr to abort non-numeric and make this follow tmac.an
+        # can't do this anymore, after rewriting the req/macro parsing to work with Interactive
+        # TODO probably ought to eventually rewrite closer to actual tmac.an with \n()E, .ns, .di, and .}N
+        #it('1', :finalize_TP, indent)
+        @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
+        it '1 }1'
+        @document << blockproto
+        @current_block = Block::Bare.new # for receiving the tag text
       end
+
+      #def finalize_TP(indent)
+      #  @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
+      define_method '}1' do |*_args|
+        tag = @current_block.text
+        @current_block = @document.last
+        tagpara(tag)
+      end
+
+      def tagpara(tag)
+        indent(@state[:base_indent] + @register[')R'] + @register[')I'])
+        unless tag.empty?
+          temp_indent(-@register[')I'])
+          tag.class == String ? unescape(tag) : @current_block.text = tag
+
+          tag_width = typesetter_width(Block::Selenium.new(text: @current_block.text)).to_i
+
+          # reset the font (in case it wasn't reverted cleanly in the tag - nis+(1) [SunOS 5.5.1])
+          # so our unit conversions aren't affected.
+          ft '1'
+          ps "#{Font.defaultsize}"
+
+          # is the tag wider than 3 points less than the indent?
+          if @register[')I'] < tag_width + @state[:tag_padding]
+            br
+          else
+            tab_width = to_em("#{@register[')I']}u")
+
+            insert_tab(width: tab_width, stop: @register[')I'])
+          end
+        end
+      end
+
+      alias_method 'PP', 'P'
+
     end
   end
-
-  alias_method 'PP', 'P'
-
-end
-end
 end

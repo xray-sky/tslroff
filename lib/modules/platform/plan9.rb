@@ -39,7 +39,7 @@ class Plan9
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           'Tm' => '&trade;',
           ']D' => 'Plan 9',
@@ -52,12 +52,12 @@ class Plan9
 
     def init_fp
       super
-      @state[:fonts][5] = 'L'
+      @mounted_fonts[5] = 'L'
     end
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_PD
@@ -72,7 +72,7 @@ class Plan9
 
     %w[B I L].each do |a|
       define_method a do |*args|
-        fp = @state[:fonts].index (a=='B') ? 'L' : a # .B and .L both use \f5
+        fp = @mounted_fonts.index (a=='B') ? 'L' : a # .B and .L both use \f5
         nh
         #it('1', '}N')
         it '1 }f'
@@ -88,8 +88,8 @@ class Plan9
     %w[RI IR IB RB BR BI LR RL].each do |m|
       define_method m do |*args|
         (a,b) = m.scan(/./)
-        fpa = @state[:fonts].index (a=='B') ? 'L' : a # .B and .L both use \f5
-        fpb = @state[:fonts].index (b=='B') ? 'L' : b # .B and .L both use \f5
+        fpa = @mounted_fonts.index (a=='B') ? 'L' : a # .B and .L both use \f5
+        fpb = @mounted_fonts.index (b=='B') ? 'L' : b # .B and .L both use \f5
         nh
         parse %(.}S #{fpa} #{fpb} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
         send 'HY'
@@ -127,7 +127,7 @@ class Plan9
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

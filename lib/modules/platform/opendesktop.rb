@@ -42,3 +42,5 @@ class OpenDesktop
 
   end
 end
+
+class SCO_SysV386 < OpenDesktop ; end

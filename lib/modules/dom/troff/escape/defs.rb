@@ -21,7 +21,7 @@ class Troff
   define_method 'esc_*' do |s|
     s.slice!(0) if s.start_with?('(')
     s = __unesc_star(__unesc_n(s))
-    @state[:named_string][s] || ''.tap { warn "undefined named string #{s}" }
+    @named_strings[s] || ''.tap { warn "undefined named string #{s}" }
   end
 
 #   \( - special character
@@ -32,7 +32,7 @@ class Troff
 #
 
   define_method 'esc_(' do |s|
-    translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @state[:translate].key? "#{@state[:escape_char]}(#{s}"
+    translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @character_translations.key? "#{@escape_character}(#{s}"
     @state[:special_char][s] || ''.tap { warn "undefined special character #{s}" }
   end
 

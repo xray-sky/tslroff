@@ -27,7 +27,7 @@ class HPUX::V5_20
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           # uses )H but this is defined directly in }F so I don't see how it could ever not be HP Co.
           footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W",
@@ -47,7 +47,7 @@ class HPUX::V5_20
       end
 
       # ]D follows the title (if given), centered on its own line.
-      unless @state[:named_string][']D'].empty?
+      unless @named_strings[']D'].empty?
         byline = Block::Footer.new
         byline.style.css[:margin_top] = '0.5em' # TODO not working? getting 4em from css
         unescape "\\f3\\*(]D\\fP", output: byline
@@ -55,7 +55,7 @@ class HPUX::V5_20
       end
 
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

@@ -19,7 +19,7 @@ class HPUX
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W"
           #'Tm' => '&trade;',

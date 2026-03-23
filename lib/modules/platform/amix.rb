@@ -109,7 +109,7 @@ class AMIX
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L",
           #'Tm' => '&trade;',
@@ -120,7 +120,7 @@ class AMIX
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH

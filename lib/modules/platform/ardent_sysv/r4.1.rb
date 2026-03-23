@@ -6,7 +6,6 @@
 #
 # Ardent SysV 4.1 Platform Overrides
 #
-# TODO pic - xmon(1) [4.2]
 # TODO
 #
 
@@ -22,7 +21,7 @@ class Ardent_SysV::R4_1
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           'Tt' => 'Titan 1500/3000',
           ']D' => 'Kubota Pacfic Computer Inc.'

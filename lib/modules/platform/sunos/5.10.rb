@@ -358,7 +358,7 @@ class SunOS::V5_10
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           ']W' => 'SunOS 5.10',
           '||' => '/usr/share/lib/tmac'
@@ -368,8 +368,8 @@ class SunOS::V5_10
 
     def init_fp
       super
-      @state[:fonts][4] = 'BI' # REVIEW is this right? or is it H ...or S???
-      @state[:fonts][5] = 'CW'
+      @mounted_fonts[4] = 'BI' # REVIEW is this right? or is it H ...or S???
+      @mounted_fonts[5] = 'CW'
     end
 
     def init_sunos551
@@ -389,8 +389,8 @@ class SunOS::V5_10
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       heading = '\\*(]H'
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(heading: heading)
     end

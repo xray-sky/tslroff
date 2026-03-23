@@ -3,6 +3,7 @@ class Troff
 
   def eqn_delim(delim)
     if delim == 'off'
+      # TODO quit with @state{}
       @state.delete(:eqn_start)
       @state.delete(:eqn_end)
       nil
@@ -25,9 +26,8 @@ class Troff
       nil
     else
       warn "eqn wants to define new word #{word.inspect} as #{defstr.inspect}"
-      define_singleton_method("eqn_#{word}") do #|parse_tree|
+      define_singleton_method("eqn_#{word}") do
         gen_eqn eqn_parse_tree(defstr)
-        #gen_eqn [parse_tree.shift]
       end
     end
   end

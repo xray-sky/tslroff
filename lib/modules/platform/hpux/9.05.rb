@@ -36,7 +36,7 @@ class HPUX::V9_05
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
           'Tm' => '&trade;',
@@ -50,7 +50,7 @@ class HPUX::V9_05
 
     def init_fp
       super
-      @state[:fonts][4] = 'C'
+      @mounted_fonts[4] = 'C'
     end
 
     # .so with absolute path, headers in /usr/include
@@ -64,7 +64,7 @@ class HPUX::V9_05
     %w[C B I].each do |a|
       define_method a do |*args|
         if args.any?
-          ft @state[:fonts].index(a).to_s
+          ft @mounted_fonts.index(a).to_s
           parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
           #send '}N'
           send '}f'
@@ -77,7 +77,7 @@ class HPUX::V9_05
 
     %w[C B I R].permutation(2).each do |a, b|
       define_method(a + b) do |*args|
-        parse %(.}S #{@state[:fonts].index(a)} #{@state[:fonts].index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
+        parse %(.}S #{@mounted_fonts.index(a)} #{@mounted_fonts.index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
       end
     end
 
@@ -91,7 +91,7 @@ class HPUX::V9_05
       # .sp .3v between, .sp 1.5v following.
       #space = false
       %w( ]J ]O ).each do |s|
-        next if @state[:named_string][s].empty?
+        next if @named_strings[s].empty?
         #space = true
         byline = Block::Footer.new
         byline.style.css[:margin_top] = '0.5em' # TODO not working?
@@ -101,7 +101,7 @@ class HPUX::V9_05
       #req_sp('1.5v') if space # probably this is overkill, actually
 
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

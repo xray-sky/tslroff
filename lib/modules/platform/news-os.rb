@@ -22,7 +22,7 @@ class NEWS_os
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH
@@ -51,7 +51,7 @@ class NEWS_os
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
 
       super(*args, heading: heading)
     end

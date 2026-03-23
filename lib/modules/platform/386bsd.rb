@@ -6,12 +6,16 @@
 #
 # UC Berkeley 386BSD Platform Overrides
 #
-# TODO:
-#  magic (garbage in garbage out)
-#  see also for "man1ext" (eqn, groff, grotty, etc.): not detecting, sections need repointed,
+# TODO
+#   magic (garbage in garbage out)
+#   see also for "man1ext" (eqn, groff, grotty, etc.): not detecting, sections need repointed,
 #      maybe we can skip linking to man[57]ext as we haven't these pages
-#  all of the troff sources (local, x386)
+#   all of the troff sources (local, x386)
+#   what is going on with the XFree86 pages? also bison(1), others?
+#   1.0 - cc(1) has page breaks
 #
+# REVIEW
+#   are the section 0 pages even "enabled"? or were they moved there to "disable" them
 #
 
 class X386BSD

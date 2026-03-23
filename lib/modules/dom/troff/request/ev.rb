@@ -58,6 +58,37 @@ class Troff
   def ev(argstr = '', breaking: nil)
     warn ".ev wants to switch environments (#{argstr.inspect})‘"
   end
+
+  def init_ev
+    @environments = [ Troff::Environment.new, Troff::Environment.new, Troff::Environment.new ]
+    @environment_stack = [ @environments[0] ]
+  end
+
+  class Environment
+    def initialize()
+      @adjust = 1 # adjust,both - TODO interaction with register[.j]
+      @control_character_nobreak = "'"
+      @control_character = '.'
+      @center_following_lines = 0
+      @underline_following_lines = 0
+      @fill = 1 # fill - TODO interaction with register[.u]
+      @font = 1 # Roman
+      @hyphenation_character = '%'
+      @hyphenate = nil # don't
+      @indent = 0 # TODO interaction with register[.i]
+      @trap_following_lines = 0
+      @leader_character = nil # TODO unimplemented
+      @margin_character = nil # TODO unimplemented
+      @line_numbering = nil # TODO unimplemented
+      @font_size = 10
+      @minimum_word_spacing = 10/36.0 # REVIEW
+      @tabs = [] # TODO every 0.5i in u
+      @temporary_indent = 0
+      @tab_repetition_character = nil # TODO unimplemented
+      @vertical_baseline_spacing = nil # TODO unimplemented
+    end
+  end
+
 end
 
 =begin

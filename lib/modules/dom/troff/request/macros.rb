@@ -86,10 +86,10 @@ class Troff
     name = argstr.slice!(0, 2).rstrip
     defstr = argstr.sub(/^ *"?/, '') # a leading tab is preserved
 
-    @state[:named_string][name] ||= String.new
-    #@state[:named_string][name] << unescape(args.sub(/^"/, ''), :copymode => true)
-    @state[:named_string][name] << defstr
-    #warn "appended to named string #{name.inspect}: #{@state[:named_string][name].inspect}"
+    @named_strings[name] ||= String.new
+    #@named_strings[name] << unescape(args.sub(/^"/, ''), :copymode => true)
+    @named_strings[name] << defstr
+    #warn "appended to named string #{name.inspect}: #{@named_strings[name].inspect}"
   end
 
   def ds(argstr = '', breaking: nil)
@@ -97,9 +97,9 @@ class Troff
     name = argstr.slice!(0, 2).rstrip
     defstr = argstr.sub(/^ *"?/, '') # a leading tab is preserved
 
-    #@state[:named_string][name] = unescape(defstr.sub(/^"/, ''), copymode: true)
-    @state[:named_string][name] = defstr
-    #warn "defined string #{name} as #{@state[:named_string][name].inspect}" if name.start_with? '%'
+    #@named_strings[name] = unescape(defstr.sub(/^"/, ''), copymode: true)
+    @named_strings[name] = defstr
+    #warn "defined string #{name} as #{@named_strings[name].inspect}" if name.start_with? '%'
   end
 
   def am(argstr = '', breaking: nil)
@@ -132,7 +132,7 @@ class Troff
       define_singleton_method(name) do |*args|
         send(savemethod, *args)
         macro.each do |l|  # only args 0-9 allowed
-          parse l.gsub(/(\s*)#{Regexp.quote(@state[:escape_char])}\$(\d)/) {
+          parse l.gsub(/(\s*)#{Regexp.quote(@escape_character)}\$(\d)/) {
             arg = args[$2.to_i - 1]
             (arg.nil? or arg.empty?) ? '' : $1+arg
           }
@@ -195,7 +195,7 @@ class Troff
 
       loop do
         begin
-          parse next_line.gsub(/(\s*)#{Regexp.quote(@state[:escape_char])}\$(\d)/) {
+          parse next_line.gsub(/(\s*)#{Regexp.quote(@escape_character)}\$(\d)/) {
             arg = args[$2.to_i - 1]
             (arg.nil? or arg.empty?) ? '' : $1+arg
           }#.tap { |n| warn "parsing #{n.inspect}" }
@@ -215,9 +215,9 @@ class Troff
   def rm(argstr = '', *args, breaking: nil)
     return nil if argstr.empty?
     arg = argstr.slice(0, 2).strip
-    #@state[:named_string].delete(string) or define_singleton_method(string) { |*args| true } # REVIEW instance_eval(':undef foo') instead?
+    #@named_strings.delete(string) or define_singleton_method(string) { |*args| true } # REVIEW instance_eval(':undef foo') instead?
     #warn arg.inspect
-    @state[:named_string].delete(arg) or instance_eval("undef #{arg.to_sym.inspect}") # REVIEW need to update Requests?
+    @named_strings.delete(arg) or instance_eval("undef #{arg.to_sym.inspect}") # REVIEW need to update Requests?
     rescue NameError
       warn "attempt to .rm undefined macro #{arg}"
   end
@@ -228,10 +228,10 @@ class Troff
     return nil if oldname.empty? or newname.empty?
 
     # since we don't share the same namelist...
-    if @state[:named_string][oldname]
+    if @named_strings[oldname]
       warn ".rn renaming string #{name.inspect} as #{newname.inspect}"
-      @state[:named_string][newname] = @state[:named_string][oldname]
-      @state[:named_string].delete oldname
+      @named_strings[newname] = @named_strings[oldname]
+      @named_strings.delete oldname
       return true
     end
 
@@ -261,7 +261,7 @@ class Troff
   end
 
   def init_ds
-    @state[:named_string] = {
+    @named_strings = {
       'R'  => '&reg;',
       'S'  => "\\s#{Font.defaultsize}",
       'lq' => '&ldquo;',

@@ -1,11 +1,23 @@
 Assets = File.realpath("#{__dir__}/lib/assets")
 Srcroot = '/Volumes/Museum/Manual/in'
-Docroot = '/Volumes/dev.online.typewritten.org/Manual_x'
+Docroot = '/Volumes/dev.online.typewritten.org/Manual'
 $CSS_URL = 'http://dev.online.typewritten.org/Manual/tslroff.css'
 Template = File.read "#{Assets}/manual_task.erb"
 
 require_relative 'lib/rake'
 require_relative 'lib/classes/manual'
+
+desc 'Copy static file assets'
+task :assets => [:fonts, :css]
+
+task :fonts do |t|
+  directory Docroot
+  cp_r 'assets/fonts', Docroot
+end
+
+task :css do |t|
+  cp "#{Assets}/tslroff.css", Docroot
+end
 
 # manual collections
 
@@ -17,6 +29,7 @@ require_relative 'lib/tasks/ardent'
 require_relative 'lib/tasks/atari'
 require_relative 'lib/tasks/be'
 require_relative 'lib/tasks/bell'
+require_relative 'lib/tasks/bsdi'
 require_relative 'lib/tasks/commodore'
 require_relative 'lib/tasks/concurrent'
 require_relative 'lib/tasks/dec'

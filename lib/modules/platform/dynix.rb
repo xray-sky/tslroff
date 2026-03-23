@@ -48,7 +48,7 @@ class DYNIX_ptx
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           # tmac.an.new
           footer: "\\*(]W",
@@ -62,7 +62,7 @@ class DYNIX_ptx
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     # .so with absolute path, headers in /usr/include
@@ -74,17 +74,17 @@ class DYNIX_ptx
     #end
 
     define_method 'TH' do |*args|
-      rm '}C' if @state[:named_string]['V)'].empty?
+      rm '}C' if @named_strings['V)'].empty?
       nr 'IN .5i'
       ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
       ds "]L #{args[2]}"
       ds "]W Revision #{args[2]}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-      ds "]D Dynix Programmer's Manual" unless @state[:named_string]['V)'].empty?
+      ds "]D Dynix Programmer's Manual" unless @named_strings['V)'].empty?
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       heading = "\\*(]H\\0\\0\\(em\\0\\0\\*(]D"
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

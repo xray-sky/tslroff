@@ -24,7 +24,7 @@
 #     (--more--)
 #
 #  greek(7) has a hilarious bug (how did that happen??) and wants a couple characters translated too
-#
+#  mv(7) has tofu
 
 class AIX::V2_2_1
   class Nroff < ::Nroff

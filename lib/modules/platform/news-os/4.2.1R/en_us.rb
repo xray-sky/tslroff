@@ -45,7 +45,7 @@ class NEWS_os::V4_2_1R_en_US
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "NEWS-OS\t\\s-2Release 4.2.1R\\s+2",
           ']D' => "NEWS-OS Programmer's Manual",

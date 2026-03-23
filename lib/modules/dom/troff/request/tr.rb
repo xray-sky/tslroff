@@ -51,19 +51,19 @@ class Troff
       a = argstr.slice!(0, get_char(argstr).length)
       b = argstr.slice!(0, get_char(argstr)&.length || 0)
       case b
-      when a then @state[:translate].delete(a)
-      when '' then @state[:translate][a] = ' '
+      when a then @character_translations.delete(a)
+      when '' then @character_translations[a] = ' '
       else
-        @state[:translate][a] = (@state[:escape_char] ? b.sub(/^#{Regexp.quote @state[:escape_char]}/, "\e") : b)
+        @character_translations[a] = (@escape_character ? b.sub(/^#{Regexp.quote @escape_character}/, "\e") : b)
       end
     end until argstr.empty?
   end
 
   def init_tr
-    @state[:translate] = Hash.new
+    @character_translations = Hash.new
     # set a default_proc which will allow us to output everything
     # through translation whether there are any translations or not.
-    @state[:translate].default_proc { |_h, c| c }
+    @character_translations.default_proc { |_h, c| c }
     true
   end
 end

@@ -37,7 +37,6 @@ class Troff
 
   def eqn_bar(parse_tree)
     bar = EqnBlock.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
-    #bar.style.css[:border_top] = '1px solid'
     bar.style.css[:text_decoration] = 'overline'
     gen_eqn [parse_tree.shift], output: bar
     @current_block << bar
@@ -45,7 +44,6 @@ class Troff
 
   def eqn_under(parse_tree)
     bar = EqnBlock.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
-    #bar.style.css[:border_top] = '1px solid'
     bar.style.css[:text_decoration] = 'underline'
     gen_eqn [parse_tree.shift], output: bar
     @current_block << bar

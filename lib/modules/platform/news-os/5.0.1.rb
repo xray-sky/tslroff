@@ -40,7 +40,7 @@ class NEWS_os::V5_0_1
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           ']W' => File.mtime(@source.file).strftime('%B %d, %Y'),
         }

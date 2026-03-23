@@ -13,9 +13,90 @@ class Troff
     module S
 
   define_method 'RT' do |*args| # reset everything to normal state
+    send 'BG' if @register['1T'] <= 0
+    req_ce '0'
+    req_di if @register['IK'] <= 0 and @register['IF'] <= 0 and @register['IX'] <= 0 and @register['BE'] <= 0
+    req_ul '0'
+    if @register['QP'] > 0
+      #req_ll '+\n(QIu'
+      req_in '-\n(QIu'
+      req_nr 'QP -1'
+    end
+    #req_ll '\n(LLu' if @register['NX'] <= 1 and @register['AJ'].zero?
+    if @register['IF'].zero?
+      req_ps '\n(PS'
+      req_vs '\n(VSu' if @register['VS'] >= 41
+      req_vs '\n(VSp' if @register['VS'] <= 40
+    end
+    req_in '\n(I\n(IRu' if @register['IP'] > 0
+    if @register['IP'].zero? and @register['IR'].zero?
+      req_nr 'I1 \n(PIu'
+      %w[I2 I3 I4 I5 J0 J1 J2 J3 J4 J5].each { |r| req_nr "#{r} 0" }
+    end
+    req_nr 'IP -1' if @register['IP'] > 0
+    req_ft 1
+    req_bd 1
+    req_ta '5n 10n 15n 20n 25n 30n 35n 40n 45n 50n 55n 60n 65n 70n 75n 80n'
+    req_fi
   end
 
   define_method 'IZ' do |*args| # initialization
+    req_nr 'TN 0'
+    req_em 'EM'
+    # REVIEW are HTML entities safe through \* ?? - this might take rewrites (\*'e or \*`e to get é or è)
+    #req_ds %(' ) # non-spacing acute accent
+    #req_ds %(` ) # non-spacing grave accent
+    #req_ds ': ' # non-spacing umlaut
+    #req_ds '^ ' # non-spacing circumflex
+    #req_ds '~ ' # non-spacing tilde accent
+    #req_ds 'C ' # non-spacing hacek (majuscule - case immaterial for html)
+    #req_ds 'v ' # non-spacing hacek (minuscule - case immaterial for html)
+    #req_ds ', ' # non-spacing cedilla
+    # TODO some non-.de stuff from tmac.srefs
+    req_ds %([. \\s-2\\v'-.4m'\\f1)
+    req_ds %(.] \\v'.4m'\\s+2\\fP)
+    req_ds %([o ``)
+    req_ds %([c '')
+    req_ch 'FO \n(YYu'
+    req_nr 'FM 1i' if @register['FM'].zero?
+    req_nr 'YY -\n(FMu'
+    req_nr 'XX 0 1'
+    req_nr 'IP 0'
+    req_nr 'PI 5n'
+    req_nr 'DV .5v'
+    req_nr 'QI 5n'
+    req_nr 'I0 \n(PIu'
+    req_nr 'PS 10'
+    req_nr 'VS 12'
+    req_nr 'PD 0.3v' if @register['PD'] <= 0
+    req_nr 'ML 3v'
+    req_ps '\n(PS'
+    req_vs '\n(VSu' if @register['VS'] >= 41
+    req_vs '\n(VSp' if @register['VS'] <= 40
+    req_nr 'IR 0'
+    req_nr 'I0 0'
+    req_nr 'I1 \n(PIu'
+    req_nr 'TB 0'
+    req_nr 'SJ \n(.j'
+    req_nr 'LL 6i'
+    #req_ll '\n(LLu'
+    req_nr 'LT \n(.l'
+    req_lt '\n(LTu'
+    req_ev '1'
+    req_nr 'FL \n(LLu*11u/12u'
+    #req_ll '\n(FLu'
+    req_ps '8'
+    req_vs '10p'
+    req_ev
+    req_if '\000\*(CH\000\000 .ds CH "\(hy \\n(PN \(hy'
+    req_wh '0 NP'
+    req_wh '-\n(FMu FO'
+    req_ch 'FO 16i'
+    req_wh '-\n(FMu FX'
+    req_ch 'FO '-\n(FMu'
+    req_wh '-\n(FMu/2u BT'
+    req_nr 'CW 0-1'
+    req_nr 'GW 0-1'
   end
 
   define_method 'TM' do |*args|

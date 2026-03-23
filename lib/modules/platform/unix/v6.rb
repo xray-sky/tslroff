@@ -59,7 +59,7 @@ class UNIX::V6
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           '_' => '_',
           '-' => '\\-',

@@ -82,6 +82,8 @@ class BellLogo < RoffControl
   alias_method :inspect, :to_s
 end
 
+# TODO narrow and halfnarrow spaces should be rendered at the current font size
+# TODO can they be made non-breaking? (don't wrap on one?)
 class NarrowSpace < RoffControl
   def initialize(arg = {})
     arg[:text] = ' '

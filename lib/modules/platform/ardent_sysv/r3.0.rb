@@ -8,7 +8,7 @@
 #
 # TODO
 # √ find the tmac.an for 3.0 (have only tmac.vgrind??) - is in unbundled dwb (thanks vaxbarn)
-#   modification dates
+#   file modification dates are as copied, not as archived
 #   gamma(3m) has font size issues (leaving inline eqn? because \s10 and not \s+2 or \s\n(.s ?)
 #
 
@@ -17,7 +17,7 @@ class Ardent_SysV::R3_0
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           'Tt' => 'Stardent 1500/3000',
           ']D' => 'Stardent Computer Inc.',

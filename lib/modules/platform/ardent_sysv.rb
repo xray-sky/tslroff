@@ -23,7 +23,7 @@ class Ardent_SysV
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "\\*(]W",
           'Dd' => 'Dor&eacute;',
@@ -39,13 +39,13 @@ class Ardent_SysV
     end
 
     def init_ta
-      @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
+      @tabstops = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
       true
     end
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH
@@ -115,7 +115,7 @@ class Ardent_SysV
       #heading << "(#{args[1]})" if args[1] and !args[1].strip.empty?
       heading << "\\^(\\^#{args[1]}\\^)" if args[1] and !args[1].strip.empty?
       heading << '\\0\\0\\(em\\0\\0\\*(]D'
-      heading << ' \\|\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << ' \\|\\*(]L' unless @named_strings[']L'].empty?
       # REVIEW consider moving ]D to footer; removing parens from ]L and separating by \(em
 
       super(*args, heading: heading)

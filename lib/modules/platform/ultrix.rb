@@ -36,7 +36,7 @@ class Ultrix
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           #'Tm' => '&trade;',
           footer: '' # just a page number
@@ -48,9 +48,9 @@ class Ultrix
       super
       # Geneva Light changed to Triumvirate Italic for LN01
       # Geneva Regular changed to Triumvirate Regular for LN01
-      @state[:fonts][4] = 'BI'
-      @state[:fonts][5] = 'CW' # from .CW '.nr SF 5'
-      @state[:fonts][8] = 'HB' # Triumvirate Bold, from .TB '.nr SF 8'
+      @mounted_fonts[4] = 'BI'
+      @mounted_fonts[5] = 'CW' # from .CW '.nr SF 5'
+      @mounted_fonts[8] = 'HB' # Triumvirate Bold, from .TB '.nr SF 8'
     end
 
     def init_TH

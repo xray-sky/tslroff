@@ -26,7 +26,7 @@ class Troff
     loop do
       break if count < 1 or s.empty?
       chars << s[chars.length]
-      chars << get_escape(s[(chars.length)..-1]) if chars.end_with?(@state[:escape_char]) and chars.length < s.length # might end with an escape char
+      chars << get_escape(s[(chars.length)..-1]) if chars.end_with?(@escape_character) and chars.length < s.length # might end with an escape char
       count -= 1
     end
     chars
@@ -86,7 +86,7 @@ class Troff
   def get_size_str(s)
     siz = s.slice!(0, get_char(s).length)
     return siz if %w(0 4 5 6 7 8 9).include?(siz)
-    max_digits = 1 if siz.match?(/^\d/)
+    #max_digits = 1 if siz.match?(/^\d/)
     next_char = get_char(s)
     siz << next_char if next_char.match?(/^\d$/)
   	siz
@@ -124,7 +124,7 @@ class Troff
     req = ''
     loop do
       c = get_char s
-      if c.start_with?(@state[:escape_char]) and %w[d f k r s u v x].include?(c[1])
+      if c.start_with?(@escape_character) and %w[d f k r s u v x].include?(c[1])
         req << s.slice!(0, c.length)
       else
         break

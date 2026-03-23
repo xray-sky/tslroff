@@ -61,7 +61,7 @@ class Troff
   end
 
   def el(argstr = '', breaking: nil)
-    resc = Regexp.quote(@state[:escape_char])
+    resc = Regexp.quote(@escape_character)
     # we probably have a straight else block, .el \{ foo
     # but there is a crazy interaction if there is a block .if we are not going to execute
     if argstr.sub!(/^#{resc}{/, '') or (argstr.match?(/#{resc}{/) and !@state[:else])
@@ -75,7 +75,7 @@ class Troff
   end
 
   define_method 'if' do |argstr = '', breaking: nil, quiet: false|
-    resc = Regexp.quote(@state[:escape_char])
+    resc = Regexp.quote(@escape_character)
     test = argstr.slice!(0, get_char(argstr).length)
     predicate = if test == '!'
                   test = argstr.slice!(0, get_char(argstr).length)
@@ -86,7 +86,7 @@ class Troff
 
     # get the full escape, if that's what we're on the road to
     # REVIEW I think this is irrelevant now that get_char returns the full escape?
-    #test << argstr.slice!(0, get_escape(argstr).length) if test == @state[:escape_char]
+    #test << argstr.slice!(0, get_escape(argstr).length) if test == @escape_character
     condition = case test
                 when 'e', 'E' then quiet or warn 'can\'t test for even page number'
                 when 'o', 'O' then quiet or warn 'can\'t test for odd page number'

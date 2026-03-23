@@ -81,16 +81,12 @@ def collectionTask sources, srcdir, outdir, limit: nil, vendor_class: nil, sourc
   pagecount = 0
   sources.each do |src|
     fl = FileList["#{Srcroot}/#{srcdir}/#{src}"]
-    fl.exclude do |f|
-      f unless File.basename(f).match?(limit)
-    end if limit
+    fl.exclude { |f| !File.lstat(f).directory? and !File.basename(f).match?(limit) } if limit
     fl.each do |s|
       # may have contained directory wildcards
       if File.lstat(s).directory?
         dfl = FileList["#{s}/*"]
-        dfl.exclude do |f|
-          f unless File.basename(f).match?(limit)
-        end if limit
+        dfl.exclude { |f| !File.basename(f).match?(limit) } if limit
         dfl.each do |f|
           # TODO symlinks - checked first to avoid file? from following them
           warn "symlink #{f} (skipped)" and next if File.symlink?(f)
@@ -123,12 +119,10 @@ def manualTask source, basedir, vendor_class: nil, source_args: {}
   related = man.magic == :HTML ? [] : Nokogiri::HTML(page).search('a[@href]')  # TODO better
 
   directory(odir).invoke
-  file "#{odir}/#{title}.html" do |t|
-    taskcontext = binding
-    File.open(t.name, File::CREAT|File::TRUNC|File::WRONLY, 0o644) do |f|
-      f.write ERB.new(Template, trim_mode: '-').result(taskcontext)
-    end
-  end.invoke
+  taskcontext = binding
+  File.open("#{odir}/#{title}.html", File::CREAT|File::TRUNC|File::WRONLY, 0o644) do |f|
+    f.write ERB.new(Template, trim_mode: '-').result(taskcontext)
+  end
 
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"

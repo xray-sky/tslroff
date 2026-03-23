@@ -6,6 +6,8 @@
 #
 # SGI GL1-W2.1 Platform Overrides
 #
+# REVIEW mv(5)
+#
 
 class GL2::W2_1
   class Troff < ::GL2::Troff

@@ -6,6 +6,7 @@
 # REVIEW add anchors menu for detected headings ?
 
 class Nroff < TextFormatter
+
   Dir.glob("#{File.dirname(__FILE__)}/nroff/*.rb").each do |i|
     require i
   end
@@ -15,22 +16,6 @@ class Nroff < TextFormatter
   Typebox = Typesetter::ASR37::Symbols
   Typebox.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
   Typebox.freeze
-
-=begin
-  def self.extended(k)
-    k.instance_variable_set '@input_line_number', 0
-
-    k.instance_variable_set '@tab_width', 8
-    k.instance_variable_set '@lines_per_page', 66
-    k.instance_variable_set '@related_info_heading', 'SEE ALSO'
-
-    # watch for alphabetic text starting in first column, which would be a title or section head
-    k.instance_variable_set '@heading_detection', %r{^(?<section>[A-Z][A-Za-z\s]+)$}
-    k.instance_variable_set '@title_detection', %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
-    k.instance_variable_set '@summary_heading', %r{^NAME$} # REVIEW works for UNIX manual entries.
-
-  end
-=end
 
   def initialize(source)
     @input_line_number ||= 0

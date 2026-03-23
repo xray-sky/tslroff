@@ -153,8 +153,8 @@ module Troff::Tbl
       #                           ..._if there's no size format specified_?
       # but Sample Table 2 definitely has the size reset every cell. We might have to
       # do some horrible whatever to hack a full row of format changes given an \s in the input
-      unescape("#{@state[:escape_char]}f#{@register[:tbl_dfont]}", output: cell) #.tap{ warn "resetting cell font to default based on #{fmt.inspect}" } if fmt.match?(/[fbi]/) ## I think the font face always resets.
-      unescape("#{@state[:escape_char]}s#{@register[:tbl_dsize]}", output: cell) #.tap{ warn "resetting cell size to default based on #{fmt.inspect}" } if fmt.include?('p')
+      unescape("#{@escape_character}f#{@register[:tbl_dfont]}", output: cell) #.tap{ warn "resetting cell font to default based on #{fmt.inspect}" } if fmt.match?(/[fbi]/) ## I think the font face always resets.
+      unescape("#{@escape_character}s#{@register[:tbl_dsize]}", output: cell) #.tap{ warn "resetting cell size to default based on #{fmt.inspect}" } if fmt.include?('p')
 
       # continue with normal formatting, per documentation
       until fmt.empty? do
@@ -181,20 +181,20 @@ module Troff::Tbl
 
         # font changes - the font registers need manipulating so \fP and \s0 work correctly in cell context
         when /^(b)/i
-          unescape "#{@state[:escape_char]}fB", output: cell
+          unescape "#{@escape_character}fB", output: cell
         when /^(i)/i
-          unescape "#{@state[:escape_char]}fI", output: cell
+          unescape "#{@escape_character}fI", output: cell
         when /^(f.[A-Z]?)/ # REVIEW why were we accepting two digits? a font position I think is only one.
           # this manipulation should be safe as we haven't frozen any of these blocks, yet
           # REVIEW I think this (correctly) sets \n(.f as a side effect -- it doesn't?
           fontreq = Regexp.last_match[1]
           fontreq.insert(1, '(') if fontreq.length == 3 # avoid messing with last_match
-          unescape "#{@state[:escape_char]}#{fontreq}", output: cell
+          unescape "#{@escape_character}#{fontreq}", output: cell
 
         when /^(p([-+123]?\d))/ #then ps(Regexp.last_match[2])
           # sysconf(3c) [SunOS 5.5.1] has bare 'p' with no number following. tbl doc suggests this
           # is invalid, does nothing. REVIEW does it?
-          unescape @state[:escape_char] + 's' + Regexp.last_match[2], output: cell
+          unescape @escape_character + 's' + Regexp.last_match[2], output: cell
 
         # spans
         when /^(s)/i
@@ -266,7 +266,7 @@ module Troff::Tbl
   end
 
   def next_line_tbl
-    resc = Regexp.escape @state[:escape_char] || '' # escapes might be disabled; in which case we needn't bother matching them
+    resc = Regexp.escape @escape_character || '' # escapes might be disabled; in which case we needn't bother matching them
     line = next_line
 
     # we can have gotten one of three things:

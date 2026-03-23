@@ -74,11 +74,11 @@ class Troff
   end
 
   def escapes?
-    !@state[:escape_char].nil?
+    !@escape_character.nil?
   end
 
   def fields?
-    !@state[:field_delimiter].nil?
+    !@field_delimiter.nil?
   end
 
   def self.macro?(req)

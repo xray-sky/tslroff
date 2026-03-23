@@ -11,7 +11,7 @@ class Troff
   private
 
   def unescape(str, copymode: nil, output: nil)
-    # REVIEW how does @state[:escape_char] interact with copymode?
+    # REVIEW how does @escape_character interact with copymode?
     # we might go through some parts of the document twice, and some of
     # the methods used by unescape are destructive of str. so dup it, to
     # protect the Source.
@@ -20,7 +20,7 @@ class Troff
     #      (including translations to escapes)
 
     if copymode
-      return @state[:escape_char] ? __unesc_cm(str.dup) : str
+      return @escape_character ? __unesc_cm(str.dup) : str
     end
 
     if output
@@ -29,11 +29,11 @@ class Troff
     end
 
     # eqn delims can be hidden by escaping them
-    resc = Regexp.quote @state[:escape_char] || ''
+    resc = Regexp.quote @escape_character || ''
     if @state[:eqn_start] and str.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
       parse_eqn str
     else
-      if @state[:escape_char]
+      if @escape_character
         __unesc(str.dup)
       else
         # need to apply translations to str
@@ -58,7 +58,7 @@ class Troff
 
   # this is used by .if, __unesc
   def __unesc_star(str)	# want this in .if for testing string equality; this is the only escape that would need processing
-    esc = @state[:escape_char]
+    esc = @escape_character
     return str unless esc	# REVIEW how does this interact with copymode?
     resc = Regexp.escape(esc)
     loop do
@@ -75,7 +75,7 @@ class Troff
 
   # this is used by getargs and .if
   def __unesc_n(str)
-    esc = @state[:escape_char]
+    esc = @escape_character
     return str unless esc	# REVIEW how does this interact with copymode?
     resc = Regexp.escape(esc)
     loop do
@@ -88,7 +88,7 @@ class Troff
 
   # this is used by getargs and .if
   def __unesc_w(str)
-    esc = @state[:escape_char]
+    esc = @escape_character
     # TODO this is trying to parse \\w (which shouldn't, as it's a _printing_ escape) - zwgc(1) [AOS 4.3]
     return str unless esc # REVIEW how does this interact with copymode?
     resc = Regexp.escape(esc)
@@ -124,7 +124,7 @@ class Troff
       c = get_char str
       # we got the full escape back from get_char, as c
       case c[0]
-      when @state[:escape_char]
+      when @escape_character
         esc_method = "esc_#{c[1]}" #"esc_#{Troff.quote_method(c[1])}"
         if %w[esc_n esc_*].include? esc_method
           copy << send(esc_method, c[2..-1])
@@ -133,7 +133,7 @@ class Troff
                   when '.' then '.'
                   when 't' then "\t"
                   when 'a' then "\a"
-                  when @state[:escape_char] then @state[:escape_char]
+                  when @escape_character then @escape_character
                   else c[0..1] + __unesc_cm(c[2..-1] || '') # gotta go into e.g. \h'foo' and parse 'foo' in copymode too
                   end
         end
@@ -150,7 +150,7 @@ class Troff
     #        to keep .ds with stuff like \h from vanishing prematurely?? (instead of unescaping
     #        the output of \* directly in esc_star, which causes it to be parsed during assignment in .ds?)
 
-    resc = Regexp.quote @state[:escape_char]
+    resc = Regexp.quote @escape_character
 
     # TODO lines with escape chars prior to tabs result in that text living outside the tab span!
     #      csh(1) [GL2-W2.5]
@@ -173,23 +173,23 @@ class Troff
     # start by breaking up fields, then re-entering for each field part, if fields are enabled
     # skip entirely if all field markers are preceeded by single escape.
     # TODO this is processing fields in too many places - in macro args, etc.
-    if fields? and str =~ /(?<!(?<!#{resc})#{resc})#{Regexp.quote @state[:field_delimiter]}/
+    if fields? and str =~ /(?<!(?<!#{resc})#{resc})#{Regexp.quote @field_delimiter}/
       warn "processing fields - #{str.inspect}"
       # don't match a field character preceeded by a single escape.
-      fields = str.split(%r{(?<!(?<!#{resc})#{resc})#{Regexp.quote @state[:field_delimiter]}})
+      fields = str.split(%r{(?<!(?<!#{resc})#{resc})#{Regexp.quote @field_delimiter}})
       # if the last character is a delimiter, then the last index is a field (otherwise, ordinary text)
-      str = str.end_with?(@state[:field_delimiter]) ? '' : fields.pop
+      str = str.end_with?(@field_delimiter) ? '' : fields.pop
       # the first part is outside the field. if delim is the first character, the string will be empty
       __unesc(fields.shift)
-      stop = @state[:tabs].index(next_tab)
+      stop = @tabstops.index(next_tab)
       fields.each_with_index do |field, index|
         # this mostly mirrors tab processing
-        warn "don't know how to do field padding except at right! #{@field.inspect}" unless !field.nil? or field.end_with?(@state[:field_pad_char]) # empty fields won't have padding
-	    __unesc(field.sub(/#{Regexp.escape(@state[:field_pad_char])}$/, '')) # TODO try with .tr instead?
-   		fpos = @state[:tabs][stop + index]
+        warn "don't know how to do field padding except at right! #{@field.inspect}" unless !field.nil? or field.end_with?(@field_pad_character) # empty fields won't have padding
+	    __unesc(field.sub(/#{Regexp.escape(@field_pad_character)}$/, '')) # TODO try with .tr instead?
+   		fpos = @tabstops[stop + index]
         if fpos.nil?
           # prevent exception on running out of tabs
-          warn "out of fields with tabs=#{@state[:tabs].inspect}! (field: #{field.inspect})"
+          warn "out of fields with tabs=#{@tabstops.inspect}! (field: #{field.inspect})"
           @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
         else
           insert_tab(width: to_em(fpos - @current_block.last_tab_position), stop: stop)
@@ -215,12 +215,12 @@ class Troff
           insert_tab(width: to_em(stop - @current_block.last_tab_position), stop: stop)
         else # next_tab returns nil when we run out of tabs
           # prevent exception on running out of tabs - happening all the time, because... why?
-          warn "out of tabs after #{@current_block.terminal_string.inspect} with tabs=#{@state[:tabs].inspect}! (rest: #{str.inspect})"
+          warn "out of tabs after #{@current_block.terminal_string.inspect} with tabs=#{@tabstops.inspect}! (rest: #{str.inspect})"
           @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
                                 # I choose to insert the space because of rogue tabs in e.g. fnattr(1) [SunOS 5.5.1]
         end
-      when @state[:escape_char]
-        return '&shy;' if c == @state[:hyphenation_character]
+      when @escape_character
+        return '&shy;' if c == @hyphenation_character
         # we got the full escape back from get_char, as c
         if respond_to? esc_method = "esc_#{c[1]}"
           # TODO \* returns insead of outputting - I made this awful complex
@@ -243,7 +243,7 @@ class Troff
                             when 'c' # apparently everything past the \c is discarded
                               str.slice!(0..-1)
                               Continuation.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
-                            when 'e' then @state[:escape_char].dup # printable escape char - don't push a reference, or << may modify it!
+                            when 'e' then @escape_character.dup # printable escape char - don't push a reference, or << may modify it!
                             when 'p'
                               if fill?
                                 warn "uncertain use of \\p (fill break)" # p.29
@@ -259,7 +259,7 @@ class Troff
                             when 'S'
                               warn "uncertain use of \\S (char slant)" # p.26
                               ''
-                            when @state[:escape_char] then @state[:escape_char]
+                            when @escape_character then @escape_character
                             else
                               warn "pointless escape #{c.inspect}"
                               c[1..-1] # REVIEW subject this to .tr, or not?
@@ -277,12 +277,12 @@ class Troff
   #        since it won't be read as an escape by get_char.
 
   def translate(chr = '')
-    return '&shy;' if chr == @state[:hyphenation_character]
-    xlc = @state[:translate][chr]
+    return '&shy;' if chr == @hyphenation_character
+    xlc = @character_translations[chr]
     return @current_block << chr unless xlc
     #return __unesc(xlc.dup) unless xlc.start_with?("\e")
     return @current_block << xlc.dup unless xlc.start_with?("\e")
-    oesc = @state[:escape_char]
+    oesc = @escape_character
     ec "\e"
     __unesc(xlc.dup)
     ec oesc

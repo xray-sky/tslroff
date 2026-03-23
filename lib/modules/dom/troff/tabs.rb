@@ -37,14 +37,9 @@ class Troff
 
     block = Block::Selenium.new(style: @current_block.style.dup,
                                  text: @current_block.text.slice(@current_block.last_tab_stop..-1))
-    unless block.to_s.empty?
-      #@@webdriver.get block.to_html
-      #position = @current_block.last_tab_position +
-      #           to_u(@@webdriver.find_element(id: 'selenium').size.width.to_s, default_unit: 'px').to_i
-      position = @current_block.last_tab_position + typesetter_width(block).to_i
-    end
 
-    remaining_tabs = @state[:tabs].select { |stop| stop >= position }
+    position = @current_block.last_tab_position + typesetter_width(block).to_i unless block.to_s.empty?
+    remaining_tabs = @tabstops.select { |stop| stop >= position }
     return nil if remaining_tabs.empty?
     if remaining_tabs.count < count
       warn "too few tab stops advancing #{count} from #{remaining_tabs.inspect}"

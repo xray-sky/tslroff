@@ -20,7 +20,7 @@ class Troff
     font = case pos
            when 'P', '' then @register[:prev_fp].value
            when /^[A-Z]+$/
-             @state[:fonts].index(pos) || (warn "automatically mounted font #{pos} on position 0" ; @state[:fonts][0] = pos and 0) # mount it on position 0
+             @mounted_fonts.index(pos) || (warn "automatically mounted font #{pos} on position 0" ; @mounted_fonts[0] = pos and 0) # mount it on position 0
            else pos.to_i
            end
     @register[:prev_fp].value = @register['.f'].value
@@ -56,9 +56,9 @@ class Troff
 
   def change_font
     begin
-      fontclass = Kernel.const_get("Font::#{@state[:fonts][@register['.f'].value]}")
+      fontclass = Kernel.const_get("Font::#{@mounted_fonts[@register['.f'].value]}")
     rescue NameError
-      fontclass = Kernel.const_get('Font').tap { |n| warn "trying to use unknown font #{@state[:fonts][@register['.f'].value].inspect} (position #{@register['.f'].value.inspect})" }
+      fontclass = Kernel.const_get('Font').tap { warn "trying to use unknown font #{@mounted_fonts[@register['.f'].value].inspect} (position #{@register['.f'].value.inspect})" }
     end
     apply { @current_block.terminal_font = fontclass.new(size: @register['.s'].value) }
   end

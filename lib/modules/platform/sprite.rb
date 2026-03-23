@@ -62,7 +62,7 @@ class Sprite
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           #'Tm' => '&trade;',
           ']l' => '/sprite/lib/ditroff/', # for including tmac.sprite
@@ -74,7 +74,7 @@ class Sprite
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH

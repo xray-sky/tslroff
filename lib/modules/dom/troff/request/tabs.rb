@@ -7,7 +7,7 @@
 class Troff
 
   def init_ta
-    @state[:tabs] = %w[
+    @tabstops = %w[
       0.5 1
       1.5 2
       2.5 3
@@ -52,12 +52,12 @@ class Troff
     pad = ' ' if pad.empty?
     if delim.empty?
       warn ".fc disabling field processing"
-      @state.delete(:field_delimiter)
-      @state.delete(:field_pad_char)
+      @field_delimiter = nil
+      @field_pad_character = nil
     else
       warn ".fc enabling field processing (#{delim.inspect} / #{pad.inspect})"
-      @state[:field_delimiter] = delim
-      @state[:field_pad_char]  = pad
+      @field_delimiter = delim
+      @field_pad_character  = pad
     end
   end
 
@@ -117,11 +117,11 @@ class Troff
 
   def ta(argstr = '', breaking: nil)
     args = argstr.split
-    @state[:tabs] = Array.new
+    @tabstops = Array.new
     while args.any? do
       stop = args.shift
-      stop.prepend("#{@state[:tabs].last || 0}u") if stop.start_with?('+')
-      @state[:tabs].push(to_u(stop, default_unit: 'm').to_i)
+      stop.prepend("#{@tabstops.last || 0}u") if stop.start_with?('+')
+      @tabstops.push(to_u(stop, default_unit: 'm').to_i)
     end
   end
 

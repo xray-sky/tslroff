@@ -8,8 +8,11 @@
 #
 # TODO:
 #   cw.1 has '\" ct preprocessor mark?? and apparently %^H^H&dagg;% to be interpreted, somehow?
-#   ar.4 wants to include /usr/include/ar.h
+# √ ar.4 wants to include /usr/include/ar.h
+#   ar.4 getting '\ ' at the start of the RCS comment lines included from ar.h
+#   ar.4 (and others) getting rogue ' ' before some #defines
 #   greset.3 has something going on with the colormap table?
+#   mv.5 uses absolute horizontal positioning
 #
 class GL2::W2_4
   class Troff < ::GL2::Troff

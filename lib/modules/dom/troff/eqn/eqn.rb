@@ -122,7 +122,7 @@ class Troff
     # we can assume, however, that if we got here, there is definitely eqn to parse.
     #
     # so, if there are no delimiters, then we are in .EQ/.EN and the whole line goes
-    resc = Regexp.quote @state[:escape_char]
+    resc = Regexp.quote @escape_character
     if @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
       ## need to temporarily suppress :nofill
       fill = @register['.u'].value
@@ -215,10 +215,10 @@ class Troff
         else
           loop do
             break if elem.empty?
-            if elem.start_with? @state[:escape_char]
+            if elem.start_with? @escape_character
               unescape elem.slice!(0, get_char(elem).length)
             else
-              next_esc = elem.index @state[:escape_char]
+              next_esc = elem.index @escape_character
               txt = next_esc ? elem.slice!(0, next_esc) : elem.slice!(0..-1)
               # needed to protect escapes from this gsub.
               txt.gsub!(/[^A-Za-z]+/) do |m|
@@ -287,13 +287,13 @@ class Troff
   #  SPACE, TAB, or NEWLINE characters."
 
   def get_eqn_token(str)
-    resc = Regexp.quote @state[:escape_char]
+    resc = Regexp.quote @escape_character
     case str[0]
     #when ' ' then '' # REVIEW what are we actually meant to do with unquoted (non-tab) whitespace?
     when ' ' then str.slice!(0) and get_eqn_token(str) # do over? NOTE destructive
     #when '~', '^', ' ', "\t" then str[0]
     when '~', '^', "\t", '{', '}' then str[0]
-    when @state[:escape_char] then str[0] + get_escape(str[1..-1])
+    when @escape_character then str[0] + get_escape(str[1..-1])
     when '"'
       last = str.index(/(?<!#{resc})#{resc}#{resc}"|(?<!#{resc})"/, 1)
       str[0..last]

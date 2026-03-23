@@ -28,7 +28,7 @@ class Troff
 
   define_method 'TS' do |*args|
     warn "processing tbl -"
-    resc = Regexp.quote @state[:escape_char]
+    resc = Regexp.quote @escape_character
     @state[:tbl_cell_delim] = "\t"
     tbl = blockproto(Block::Table)
     tbl.text = Array.new
@@ -40,7 +40,7 @@ class Troff
       blk = Block::Bare.new
       # gets jacked if there are single quotes in str
       #unescape("\\w'#{str}'")
-      unescape "#{@state[:escape_char]}w\x00#{str}\x00", output: blk
+      unescape "#{@escape_character}w\x00#{str}\x00", output: blk
       to_u(blk.text.pop.text.strip).to_i
     }
 
@@ -94,7 +94,7 @@ class Troff
     # initialize array to track column spacing (default, 3n)
     @state[:tbl_colspc] = Array.new(@state[:tbl_formats].columns, nil)
 
-    resc = Regexp.quote @state[:escape_char]
+    resc = Regexp.quote @escape_character
 
     # table data. terminated by .TE macro
     loop do
@@ -145,7 +145,7 @@ class Troff
 
         # we need to set the font registers based on the cell's format, because otherwise
         # :last_xx is going to be whatever happened in format_row for the rightmost cell
-        @register['.f'].value = @state[:fonts].invert[cell.terminal_font.face] || 0.tap { warn "trouble setting \\n(.f based on table cell style #{cell.terminal_font.face.inspect} -- falling back to position 0" }
+        @register['.f'].value = @mounted_fonts.invert[cell.terminal_font.face] || 0.tap { warn "trouble setting \\n(.f based on table cell style #{cell.terminal_font.face.inspect} -- falling back to position 0" }
         @register['.s'].value = cell.terminal_font.size # TODO this is where size is being reset between cells for sysconf(3c) [SunOS 5.5.1] :: [125]
                                                          # -- what can be done?? perhaps just a rewrite. but then how to detect it's happened on other pages?
 
@@ -269,7 +269,7 @@ class Troff
 
     @current_block = blockproto
     # restore fonts from before .TS, unlike other macros
-    unescape("#{@state[:escape_char]}f#{@register[:tbl_dfont]}#{@state[:escape_char]}s#{@register[:tbl_dsize]}")
+    unescape("#{@escape_character}f#{@register[:tbl_dfont]}#{@escape_character}s#{@register[:tbl_dsize]}")
     @register.delete(:tbl_dfont)
     @register.delete(:tbl_dsize)
     @document << @current_block

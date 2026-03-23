@@ -24,7 +24,7 @@ class SunOS
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           #'Tm' => '&trade;',
           footer: "\\*(]W"
@@ -34,7 +34,7 @@ class SunOS
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH

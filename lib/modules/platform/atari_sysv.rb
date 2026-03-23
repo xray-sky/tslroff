@@ -39,7 +39,7 @@ class Atari_SysV
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "\\*(]W",
           'U'  => 'Baker',
@@ -73,13 +73,13 @@ class Atari_SysV
     end
 
     def init_ta
-      @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
+      @tabstops = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
       true
     end
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH
@@ -142,8 +142,8 @@ class Atari_SysV
       # tmac.an has it without the extra space, but this is an nroff affordance
       #heading << "(#{args[1]})" if args[1] and !args[1].strip.empty? # peculiar
       heading << "\\^(\\^#{args[1]}\\^)" if args[1] and !args[1].strip.empty?
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
-      heading << ' \\|\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
+      heading << ' \\|\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

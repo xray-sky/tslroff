@@ -1,6 +1,5 @@
 class EqnBlock < Block
   def initialize(arg = {})
-    arg[:type] = :eqn
     super(arg)
     self.font = arg[:font]
     # TODO move this crap to css
@@ -17,7 +16,6 @@ end
 
 class Column < EqnBlock
   def initialize(arg = {})
-    arg[:type] = :eqn_column
     super(arg)
     style.css[:text_align] = arg[:justify] if arg[:justify]
   end
@@ -26,7 +24,6 @@ end
 
 class ExtendedRadical < EqnBlock
   def initialize(arg = {})
-    arg[:type] = :extended_radical
     super(arg)
   end
   def to_html ; %(&radic;<span class="eqn-radical-xtnd">#{@text.collect(&:to_html).join}</span>) ; end
@@ -52,7 +49,6 @@ end
 
 class Denominator < EqnBlock
   def initialize(arg = {})
-    arg[:type] = :denominator
     super(arg)
   end
   def to_html ; %(<span class="eqn-denominator"#{style}>#{@text.collect(&:to_html).join}</span>) ; end
@@ -70,7 +66,6 @@ end
 
 class SubScript < EqnBlock
   def initialize(arg = {})
-    arg[:type] = :eqn_sscript
     super(arg)
   end
   def to_html ; %(<span class="eqn-subscript"#{style}>#{@text.collect(&:to_html).join}</span>) ; end
@@ -78,7 +73,6 @@ end
 
 class SuperScript < EqnBlock
   def initialize(arg = {})
-    arg[:type] = :eqn_sscript
     super(arg)
   end
   def to_html ; %(<span class="eqn-superscript"#{style}>#{@text.collect(&:to_html).join}</span>) ; end
@@ -91,15 +85,10 @@ class Bracket < EqnBlock
     @style.css[:display] = 'block'
     @style.css[:line_height] = arg[:line_height]
   end
-  # REVIEW does the vertical align need adjusting for different size brackets?
-  # I don't know why the heck vertical-align:middle doesn't work, except for all
-  # the empty space calculated above the top bracket char. maybe it depends on the bracket chars?
-  #
+
   # Somehow the top of the bracket starts too low.
-  # it looks like we need to adjust -0.33em per bracket char?
-  # REVIEW this is ridiculous weird
   def to_html
-    offset = (@text.count - 1) / 3.0
+    offset = ((@text.count - 1) / 3.0).round(2) # I don't know why this works, mathematically, but it seems to work in practice
     %(<span role="eqn-bracket" style="display:inline-block;vertical-align:-#{offset}em;"><span#{style}>#{@text.collect(&:to_html).join('<br />')}</span></span>)
   end
 end

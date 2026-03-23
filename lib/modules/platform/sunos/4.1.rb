@@ -13,6 +13,7 @@
 #    - e.g. AbbrevMenuButton(3w)
 #    - also probably these should end up in man3w (based on .TH), instead of man3 (based on filename)
 #   xview.7 -- wants LB font (geneva light bold, presumably, but referred to as "Listing Font")
+#   tbl(1) - is post-processed (all versions back to 0.3 same issue)
 #
 
 class SunOS::V4_1
@@ -134,7 +135,7 @@ class SunOS::V4_1
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           ']W' => 'Sun Release 4.1'
         }
@@ -153,7 +154,7 @@ class SunOS::V4_1
       ds "]D #{args[4]}" if args[4] and !args[4].empty?
 
       ds "]L Last change: #{args[2]}"
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

@@ -20,6 +20,15 @@ collectionNamespace 'thirdparty' do
     odir: 'Sun/thirdparty/ArborText/Adept_Publisher_5.0.2',
     sources: %w[man]
 
+  manualNamespace 'Artificial_Horizons/Aviator_1.8',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/thirdparty/aviator_1.8',
+    odir: 'Sun/thirdparty/Artificial_Horizons/Aviator_1.8',
+    sources: %w[
+      aviator.1.8/a??/man
+      aviator.1.8/man/*.[56]
+    ]
+
   # TODO nroff plain text; non-standard manual format
   manualNamespace 'Cadre/Teamwork_4.0.2',
     vendor_class: SunOS::V5_1,
@@ -114,11 +123,39 @@ collectionNamespace 'thirdparty' do
       iv-3.1/iv/man/Unidraw/*.n
     ]
 
+  manualNamespace 'MicroFocus/COBOL_3.2',
+    vendor_class: SunOS::V5_3,
+    idir: 'sun/sunos/thirdparty/microfocus_cobol_3.2',
+    odir: 'Sun/thirdparty/MicroFocus/COBOL_3.2',
+    sources: %w[docs/*.1]
+
+  manualNamespace 'Netscape/Enterprise_Server_3.5.1',
+    vendor_class: SunOS::V5_5,
+    idir: 'sun/sunos/thirdparty/netscape_ent_3.5.1',
+    odir: 'Sun/thirdparty/Netscape/Enterprise_Server_3.5.1',
+    sources: %w[manual/*]
+  manualNamespace 'Netscape/FastTrack_Directory_Server_3.1',
+    # TODO HTML manual; check for output file collisions
+    vendor_class: SunOS::V5_4,
+    idir: 'sun/sunos/thirdparty/netscape_dirsrv_3.1',
+    odir: 'Sun/thirdparty/Netscape/FastTrack_Directory_Server_3.1',
+    sources: %w[
+      directory/manual/*
+      directory/fasttrack_3.0.1/manual/*
+      directory/ldapsdk/docs
+    ]
+
   manualNamespace 'Oracle/6.0.33.1',
     vendor_class: SunOS::V4_1,
     idir: 'sun/sunos/thirdparty/oracle_6.0.33.1',
     odir: 'Sun/thirdparty/Oracle/6.0.33.1',
     sources: %w[*/man]
+
+  manualNamespace 'Quintus/Prolog_3.2',
+    vendor_class: SunOS::V5_1,  # REVIEW correct ver?
+    idir: 'sun/sunos/thirdparty/quintus_prolog_3.2',
+    odir: 'Sun/thirdparty/Quintus/Prolog_3.2',
+    sources: %w[generic/q3.2/man/man1]  # TODO helplib?
 
   # TODO local string.defs (see: NeWS_1.1)
   manualNamespace 'Parallax/PNeWS_3.0',

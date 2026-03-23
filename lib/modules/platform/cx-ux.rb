@@ -39,7 +39,7 @@ class CX_UX
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer:"\\*(]W",
           #'Tm' => '&trade;',
@@ -51,14 +51,14 @@ class CX_UX
     def init_fp
       super
       # REVIEW - going with solaris troff assignments:
-      @state[:fonts][4] = 'BI' # not fully convinced of this one
-      @state[:fonts][5] = 'CW'
+      @mounted_fonts[4] = 'BI' # not fully convinced of this one
+      @mounted_fonts[5] = 'CW'
       # still don't know what \fl is
     end
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH
@@ -74,8 +74,8 @@ class CX_UX
       ds "]D #{args[4]}"
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
 
       super(*args, heading: heading)
     end

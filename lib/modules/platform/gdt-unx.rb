@@ -62,7 +62,7 @@ class GDT_UNX
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "\\*(]W",
           ']D' => "UNIX Programmer's Manual",
@@ -76,7 +76,7 @@ class GDT_UNX
 
     def init_tr
       super
-      @state[:translate]['*'] = "\\(**"
+      @character_translations['*'] = "\\(**"
     end
 
     def init_PD
@@ -103,7 +103,7 @@ class GDT_UNX
       ds "]L #{args[2]}"
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

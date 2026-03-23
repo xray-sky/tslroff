@@ -68,7 +68,7 @@ class OSF1
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           #'Tm' => '&trade;',
           #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
@@ -82,17 +82,17 @@ class OSF1
       super
       # Geneva Light changed to Triumvirate Italic for LN01
       # Geneva Regular changed to Triumvirate Regular for LN01
-      @state[:fonts][4] = 'BI'
-      @state[:fonts][5] = 'CW' # assumes font position 5 is the constant width font
-      @state[:fonts][7] = 'H'  # Gothic
-      #@state[:fonts][8] = 'L'  # Gothic Light
-      @state[:fonts][8] = 'HI' # Gothic Light
-      @state[:fonts][9] = 'HB' # Gothic Bold
+      @mounted_fonts[4] = 'BI'
+      @mounted_fonts[5] = 'CW' # assumes font position 5 is the constant width font
+      @mounted_fonts[7] = 'H'  # Gothic
+      #@mounted_fonts[8] = 'L'  # Gothic Light
+      @mounted_fonts[8] = 'HI' # Gothic Light
+      @mounted_fonts[9] = 'HB' # Gothic Bold
     end
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_PD
@@ -317,11 +317,11 @@ class OSF1
                      end)
 
       # ]U and ]A (if given) follow the title, centered on their own line.
-      unless @state[:named_string][']U'].empty? and @state[:named_string][']A'].empty?
+      unless @named_strings[']U'].empty? and @named_strings[']A'].empty?
         byline = Block::Footer.new
         byline.style.css[:margin_top] = '0.5em' # TODO not working?
         unescape "\\f9\\*(]U\\fP", output: byline
-        unescape "\\0\\0\\(em\\0\\0", output: byline unless @state[:named_string][']U'].empty? or @state[:named_string][']A'].empty?
+        unescape "\\0\\0\\(em\\0\\0", output: byline unless @named_strings[']U'].empty? or @named_strings[']A'].empty?
         unescape "\\f9\\*(]A\\fP", output: byline
         @document << byline
       end
@@ -329,19 +329,19 @@ class OSF1
       # sir \*(PR not appearing in tmac.an.repro - does anything define it?
       # is it worth the log warn noise?
       heading = "#{args[0]}\\|(\\^#{args[1]}\\*(PR\\^)"
-      heading << "\\0\\0\\(em\\0\\0\\*(]T" unless @state[:named_string][']T'].empty?
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
+      heading << "\\0\\0\\(em\\0\\0\\*(]T" unless @named_strings[']T'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
       # these would go below the top .tl if given. I think I'll put it in <h1> instead.
       # REVIEW <h1> could potentially be very busy.
-      #heading << '\\0\\0\\(em\\0\\0\\*(]U' unless @state[:named_string][']U'].empty?
-      #heading << '\\0\\0\\(em\\0\\0\\*(]A' unless @state[:named_string][']A'].empty?
+      #heading << '\\0\\0\\(em\\0\\0\\*(]U' unless @named_strings[']U'].empty?
+      #heading << '\\0\\0\\(em\\0\\0\\*(]A' unless @named_strings[']A'].empty?
 
-      #@state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' if args[2] and !args[2].strip.empty?
+      #@named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' if args[2] and !args[2].strip.empty?
       # TODO \*(]W and \*([L are empty in most cases, giving us unnecessary \(em
       # I think I want ]T in the header.
-      #@state[:named_string][:footer] << "\\*(]T" unless @state[:named_string][']T'].strip.empty?
-      @state[:named_string][:footer] << "\\0\\0\\(em\\0\\0\\*(]W" unless @state[:named_string][']W'].empty?
-      @state[:named_string][:footer] << "\\0\\0\\(em\\0\\0\\*(]L" unless @state[:named_string][']L'].empty?
+      #@named_strings[:footer] << "\\*(]T" unless @named_strings[']T'].strip.empty?
+      @named_strings[:footer] << "\\0\\0\\(em\\0\\0\\*(]W" unless @named_strings[']W'].empty?
+      @named_strings[:footer] << "\\0\\0\\(em\\0\\0\\*(]L" unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

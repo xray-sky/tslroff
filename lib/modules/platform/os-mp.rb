@@ -121,7 +121,7 @@ class OS_MP
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           #'Tm' => '&trade;',
           ']W' => 'Solbourne Computer, Inc.',
@@ -132,7 +132,7 @@ class OS_MP
 
     def init_tr
       super
-      @state[:translate]['*'] = "\e(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_TH
@@ -153,7 +153,7 @@ class OS_MP
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
 
       super(*args, heading: heading)

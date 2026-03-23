@@ -27,7 +27,7 @@ class Ultrix::V3_1_0
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           ']D' => 'UNIX Programmer\'s Manual',
           ']W' => '7th Edition',

@@ -42,10 +42,10 @@ class Troff
     chr = get_char argstr # TODO won't correctly handle e.g. '.hc \q'
     if chr
       warn "changing discretionary hyphen to #{chr.inspect}"
-      @state[:hyphenation_character] = chr
+      @hyphenation_character = chr
     else
       warn 'resetting non-default discretionary hyphen'
-      @state.delete :hyphenation_character
+      @hyphenation_character = nil
     end
   end
 

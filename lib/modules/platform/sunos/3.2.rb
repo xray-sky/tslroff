@@ -74,7 +74,7 @@ class SunOS::V3_2
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           #']W' => 'Sun Release 3.2\(*b' # ß, eh? - 68010 release only TODO
           ']W' => 'Sun Release 3.2' # 68020/SPARC releases
@@ -94,7 +94,7 @@ class SunOS::V3_2
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       # TODO SYS4-3.2 adds .ds ]W \\$4 ; .ds ]D \\$5
 

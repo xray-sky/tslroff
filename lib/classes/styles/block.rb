@@ -1,7 +1,6 @@
 class Block
   class Nroff < Block
     def to_html
-      # TODO maybe something with a gutter instead of breaking html with multiple id=man
       %(<pre class="n">#{@text.collect(&:to_html).join}</pre>)
     end
   end
@@ -105,7 +104,7 @@ class Block
       payload = @text.collect(&:to_html).join
                      .gsub(/(?<!&)#(?!\d+;)/, '&num;') # don't let selenium eat text following a bare # (why does it eat text following a #)
                      .sub(/(\s+)$/) { |s| '&nbsp;' * s.length } # don't let selenium lose trailing whitespace
-      %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium"#{@style}>#{payload}</span></div></body></html>)
+      %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS_URL}"></link></head><body><div id="man"><span id="selenium"#{@style}>#{payload}</span></div></body></html>)
     end
   end
 

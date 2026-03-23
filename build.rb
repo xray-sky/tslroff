@@ -24,15 +24,6 @@
 require 'fileutils'
 
 collections = {
-  '': {
-    disabled: true,
-    '': {
-      '': {
-        basedir: '',
-        srcdirs: %w[]
-      }
-    }
-  },
   '_internal': {
     disabled: true,
     '_test': {
@@ -574,6 +565,18 @@ collections = {
         ]
       }
     }
+  },
+  'BSDI': {
+    'BSD386': {
+      '1.0': {
+        basedir: 'bsdi/bsd386/1.0',
+        srcdirs: %w[
+          share/man/cat[1-8]
+          contrib/man/cat[158]
+          man/cat[135]
+        ] # TODO additional stuff in share/doc
+      }
+    },
   },
   'Commodore': {
     'AMIX': {
@@ -1172,6 +1175,7 @@ collections = {
     'DG-UX': {
       # TODO canonically, 'DG/UX'
       '4.30': {
+        # TODO release/
         basedir: 'dg/dgux/4.30',
         srcdirs: %w[catman/?_man/man[0-8]]
       },
@@ -1597,11 +1601,30 @@ collections = {
     }
   },
   'SCO': {
+    'thirdparty': {
+      module_override: 'OpenDesktop',
+      'Veritas_VxVM_1.1-r1': {
+        basedir: 'sco/thirdparty/veritas/vxvm_v1.1-r1',
+        srcdirs: %w[man/cat.*]
+      }
+    },
     'unbundled': {
       module_override: 'OpenDesktop',
       'LLI_3.1.0j': {
         basedir: 'sco/unbundled/lli-r3.1.0j',
         srcdirs: %w[usr/man/cat.*]
+      },
+      'ODT_SDS_1.0.0d': {
+        basedir: 'sco/unbundled/odt-sds-1.0.0d',
+        srcdirs: %w[man/cat.*]
+      },
+      'ODT_SDS_3.0.0': {
+        basedir: 'sco/unbundled/odt-sds-3.0.0',
+        srcdirs: %w[man/cat.*]
+      },
+      'SysV:386_SDS_3.2.2b': {
+        basedir: 'sco/unbundled/sysvds-3.2.2b',
+        srcdirs: %w[man/cat.*]
       },
       'TCPIP_1.2.0i': {
         basedir: 'sco/unbundled/tcpip-1.2.0i',
@@ -1625,8 +1648,18 @@ collections = {
         basedir: 'sco/odt/x11r4-efs-r4.1.1b',
         srcdirs: %w[usr/man/cat.*]
       },
+      '2.0.0a': {
+        basedir: 'sco/odt/2.0.0a',
+        srcdirs: %w[man/cat.*]
+      },
       '3.0.0': {
         basedir: 'sco/odt/3.0.0',
+        srcdirs: %w[man/cat.*]
+      }
+    },
+    'SystemV': {
+      '3.2v2.0n': {
+        basedir: 'sco/systemv/3.2v2.0n',
         srcdirs: %w[man/cat.*]
       }
     },
@@ -1642,7 +1675,6 @@ collections = {
     }
   },
   'Sequent': {
-    #disabled: true,
     # TODO macros, etc.
     # TODO blacklist Makefile, RCS dir
     # TODO extra docs (BSD), maybe
@@ -1858,15 +1890,30 @@ collections = {
       #  basedir: 'sun/sunos/4.0',
       #  srcdirs: %w[unbundled/SC0.0/man/man[135]] # SC0.0 overwrites several pages from 4.0
       #} # TODO probably I shouldn't have mixed the C and F77 products here. -- CORRECTED in sunos/unbundled
+      '4.1.1GFX_Rev2/sun4c': { # 5 copies of the same manual pages?
+        version_override: '4.1.1',
+        basedir: 'sun/sunos/unbundled/4.1.1_gfx_rev2_sun4c',
+        srcdirs: %w[4.1.1-GFX.ENG/_text/man/man[48]*]
+      },
       'ATM_2.0': {
         version_override: '5.5',
         basedir: 'sun/sunos/unbundled/atm_2.0',
         srcdirs: %w[SUNWatm/man/man[13479]*]
       },
+      'BQE_1.1': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/be_qe_1.1',
+        srcdirs: %w[BQE/usr/man/man4]
+      },
       'C_1.0': {
         version_override: '4.0',
         basedir: 'sun/sunos/unbundled/c_1.0',
         srcdirs: %w[man/man[1358]]
+      },
+      'C_1.1': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/c_1.1+sparcworks',
+        srcdirs: %w[cc_compiler/SC1.0/man/man[135]]
       },
       'C++_2.0': {
         version_override: '4.0',
@@ -1877,6 +1924,11 @@ collections = {
         version_override: '5.5',
         basedir: 'sun/sunos/unbundled/cde_1.0',
         srcdirs: %w[dt/share/man/man[1-6]*]
+      },
+      'DiskSuite_1.0': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/disksuite_1.0',
+        srcdirs: %w[1.0_DiskSuite/sun4/man/man[23458]]
       },
       'DiskSuite_4.0': {
         version_override: '5.5',
@@ -1913,6 +1965,11 @@ collections = {
         basedir: 'sun/sunos/unbundled/motif_1.2.2_sdk',
         srcdirs: %w[SUNWmfdoc/man/man[135]]
       },
+      'Network_Coprocessor_1.0': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/net_coprocessor_1.0',
+        srcdirs: %w[Snc/usr/man/man[48]]
+      },
       'NeWS_1.1': {
         version_override: '4.0',
         basedir: 'sun/sunos/unbundled/news_1.1',
@@ -1938,6 +1995,11 @@ collections = {
         version_override: '4.0',
         basedir: 'sun/sunos/unbundled/openwindows_v2',
         srcdirs: %w[man/man[136n]]
+      },
+      'OpenWindows_V3': { # TODO compare +XGL 2.0 RTE
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/openwindows_v3',
+        srcdirs: %w[OpenWindows/sun4/share/man/man[135678]]
       },
       'Pascal_1.1': {
         version_override: '4.0',
@@ -1976,6 +2038,16 @@ collections = {
         basedir: 'sun/sunos/unbundled/sbus_printer_card_1.0',
         srcdirs: %w[man]
       },
+      'SBus_Serial_Parallel_1.2': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/serial_parallel_1.2',
+        srcdirs: %w[STC/bin/man/man4]
+      },
+      'SBus_Serial_Parallel_2.0': {
+        version_override: '5.1',
+        basedir: 'sun/sunos/unbundled/serial_parallel_2.0',
+        srcdirs: %w[.]
+      },
       'Solaris_2.4_x86_SDK': {
         version_override: '5.4',
         basedir: 'sun/sunos/unbundled/solaris_2.4_x86_sdk',
@@ -1998,23 +2070,36 @@ collections = {
         basedir: 'sun/sunos/unbundled/solstice_backup_4.1.2',
         srcdirs: %w[SunOS/man]
       },
-      'WorkShop_3.0.1': { # V5N1 SPARC Solaris 2.x # TODO Solaris 1.x
-        version_override: '5.5',
-        basedir: 'sun/sunos/unbundled/workshop_3.0',
+      'SPARCworks_2.0.1/sunos4': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/sparcworks_2.0.1/solaris1',
         srcdirs: %w[
-          SUNWspro/*/man/man[134]*
-          SUNWspro/contrib/*/man/man1
-          SUNWste/license_tools/man/man1
+          S*/*/man/man[1345]
+          T*/*/*/man/man[1345]
         ]
       },
-      'WorkShop_5.0': { # V6N1 SPARC
-        version_override: '5.6',
-        basedir: 'sun/sunos/unbundled/workshop_5.0',
+      'SPARCworks_2.0.1/sunos5': {
+        version_override: '5.1',
+        basedir: 'sun/sunos/unbundled/sparcworks_2.0.1/solaris2',
         srcdirs: %w[
-          SUNW*/*/man/man[134]*
-          SUNWspro/contrib/XEmacs20.4/man/man1
-          SUNWste/license_tools/man/man1
+          SPRO*/reloc/$BASEDIR/*/$PRODVERS/man/man[135]
+          SPRO*/reloc/*/*/man/man[15]
         ]
+      },
+      'SunLink_TRI_SBus_2.1': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/sunlink_tri_s_2.1',
+        srcdirs: %w[sunlink/tr/man/man4]
+      },
+      'SunLink_TRI_SBus_3.0.1': {
+        version_override: '5.1',
+        basedir: 'sun/sunos/unbundled/sunlink_tri_s_3.0.1',
+        srcdirs: %w[tr/man/man7]
+      },
+      'SunPC_3.0': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/sunpc_3.0',
+        srcdirs: %w[*/man/man1]
       },
       'TOPS_2.1': {
         version_override: '4.0',
@@ -2045,6 +2130,32 @@ collections = {
         version_override: '5.5',
         basedir: 'sun/sunos/unbundled/wabi_2.2',
         srcdirs: %w[SUNWwabi/man/man1]
+      }, # TODO V3N2
+      'WorkShop_3.0.1/sunos4': { # V5N1 SPARC Solaris 1.x
+        version_override: '4.1',
+        basedir: 'sun/sunos/unbundled/workshop_solaris1_v5n1',
+        srcdirs: %w[
+          [ST]*/*/man/man[1345l]
+          SW3.0.1_sbfsf/FSF/sbtags/man/man1
+        ]
+      },
+      'WorkShop_3.0.1/sunos5': { # V5N1 SPARC Solaris 2.x
+        version_override: '5.5',
+        basedir: 'sun/sunos/unbundled/workshop_3.0',
+        srcdirs: %w[
+          SUNWspro/*/man/man[134]*
+          SUNWspro/contrib/*/man/man1
+          SUNWste/license_tools/man/man1
+        ]
+      },
+      'WorkShop_5.0': { # V6N1 SPARC
+        version_override: '5.6',
+        basedir: 'sun/sunos/unbundled/workshop_5.0',
+        srcdirs: %w[
+          SUNW*/*/man/man[134]*
+          SUNWspro/contrib/XEmacs20.4/man/man1
+          SUNWste/license_tools/man/man1
+        ]
       }
     },
     'thirdparty': {
@@ -2053,7 +2164,6 @@ collections = {
         version_override: '4.1',
         basedir: 'sun/sunos/thirdparty/amt_dap_4.1s',
         srcdirs: %w[sunany/dapany/rtshelp]
-        # TODO no Solaris 4.1(.0?) doc or macros yet
       },
       'ArborText/Publisher_3.1.1': {
         version_override: '3.2',
@@ -2067,7 +2177,14 @@ collections = {
         version_override: '5.4',
         basedir: 'sun/sunos/thirdparty/arbortext_adept_5.0.2',
         srcdirs: %w[man]
-        # TODO no Solaris 2.4 doc or macros yet
+      },
+      'Artificial_Horizons/Aviator_1.8': {
+        version_override: '4.1',
+        basedir: 'sun/sunos/thirdparty/aviator_1.8',
+        srcdirs: %w[
+          aviator.1.8/a??/man
+          aviator.1.8/man/*.[56]
+        ]
       },
       'Cadre/Teamwork_4.0.2': {
         version_override: '5.1',
@@ -2079,13 +2196,11 @@ collections = {
         version_override: '5.1',
         basedir: 'sun/sunos/thirdparty/centerline_testcenter_1.0.2_b1.0',
         srcdirs: %w[CenterLine/man/man[15]]
-        # TODO no Solaris 2.1 doc or macros yet
       },
       'Centerline/ViewCenter_2.5.0': {
         version_override: '5.2',
         basedir: 'sun/sunos/thirdparty/centerline_viewcenter_2.5.0',
         srcdirs: %w[CenterLine/man.19930811/man/man[15]]
-        # TODO no Solaris 2.2 doc or macros yet
       },
       'HP/NPI_A.02.00': {
         version_override: '4.1',
@@ -2131,7 +2246,6 @@ collections = {
         version_override: '5.2',
         basedir: 'sun/sunos/thirdparty/lucid_c++_3.0b',
         srcdirs: %w[man/man[13]]
-        # TODO no Solaris 2.2 doc or macros yet
       },
       'Lucid/Energize_2.1': {
         version_override: '4.0',
@@ -2154,6 +2268,27 @@ collections = {
         #       TeX sources of Lucid Emacs manual in lemacs.new/man/
         #       postscript source in iv-3.1/iv/src/man/refman > make refman.PS
       },
+      'MicroFocus/COBOL_3.2': {
+        disabled: true, # these are plain text doc updates, not really manual entries
+        version_override: '5.3',
+        basedir: 'sun/sunos/thirdparty/microfocus_cobol_3.2',
+        srcdirs: %w[docs/*.1]
+      },
+      # TODO iplanet dirsrv 5, enterprise 6.1
+      'Netscape/Enterprise_Server_3.5.1': {
+        version_override: '5.5', # TODO html manual
+        basedir: 'sun/sunos/thirdparty/netscape_ent_3.5.1',
+        srcdirs: %w[manual/*]
+      },
+      'Netscape/FastTrack_Directory_Server_3.1': {
+        version_override: '5.4', # TODO html manual; check for output file collisions
+        basedir: 'sun/sunos/thirdparty/netscape_dirsrv_3.1',
+        srcdirs: %w[
+          directory/manual/*
+          directory/fasttrack_3.0.1/manual/*
+          directory/ldapsdk/docs
+        ]
+      },
       'Oracle/6.0.33.1': {
         version_override: '4.1',
         basedir: 'sun/sunos/thirdparty/oracle_6.0.33.1',
@@ -2173,6 +2308,11 @@ collections = {
         version_override: '4.1.4',
         basedir: 'pixar/hsi-sun3/1.1',
         srcdirs: %w[hsi/man/man[1-8]]
+      },
+      'Quintus/Prolog_3.2': {
+        version_override: '5.1', # REVIEW correct ver?
+        basedir: 'sun/sunos/thirdparty/quintus_prolog_3.2',
+        srcdirs: %w[generic/q3.2/man/man1] # TODO helplib?
       },
       'Sybase/DB_Library_C_4.0': {
         version_override: '4.1',
@@ -2436,7 +2576,7 @@ collections = {
   'UCB': {
     '386BSD': {
       '1.0': {
-        basedir: 'ucb/386bsd/1.0',
+        basedir: 'ucb/bsd/386bsd/1.0',
         srcdirs: %w[
           share/man/cat[1-9]*
           local/man/man[13578]
@@ -2445,13 +2585,23 @@ collections = {
       }
     },
     'BSD': {
-      '2.11': { # TODO check macros
+      '2.11': { # this came from the ebay homemade tk50 - TODO check macros
         basedir: 'ucb/bsd/2.11_unknown_provenance',
         srcdirs: %w[man/man[1-8]*]
       },
       '4.3-VAX-MIT': {
         basedir: 'ucb/bsd/4.3-VAX-MIT',
         srcdirs: %w[usr/man/man[1-8]]
+      }
+    },
+    'BSD386': {
+      '1.0': {
+        basedir: 'ucb/bsd/bsd386/1.0',
+        srcdirs: %w[
+          contrib/man/cat[1-8]
+          share/man/cat[1-8]*
+          X11/man/cat[135]
+        ]
       }
     },
     'Sprite': {
@@ -2517,7 +2667,7 @@ end
 
 system('mkdir', '-p', outdir) unless Dir.exist?(outdir)
 css = "#{__dir__}/lib/assets/tslroff.css"
-unless File.exist?("#{outdir}/tslroff.css") and File.mtime(css) > File.mtime("#{outdir}/tslroff.css") # FIX no longer copies on empty dir (FIXed? test it: 20230626)
+unless File.exist?("#{outdir}/tslroff.css") and File.mtime("#{outdir}/tslroff.css") >= File.mtime(css) # FIX don't rely on mtime
   Process.spawn("cp #{css} #{outdir}")
   Process.wait
   puts 'updated tslroff.css from lib/assets/'

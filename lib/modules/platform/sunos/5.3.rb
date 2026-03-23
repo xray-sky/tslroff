@@ -192,7 +192,7 @@ class SunOS::V5_3
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           ']W' => "Sun Microsystems",
           '||' => '/usr/share/lib/tmac'
@@ -203,9 +203,9 @@ class SunOS::V5_3
     def init_fp
       # Palatino family for postscript output (PA, PI, PB)
       super
-      @state[:fonts][4] = 'B'
-      @state[:fonts][5] = 'R'
-      @state[:fonts][6] = 'B'
+      @mounted_fonts[4] = 'B'
+      @mounted_fonts[5] = 'R'
+      @mounted_fonts[6] = 'B'
     end
 
     define_method 'SB' do |*args|
@@ -220,8 +220,8 @@ class SunOS::V5_3
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       heading = '\\*(]H'
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(heading: heading)
     end

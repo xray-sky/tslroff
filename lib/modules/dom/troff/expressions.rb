@@ -52,7 +52,7 @@
 # operators +, -, /, *, % (modulus), and the logical operators <, >, <=, >=, = (or ==),
 # & (and), and : (or) may be used. Except where controlled by parentheses, evaluation of
 # expressions is left-to-right. In the case of certain requests (TODO), an initial + or - is
-# stripped and interpreted as an increment or decrememnt indicator respectively. In the
+# stripped and interpreted as an increment or decrement indicator respectively. In the
 # presence of default scaling, the desired scale indicator must be attached to every
 # number in an expression for which the desired and default scaling differ. For example,
 # if the number register x contains 2 and the current point size is 10, then
@@ -68,7 +68,7 @@
 
 class Troff
 
-  @@units_per_inch = 1200	# REVIEW: does this even matter?
+  @@units_per_inch = 1200 # REVIEW: does this even matter?
 
   # str.to_s -- tolerate receiving integer/register argument
 
@@ -93,28 +93,29 @@ class Troff
 
     # troff issues a warning for any characters not allowed in a numeric expression
     # (like ',') and disregards everything after one. not sure what to return though
-    # if the entire expression is disregarded. REVIEWED. zero? - yes.
-    str.sub!(%r{[^-+()\d\.cimnPpuv/*%<>=&:].*$}, '') and warn "disregarding extra chars in numeric expression #{Regexp.last_match[0].inspect}"
+    # if the entire expression is disregarded. REVIEWED. zero? - yes. REVIEW does it depend on \w vs. other places expressions accepted??
+    str.sub!(%r{[^-+()\d.cimnPpuv/*%<>=&:].*$}, '') and warn "disregarding extra chars in numeric expression #{Regexp.last_match[0].inspect}"
     return '0' if str.empty? # everything was rejected as invalid
 
     # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
     # in order to avoid having to differentiate between '-' as subtraction vs. negation
-    str = str.prepend('0u') if str.match(/^[+-]/)
-    str = str.gsub('+-', '-').gsub('--', '+').gsub('++', '+').gsub(/=-([\.\dcimnPpuv]+?)/, "=(-\\1)")
+    str.prepend('0u') if str.match(/^[+-]/)
+    str = str.gsub('+-', '-').gsub('--', '+').gsub('++', '+').gsub(/=-([\d.]+?[cimnPpuv]?)/, "=(-\\1)")
 
     # try to break down the expression
     # start with parens; work inside -> out
     while str.include?('(') do
-      (a,b,c) = str.partition(')')
-      (x,y,z) = a.rpartition('(')
-      str.sub!(a + b, x + to_u(z, :default_unit => default_unit) + 'u')
+      (a,b,_c) = str.partition(')')
+      (x,_y,z) = a.rpartition('(')
+      str.sub!("#{a}#{b}", "#{x}#{to_u z, default_unit: default_unit}u")
     end
 
     # tokenize the result
-    operands = str.scan(%r([\d\.cimnPpuv]+|[-+/*%<>=&:]+)) # TODO: somewhere in here I'm getting ==- as an operator (as in 10==-1 - end result works as it throws an exception and is rejected by if)
+    operands = str.scan(%r([\d.cimnPpuv]+|[-+/*%<>=&:]+)) # TODO somewhere in here I'm getting ==- as an operator (as in 10==-1 - end result works as it throws an exception and is rejected by if)
 
     # we need to be tolerant of garbage in - e.g. text passed as indent to .IP which may look a little like an expression
     # example - hpterm(1) [HPUX 10.20] line 733
+    # example - cc(1) [OSF/1 3.0] line 954 (.VL 3m and def of VL attempts to .nr $1n giving .nr 3mn)
     operand = operands.shift.match(/^([\d.]+)([cimnPpuv]?)/)
     return '0'.tap { warn "garbage in evaluating expression #{str.inspect}" } unless operand
 
@@ -122,17 +123,17 @@ class Troff
     unit = default_unit if unit.empty?
 
     lhs = case unit
-    when 'u'  then magnitude.to_i
-    when 'i'  then magnitude.to_f * @@units_per_inch
-    when 'c'  then magnitude.to_f * @@units_per_inch * 50 / 127
-    when 'P'  then magnitude.to_f * @@units_per_inch / 6
-    when 'p'  then magnitude.to_f * @@units_per_inch / 72
-    when 'm'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 72
-    when 'n'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 144
-    when 'v'  then magnitude.to_f * @register['.v'].to_f
-    # non-Troff unit for use with Selenium results -- must be accessed with :default_unit
-    when 'px' then magnitude.to_f * @@units_per_inch / @@pixels_per_inch
-    end.to_i
+          when 'u'  then magnitude.to_i
+          when 'i'  then magnitude.to_f * @@units_per_inch
+          when 'c'  then magnitude.to_f * @@units_per_inch * 50 / 127
+          when 'P'  then magnitude.to_f * @@units_per_inch / 6
+          when 'p'  then magnitude.to_f * @@units_per_inch / 72
+          when 'm'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 72
+          when 'n'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 144
+          when 'v'  then magnitude.to_f * @register['.v'].to_f
+          # non-Troff unit for use with Selenium results -- must be accessed with :default_unit
+          when 'px' then magnitude.to_f * @@units_per_inch / @@pixels_per_inch
+          end.to_i
 
     while operands.any?
       op = case o = operands.shift

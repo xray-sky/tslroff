@@ -1,14 +1,29 @@
 collectionNamespace 'unbundled' do
+  manualNamespace '4.1.1GFX_Rev2',
+    vendor_class: SunOS::V4_1_1,
+    idir: 'sun/sunos/unbundled/4.1.1_gfx_rev2_sun4c',
+    odir: 'Sun/unbundled/4.1.1GFX_Rev2/sun4c',
+    sources: %w[4.1.1-GFX.ENG/_text/man/man[48]*]
   manualNamespace 'ATM_2.0',
     vendor_class: SunOS::V5_5,
     idir: 'sun/sunos/unbundled/atm_2.0',
     odir: 'Sun/unbundled/ATM_2.0',
     sources: %w[SUNWatm/man/man[13479]*]
+  manualNamespace 'BQE_1.1',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/be_qe_1.1',
+    odir: 'Sun/unbundled/BQE_1.1',
+    sources: %w[BQE/usr/man/man4]
   manualNamespace 'C_1.0',
     vendor_class: SunOS::V4_0,
     idir: 'sun/sunos/unbundled/c_1.0',
     odir: 'Sun/unbundled/C_1.0',
     sources: %w[man/man[1358]]
+  manualNamespace 'C_1.1',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/c_1.1+sparcworks',
+    odir: 'Sun/unbundled/C_1.1',
+    sources: %w[cc_compiler/SC1.0/man/man[135]]
   manualNamespace 'C++_2.0',
     vendor_class: SunOS::V4_0,
     idir: 'sun/sunos/unbundled/c++_2.0',
@@ -20,6 +35,11 @@ collectionNamespace 'unbundled' do
     idir: 'sun/sunos/unbundled/cde_1.0',
     odir: 'Sun/unbundled/CDE_1.0.1',
     sources: %w[dt/share/man/man[1-6]*]
+  manualNamespace 'DiskSuite_1.0',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/disksuite_1.0',
+    odir: 'Sun/unbundled/DiskSuite_1.0',
+    sources: %w[1.0_DiskSuite/sun4/man/man[23458]]
   manualNamespace 'DiskSuite_4.0',
     vendor_class: SunOS::V5_5,
     idir: 'sun/sunos/unbundled/disksuite_4.0',
@@ -55,6 +75,11 @@ collectionNamespace 'unbundled' do
     idir: 'sun/sunos/unbundled/motif_1.2.2_sdk',
     odir: 'Sun/unbundled/Motif_SDK_1.2.2',
     sources: %w[SUNWmfdoc/man/man[135]]
+  manualNamespace 'Network_Coprocessor_1.0',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/net_coprocessor_1.0',
+    odir: 'Sun/unbundled/Network_Coprocessor_1.0',
+    sources: %w[Snc/usr/man/man[48]]
   # TODO local string.defs, header.mex
   manualNamespace 'NeWS_1.1',
     vendor_class: SunOS::V4_0,
@@ -81,6 +106,12 @@ collectionNamespace 'unbundled' do
     idir: 'sun/sunos/unbundled/openwindows_v2',
     odir: 'Sun/unbundled/OpenWindows_V2',
     sources: %w[man/man[136n]]
+  manualNamespace 'OpenWindows_V3',
+    # TODO compare +XGL 2.0 RTE
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/openwindows_v2',
+    odir: 'Sun/unbundled/OpenWindows_V3',
+    sources: %w[OpenWindows/sun4/share/man/man[135678]]
   manualNamespace 'Pascal_1.1',
     vendor_class: SunOS::V4_0,
     idir: 'sun/sunos/unbundled/pascal_1.1',
@@ -119,6 +150,16 @@ collectionNamespace 'unbundled' do
     idir: 'sun/sunos/unbundled/sbus_printer_card_1.0',
     odir: 'Sun/unbundled/SBus_Printer_Card_1.0',
     sources: %w[man]
+  manualNamespace 'SBus_Serial_Parallel_1.2',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/serial_parallel_1.2',
+    odir: 'Sun/unbundled/SBus_Serial_Parallel_1.2',
+    sources: %w[STC/bin/man/man4]
+  manualNamespace 'SBus_Serial_Parallel_2.0',
+    vendor_class: SunOS::V5_1,
+    idir: 'sun/sunos/unbundled/serial_parallel_2.0',
+    odir: 'Sun/unbundled/SBus_Serial_Parallel_2.0',
+    sources: %w[STC/bin/man/man4]
   manualNamespace 'Solaris_2.4_x86_SDK',
     vendor_class: SunOS::V5_4,
     idir: 'sun/sunos/unbundled/solaris_2.4_x86_sdk',
@@ -136,24 +177,63 @@ collectionNamespace 'unbundled' do
     idir: 'sun/sunos/unbundled/solstice_backup_4.1.2',
     odir: 'Sun/unbundled/Solstice_Backup_4.1.2/Solaris',
     sources: %w[share/man/man[358]]
-  # REVIEW different from Solaris manual?
   manualNamespace 'Solstice_Backup_4.1.2/SunOS',
+    # REVIEW different from Solaris manual?
     vendor_class: SunOS::V5_5,
     idir: 'sun/sunos/unbundled/solstice_backup_4.1.2',
     odir: 'Sun/unbundled/Solstice_Backup_4.1.2/SunOS',
     sources: %w[SunOS/man]
-  # V5N1 SPARC Solaris 2.x # TODO Solaris 1.x
-  manualNamespace 'WorkShop_3.0.1',
-    vendor_class: SunOS::V5_5,
-    idir: 'sun/sunos/unbundled/workshop_3.0',
-    odir: 'Sun/unbundled/WorkShop_3.0.1',
-    sources: %w[
-      SUNWspro/*/man/man[134]*
-      SUNWspro/contrib/*/man/man1
-      SUNWste/license_tools/man/man1
-    ]
-  # V6N1 SPARC
+  collectionNamespace 'SPARCworks_2.0.1' do
+    manualNamespace 'SunOS_4',
+      vendor_class: SunOS::V4_1,
+      idir: 'sun/sunos/unbundled/sparcworks_2.0.1/solaris1',
+      odir: 'Sun/unbundled/SPARCworks_2.0.1/sunos4',
+      sources: %w[
+        S*/*/man/man[1345]
+        T*/*/*/man/man[1345]
+      ]
+    manualNamespace 'SunOS_5',
+      vendor_class: SunOS::V5_1,
+      idir: 'sun/sunos/unbundled/sparcworks_2.0.1/solaris1',
+      odir: 'Sun/unbundled/SPARCworks_2.0.1/sunos5',
+      sources: %w[
+        SPRO*/reloc/$BASEDIR/*/$PRODVERS/man/man[135]
+        SPRO*/reloc/*/*/man/man[15]
+      ]
+  end
+  manualNamespace 'SunLink_TRI_SBus_2.1',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/sunlink_tri_s_2.1',
+    odir: 'Sun/unbundled/SunLink_TRI_SBus_2.1',
+    sources: %w[sunlink/tr/man/man4]
+  manualNamespace 'SunLink_TRI_SBus_3.0.1',
+    vendor_class: SunOS::V5_1,
+    idir: 'sun/sunos/unbundled/sunlink_tri_s_3.0.1',
+    odir: 'Sun/unbundled/SunLink_TRI_SBus_3.0.1',
+    sources: %w[sunlink/tr/man/man7]
+  collectionNamespace 'WorkShop_3.0.1' do
+    manualNamespace 'SunOS_4',
+      # V5N1 SPARC Solaris 1.x
+      vendor_class: SunOS::V4_1,
+      idir: 'sun/sunos/unbundled/workshop_solaris1_v5n1',
+      odir: 'Sun/unbundled/WorkShop_3.0.1/sunos4',
+      sources: %w[
+        [ST]*/*/man/man[1345l]
+        SW3.0.1_sbfsf/FSF/sbtags/man/man1
+      ]
+    manualNamespace 'SunOS_5',
+      # V5N1 SPARC Solaris 2.x
+      vendor_class: SunOS::V5_5,
+      idir: 'sun/sunos/unbundled/workshop_3.0',
+      odir: 'Sun/unbundled/WorkShop_3.0.1/sunos5',
+      sources: %w[
+        SUNWspro/*/man/man[134]*
+        SUNWspro/contrib/*/man/man1
+        SUNWste/license_tools/man/man1
+      ]
+  end
   manualNamespace 'WorkShop_5.0',
+    # V6N1 SPARC
     vendor_class: SunOS::V5_6,
     idir: 'sun/sunos/unbundled/workshop_5.0',
     odir: 'Sun/unbundled/WorkShop_5.0',

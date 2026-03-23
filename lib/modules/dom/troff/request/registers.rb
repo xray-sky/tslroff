@@ -154,7 +154,7 @@ class Troff
     extend Forwardable
 
     attr_accessor :value, :format, :increment
-    def_delegators :@value, :zero?, :>, :<, :==, :-@, :to_f, :to_i, :to_int
+    def_delegators :@value, :zero?, :>, :<, :<=, :>=, :==, :-@, :to_f, :to_i, :to_int
 
     @@alpha_map = [ [0], 'a'..'z', 'aa'..'zz', 'aaa'..'zzz' ].map(&:to_a).flatten
     @@roman_map = [ [ '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix' ],

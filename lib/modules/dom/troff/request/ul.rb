@@ -48,7 +48,7 @@ class Troff
     # REVIEW does this actually get some other font mounted on position 2?
     @state[:ul_font] = case pos
                        when ''     then 'I'
-                       when /^\d$/ then @state[:fonts][pos.to_i]
+                       when /^\d$/ then @mounted_fonts[pos.to_i]
                        else        pos
                        end
   end

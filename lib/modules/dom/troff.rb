@@ -39,25 +39,12 @@ class Troff < TextFormatter
   Requests = %w[ ab ad af am as bd bp br c2 cc ce cf ch cs cu da de di ds dt ec el em eo ev ex fc fi
                  fl fp ft hc hw hy ie if ig in it lc lf lg ll ls lt mc mk na ne nf nh nm nn nr ns nx
                  os pc pi pl pm pn po ps rd rm rn rr rs rt so sp ss sv ta tc ti tl tm tr ul vs wh \" ] # REVIEW \" isn't really a request but I want to not parse its args
-  #REQUESTS = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
 
   @@webdriver = nil
 
   def self.webdriver ; @@webdriver ; end
   def self.requests ; Requests ; end  # REVIEW smrtr?
   def self.useGroff? ; false ; end  # REVIEW necessary? (I think no)
-
-=begin
-  def self.extended(k)
-    k.extend Troff::Eqn
-    k.extend Troff::Tbl
-    #k.extend ::Pic
-    #k.extend ::Groff if Troff.useGroff?
-    k.instance_variable_set '@register', {}
-    k.instance_variable_set '@state', { header: Block::Header.new, footer: Block::Footer.new }
-    k.instance_variable_set '@related_info_heading', %r{SEE(?: |&nbsp;)+ALSO}
-  end
-=end
 
   def initialize(source)
     @source = source
@@ -95,8 +82,6 @@ class Troff < TextFormatter
     #methods.each do |m|
     #  send(m) if m.to_s.start_with? 'init_'
     #end
-
-    #parse_title
   end
 
   def to_html(halt_on: nil)
@@ -114,12 +99,12 @@ class Troff < TextFormatter
       # TODO perform end-of-input trap macros from .em;
       # REVIEW maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
       # TODO this is quite wrong if we are doing halt_on e.g. from parse_title and don't find one (e.g. unix v7 intro.0)
-      if @state[:named_string][:header]
-        unescape @state[:named_string][:header], output: @state[:header]
+      if @named_strings[:header]
+        unescape @named_strings[:header], output: @state[:header]
         @document.insert(0, @state[:header])
       end
-      if @state[:named_string][:footer]
-        unescape @state[:named_string][:footer], output: @state[:footer]
+      if @named_strings[:footer]
+        unescape @named_strings[:footer], output: @state[:footer]
         @document << @state[:footer]
       end
       return "#{@document.collect(&:to_html).join}\n    </div>\n</div>" # REVIEW closes main doc divs start ed by :th
@@ -149,8 +134,8 @@ class Troff < TextFormatter
     # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
     # TODO the new-line at the end of a comment cannot be concealed.
     # Doing it here means I don't have to do it everywhere we are doing local next_lines (.TS, .if, etc.)
-    # But, this will give us "bad" line numbers for warnings. I can probably live with that. (REVIEW: ...will it?)
-    line.chop! << next_line if @state[:escape_char] and line.end_with?(@state[:escape_char]) and line[-2] != @state[:escape_char]
+    # But, this will give us "bad" line numbers for warnings. I can probably live with that.
+    line.chop! << next_line if @escape_character and line.end_with?(@escape_character) and line[-2] != @escape_character
 
     @line = line
   end
@@ -177,19 +162,5 @@ class Troff < TextFormatter
     block.style.attributes[:class] = 'synopsis' if @state[:section]&.match?(/^synopsis$/i) and block.is_a? Block::Paragraph
     block
   end
-
-=begin
-  def get_title
-    @current_block = blockproto
-    @document << @current_block
-    loop do
-      parse(next_line)
-      break if @manual_section
-    end
-    true if @manual_section
-  #ensure
-    #@lines.rewind
-  end
-=end
 
 end

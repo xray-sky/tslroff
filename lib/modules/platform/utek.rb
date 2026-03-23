@@ -8,6 +8,7 @@
 #
 # TODO rewrite busted overstrike |^H'+' (&dagg;) in signal(3c)
 # REVIEW what's with the final page of the nroff stuff -- %%index%% ??
+#        see buildif(1man) and manindex(5man) for details
 #
 # TODO getting extra section info in filename for e.g. 1csh, 1sccs (not 1m, etc.)
 

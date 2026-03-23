@@ -82,7 +82,93 @@
 #  - # (comment to end of line)
 #  - sh (arbitrary shell command)
 #
+#
+#
+# Consider:
+#
+#localhost.root # cat pt
+#.PS
+#box "foo"
+#box "fa""rt"
+#box "cra\"p" "cake"
+#.PE
+#
+#localhost.root # pic pt
+#... 0 -0.25 2.25 0.25
+#... 0.000i 0.500i 2.250i 0.000i
+#.nr 00 \n(.u
+#.nf
+#.PS 0.500i 2.250i
+#.br
+#\h'0.375i'\v'0.250i'\h'-0.0m'\v'0.2m'\h'-\w'foo'u/2u'foo\h'-\w'foo'u/2u'
+#.sp -1
+#\v'0.500i'\v'-.25m'\L'-0.500i\(br'\v'.25m'
+#.sp -1
+#\l'0.750i'
+#.sp -1
+#\h'0.750i'\v'-.25m'\L'0.500i\(br'\v'.25m'
+#.sp -1
+#\h'0.750i'\v'0.500i'\l'-0.750i'
+#.sp -1
+#\h'1.125i'\v'0.250i'\h'-0.0m'\v'0.2m'\v'-1u*\n(.vu/2u'\h'-\w'fa'u/2u'fa\h'-\w'fa'u/2u'
+#.sp -1
+#\h'1.125i'\v'0.250i'\h'-0.0m'\v'0.2m'\v'1u*\n(.vu/2u'\h'-\w'rt'u/2u'rt\h'-\w'rt'u/2u'
+#.sp -1
+#\h'0.750i'\v'0.500i'\v'-.25m'\L'-0.500i\(br'\v'.25m'
+#.sp -1
+#\h'0.750i'\l'0.750i'
+#.sp -1
+#\h'1.500i'\v'-.25m'\L'0.500i\(br'\v'.25m'
+#.sp -1
+#\h'1.500i'\v'0.500i'\l'-0.750i'
+#.sp -1
+#\h'1.875i'\v'0.250i'\h'-0.0m'\v'0.2m'\v'-1u*\n(.vu/2u'\h'-\w'cra"p'u/2u'cra"p\h'-\w'cra"p'u/2u'
+#.sp -1
+#\h'1.875i'\v'0.250i'\h'-0.0m'\v'0.2m'\v'1u*\n(.vu/2u'\h'-\w'cake'u/2u'cake\h'-\w'cake'u/2u'
+#.sp -1
+#\h'1.500i'\v'0.500i'\v'-.25m'\L'-0.500i\(br'\v'.25m'
+#.sp -1
+#\h'1.500i'\l'0.750i'
+#.sp -1
+#\h'2.250i'\v'-.25m'\L'0.500i\(br'\v'.25m'
+#.sp -1
+#\h'2.250i'\v'0.500i'\l'-0.750i'
+#.sp -1
+#.sp 1+0.500i
+#.PE
+#.if \n(00 .fi
+#
+#localhost.root # cat > pct
+#.PS
+#circle
+#"spider"
+#arc
+#.PE
+#localhost.root # pic pct
+#... 0 -0.25 0.75 0.25
+#... 0.000i 0.500i 0.750i 0.000i
+#.nr 00 \n(.u
+#.nf
+#.PS 0.500i 0.750i
+#.br
+#\v'0.250i'\D'c0.500i'
+#.sp -1
+#\h'0.500i'\v'0.250i'\h'-0.0m'\v'0.2m'\h'-\w'spider'u/2u'spider\h'-\w'spider'u/2u'
+#.sp -1
+#\h'0.500i'\v'0.250i'\D'a0.000i -0.250i 0.250i 0.000i'
+#.sp -1
+#.sp 1+0.500i
+#.PE
+#.if \n(00 .fi
+#localhost.root #
+#localhost.root #
+#
+#
 
-module Troff
+Dir.glob("#{__dir__}/words/*.rb").each do |i|
+  require_relative i
+end
+
+module Pic
 #  def
 end

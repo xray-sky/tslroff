@@ -32,7 +32,7 @@ class Interactive
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: '\\fB\\s-1\\*(]Y\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP',
           'Tm' => '&trade;',
@@ -71,7 +71,7 @@ class Interactive
     end
 
     def init_ta
-      @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
+      @tabstops = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
       true
     end
 
@@ -135,7 +135,7 @@ class Interactive
       ds("]L (\\^#{args[4]}\\^)") if args[4] and !args[4].strip.empty?
 
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-      heading << "\\0\\0\\(em\\0\\0\\*(]L" if @state[:named_string][']L']
+      heading << "\\0\\0\\(em\\0\\0\\*(]L" if @named_strings[']L']
 
       super(*args, heading: heading)
     end

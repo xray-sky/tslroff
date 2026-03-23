@@ -21,6 +21,8 @@
 # What the hell are \(Dy and \(Dn ?? - section 3G
 #
 # Alias/1 v2.1 has wrong mod. dates; bad dirs for non-numeric sections; missing 'Version' string
+# Version string inappropriate for third party manual entries
+# Synopsis & C-TAD (third party) pages are nroff (need page length)
 # GL1 W2.3 some of the entries are longer than an enforced 11 character filename limit;
 #   presumably these should be renamed for the actual entry, not based on the filename.
 #   because of the extensive use of .so we shouldn't use 'title' but maybe just provide a rewrite table
@@ -45,7 +47,7 @@ class GL2
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           #footer: "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W",
           footer: "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W",
@@ -72,7 +74,7 @@ class GL2
     end
 
     def init_ta
-      @state[:tabs] = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
+      @tabstops = %w[3.6m 7.2m 10.8m 14.4m 18m 21.6m 25.2m 28.8m 32.4m 36m 39.6m 43.2m 46.8m].collect { |t| to_u(t).to_i }
       true
     end
 
@@ -91,7 +93,7 @@ class GL2
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"
-      heading << ' \\|\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << ' \\|\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

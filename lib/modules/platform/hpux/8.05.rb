@@ -23,7 +23,7 @@ class HPUX::V8_05
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
           'Tm' => '&trade;',
@@ -41,7 +41,7 @@ class HPUX::V8_05
       ds "]O #{args[2]}"
 
       # ]O follows the title (if given), centered on its own line.
-      unless @state[:named_string][']O'].empty?
+      unless @named_strings[']O'].empty?
         #space = true
         byline = Block::Footer.new
         byline.style.css[:margin_top] = '0.5em' # TODO not working? getting 4em from css
@@ -51,7 +51,7 @@ class HPUX::V8_05
       #sp('1.5v') if space # probably this is overkill, actually
 
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-      heading << '\\0\\|\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\|\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)
     end

@@ -29,7 +29,7 @@ class Troff
 
   def parse(line)
     if escapes?	# the escape mechanism may be disabled
-      esc = @state[:escape_char]
+      esc = @escape_character
       resc = Regexp.quote esc
 
       # hidden newlines -- REVIEW does this need to be any more sophisticated?

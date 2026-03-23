@@ -19,6 +19,9 @@
 #   maybe link commands list in column one of Intro(*), § "LIST OF ..."
 #   LIST OF COMMANDS also occurs in other pages which themselves contain proper SEE ALSOs, so... ?
 #   consider blacklisting List(*)
+#   consider using CMU Bright or Sans for sans
+#   eqn(1) :: adjust bracket pile and extended radical offsets in case we do switch from Palatino to Computer Modern font
+#   eqn(1) :: consider special CMU Math font for eqn? (there isn't one but look around maybe) - ∑ in particular looks bad
 #   fnattr(1) :: [174] replace \t with ' '
 # √ if(1) :: [876,879] extra <br> in output after having messed with .TP
 # √ sccs-get(1) :: tbl \^ row spans
@@ -47,6 +50,7 @@
 # √ terminfo(4) :: tables have "B" echoed into header rows?
 #   terminfo(4) :: \o, \z for box drawing chars in sec. 1-12 not appearing correctly/at all (same problem with many platforms terminfo(4))
 #   terminfo(4) :: has inline eqn but all the enablement is commented out. probably will just leave this, since it's busted in troff too?
+#   mansun(5) :: tbl vs. <table> column widths (see wrap in '.TH n s d f m')
 #   mtio(7i) :: has postprocessed tbl (mostly output correctly, just needs horizontal rules)
 #   mtio(7i) :: font size at MTSRSZ and MTGRSZ ? extra space after initial " on MTNBSF/MTFSF ? what happened here
 #
@@ -338,7 +342,7 @@ class SunOS::V5_5
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           ']W' => "SunOS #{@version}",
           '||' => '/usr/share/lib/tmac'
@@ -348,8 +352,8 @@ class SunOS::V5_5
 
     def init_fp
       super
-      @state[:fonts][4] = 'BI' # REVIEW is this right? or is it H ...or S???
-      @state[:fonts][5] = 'CW'
+      @mounted_fonts[4] = 'BI' # REVIEW is this right? or is it H ...or S???
+      @mounted_fonts[5] = 'CW'
     end
 
     define_method 'SB' do |*args|
@@ -363,8 +367,8 @@ class SunOS::V5_5
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?
-      @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(heading: heading)
     end

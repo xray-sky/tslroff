@@ -28,7 +28,7 @@ class Ultrix::V4_2_0
 
     def init_ds
       super
-      @state[:named_string].merge!(
+      @named_strings.merge!(
         {
           ']D' => 'UNIX Programmer\'s Manual',
           ']W' => '7th Edition',
@@ -113,9 +113,9 @@ class Ultrix::V4_2_0
       ds "]D #{args[4]}"
 
       heading = "#{args[0]}\\|(\\^#{args[1]}\\^)" # tmac.an uses \f(HB
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty? # tmac.an uses \fH
+      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty? # tmac.an uses \fH
       # this would go below the top .tl if given, toward the spine. I think I'll put it in <h1> instead.
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty? # tmac.an uses \f(HB
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty? # tmac.an uses \f(HB
 
       super(*args, heading: heading)
     end

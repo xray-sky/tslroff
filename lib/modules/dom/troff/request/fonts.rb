@@ -125,7 +125,7 @@ class Troff
   end
 
   def init_fp
-    @state[:fonts] = {
+    @mounted_fonts = {
       0   => nil,
       1   => 'R',
       2   => 'I',

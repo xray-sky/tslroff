@@ -2,6 +2,7 @@ collectionNamespace 'UCB' do
   collectionNamespace '386BSD' do
     manualNamespace '1.0',
       vendor_class: X386BSD,
+      idir: 'ucb/bsd/386bsd/1.0',
       odir: 'UCB/386BSD/1.0',
       sources: %w[
         share/man/cat[1-9]*
@@ -11,7 +12,7 @@ collectionNamespace 'UCB' do
   end
 
   collectionNamespace 'BSD' do
-    # TODO check macros
+    # this came from the eBay homemade tk50 - TODO check macros
     manualNamespace '2.11',
       vendor_class: BSD::V2_11,
       idir: 'ucb/bsd/2.11_unknown_provenance',
@@ -22,6 +23,18 @@ collectionNamespace 'UCB' do
       idir: 'ucb/bsd/4.3-VAX-MIT',
       odir: 'UCB/BSD/4.3-VAX-MIT',
       sources: %w[usr/man/man[1-8]]
+  end
+
+  collectionNamespace 'BSD386' do
+    # REVIEW differences between BSDI 386BSD, this, and UCB 386BSD?
+    manualNamespace '1.0',
+      idir: 'ucb/bsd/bsd386/1.0',
+      odir: 'UCB/BSD386/1.0',
+      sources: %w[
+        contrib/man/cat[1-8]
+        share/man/cat[1-8]*
+        X11/man/cat[135]
+      ]
   end
 
   collectionNamespace 'Sprite' do

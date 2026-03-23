@@ -16,12 +16,12 @@
 class Troff
   def ec(argstr = '', breaking: nil)
     chr = argstr[0] || '\\'
-    @state[:escape_char] = chr
+    @escape_character = chr
   end
 
   def eo(_argstr = '', breaking: nil)
     warn "disabling escape mechanism"
-    @state[:escape_char] = nil
+    @escape_character = nil
     true
   end
 

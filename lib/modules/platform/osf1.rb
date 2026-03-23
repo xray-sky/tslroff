@@ -35,12 +35,12 @@ class OSF1
     # OSF1/Digital UNIX/Tru64 custom fonts
     # Gothic/Geneva and Triumvirate are all essentially Helvetica
     class Font
-      class TR < Font::H ; end
-      class TB < Font::HB ; end
-      class TI < Font::HI ; end
-      class G  < Font::H ; end
-      class GB < Font::HB ; end
-      class GL < Font::HI ; end
+      class TR < ::Font::H ; end
+      class TB < ::Font::HB ; end
+      class TI < ::Font::HI ; end
+      class G  < ::Font::H ; end
+      class GB < ::Font::HB ; end
+      class GL < ::Font::HI ; end
     end
 
     alias :LP :P
@@ -378,3 +378,4 @@ end
 
 class Digital_UNIX < OSF1 ; end
 class Tru64 < OSF1 ; end
+class Tru64::V4_0f < Tru64 ; end

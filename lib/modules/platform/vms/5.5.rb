@@ -13,7 +13,7 @@
 #       want to separate appearing on a separate page from being included in the COMMANDS links.
 #
 
-module VMS_5_5
+class VMS::V5_5 < VMS
 end
 
 =begin

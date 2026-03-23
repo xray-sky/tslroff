@@ -7,9 +7,11 @@
 # SCO OpenDesktop 1.1.1g Platform Overrides
 #
 
+=begin
+# TODO this is no good
 class Source
   def magic
-    case File.basename(@filename)
+    case File.basename(@file)
     when 'ksh.C.z', 'messages.M.z',
          'terminfo.M.z', 'X.X.z', 'mwm.X.z', 'scoterm.X.z', 'xdm.X.z', 'xterm.X.z'
       'Nroff'
@@ -17,8 +19,9 @@ class Source
     end
   end
 end
+=end
 
-module OpenDesktop_1_1_1g
+class OpenDesktop::V1_1_1g
 
   class Manual < ::Manual
     ZEXTRA = %w[ ksh.C.z messages.M.z terminfo.M.z X.X.z mwm.X.z scoterm.X.z xdm.X.z xterm.X.z ]

@@ -54,7 +54,7 @@ class SunOS::V0_3
 
     def initialize(source)
       case source.file
-      when 'fs.h', 'inode.h',
+      when 'fs.h', 'inode.h'
         raise ManualIsBlacklisted, 'apparently detritus'
       end
       super(source)

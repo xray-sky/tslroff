@@ -115,7 +115,7 @@ class Troff
     begin
       # find the old method - might be a request, or a macro
       oldmethod = name
-      #oldmethod = "req_#{name}" if REQUESTS.include? name
+      #oldmethod = name if REQUESTS.include? name
 
       savemethod = "#{oldmethod}#{@input_filename}#{@register['.c']}"
       define_singleton_method savemethod, method(oldmethod)
@@ -155,7 +155,7 @@ class Troff
     warn ".de wants to change .#{name}!" if %w[CW EN EQ TS].include?(name)
 
     # termination doesn't appear work like a macro invocation
-    #terminating_method = "req_#{Troff.quote_method delim}"
+    #terminating_method = Troff.quote_method delim"
     #define_singleton_method(terminating_method) { |*_args| true }
 
     macro = []
@@ -215,7 +215,7 @@ class Troff
   def rm(argstr = '', *args, breaking: nil)
     return nil if argstr.empty?
     arg = argstr.slice(0, 2).strip
-    #@state[:named_string].delete(string) or define_singleton_method("req_#{string}") { |*args| true } # REVIEW instance_eval(':undef req_foo') instead?
+    #@state[:named_string].delete(string) or define_singleton_method(string) { |*args| true } # REVIEW instance_eval(':undef foo') instead?
     #warn arg.inspect
     @state[:named_string].delete(arg) or instance_eval("undef #{arg.to_sym.inspect}") # REVIEW need to update Requests?
     rescue NameError
@@ -237,7 +237,7 @@ class Troff
 
     # find the old method - might be a request, or a macro
     oldmethod = oldname
-    #oldmethod = "req_#{oldname}" if REQUESTS.include? oldname
+    #oldmethod = oldname if REQUESTS.include? oldname
     # TODO correctly update the Requests array
 
     if respond_to? oldmethod

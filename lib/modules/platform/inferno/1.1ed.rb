@@ -18,7 +18,7 @@ class Inferno::FirstEd_1
 
     def initialize(source)
       @output_directory ||= '' #+ k.instance_variable_get('@source_dir')) # wrong
-      @manual_entry ||= source.file.sub(/\.htm$/, ''))
+      @manual_entry ||= source.file.sub(/\.htm$/, '')
       super(source)
     end
 
@@ -55,7 +55,7 @@ class Inferno::FirstEd_1
         define_singleton_method :page_title, proc { 'Limbo Prefab Modules &mdash; Inferno 1.1ed' }
         @source.patch_line(62, %r{^<em>}, '</a>')
       when 'mpgs71.htm'
-        define_singleton_method(:page_title, proc { 'Limbo System Modules &mdash; Inferno 1.1ed' }
+        define_singleton_method :page_title, proc { 'Limbo System Modules &mdash; Inferno 1.1ed' }
       when 'mpgs77.htm' then @source.patch_line( 32, %r{^<em>}, '</a>')
       when 'mpgs78.htm' then @source.patch_line(146, %r{<em><a}, '<a')
       when 'mpgs79.htm' then @source.patch_line( 27, %r{^<em>}, '</a>')
@@ -79,7 +79,9 @@ class Inferno::FirstEd_1
       super
     end
 
-    def to_html
+    def to_html(halt_on: nil)
+      return nil if halt_on
+      source_init
       title = @source.title
       body = @source.xpath('//body')
 

@@ -54,14 +54,12 @@ class Troff
       end
     end
 
-    if line.start_with? @state[:cc]
+    if line.start_with? @state[:cc], @state[:c2]
       line.slice!(0)
       line.lstrip! # one of the few places tabs equally valid
-      request line.slice(0, 2).rstrip, (line.slice(2..-1) || '').sub(/\s*(?<!#{resc})#{resc}".*$/, '').lstrip # nuke inline comments
-    elsif line.start_with? @state[:c2]
-      line.slice!(0)
-      line.lstrip! # one of the few places tabs equally valid
-      request line.slice(0, 2).rstrip, (line.slice(2..-1) || '').sub(/\s*(?<!#{resc})#{resc}".*$/, '').lstrip, breaking: false
+      request line.slice(0, 2).rstrip,
+              (line.slice(2..-1) || '').sub(/\s*(?<!#{resc})#{resc}".*$/, '').lstrip, # nuke inline comments
+              breaking: (line.start_with?(@state[:c2])? false : true)
     else
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3 - also in nofill mode
@@ -79,7 +77,7 @@ class Troff
         # initial spaces also cause a break. §4.1
         # -- but don't break again unnecessarily (i.e. in nofill mode).
         # -- tabs don't count for this
-        if line.start_with?(' ')
+        if line.start_with? ' '
           line.prepend("\\")    # force this initial space to appear in the output
           br
         end

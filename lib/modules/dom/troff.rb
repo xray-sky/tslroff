@@ -18,6 +18,7 @@
 
 #require_relative 'groff'
 #require_relative 'troff/tmac/an'
+require_relative '../../classes/webdriver'
 
 class Troff < TextFormatter
 
@@ -34,14 +35,17 @@ class Troff < TextFormatter
   include Tbl
   include Macros::Tbl
 
-  Delimiters = %(\002\003\005\006\007"') # unused. REVIEW necessary? useful?
+  Delimiters = %w[ \002 \003 \005 \006 \007 " ' ] # unused. REVIEW necessary? useful?
   Requests = %w[ ab ad af am as bd bp br c2 cc ce cf ch cs cu da de di ds dt ec el em eo ev ex fc fi
                  fl fp ft hc hw hy ie if ig in it lc lf lg ll ls lt mc mk na ne nf nh nm nn nr ns nx
                  os pc pi pl pm pn po ps rd rm rn rr rs rt so sp ss sv ta tc ti tl tm tr ul vs wh \" ] # REVIEW \" isn't really a request but I want to not parse its args
   #REQUESTS = instance_methods.select { |m| m.start_with? 'req_' }.map { |m| m.slice(4..-1) }
 
-  def self.requests ; Requests ; end # REVIEW smrtr?
-  def self.useGroff? ; false ; end
+  @@webdriver = nil
+
+  def self.webdriver ; @@webdriver ; end
+  def self.requests ; Requests ; end  # REVIEW smrtr?
+  def self.useGroff? ; false ; end  # REVIEW necessary? (I think no)
 
 =begin
   def self.extended(k)
@@ -61,7 +65,10 @@ class Troff < TextFormatter
     @state = { header: Block::Header.new, footer: Block::Footer.new }
     @related_info_heading = %r{SEE(?: |&nbsp;)+ALSO}
 
-    xinit_selenium
+    #xinit_selenium
+    @@webdriver ||= WebDriver.new
+    @@pixels_per_inch ||= @@webdriver.ppi
+
     xinit_ec
     xinit_nr
     xinit_in
@@ -75,33 +82,42 @@ class Troff < TextFormatter
   end
 
   def source_init
-    # call any initialization methods for .nr, .ds, etc.
-    # may be supplemented or overridden by version-specific methods
-    # REVIEW do this in a grown up way - these need ordered to succeed
-    #  - if left to random wildcard chance, may throw exceptions
+    ## call any initialization methods for .nr, .ds, etc.
+    ## may be supplemented or overridden by version-specific methods
+    ## REVIEW do this in a grown up way - these need ordered to succeed
+    ##  - if left to random wildcard chance, may throw exceptions
+    #
+    #xinit_selenium
+    #xinit_ec
+    #xinit_nr
+    #xinit_in
+    #
+    #methods.each do |m|
+    #  send(m) if m.to_s.start_with? 'init_'
+    #end
 
-    xinit_selenium
-    xinit_ec
-    xinit_nr
-    xinit_in
-
-    methods.each do |m|
-      send(m) if m.to_s.start_with? 'init_'
-    end
-
-    parse_title
+    #parse_title
   end
 
-  def to_html
+  def to_html(halt_on: nil)
     @current_block = blockproto
     @document << @current_block
     loop do
       parse(next_line)
+      return true if halt_on and instance_variable_get halt_on
     rescue StopIteration
+      # prevent double header/footer if e.g. we didn't hit halt_on condition & re-entered later
+      if halt_on and !instance_variable_get halt_on
+        warn "reached end of document without setting #{halt_on}!"
+        return false
+      end
       # TODO perform end-of-input trap macros from .em;
       # REVIEW maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
-      unescape @state[:named_string][:header], output: @state[:header]
-      @document.insert(0, @state[:header])
+      # TODO this is quite wrong if we are doing halt_on e.g. from parse_title and don't find one (e.g. unix v7 intro.0)
+      if @state[:named_string][:header]
+        unescape @state[:named_string][:header], output: @state[:header]
+        @document.insert(0, @state[:header])
+      end
       if @state[:named_string][:footer]
         unescape @state[:named_string][:footer], output: @state[:footer]
         @document << @state[:footer]
@@ -126,14 +142,14 @@ class Troff < TextFormatter
   end
 
   def next_line
-    line = @lines.tap { @register['.c'].incr }.next.chomp#.tap { |n| warn "reading new line #{n.inspect}" } # REVIEW do we ever need to perserve the trailing \n ?
-    #line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
+    line = @lines.tap { @register['.c'].incr }.next.chomp  # REVIEW do we ever need to perserve the trailing \n ?
+    #line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
 
     # Hidden newlines -- REVIEW does this need to be any more sophisticated?
     # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
     # TODO the new-line at the end of a comment cannot be concealed.
     # Doing it here means I don't have to do it everywhere we are doing local next_lines (.TS, .if, etc.)
-    # But, this will give us "bad" line numbers for warnings. I can probably live with that.
+    # But, this will give us "bad" line numbers for warnings. I can probably live with that. (REVIEW: ...will it?)
     line.chop! << next_line if @state[:escape_char] and line.end_with?(@state[:escape_char]) and line[-2] != @state[:escape_char]
 
     @line = line
@@ -162,6 +178,7 @@ class Troff < TextFormatter
     block
   end
 
+=begin
   def get_title
     @current_block = blockproto
     @document << @current_block
@@ -173,13 +190,6 @@ class Troff < TextFormatter
   #ensure
     #@lines.rewind
   end
-
-  def parse_title
-    # parse as far as the title, so we can have the odir immediately after
-    # a Manual.new, then if we want to continue (aren't just figuring out
-    # a symlink target), then just continue on.
-    get_title or warn "reached end of document without finding title!"
-    @output_directory = "man#{@manual_section.downcase}" if @manual_section
-  end
+=end
 
 end

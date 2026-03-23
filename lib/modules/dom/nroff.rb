@@ -48,7 +48,9 @@ class Nroff < TextFormatter
     parse_title
   end
 
-  def to_html
+  def to_html(halt_on: nil)
+    # this is paltry
+    return parse_title if (halt_on == '@manual_section')
     @document = to_lp
     %(<div class="body"><div id="man">#{@document.collect(&:to_html).join}</div></div>)
   end

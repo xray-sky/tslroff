@@ -12,6 +12,7 @@ require_relative 'styles/font'
 class Font
   include Immutable
 
+  #Defaultsize = 10
   Defaultsize = 12
 
   attr_reader :size

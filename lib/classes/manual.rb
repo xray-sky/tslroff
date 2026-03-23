@@ -26,12 +26,13 @@ ManualIsBlacklisted = Class.new(RuntimeError)
 class TextFormatter
   extend Forwardable
 
-  attr_reader :input_line_number, :page_title, :manual_entry, :manual_section, :output_directory
-  def_delegators :@source, :patch, :patch_line, :patch_lines
+  attr_reader :input_line_number, :page_title, :manual_entry, :manual_section
+  def_delegators :@source, :magic, :patch, :patch_line, :patch_lines
 
-  def initialize(source)
+  def initialize(source, vendor_class: nil, source_args: {})
+    @input_filename = source.file
     @input_line_number = 0
-    @source = source
+    @source ||= source
 
     @language      ||= 'en' # English
     @manual_entry  ||= ''
@@ -65,33 +66,25 @@ class TextFormatter
 
 end
 
-require_relative '../modules/dom/nroff'
+require_relative '../modules/dom/unknown'
+require_relative '../modules/dom/html'
 require_relative '../modules/dom/troff'
-#require_relative '../modules/dom/html'
-#require_relative '../modules/dom/unknown'
-
-#warn "vendor:"
-[ "#{File.dirname(__FILE__)}/../modules/platform/unix.rb", Dir.glob("#{File.dirname(__FILE__)}/../modules/platform/unix/*.rb") ].flatten.each do |i|
-#[ "#{File.dirname(__FILE__)}/../modules/platform/irix.rb" ].flatten.each do |i|
-  #warn i
-  require i
-end
+require_relative '../modules/dom/groff'
+require_relative '../modules/dom/nroff'
 
 class Manual
   extend Forwardable
 
   attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
-  attr_reader   :platform, :version, :magic,
-                #:manual_entry, :manual_section, :output_directory,
-                :language, :lines, :links
-  def_delegators :@source, :patch, :patch_line, :patch_lines, :link?, :xpath
-  def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory
+  attr_reader   :language, :lines, :links
+  def_delegators :@source, :link?, :magic, :patch, :patch_line, :patch_lines, :xpath
+  def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section
 
   def initialize(file, vendor_class: nil, source_args: {})
     @input_filename = file
     @input_line_number = 0
-    @source = Source.new(file, source_args)
-    document_class = Kernel.const_get(vendor_class ? "#{vendor_class}::#{@source.magic}" : "::#{@source.magic}")
+    @source ||= Source.new file, source_args
+    document_class = Kernel.const_get "#{vendor_class}::#{@source.magic}"
 
     #warn "#{document_class} #{@input_filename}"
     @document ||= document_class.send(:new, @source)#.tap {|x| warn x}
@@ -108,13 +101,16 @@ class Manual
     @document ||= []
     @related  ||= []
 
-    @source ||= Source.new(file)
+    #@source ||= Source.new file
     @current_block ||= Block.new
 
     #doctype_extend
 
     @lines ||= @source.lines.each
-    @document.source_init # TODO this is why I have to ||= the init. do better.
+
+    #@document.source_init # TODO this is why I have to ||= the init. do better.
+    # >>> was just parse_title: (REVIEW check vendor overrides though)
+    parse_title
   rescue Errno::ENOENT, Errno::EISDIR
     # these things should still be exceptions, if we aren't dealing with a symlink
     raise unless @symlink
@@ -123,6 +119,16 @@ class Manual
     # don't rely on anything that needs @source! (magic, parse_title, etc.)
     @lines ||= [].each
     #doctype_extend
+  end
+
+  # this is a Manual method, not (was) a Troff method.
+  # REVIEW check for others that ought to move too
+  def parse_title
+    # parse as far as the title, so we can have the odir immediately after
+    # a Manual.new, then if we want to continue (aren't just figuring out
+    # a symlink target), then just continue on.
+    to_html(halt_on: '@manual_section') #or warn "reached end of document without finding title!"
+    #@output_directory = "man#{manual_section.downcase}" if manual_section
   end
 
   def output_filename
@@ -189,3 +195,12 @@ class Manual
   end
 =end
 end
+
+Dir.glob("#{File.dirname(__FILE__)}/../modules/platform/*.rb").each do |i|
+  require i
+end
+
+Dir.glob("#{File.dirname(__FILE__)}/../modules/platform/**/*.rb").each do |i|
+  require i
+end
+

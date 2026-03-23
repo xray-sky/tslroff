@@ -38,11 +38,11 @@
 #
 
 # load enough of troff to make tabs work, for laying out hyperlinks
-require_relative '../dom/troff/request/nr'
-require_relative '../dom/troff/request/ta'
+require_relative '../dom/troff/request/registers'
+require_relative '../dom/troff/request/tabs'
 require_relative '../dom/troff/expressions'
 require_relative '../dom/troff/tabs'
-require_relative '../dom/troff/util'
+#require_relative '../dom/troff/util'
 
 class VMS
   class Help < ::Nroff
@@ -55,8 +55,8 @@ class VMS
     k.send :xinit_selenium
     k.send :xinit_nr
     k.send :init_ta
-    #k.send :req_ta, '.75i 1.5i 2.25i 3i 3.75i 4.5i 5.25i 6i'
-    k.send :req_ta, '1i 2i 3i 4i 5i 6i'
+    #k.send :ta, '.75i 1.5i 2.25i 3i 3.75i 4.5i 5.25i 6i'
+    k.send :ta, '1i 2i 3i 4i 5i 6i'
     case k.instance_variable_get '@input_filename'
     when /\.[ht]lb$/
       raise ManualIsBlacklisted, 'is packed library'
@@ -256,19 +256,11 @@ class VMS
     else hlb.tap { |h| warn "no name translation available for help library #{h.inspect}" }
     end
   end
-end
-
-module MicroVMS
-  def self.extended(k)
-    k.extend VMS
   end
 end
 
-module OpenVMS
-  def self.extended(k)
-    k.extend VMS
-  end
-end
+class MicroVMS < ::VMS ; end
+class OpenVMS < ::VMS ; end
 
 class VMSHelpLibrary
   attr_reader :name, :modules

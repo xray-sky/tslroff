@@ -24,7 +24,7 @@
 #                  (avoids some extraneous \n with .to_s on output)
 #
 
-class HTML
+class HTML < TextFormatter
   def source_init
     # might need to re-encode based on input charset; save this so that is possible
     @source_lines = @source.lines

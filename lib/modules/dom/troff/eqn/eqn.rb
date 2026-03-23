@@ -59,8 +59,8 @@
 # NOTE
 #   Be careful about side effects calling out to other methods --
 #   * unescape str vs. parse str (space adjust, breaks)
-#   * req_ft and req_ps vs. parse ".ft" and parse ".ps" (@output_indicator)
-#   * @register['.u'] vs. req_fi (blockproto)
+#   * ft and ps vs. parse ".ft" and parse ".ps" (@output_indicator)
+#   * @register['.u'] vs. fi (blockproto)
 #   * etc.
 #
 # TODO "tabs output"
@@ -126,7 +126,7 @@ class Troff
     if @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
       ## need to temporarily suppress :nofill
       fill = @register['.u'].value
-      # req_fi breaks, has block-related side effects
+      # fi breaks, has block-related side effects
       @register['.u'].value = 1
       loop do
         break if line.empty?

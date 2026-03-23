@@ -147,12 +147,12 @@ class SunOS::V4_1
 
     define_method 'TH' do |*args|
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      req_ds "]L Last change: #{args[2]}"
-      req_ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-      req_ds "]W #{args[3]}" if args[3] and !args[3].empty?
-      req_ds "]D #{args[4]}" if args[4] and !args[4].empty?
+      ds "]L Last change: #{args[2]}"
+      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].empty?
 
-      req_ds "]L Last change: #{args[2]}"
+      ds "]L Last change: #{args[2]}"
       @state[:named_string][:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @state[:named_string][']L'].empty?
 
       super(*args, heading: heading)

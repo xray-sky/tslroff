@@ -21,8 +21,8 @@
 class Plan9
 
   class Font
-    remove_const :L # name collision with "Geneva Light"
-    class L < Font::C ; end
+    #remove_const :L # name collision with "Geneva Light"
+    class L < ::Font::C ; end
   end
 
   class Troff < ::Troff

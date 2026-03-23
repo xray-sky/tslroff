@@ -54,7 +54,7 @@ class HPUX::V9_05
     end
 
     # .so with absolute path, headers in /usr/include
-    def req_so(name, breaking: nil)
+    def so(name, breaking: nil)
       osdir = @source_dir.dup
       @source_dir << '/../..' if name.start_with?('/')
       super(name, breaking: breaking)
@@ -64,13 +64,13 @@ class HPUX::V9_05
     %w[C B I].each do |a|
       define_method a do |*args|
         if args.any?
-          req_ft @state[:fonts].index(a).to_s
+          ft @state[:fonts].index(a).to_s
           parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
           #send '}N'
           send '}f'
         else
-          #req_it '1 }N'
-          req_it '1 }f'
+          #it '1 }N'
+          it '1 }f'
         end
       end
     end
@@ -82,10 +82,10 @@ class HPUX::V9_05
     end
 
     define_method 'TH' do |*args|
-      req_ds "]W #{__unesc_star('\\*(]V')}"
-      req_ds "]O #{args[2]}"
-      req_ds "]L #{args[3]}"
-      req_ds "]J #{args[4]}"
+      ds "]W #{__unesc_star('\\*(]V')}"
+      ds "]O #{args[2]}"
+      ds "]L #{args[3]}"
+      ds "]J #{args[4]}"
 
       # ]J and ]O follow the title (if given), each centered on their own line.
       # .sp .3v between, .sp 1.5v following.

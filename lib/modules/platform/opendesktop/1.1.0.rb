@@ -10,9 +10,11 @@
 # √ binary garbage in several pages?? - they're packed AND compressed.
 #
 
+=begin
+# TODO this is no good
 class Source
   def magic
-    case File.basename(@filename)
+    case File.basename(@file)
     when 'acct.ADM.z', 'accton.ADM.z', 'acctsh.ADM.z', 'addx.ADM.z', 'adfmt.ADM.z', 'auditd.ADM.z',
          'authck.ADM.z', 'backup.ADM.z', 'badtrk.ADM.z', 'chroot.ADM.z',
          'custom.ADM.z', 'ff.ADM.z', 'fsck.ADM.z', 'fsdb.ADM.z', 'fstyp.ADM.z',
@@ -48,8 +50,9 @@ class Source
     end
   end
 end
+=end
 
-class OpenDesktop:V1_1_0
+class OpenDesktop::V1_1_0
   class Manual < ::Manual
     # these are the packed+compressed pages
     ZEXTRA = %w[

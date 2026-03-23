@@ -66,7 +66,7 @@ loop do
   file = files.next
   ifile = File.basename(file)
   #src = Manual.new(file, os, ver)
-  src = Manual.new(file, vendor_class: UNIX::V6)
+  src = Manual.new(file, vendor_class: UNIX::V7)
 
   # TODO defining this here, after just a Manual.new, means I can't override odir/manual_entry
   #       and that I'm married to parse_title in source_init. I want to delay this until after

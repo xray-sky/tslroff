@@ -23,24 +23,25 @@ class BeOS::R4_5
   class Manual < ::Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.dirname(file)
-      when /French/ then @source = Source.new(file, encoding: Encoding::ISO_8859_1, source_args: source_args)
+      when /French/ then @source = Source.new file, source_args.merge({encoding: Encoding::ISO_8859_1})
       # TODO this is way wrong
       # but at least it causes Nokogiri to bail and give us a more or less blank page
       # (that is a valid link), and isn't full of absolute garbage. I can't find
       # a working encoding, not here, not on classic Mac, and not on BeOS itself,
       # and I wonder if it was mojibaked before it went on the disc
-      when /Japan/  then @source = Source.new(file, encoding: Encoding::EUC_JP, source_args: source_args)
+      when /Japan/  then @source = Source.new file, source_args.merge({encoding: Encoding::EUC_JP})
       end
 
       case File.basename(file)
-      when 'doc'      then @source = Source.new(file, magic: 'Nroff', source_args: source_args)
-      when 'rcs.html' then @source = Source.new(file, magic: 'HTML', source_args: source_args)
+      when 'doc'      then @source = Source.new file, source_args.merge({magic: 'Nroff'})
+      when 'rcs.html' then @source = Source.new file, source_args.merge({magic: 'HTML'})
       end
 
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
+  class Nroff < ::BeOS::Nroff ; end
   class HTML < ::BeOS::HTML
 
     def source_init
@@ -62,8 +63,8 @@ class BeOS::R4_5
         # looks like these are the only two external links appearing in the metrowerks manual
         @source.patch(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1', global: true)
         @source.patch(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1', global: true)
-        @content_start = @source.lines.index { |l| l.match? %r{<a name="Top">} })
-        @content_end = @source.lines.index { |l| l.match? %r{<a name="Bottom">} })
+        @content_start = @source.lines.index { |l| l.match? %r{<a name="Top">} }
+        @content_end = @source.lines.index { |l| l.match? %r{<a name="Bottom">} }
         define_singleton_method :to_html, @source.method(:to_html_metrowerks)
       else
         @language = case @source.dir
@@ -72,7 +73,6 @@ class BeOS::R4_5
                     when /Japan/  then 'ja'
                     end
         @source.patch(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;', global: true)
-        end
       end
 
       super

@@ -382,11 +382,11 @@ class SunOS::V5_10
     end
 
     define_method 'TH' do |*args|
-      req_ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
-      req_ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
-      req_ds "]L Last change: #{args[2]}"
-      req_ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-      req_ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+      ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
+      ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
+      ds "]L Last change: #{args[2]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       heading = '\\*(]H'
       heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @state[:named_string][']D'].empty?

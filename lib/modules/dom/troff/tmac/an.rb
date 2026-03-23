@@ -355,7 +355,7 @@ class Troff
     # I want the section inferred from the filename to be a default
     # in case we don't get or can't parse the one from .TH
     @manual_section = args[1] if args[1] and !args[1].strip.empty?   # REVIEW ...do I? - I'm doing it that way in nroff. but this also means I can't override in platform/version
-    @output_directory = "man#{@manual_section.downcase}" if @manual_section
+    #@output_directory = "man#{@manual_section.downcase}" if @manual_section
     send 'DT'
     @state[:named_string][:header] = heading || "#{args[0]}\\^(\\^#{args[1]}\\^)"
     @current_block = blockproto

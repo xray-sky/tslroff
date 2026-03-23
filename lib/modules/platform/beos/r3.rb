@@ -20,7 +20,9 @@ class BeOS::R3
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when '97-08-04_adamation.html'
-        @source = Source.new(file, magic: 'HTML', source_args: source_args)
+        @source = Source.new file, source_args.merge({magic: 'HTML', encoding: Encoding::ISO_8859_1})
+      when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html', 'BeOS_Software.html'
+        @source = Source.new file, source_args.merge({encoding: Encoding::ISO_8859_1})
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
@@ -31,6 +33,7 @@ class BeOS::R3
     def initialize(source)
       # press releases (and others?) have ^M line endings which are vanishing in nokogiri,
       # causing whitespace collapse
+      super(source)
       if source.dir.include? 'PressInfo'
         source.lines.collect! { |l| l.split("\r").join("\n") }
       end
@@ -38,11 +41,6 @@ class BeOS::R3
 
     def source_init
       file = @source.file
-      case file
-      when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html',
-           'BeOS_Software.html', '97-08-04_adamation.html'
-        @source.lines.each { |l| l.force_encoding Encoding::ISO_8859_1 }
-      end
 
       super
 

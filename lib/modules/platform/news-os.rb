@@ -11,6 +11,7 @@
 #
 
 class NEWS_os
+  class Nroff < ::Nroff ; end
   class Troff < ::Troff
 
     def initialize(source)

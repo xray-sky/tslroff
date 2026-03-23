@@ -69,3 +69,4 @@ class HPUX::V6_20
     end
 
   end
+end

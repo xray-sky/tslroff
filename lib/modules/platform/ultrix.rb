@@ -13,9 +13,9 @@
 class Ultrix
 
   class Font # Triumvirate is essentially Helvetica
-    class TR < Font::H ; end
-    class TB < Font::HB ; end
-    class TI < Font::HI ; end
+    class TR < ::Font::H ; end
+    class TB < ::Font::HB ; end
+    class TI < ::Font::HI ; end
   end
 
   class Troff < ::Troff

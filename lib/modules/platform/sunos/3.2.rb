@@ -58,18 +58,10 @@ class SunOS::V3_2
 
     def initialize(source)
       case source.file
-      when 'Makefile'
-        raise ManualIsBlacklisted, 'is makefile'
+      when 'Makefile'            then raise ManualIsBlacklisted, 'is makefile'
+      when 'configuration.file5' then raise ManualIsBlacklisted, 'is nonsense'  # SYS4 only
       end
       super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'index.3'   then @manual_entry = '_index'
-      when 'default.1' then @manual_entry = '_default'
-      end
-      super
     end
 
     def init_ds

@@ -55,11 +55,9 @@ class AOS
     end
 
     # .so with absolute path, headers in /usr/include
-    def so(name, breaking: nil)
-      osdir = @source_dir.dup
-      @source_dir << '/..'
-      super(name, breaking: breaking)
-      @source_dir = osdir
+    def so(name, breaking: nil, basedir: nil)
+      basedir = "#{@source.dir}#{"/.." if name.start_with?('/')}"
+      super(name, breaking: breaking, basedir: basedir)
     end
 
     # tmac.an.new
@@ -97,7 +95,7 @@ class AOS
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"
       @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
-      super(heading: heading)
+      super(*args, heading: heading)
     end
 
     # tmac.an.new

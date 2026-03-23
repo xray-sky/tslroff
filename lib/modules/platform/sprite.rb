@@ -134,7 +134,7 @@ class Sprite
       ds "]H #{args[0]}"
       ds "]S #{SPRITE_MANUAL_SECTION_NAMES[args[1]]}"
       ds ']D \\*(]S'
-      ds "]L #{File.mtime(@source.file).strftime('%B %d, %Y')}"
+      ds "]L #{File.mtime(@source.path).strftime('%B %d, %Y')}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
     end
 

@@ -42,7 +42,7 @@ class NEWS_os::V5_0_1
       super
       @named_strings.merge!(
         {
-          ']W' => File.mtime(@source.file).strftime('%B %d, %Y'),
+          ']W' => File.mtime(@source.path).strftime('%B %d, %Y'),
         }
       )
     end

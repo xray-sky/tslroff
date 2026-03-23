@@ -54,7 +54,6 @@ class DYNIX_ptx
           footer: "\\*(]W",
           ']D' => "UNIX Programmer's Manual", # default set by .TH
           ']W' => '7th Edition', # default set by .TH
-          #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
           'V)' => ''
         }
       )
@@ -64,14 +63,6 @@ class DYNIX_ptx
       super
       @character_translations['*'] = "\e(**"
     end
-
-    # .so with absolute path, headers in /usr/include
-    #def so(name, breaking: nil)
-    #  osdir = @source_dir.dup
-    #  @source_dir << '/..'
-    #  super(name, breaking: breaking)
-    #  @source_dir = osdir
-    #end
 
     define_method 'TH' do |*args|
       rm '}C' if @named_strings['V)'].empty?

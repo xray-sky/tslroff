@@ -56,7 +56,7 @@ class Interactive
           'Nn' => 'INTERACTIVE UNIX System 80386',
           ']D' => '', # blanked for troff in .TH
           ']L' => '', # conditionally defined in .TH
-          ']U' => File.mtime(@source.file).strftime("%B %d, %Y"),
+          ']U' => File.mtime(@source.path).strftime("%B %d, %Y"),
           ']Y' => '\\*U',
           ']Z' => 'Version \\|1.0'
         }

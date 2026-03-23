@@ -106,12 +106,13 @@ class SunOS::V4_0
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}"}
     MANUAL_SECTION_NAMES.default = 'MISC. REFERENCE MANUAL PAGES'
 
-    def source_init
+    def initialize(source)
+      super source
       case @source.file
-      when 'default.1' then @manual_entry = '_default'
-      when 'index.3'   then @manual_entry = '_index'
+      when 'default.1'        then @manual_entry = '_default'
+      when 'index.3'          then @manual_entry = '_index'
+      when 'disablenumlock.1' then @source.patch_line(1, /dis/, 'en')  # exists in 4.0.2; tries to .so itself
       end
-      super
     end
 
     def init_ds

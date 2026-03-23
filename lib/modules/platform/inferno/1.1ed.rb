@@ -17,7 +17,7 @@ class Inferno::FirstEd_1
   class HTML < ::Inferno::HTML
 
     def initialize(source)
-      @output_directory ||= '' #+ k.instance_variable_get('@source_dir')) # wrong
+      @output_directory ||= '' #+ @source.dir # wrong
       @manual_entry ||= source.file.sub(/\.htm$/, '')
       super(source)
     end

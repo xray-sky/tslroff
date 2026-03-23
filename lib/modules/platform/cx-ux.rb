@@ -43,7 +43,7 @@ class CX_UX
         {
           footer:"\\*(]W",
           #'Tm' => '&trade;',
-          ']W' => File.mtime(@source.file).strftime('%B %d, %Y')
+          ']W' => File.mtime(@source.path).strftime('%B %d, %Y')
         }
       )
     end

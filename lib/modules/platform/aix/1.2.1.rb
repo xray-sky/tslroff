@@ -65,9 +65,9 @@ class AIX::V1_2_1
     end
 
     def retarget_symlink # looks like these are all same-directory links, though via absolute path for some reason
-      #link_dir = Pathname.new @source_dir
+      #link_dir = Pathname.new @source.dir
       target_dir = Pathname.new File.dirname(@symlink).sub(%r(^/usr/man), '..')
-      real_target = File.realpath("#{@source_dir}/#{target_dir}/#{File.basename(@symlink)}")
+      real_target = File.realpath("#{@source.dir}/#{target_dir}/#{File.basename(@symlink)}")
 
       # instantiating target to get any local transforms on @manual_entry (which is based on input file name)
       target_entry = Manual.new(real_target, @platform, @version)

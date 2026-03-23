@@ -33,6 +33,9 @@
 #     tmac/sml has .ds C \&\\f\\*(!]\" (where is .ds !] ??)
 #     + related information -- detect ' ', translate ' ' to '_' for link
 #   restore(1m) [402]: are we bug compatible now with formatting through .CI (too many quotes: 'blocks' should be C but is I, check if troff does the same)
+#   advertise(1): what happened in .TH??
+#   getsid(2): is in section "(2)"
+#   pstat(2): no line wrap in Name?
 #
 
 class HPUX::V10_20
@@ -40,24 +43,34 @@ class HPUX::V10_20
   class Manual < ::Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
-      when 'x_open_800.5' then @source = Source.new(file, magic: 'Nroff', source_args: source_args)
+      when 'x_open_800.5' then source_args.merge!({magic: 'Nroff'})
+      when 'pam_unix.5',
+           'diag0.7', 'framebuf.7', 'kmem.7', 'mem.7', 'mt.7',
+           'null.7', 'routing.7', 'strlog.7', 'termio.7', 'termios.7',
+           'glossary.9', 'intro.9'
+        source_args.merge!({magic: 'Troff'})
       end
+
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
   class Nroff < ::HPUX::Nroff
     def initialize(source)
+      case source.file
+      when 'x_open_800.5'
+        # is nroff output (with ^H overstriking), despite starting with .\" and .nf
+        source.lines.delete_at(3887)
+        source.lines.delete_at(3886)
+        source.lines.delete_at(3885)
+        source.lines.delete_at(1)
+        source.lines.delete_at(0)
+        # lines per page is not consistent? deleting these extra lines doesn't help
+        @lines_per_page = nil
+        @manual_entry = 'x_open_800'
+        @manual_section = '5'
+      end
       super(source)
-
-      # is nroff output (with ^H overstriking), despite starting with .\" and .nf
-      # lines per page is not consistent? deleting these extra lines doesn't help
-      #k.instance_variable_get('@source').lines.delete_at(3887)
-      #k.instance_variable_get('@source').lines.delete_at(3886)
-      #k.instance_variable_get('@source').lines.delete_at(3885)
-      #k.instance_variable_get('@source').lines.delete_at(1)
-      #k.instance_variable_get('@source').lines.delete_at(0)
-      @lines_per_page = nil if source.file == 'x_open_800.5'
     end
   end
 
@@ -68,8 +81,6 @@ class HPUX::V10_20
       when 'dcecp_cdsalias.1m'
         # REVIEW until we can figure out how to make ourselves resilient to .rn'ing the same macro twice
         source.patch_lines(8..10, /^/, '.\\"')
-      when 'default.4'
-        @manual_entry = '_default'
       end
 
       super(source)
@@ -103,9 +114,9 @@ class HPUX::V10_20
           footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
           'Tm' => '&trade;',
           ')H' => '', # .TH sets this to \&. Some pages define it.
-          #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
+          #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
           # REVIEW is this what actually goes in the footer in the printed manual?
-          ']V' => File.mtime(@source.file).strftime("%B %d, %Y")
+          ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
         }
       )
     end
@@ -116,19 +127,16 @@ class HPUX::V10_20
     end
 
     # .so with absolute path, headers in /usr/include
-    # REVIEW interaction with @source_dir (@source.dir?) after refactors
-    def so(name, breaking: nil)
-      osdir = @source.dir.dup
-      @source.dir << '/../..' if name.start_with?('/')
+    def so(name, breaking: nil, basedir: nil)
+      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
       if %w[sml rsml osfhead.rsml].include? File.basename(name)
         ds ']L Open Software Foundation'
-        super(name, breaking: breaking) do |lines|
+        super(name, breaking: breaking, basedir: basedir) do |lines|
           lines.reject! { |l| l.start_with? '...\\"' }
         end
       else
-        super(name, breaking: breaking)
+        super(name, breaking: breaking, basedir: basedir)
       end
-      @source.dir = osdir
     end
 
     # undocumented, not in tmac.an

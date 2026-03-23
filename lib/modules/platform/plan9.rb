@@ -43,8 +43,7 @@ class Plan9
         {
           'Tm' => '&trade;',
           ']D' => 'Plan 9',
-          #']L' => '',
-          ']W' => File.mtime(@source.file).strftime("%B %d, %Y"),
+          ']W' => File.mtime(@source.path).strftime("%B %d, %Y"),
           footer: "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
         }
       )

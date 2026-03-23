@@ -19,7 +19,7 @@ class Coherent
     def initialize(source)
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\(\S*?\))\s.+?\s\k<manentry>$}
-      @output_directory ||= File.basename(k.instance_variable_get '@source_dir')
+      @output_directory ||= @source.dir
       @related_info_heading ||= '***** See Also *****'
 
       case source.file

@@ -28,7 +28,7 @@ class Ardent_SysV
           footer: "\\*(]W",
           'Dd' => 'Dor&eacute;',
           'Tm' => '&trade;',
-          ']W' => File.mtime(@source.file).strftime('%B %d, %Y')
+          ']W' => File.mtime(@source.path).strftime('%B %d, %Y')
         }
       )
     end

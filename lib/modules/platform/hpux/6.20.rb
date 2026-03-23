@@ -36,7 +36,7 @@ class HPUX::V6_20
           footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W",
           'Tm' => '&trade;',
           # REVIEW is this what actually goes in the footer in the printed manual?
-          ']V' => File.mtime(@source.file).strftime("%B %d, %Y")
+          ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
         }
       )
     end

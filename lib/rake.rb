@@ -1,6 +1,6 @@
 # rake.rb
 #
-# Rakefile utility methods
+# tslroff Rakefile utility methods
 #
 # TODO
 # √ logfiles
@@ -9,26 +9,19 @@
 #   symlinks
 #   indexing
 #   comments
+#   leverage Pathname class and/or String.pathmap method?
+#
 
 require 'erb'
 require 'date'
 require 'nokogiri'
 
+# demand-redirect $stderr to build log
+#
+# TODO reliance on logging via warn/stderr is preventing us from exploiting rake -m
+#
+
 $ttyerr = $stderr.dup
-
-class Rake::NameSpace
-  def namespaces
-    tasks.map do |t|
-      depth = @scope.to_a.count
-      h = t.name.split(':')
-      h[depth] if h.length > depth + 1
-    end.compact.sort.uniq
-  end
-
-  def scope_name
-    @scope.to_a.reverse.join(':')
-  end
-end
 
 def openBuildLogTask odir
   log = "build_#{Time.now.strftime('%Y%m%d_%H%M%S')}.log"
@@ -38,6 +31,26 @@ end
 def closeBuildLogTask
   $stderr.reopen($ttyerr)
 end
+
+###
+### Namespace and Task generators
+###
+
+# Automatically generate namespaces and corresponding "build all" tasks
+# (typically, vendor & vendor->os hierarchy)
+#
+# Creates:
+#  - a namespace with `name`
+#  - a corresponding task, `name` with prerequisites:
+#     + `name`:all
+#     + on each enclosed namespace:
+#        * a corresponding task, `name`, with prerequisites `name`:all
+#  - the task, `name`:all
+#
+# TODO this defines non-top-level namespace tasks twice, once in the
+#      yield and then again in n.namespaces.each. it works, but is ugly
+#      (and explains e.g. x.clear_comments)
+#
 
 def collectionNamespace name, &block
   nsn = namespace name do |n|
@@ -54,58 +67,121 @@ def collectionNamespace name, &block
   task name => "#{nsn.scope_name}:all"
 end
 
+# Automatically generate a namespace and build task for a specific
+# collection of manuals (typically, vendor->os->version)
+#
+# Creates:
+#  - a namespace with `name`
+#  - a corresponding task, `name`:all which causes
+#     + all manuals specified by combining `idir` and `sources` to be built into `odir`
+#        * imperatively: always builds all manuals (subject to `limit`, see below), every time
+#     + all stderr captured in a build log file.
+#     + build statistics to be sent to stdout
+#
+# the generated "all" task can be sent an optional pattern that will limit the build
+# to just those filenames (minus parent directories) matching (regex) the pattern.
+# If the build is limited in this way, stderr is not redirected to the build log file.
+#
+# extra build tasks (e.g. copying static assets) can be generated for this collection of manuals
+# by passing a block which receives as arguments idir, odir, and the :all task object.
+#
+# TODO optional ruby profiling of build job
+#
+
 def manualNamespace name, sources: nil, idir: nil, odir: nil, vendor_class: nil, &block
   unless odir
     #warn "No output directory given for #{name} (skipped)"
     return nil
   end
-  idir ||= odir.downcase
+  srcdir = "#{Srcroot}/#{idir || odir.downcase}"
+  pubdir = "#{Pubroot}/#{odir}"
 
   namespace name do |n|
+    scope = n.scope_name
     t = task :all, [:limit] do |_t, args|
-      puts "Making #{n.scope_name}#{" (limit: #{args[:limit]})" if args[:limit]}"
+      puts "Making #{scope}#{" (limit: #{args[:limit]})" if args[:limit]}"
       start_time = Time.now
-      directory("#{Docroot}/#{odir}").invoke
-      openBuildLogTask "#{Docroot}/#{odir}" unless args[:limit]
-      pagecount = collectionTask sources, idir, odir, limit: args[:limit], vendor_class: vendor_class
+      directory(pubdir).invoke
+      openBuildLogTask pubdir unless args[:limit]
+      pagecount = collectionTask sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class
       closeBuildLogTask unless args[:limit]
-      puts "       #{n.scope_name} => #{pagecount} pages complete in #{(Time.now - start_time)}s"
+      puts "       #{scope} => #{pagecount} pages complete in #{(Time.now - start_time)}s"
       puts "       #{Troff.webdriver.cache_stats}" if Troff.webdriver
       Troff.webdriver&.reset_cache_stats
     end
-    yield(task: t, idir: "#{Srcroot}/#{idir}", odir: "#{Docroot}/#{odir}") if block_given?
+    yield(task: t, idir: srcdir, odir: pubdir) if block_given?
   end
 end
 
-def collectionTask sources, srcdir, outdir, limit: nil, vendor_class: nil, source_args: {}
-  pagecount = 0
-  sources.each do |src|
-    fl = FileList["#{Srcroot}/#{srcdir}/#{src}"]
-    fl.exclude { |f| !File.lstat(f).directory? and !File.basename(f).match?(limit) } if limit
-    fl.each do |s|
-      # may have contained directory wildcards
-      if File.lstat(s).directory?
-        dfl = FileList["#{s}/*"]
-        dfl.exclude { |f| !File.basename(f).match?(limit) } if limit
-        dfl.each do |f|
-          # TODO symlinks - checked first to avoid file? from following them
-          warn "symlink #{f} (skipped)" and next if File.symlink?(f)
-          pagecount += 1
-          manualTask(f, outdir, vendor_class: vendor_class, source_args: source_args) and next if File.file?(f)
-        end
-      else
-        # TODO symlinks - checked first to avoid file? from following them
-        warn "symlink #{s} (skipped)" and next if File.symlink?(s)
-        pagecount += 1
-        manualTask(s, outdir, vendor_class: vendor_class, source_args: source_args) if File.file?(s)
-      end
+# Generate an :assets task, which deploys static file assets into the pub tree
+# Maintains directory structure from `sources`, optionally flattening some number
+# of directories out of the hierarchy.
+#
+#   e.g. source = "test/foo/graphics/*.gif" with cut_dirs: 2
+#          => would deploy to odir/graphics/*.gif
+#
+# Extra file processing can be performed by passing postprocess: a method
+# which accepts the destination file name as an argument
+#
+# Unlike the collectionTask and manualTask, this task only copies missing
+# or updated assets.
+#
+
+def assetsTask sources, idir, odir, cut_dirs: 0, postprocess: nil
+  task :assets do
+    Dir.glob sources.map { |g| "**/#{g}" }, base: idir do |asset|
+      adir = File.dirname(asset).split('/')
+      adir = "#{odir}/#{adir[(cut_dirs)..-1].join('/')}"
+      afile = "#{adir}/#{File.basename asset}"
+      directory(adir).invoke
+      file afile => "#{idir}/#{asset}" do |t|
+        cp t.source, t.name
+        chmod 0o644, t.name
+        send postprocess, t.name if postprocess
+      end.invoke
     end
+  end
+end
+
+###
+### Build methods
+###
+
+# Build a collection of manuals
+#
+# Iterate over list of sources (likely including wildcards and directories to process)
+# to find all manual files (excluding those not matching `limit` pattern, if provided).
+# All manuals in the collection (subject to limit) are built, always.
+#
+# Returns:
+#  - number of pages built
+#
+# Logs cache stats to stderr/build log on completion.
+#
+# TODO something useful re: symlinks
+# REVIEW is this working correctly on directory structures more than one level deep?
+#
+
+def collectionTask sources, srcdir, pubdir, limit: nil, vendor_class: nil, source_args: {}
+  pagecount = 0
+  # need to cover both file and directory (deep) wildcards
+  fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/**/*" ] }.flatten)
+  fl.each do |src|
+    next if File.directory?(src)
+    next if limit and !File.basename(src).match?(limit)
+    # TODO symlinks - checked first to avoid file? from following them
+    warn "symlink #{src} (skipped)" and next if File.symlink?(src)
+    pagecount += 1
+    manualTask(src, pubdir, vendor_class: vendor_class, source_args: source_args)
   end
   warn Troff.webdriver.cache_stats if Troff.webdriver
   pagecount
 end
 
-def manualTask source, basedir, vendor_class: nil, source_args: {}
+# Build an individual manual entry
+#
+
+def manualTask source, pubdir, vendor_class: nil, source_args: {}
   srcfile = File.basename(source)
   k = Kernel.const_defined?("#{vendor_class}::Manual") ? Kernel.const_get("#{vendor_class}::Manual") : ::Manual
   man = k.new source, vendor_class: vendor_class, source_args: source_args
@@ -115,11 +191,15 @@ def manualTask source, basedir, vendor_class: nil, source_args: {}
   section = man.manual_section
   # can't find section? output to parent dir
   # TODO busted as hell for HTML, Aegis help, etc.
-  odir = (section and !section.empty?) ? "#{Docroot}/#{basedir}/man#{section.downcase}" : "#{Docroot}/#{basedir}"
+  #      need to maintain some extra structure, not force man*/, etc.
+  odir = (section and !section.empty?) ? "#{pubdir}/man#{section.downcase}" : "#{pubdir}"
   related = man.magic == :HTML ? [] : Nokogiri::HTML(page).search('a[@href]')  # TODO better
 
   directory(odir).invoke
   taskcontext = binding
+  # prevent these from masking the apache file index (TODO not necessary once we are building our own indices)
+  title = '_index' if title == 'index'
+  title = '_default' if title == 'default'
   File.open("#{odir}/#{title}.html", File::CREAT|File::TRUNC|File::WRONLY, 0o644) do |f|
     f.write ERB.new(Template, trim_mode: '-').result(taskcontext)
   end
@@ -134,23 +214,21 @@ rescue => e
   warn "#{srcfile}: unhandled exception #{e.message}\n#{e.backtrace.join("\n")}"
 end
 
-def assetsTask sources, idir, odir, cut_dirs: 0, postprocess: nil
-  task :assets do
-    Dir.glob sources.map { |g| "**/#{g}" }, base: idir do |asset|
-      adir = File.dirname(asset).split('/')
-      adir = "#{odir}/#{adir[(cut_dirs)..-1].join('/')}"
-      afile = "#{adir}/#{File.basename asset}"
-      directory(adir).invoke
-      file afile => "#{idir}/#{asset}" do |t|
-        cp t.source, t.name
-        chmod 0o644, t.name
-        send postprocess, t.name if postprocess
-        touch t.name  # macbinary decode resets mtime, defeats rake "freshness"
-      end.invoke
-    end
-  end
-end
+###
+### assets task postprocessing methods
+###
+
+# Decode MacBinary format files.
+#
+# Necessary for the BeOS R3 manual.
+#
 
 def processMacBinary f
-  system %(macbinary probe "#{f}" && macbinary decode -o tmp "#{f}" && mv tmp "#{f}")
+  tmpfile = "#{File.dirname f}/zztmp"
+  # macbinary decode resets mtime, defeats rake "freshness"
+  system %(macbinary probe "#{f}" \
+           && macbinary decode -o "#{tmpfile}" "#{f}" \
+           && touch "#{tmpfile}" \
+           && rm "#{f}" \
+           && mv "#{tmpfile}" "#{f}")
 end

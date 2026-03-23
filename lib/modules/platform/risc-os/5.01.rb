@@ -40,16 +40,16 @@ class RISC_os::V5_01
 
     # writes link into new directory; otherwise, same as Manual::retarget_symlink
     def retarget_symlink_prom
-      link_dir = Pathname.new @source_dir
+      link_dir = Pathname.new @source.dir
       target_dir = Pathname.new File.dirname(@symlink)
-      real_target = File.realpath("#{@source_dir}/#{@input_filename}")
+      real_target = File.realpath("#{link_dir}/#{@input_filename}")
 
       if (link_dir + target_dir) == link_dir and File.file?(real_target)
         target_entry = Manual.new(real_target, @platform, @version)
         return { link: "../man1m/#{@manual_entry}.html",
                  target: "../man1prom/#{target_entry.manual_entry}.html" }
       end
-      warn "encountered unsupported link type, #{@source_dir}/#{@input_filename} => #{@symlink}"
+      warn "encountered unsupported link type, #{link_dir}/#{@input_filename} => #{@symlink}"
     end
 
   end

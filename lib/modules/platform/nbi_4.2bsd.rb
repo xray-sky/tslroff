@@ -39,14 +39,6 @@ class NBI_4_2BSD
       @character_translations['*'] = "\e(**"
     end
 
-    # .so with absolute path, headers in /usr/include
-    #def req_so(name, breaking: nil)
-    #  osdir = @source_dir.dup
-    #  @source_dir << '/..'
-    #  super(name, breaking: breaking)
-    #  @source_dir = osdir
-    #end
-
     define_method 'TH' do |*args|
       ds "]L #{args[2]}"
       #ds "]W #{args[3]}" # set in .TH but always overridden by .}F
@@ -55,7 +47,7 @@ class NBI_4_2BSD
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
       @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
-      super(heading: heading)
+      super(*args, heading: heading)
     end
 
     # tmac.an.new

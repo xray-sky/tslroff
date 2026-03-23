@@ -139,9 +139,9 @@ class Manual
   # Try to establish some simplistic default behavior for
   # re-targeting symlinks which appear in the input
   def retarget_symlink
-    link_dir = Pathname.new @source_dir
+    link_dir = Pathname.new @source.dir
     target_dir = Pathname.new File.dirname(@symlink)
-    real_target = File.realpath("#{@source_dir}/#{@input_filename}")
+    real_target = File.realpath("#{link_dir}/#{@input_filename}")
 
     # classes of links
     # do:     links to files with different names in same directory
@@ -164,36 +164,9 @@ class Manual
     # do not: other platform specific oddities, apparently broken links, etc.
     #         ./sys5.3/usr/catman/u_man/man5/xterm.5 -> ../../../../../usr/X11/man/cat7/xterm.7
     #   ./sys/help/protection/protected_subsystems.hlp -> /protected_subs.hlp
-    warn "encountered unsupported link type, #{@source_dir}/#{@input_filename} => #{@symlink}"
+    warn "encountered unsupported link type, #{link_dir}/#{@input_filename} => #{@symlink}"
   end
 
-=begin
-  def doctype_extend
-    begin
-      require_relative "../modules/platform/#{@platform.downcase}.rb"
-      platform_module = Kernel.const_get(@platform.gsub(/[^0-9A-Za-z]/, '_').sub(/^([0-9])/, 'X\1').to_sym) # 386bsd is not a valid Constant REVIEW smrtr? .prepend("OS_")?
-    rescue LoadError
-      platform_module = nil
-    end
-
-    begin
-      require_relative "../modules/platform/#{@platform.downcase}/#{@version}.rb"
-      version_module = Kernel.const_get("#{@platform}_#{@version}".gsub(/[^0-9A-Za-z]/, '_').to_sym)
-    rescue LoadError
-      version_module = nil
-    end
-
-    # separate the require from the extend, to give us a chance to keep the platform/version
-    # overrides in order when the automatic document type detection fails
-
-    @magic = @source.magic # is this used anywhere other than below? - YES (in tslroff.rb) REVIEW is that useful to keep
-    require_relative "../modules/dom/#{@magic.downcase}"
-
-    extend Kernel.const_get(@magic)
-    extend platform_module if platform_module
-    extend version_module  if version_module
-  end
-=end
 end
 
 Dir.glob("#{File.dirname(__FILE__)}/../modules/platform/*.rb").each do |i|

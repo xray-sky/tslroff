@@ -32,7 +32,7 @@ class HPUX::V5_20
           # uses )H but this is defined directly in }F so I don't see how it could ever not be HP Co.
           footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W",
           ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-          ']W' => File.mtime(@source.file).strftime("%B %d, %Y")
+          ']W' => File.mtime(@source.path).strftime("%B %d, %Y")
         }
       )
     end

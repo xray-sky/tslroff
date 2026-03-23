@@ -67,7 +67,7 @@ class Atari_SysV
           'rp' => 'reference platform',
           ']D' => '', # explicitly blanked by .TH before conditionally re-defining
           ']L' => '', # explicitly blanked by .TH before conditionally re-defining
-          ']W' => "(last mod. #{File.mtime(@source.file).strftime('%B %d, %Y')})"
+          ']W' => "(last mod. #{File.mtime(@source.path).strftime('%B %d, %Y')})"
         }
       )
     end

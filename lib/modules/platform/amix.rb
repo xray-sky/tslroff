@@ -129,11 +129,9 @@ class AMIX
     end
 
     # .so with absolute path, headers in /usr/include
-    def so(name, breaking: nil)
-      osdir = @source_dir.dup
-      @source_dir << '/../..' if name.start_with?('/')
-      super(name, breaking: breaking)
-      @source_dir = osdir
+    def so(name, breaking: nil, basedir: nil)
+      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+      super(name, breaking: breaking, basedir: basedir)
     end
 
     define_method 'TH' do |*args|

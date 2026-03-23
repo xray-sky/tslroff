@@ -9,15 +9,7 @@
 # TODO finish making the macro package selectable
 #
 
-#%w[. request escape eqn tbl].each do |t|
-#%w[. request escape eqn tbl pic].each do |t|
-#  Dir.glob("#{__dir__}/troff/#{t}/*.rb").each do |i|
-#    require_relative i
-#  end
-#end
-
 #require_relative 'groff'
-#require_relative 'troff/tmac/an'
 require_relative '../../classes/webdriver'
 
 class Troff < TextFormatter
@@ -82,6 +74,10 @@ class Troff < TextFormatter
     #methods.each do |m|
     #  send(m) if m.to_s.start_with? 'init_'
     #end
+  end
+
+  def warn(msg)
+    super("#{@so_chain} [#{input_line_number}]: #{msg}")
   end
 
   def to_html(halt_on: nil)

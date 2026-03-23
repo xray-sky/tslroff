@@ -6,7 +6,7 @@
 # Just a container to hold input lines & determine where to hand off
 #
 
-require_relative 'file/magic.rb'
+require_relative '../../ext/file/magic.rb'
 
 class Source
   attr_reader :path, :lines, :magic, :dir, :file
@@ -71,7 +71,7 @@ class Source
     when 'gzip'     then %(|gzip -dc "#{@path}")
     when 'oldpack'  then %(|gzip -dc "#{@path}")
     when 'pack'     then %(|gzip -dc "#{@path}")
-    # OS X 10.6 gzip does it all, even if zlib won't.
+    # OS X 10.6 gzip does it all, even if zlib or OS X gzip won't.
     when 'lzh_sco'  then %(|gzip_10.6 -dc "#{@path}")
     when 'tar'      then raise ArgumentError, "#{@path}: is tape archive (skipped)"
     else @path

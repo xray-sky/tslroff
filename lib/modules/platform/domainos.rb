@@ -45,9 +45,9 @@ class Aegis
 
   module Utils
     def retarget_symlink
-      #link_dir = Pathname.new @source_dir
+      #link_dir = Pathname.new @source.dir
       #target_dir = Pathname.new File.dirname(@symlink)
-      #real_target = File.realpath("#{@source_dir}/#{@input_filename}")
+      #real_target = File.realpath("#{@source.dir}/#{@input_filename}")
 
       case @symlink
       # mann/, mana/, ../usr/softbench/man/, ../usr/X11/man/
@@ -87,7 +87,7 @@ class Aegis
 =begin
     def self.extended(k)
       k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-      systype = Regexp.last_match[1] if k.instance_variable_get('@source_dir').match(%r{(bsd|sys5)})
+      systype = Regexp.last_match[1] if k.instance_variable_get('@source.dir').match(%r{(bsd|sys5)})
       k.instance_variable_set '@systype', systype
       k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '') + (systype ? ".#{systype}" : '')
       # spoilsport: "dde(1)(Domain/OS)" => SR10.4 ./bsd4.3/usr/man/cat1/dde.1

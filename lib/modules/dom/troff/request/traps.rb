@@ -62,22 +62,23 @@
 #
 
 class Troff
-  def so(argstr = '', breaking: nil)
+  def so(argstr = '', breaking: nil, basedir: nil)
     return nil if argstr.empty?
     name = argstr.split.first
 
     # make this relative by trying to find file working backward
-    # NOTE this is relative _to the man page directory_ (@source_dir)
+    # NOTE this is relative _to the man page directory_ (@source.dir)
     # REVIEW will we ever see a non-absolute path here, that we could maybe use directly?
     file = File.basename name
+    basedir ||= @source.dir
     searchdir = ''
     path_components = File.dirname(name).split('/').reverse
-    until File.readable?("#{@source.dir}/#{searchdir}#{file}") do
+    until File.readable?("#{basedir}/#{searchdir}#{file}") do
       return(nil).tap { warn ".so can't read #{name}" } if path_components.empty?
       searchdir = "#{path_components.shift}/#{searchdir}"
     end
 
-    localfile = File.realpath("#{@source.dir}/#{searchdir}#{file}")
+    localfile = File.realpath("#{basedir}/#{searchdir}#{file}")
 
     # REVIEW this is a bit suspect; makes rewrites look ugly
     # might benefit from a full Manual.new & subsequent merge? maybe.
@@ -85,7 +86,9 @@ class Troff
     olines = @lines
     ofile = @input_filename.dup
     opos = @register['.c'].dup
-    #@input_filename << " [#{opos}] => .so #{file}" # TODO make this work properly across class refactoring (finish separating input filename / output filename, class concern, etc.)
+    ochain = @so_chain
+    @so_chain ||= ''
+    @so_chain << " [#{opos}] => .so #{file}"  # TODO still awkward, at least functional for now
     @register['.c'] = Register.new(0, 1, :ro => true)
     newsrc = File.read(localfile).lines
     newsrc = yield newsrc if block_given? # give a chance to perform processing on the sourced file
@@ -102,6 +105,7 @@ class Troff
     @lines = olines
     @input_filename = ofile
     @register['.c'] = opos
+    @so_chain = ochain
   end
 
   def da(argstr = '', breaking: nil)

@@ -28,9 +28,9 @@ class HPUX::V8_05
           footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
           'Tm' => '&trade;',
           ')H' => '', # .TH sets this to \&. Some pages define it.
-          #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
+          #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
           # REVIEW is this what actually goes in the footer in the printed manual?
-          ']V' => File.mtime(@source.file).strftime("%B %d, %Y")
+          ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
         }
       )
     end

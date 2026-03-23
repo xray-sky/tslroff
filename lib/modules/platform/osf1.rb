@@ -70,9 +70,6 @@ class OSF1
       super
       @named_strings.merge!(
         {
-          #'Tm' => '&trade;',
-          #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
-          #:footer => "\\fH\\*(]W\\fP"
           footer: ''
         }
       )

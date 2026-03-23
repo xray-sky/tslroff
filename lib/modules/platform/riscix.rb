@@ -23,7 +23,6 @@ class RISCiX
       @named_strings.merge!(
         {
           ']D' => 'UNIX Programmer\'s Manual',
-          #']W' => File.mtime(@source.filename).strftime("%B %d, %Y"),
           ']W' => '7th Edition',
           footer: "\\*(]W"
         }

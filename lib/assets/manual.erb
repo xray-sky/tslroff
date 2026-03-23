@@ -3,15 +3,17 @@
   menu class 'here' could include more information about where in the Online Manual, specifically
   fix overflow on related articles menu
 -%>
-<html lang="<%= src.language %>">
+<html lang="<%= man.language %>">
 <head>
-  <title><%= src.page_title %></title>
+  <title><%= man.page_title %></title>
   <link rel="stylesheet" type="text/css" media="screen" href="/typewritten.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="/Manual/tslroff.css" />
   <link rel="stylesheet" type="text/css" media="print"  href="/tsl-print.css" />
   <meta charset="UTF-8">
   <meta name="generator" content="https://github.com/xray-sky/tslroff">
-  <meta name="sourcefile" content="<%= file %>">
+  <meta name="generated" content="<%= Time.now.strftime('%Y%m%d %H:%M:%S') %>">
+  <meta name="source_file" content="<%= srcfile %>">
+  <meta name="source_format" content="<%= man.magic %>">
 </head>
 <body>
 <div id="left">
@@ -32,7 +34,7 @@
 
 		</div>
 
-<%= ERB.new(File.read("#{assets}/menu_related.erb"), 0, nil, '_menu').result(loopcontext) if related.any? %>
+<%= ERB.new(File.read("#{Assets}/menu_related.erb"), 0, nil, '_menu').result(taskcontext) if related.any? %>
 
 	</div>
 </div>

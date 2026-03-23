@@ -11,6 +11,15 @@
 #
 
 class SunOS::V5_6
+  class Manual < ::Manual
+    def initialize file, vendor_class: nil, source_args: {}
+      case file
+      when 'xil.macs' then raise ManualIsBlacklisted, 'is XIL manual macro package'
+      end
+      super file, vendor_class: vendor_class, source_args: source_args
+    end
+  end
+
   class Troff < ::SunOS::Troff
 
     HARDCOPY_TITLES = {
@@ -324,7 +333,7 @@ class SunOS::V5_6
       # ]W moved to footer for 5.6, but I already had it there.
       @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
-      super(heading: heading)
+      super(*args, heading: heading)
     end
 
     define_method 'TZ' do |*args|

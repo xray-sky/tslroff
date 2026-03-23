@@ -29,7 +29,7 @@ class HPUX::V5_00
           # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
           footer: "Hewlett-Packard\\0\\0\\(em\\0\\0\\*(]W",
           ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-          ']W' => "last mod. #{File.mtime(@source.file).strftime("%B %d, %Y")}"
+          ']W' => "last mod. #{File.mtime(@source.path).strftime("%B %d, %Y")}"
         }
       )
     end

@@ -41,9 +41,9 @@ class HPUX::V9_05
           footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
           'Tm' => '&trade;',
           ')H' => '', # .TH sets this to \&. Some pages define it.
-          #']V' => "Formatted:\\0\\0#{File.mtime(@source.filename).strftime("%B %d, %Y")}",
+          #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
           # REVIEW is this what actually goes in the footer in the printed manual?
-          ']V' => File.mtime(@source.file).strftime("%B %d, %Y")
+          ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
         }
       )
     end
@@ -54,11 +54,9 @@ class HPUX::V9_05
     end
 
     # .so with absolute path, headers in /usr/include
-    def so(name, breaking: nil)
-      osdir = @source_dir.dup
-      @source_dir << '/../..' if name.start_with?('/')
-      super(name, breaking: breaking)
-      @source_dir = osdir
+    def so(name, breaking: nil, basedir: nil)
+      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+      super(name, breaking: breaking, basedir: basedir)
     end
 
     %w[C B I].each do |a|

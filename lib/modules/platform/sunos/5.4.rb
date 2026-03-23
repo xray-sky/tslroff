@@ -245,7 +245,7 @@ class SunOS::V5_4
       heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
       @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
-      super(heading: heading)
+      super(*args, heading: heading)
     end
 
     define_method 'TZ' do |*args|

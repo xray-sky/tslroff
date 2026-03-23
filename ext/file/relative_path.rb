@@ -7,6 +7,8 @@
 # Get a relative path from one file to another
 # from and to must be absolute, or relative the same base directory.
 #
+# REVIEW seemingly unused? 20260323
+#
 
 class File
   def self.relative_path(from, to)

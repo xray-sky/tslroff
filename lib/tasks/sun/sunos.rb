@@ -18,6 +18,7 @@ collectionNamespace 'SunOS' do
     sources: %w[man/man[1-8]]
   manualNamespace '1.4U',
     vendor_class: SunOS::V1_4U,
+    idir: 'sun/sunos/1.4U',
     odir: 'Sun/SunOS/1.4U',
     sources: %w[man/man[1-8]]
 
@@ -53,7 +54,7 @@ collectionNamespace 'SunOS' do
   manualNamespace '3.2/SYS4',
     vendor_class: SunOS::V3_2,
     idir: 'sun/sunos/3.2',
-    odir: 'Sun/SunOS/3.2/SPARC',
+    odir: 'Sun/SunOS/3.2/sun4',
     sources: %w[SYS4-3.2/man/man[1-8]]
   manualNamespace '3.4',
     vendor_class: SunOS::V3_4,
@@ -220,7 +221,7 @@ collectionNamespace 'SunOS' do
   manualNamespace '5.10',
     vendor_class: SunOS::V5_10,
     idir: 'sun/sunos/5.10',
-    #odir: 'Sun/Solaris/10'
+    #odir: 'Sun/SunOS/5.10'
     sources: %w[
       share/man/man[1-9]*
       share/man/sman[1-9]*/*.[1-9]*

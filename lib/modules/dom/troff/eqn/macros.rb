@@ -20,28 +20,25 @@ class Troff
   module Macros
     module Eqn
 
-  define_method 'EN' do |*args|
-    warn ".EN received #{args.inspect} (why?)" unless args.empty?
-    raise EndOfEqn
-  end
+      define_method 'EN' do |*args|
+        warn ".EN received #{args.inspect} (why?)" unless args.empty?
+        raise EndOfEqn
+      end
 
-  define_method 'EQ' do |*args|
-    warn ".EQ received #{args.inspect} as margin equation number" unless args.empty?
+      define_method 'EQ' do |*args|
+        warn ".EQ received #{args.inspect} as margin equation number" unless args.empty?
 
-    @state[:eqn_gfont] ||= '2' # appears the default font is italic.
-    @state[:eqn_gsize] ||= Font.defaultsize
-    @current_block = Block::Null.new
+        @state[:eqn_gfont] ||= '2' # appears the default font is italic.
+        @state[:eqn_gsize] ||= Font.defaultsize
+        #@current_block = Block::Null.new
 
-    loop do
-      parse_eqn(next_line, inline: false)
+        loop do
+          parse_eqn(next_line, inline: false)
+        end
+      rescue EndOfEqn => e
+        true
+      end
+
     end
-  rescue EndOfEqn => e
-    eqntext = @current_block.text.collect(&:text).collect(&:strip).join.tap{|x| warn "have eqntext #{x.inspect}"}
-    eqn_setup
-    gen_eqn eqn_parse_tree(eqntext).tap{|x| warn "have parse tree #{x.inspect}" }
-    eqn_restore
   end
-
-end
-end
 end

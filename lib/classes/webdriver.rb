@@ -26,7 +26,7 @@ require 'selenium-webdriver'
 
 class WebDriver
 
-  attr_reader :ppi
+  attr_reader :ppi, :browser
 
   def initialize(driver: :chrome, options: nil)
     case driver

@@ -20,7 +20,7 @@ class Source
     @lines = if block_given?
                yield(file, record_separator: record_separator, encoding: encoding)
              else
-               IO.readlines(stream_decompress, record_separator, external_encoding: encoding)
+               IO.readlines(stream_decompress, record_separator, external_encoding: encoding, internal_encoding: Encoding::UTF_8)
              end
 
     @magic = magic || infer_magic

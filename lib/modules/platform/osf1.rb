@@ -38,24 +38,22 @@ class OSF1
       when /SJIS/
         source_args.merge!({encoding: Encoding::Shift_JIS})
         @language ||= 'ja'
-        @related_info_heading ||= %r{関連項目}u
       end
       super file, vendor_class: vendor_class, source_args: source_args
     end
   end
 
+  class Nroff < ::Nroff ; end
   class Troff < ::Troff
 
     # OSF1/Digital UNIX/Tru64 custom fonts
     # Gothic/Geneva and Triumvirate are all essentially Helvetica
-    class Font
-      class TR < ::Font::H ; end
-      class TB < ::Font::HB ; end
-      class TI < ::Font::HI ; end
-      class G  < ::Font::H ; end
-      class GB < ::Font::HB ; end
-      class GL < ::Font::HI ; end
-    end
+    class Font::TR < ::Font::H ; end
+    class Font::TB < ::Font::HB ; end
+    class Font::TI < ::Font::HI ; end
+    class Font::G  < ::Font::H ; end
+    class Font::GB < ::Font::HB ; end
+    class Font::GL < ::Font::HI ; end
 
     alias :LP :P
 
@@ -63,6 +61,7 @@ class OSF1
       @manual_entry ||= source.file.sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
+      @related_info_heading ||= %r{関連項目}u if source.dir.include?('SJIS')
       super(source)
     end
 

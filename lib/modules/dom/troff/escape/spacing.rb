@@ -28,15 +28,14 @@ class Troff
   def esc_o(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
-    warn "\\o trying to overstrike #{req_str.inspect}"
     pile = Block::Bare.new(text: Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup))
     until req_str.empty?
       chr = req_str.slice!(0, get_char(req_str).length)
       unescape chr, output: pile
-      pile << Text.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) unless @current_block.terminal_text_obj.empty?
+      pile << Text.new(font: pile.terminal_font.dup, style: pile.terminal_text_style.dup) unless pile.terminal_text_obj.empty?
     end
     pile.text.pop # nuke the last empty Text obj
-    Overstrike.new(chars: pile.text)#.tap { |n| warn "inserted overstrike #{n.inspect}" }
+    Overstrike.new(chars: pile.text, font: pile.text.first.font.dup, style: pile.text.first.style.dup)#.tap { |n| warn "inserted overstrike #{n.inspect}" }
   end
 
 #   \w - width function

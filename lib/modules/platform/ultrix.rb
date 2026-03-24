@@ -11,14 +11,12 @@
 #
 
 class Ultrix
-
-  class Font # Triumvirate is essentially Helvetica
-    class TR < ::Font::H ; end
-    class TB < ::Font::HB ; end
-    class TI < ::Font::HI ; end
-  end
-
   class Troff < ::Troff
+
+    # Triumvirate is essentially Helvetica
+    class Font::TR < ::Font::H ; end
+    class Font::TB < ::Font::HB ; end
+    class Font::TI < ::Font::HI ; end
 
     alias :LP :P
 

@@ -24,6 +24,7 @@
 # remember, remember https://github.com/bbatsov/ruby-style-guide
 #
 # TODOs
+#   metadata: add sourcefile mtime
 #   unbundleds - REVIEW input collections which may be mixed
 #   cope with pages named 'index' (e.g. DG-UX 5.4R3.00 index(3C))
 #     - possibly by providing top level all-sections index (permuted or otherwise?)

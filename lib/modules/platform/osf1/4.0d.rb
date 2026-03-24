@@ -12,6 +12,7 @@
 
 class Digital_UNIX::V4_0d
   class Manual < ::Digital_UNIX::Manual ; end
+  class Nroff < ::Digital_UNIX::Nroff ; end
   class Troff < ::Digital_UNIX::Troff
 
     def source_init

@@ -14,6 +14,7 @@
 # TODO
 #   file modification dates
 #   5.20 S300 nroff manuals mixed in; need some nroff methods for that to succeed - title, section detect.. anything else?
+#   several pages call .TE without corresponding .TS - causes (apparently harmless?) stack traces to pepper the build logs
 #
 
 class HPUX::V5_20

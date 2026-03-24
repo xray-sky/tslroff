@@ -55,11 +55,11 @@ class Troff
     end
 
     if line.start_with? @state[:cc], @state[:c2]
-      line.slice!(0)
+      cc = line.slice!(0)
       line.lstrip! # one of the few places tabs equally valid
       request line.slice(0, 2).rstrip,
               (line.slice(2..-1) || '').sub(/\s*(?<!#{resc})#{resc}".*$/, '').lstrip, # nuke inline comments
-              breaking: (line.start_with?(@state[:c2])? false : true)
+              breaking: (cc == @state[:c2] ? false : true)
     else
       # A blank text line causes a break and outputs a blank line
       # exactly like '.sp 1' §5.3 - also in nofill mode

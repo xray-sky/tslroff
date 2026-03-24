@@ -86,7 +86,7 @@ class Troff
     olines = @lines
     ofile = @input_filename.dup
     opos = @register['.c'].dup
-    ochain = @so_chain
+    ochain = @so_chain.dup
     @so_chain ||= ''
     @so_chain << " [#{opos}] => .so #{file}"  # TODO still awkward, at least functional for now
     @register['.c'] = Register.new(0, 1, :ro => true)

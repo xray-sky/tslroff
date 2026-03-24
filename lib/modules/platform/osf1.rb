@@ -27,9 +27,23 @@
 #   cdoc(1) [3.0] has 'See Also'
 #   CA.pl(1s) no read perms on output??? (because it is named .pl? looks like it)
 #   hier(7) links Functions:‍symlink‍(2) -- lack of whitespace; other pages WITH whitespace still linking this way
+# √ lp(1) [1.0/mips] infinite loop => stack overflow due to double inclusion of sml/rsml macros
+# √   - the 1.0 macros do not guard against this like the 3.x macros do
 #
 
 class OSF1
+  class Manual < ::Manual
+    def initialize file, vendor_class: nil, source_args: {}
+      case File.dirname file
+      when /SJIS/
+        source_args.merge!({encoding: Encoding::Shift_JIS})
+        @language ||= 'ja'
+        @related_info_heading ||= %r{関連項目}u
+      end
+      super file, vendor_class: vendor_class, source_args: source_args
+    end
+  end
+
   class Troff < ::Troff
 
     # OSF1/Digital UNIX/Tru64 custom fonts
@@ -48,22 +62,8 @@ class OSF1
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      case source.dir
-      when /SJIS/
-        @language ||= 'ja'
-        @source.lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
-        @related_info_heading ||= %r{関連項目}u
-      end
-      @related_info_heading ||= %r{(?:SEE(?: |&nbsp;)+ALSO|RELATED(?: |&nbsp;)INFORMATION)}
+      @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
       super(source)
-    end
-
-    def source_init
-      case @source.file
-      when /^default\./ then @manual_entry = '_default'
-      when /^index\./   then @manual_entry = '_index'
-      end
-      super
     end
 
     def init_ds
@@ -110,8 +110,12 @@ class OSF1
     # (it does: ~10x improvement in runtime, ~2x improvement in log size)
     def so(name, breaking: nil)
       name = "../../../..#{name}" if name.start_with?('/')
-      if %w[sml rsml].include? File.basename(name)
-        super(name, breaking: breaking) { |lines| lines.reject! { |l| l.start_with? '...\\"' } }
+      file = File.basename(name)
+      if %w[sml rsml].include? file
+        # guard against double-inclusion. e.g. lp(1) :: OSF/1 1.0
+        # This feature is present in e.g. >3.0 sml/rsml macro files, but not in earlier OSF/1.
+        super(name, breaking: breaking) { |lines| lines.reject! { |l| l.start_with? '...\\"' } } unless @state[file]
+        @state[file] = true
       else
         super(name, breaking: breaking)
       end

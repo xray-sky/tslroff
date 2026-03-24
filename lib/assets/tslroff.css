@@ -236,11 +236,12 @@
 }
 
 #man .clash {
+	color: red;
 	display: inline-block;
 	text-align: center;
 	line-height: 0;
-	color: red;
-	width: 0.6em; /* keeps selenium from measuring width: 100% owing to <br />s */
+	text-indent: 0; /* don't inherit this from the enclosing block */
+	max-width: 1em; /* keeps selenium from measuring width: 100% owing to <br />s */
 }
 
 #man .ul {

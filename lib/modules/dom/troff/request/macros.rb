@@ -188,9 +188,11 @@ class Troff
       ofile = @input_filename.dup
       opos = @register['.c'].dup
       odol = @register['.$'].dup
+      ochain = @so_chain.dup
       @register['.$'] = Register.new(args.count, nil, :ro => true)
       @register['.c'] = Register.new(0, 1, :ro => true)
-      #@input_filename << " [#{opos}] => #{__callee__}" # TODO make this work properly across class refactoring (finish separating input filename / output filename, class concern, etc.)
+      @so_chain ||= ''
+      @so_chain << " [#{opos}] => #{__callee__}"  # TODO still awkward, at least functional for now
       @lines = macro.each
 
       loop do
@@ -205,7 +207,7 @@ class Troff
       end
 
       @lines = olines
-      @input_filename = ofile
+      @so_chain = ochain
       @register['.$'] = odol
       @register['.c'] = opos
 

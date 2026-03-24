@@ -75,6 +75,7 @@ class Troff
   end
 
   define_method 'if' do |argstr = '', breaking: nil, quiet: false|
+    rcc  = Regexp.quote("#{@state[:cc]}#{@state[:c2]}")
     resc = Regexp.quote(@escape_character)
     test = argstr.slice!(0, get_char(argstr).length)
     predicate = if test == '!'
@@ -124,7 +125,8 @@ class Troff
                 end
 
     # warn is too chatty with .}S conditionals coming through here
-    quiet or warn "rejecting condition#{predicate ? ' ' : ' !'}#{condition.inspect}" unless condition == predicate or test == 'n'
+    activated = condition == predicate
+    quiet or warn "rejecting condition#{predicate ? ' ' : ' !'}#{condition.inspect}" unless activated or test == 'n'
 
     # TODO if we .TS inside .if \{ \} ,the .TE\} won't happen in the right order (.TS tries to parse .TE with arg \})
     #      we get an exception and things don't reset until after the next .if -- although the output looks ok.
@@ -134,15 +136,15 @@ class Troff
     argstr.strip!
     if argstr.sub!(/^#{resc}{\s*/, '')
       loop do
-        warn "parsing tbl in block .if -- check correct block end results" if argstr.match?(/^[.']\s*TS/) and condition == predicate
-        parse(argstr) if condition == predicate
+        warn "parsing tbl in block .if -- check correct block end results" if argstr.match?(/^[#{rcc}]\s*TS/) and activated
+        parse(argstr) if activated
         argstr = next_line
         break if argstr.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
-      end #until argstr.sub!(/#{resc}}$/, '') somehow this never happens; looks like argstr outside of loop context isn't updating
+      end
     end
-    parse(argstr) if condition == predicate
+    parse(argstr) if activated
 
     # .if needs to return its evaluated condition, so .ie can work
-    condition == predicate
+    activated
   end
 end

@@ -42,7 +42,7 @@ class Troff < TextFormatter
     @source = source
     @register = {}
     @state = { header: Block::Header.new, footer: Block::Footer.new }
-    @related_info_heading = %r{SEE(?: |&nbsp;)+ALSO}
+    @related_info_heading ||= %r{SEE(?: |&nbsp;)+ALSO}
 
     #xinit_selenium
     @@webdriver ||= WebDriver.new
@@ -77,7 +77,7 @@ class Troff < TextFormatter
   end
 
   def warn(msg)
-    super("#{@so_chain} [#{input_line_number}]: #{msg}")
+    super("#{"#{@so_chain} [#{input_line_number}]: " if @so_chain}#{msg}")
   end
 
   def to_html(halt_on: nil)

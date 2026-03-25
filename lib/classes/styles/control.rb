@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+#
+
 # TODO ugh avoid
 class String
   alias_method :to_html, :to_s

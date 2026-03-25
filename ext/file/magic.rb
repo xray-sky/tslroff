@@ -4,15 +4,12 @@
 # Copyright 2014 Typewritten Software. All rights reserved.
 #
 #
-# Get the magic number of the input file
+# TODO do something productive with a symlink
+# i.e. generate equivalent output link
 #
-
 
 # zlib can't deal with old school UNIX compression. just gzip.
 #require "zlib"
-
-# TODO do something productive with a symlink
-# i.e. generate equivalent output link
 
 FileIsEmptyError = Class.new(RuntimeError)
 FileIsLinkError  = Class.new(RuntimeError)
@@ -22,7 +19,7 @@ class File
     #raise FileIsLinkError, self.readlink(file) if self.symlink?(file)
 
     case IO.read(file, 2)
-    when nil         then raise FileIsEmptyError
+    when nil        then raise FileIsEmptyError
     # this is any file that starts with "NE" - no good for nroff e.g. 'NETSTAT(1)'
     # probably going to have to special-case A/UX 3.0.1 AutoLogin.4.Z in this event.
     # fortunately, haven't run into any other tar files

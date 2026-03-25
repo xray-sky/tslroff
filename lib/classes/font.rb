@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+#
 # Created by R. Stricklin <bear@typewritten.org> on 10/11/17.
 # Copyright 2017 Typewritten Software. All rights reserved.
-#
 #
 # Font class
 #
@@ -12,12 +13,12 @@ require_relative 'styles/font'
 class Font
   include Immutable
 
-  #Defaultsize = 10
-  Defaultsize = 12
+  #FONT_DEFAULT_SIZE = 10
+  FONT_DEFAULT_SIZE = 12
 
   attr_reader :size
 
-  def initialize(size: Defaultsize)
+  def initialize(size: FONT_DEFAULT_SIZE)
     @size = size
   end
 
@@ -51,8 +52,12 @@ class Font
     style != other.style
   end
 
+  def defaultsize?
+    @size == FONT_DEFAULT_SIZE
+  end
+
   def self.defaultsize
-    Defaultsize
+    FONT_DEFAULT_SIZE
   end
 
   alias_method :family, :face
@@ -60,7 +65,7 @@ class Font
   private
 
   def css_styles
-    styles = "#{css_style}#{@size == Defaultsize ? '' : "font-size:#{@size}pt;"}"
+    styles = "#{css_style}#{defaultsize? ? '' : "font-size:#{@size}pt;"}"
     styles.empty? ? nil : styles
   end
 

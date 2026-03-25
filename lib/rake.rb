@@ -11,6 +11,8 @@
 #   comments
 #   leverage Pathname class and/or String.pathmap method?
 #
+# frozen_string_literal: true
+#
 
 require 'erb'
 require 'date'
@@ -23,12 +25,12 @@ require 'nokogiri'
 
 $ttyerr = $stderr.dup
 
-def openBuildLogTask odir
+def open_build_log_task(odir)
   log = "build_#{Time.now.strftime('%Y%m%d_%H%M%S')}.log"
   $stderr.reopen("#{odir}/#{log}", 'w', flags: File::CREAT)
 end
 
-def closeBuildLogTask
+def close_build_log_task
   $stderr.reopen($ttyerr)
 end
 
@@ -52,10 +54,10 @@ end
 #      (and explains e.g. x.clear_comments)
 #
 
-def collectionNamespace name, &block
+def collection_namespace(name, &block)
   nsn = namespace name do |n|
     yield if block_given?
-    t = task :all => []
+    t = task all: []
     n.namespaces.each do |ns|
       x = task ns => "#{n.scope_name}:#{ns}:all"
       x.clear_comments
@@ -88,13 +90,13 @@ end
 # TODO optional ruby profiling of build job
 #
 
-def manualNamespace name, sources: nil, idir: nil, odir: nil, vendor_class: nil, &block
+def manual_namespace(name, sources: nil, idir: nil, odir: nil, vendor_class: nil, &block)
   unless odir
     #warn "No output directory given for #{name} (skipped)"
     return nil
   end
-  srcdir = "#{Srcroot}/#{idir || odir.downcase}"
-  pubdir = "#{Pubroot}/#{odir}"
+  srcdir = "#{SRCROOT}/#{idir || odir.downcase}"
+  pubdir = "#{PUBROOT}/#{odir}"
 
   namespace name do |n|
     scope = n.scope_name
@@ -102,10 +104,10 @@ def manualNamespace name, sources: nil, idir: nil, odir: nil, vendor_class: nil,
       puts "Making #{scope}#{" (limit: #{args[:limit]})" if args[:limit]}"
       start_time = Time.now
       directory(pubdir).invoke
-      openBuildLogTask pubdir unless args[:limit]
-      pagecount = collectionTask sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class
-      closeBuildLogTask unless args[:limit]
-      puts "       #{scope} => #{pagecount} pages complete in #{(Time.now - start_time)}s"
+      open_build_log_task pubdir unless args[:limit]
+      pagecount = collection_task sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class
+      close_build_log_task unless args[:limit]
+      puts "       #{scope} => #{pagecount} pages complete in #{Time.now - start_time}s"
       puts "       #{Troff.webdriver.cache_stats}" if Troff.webdriver
       Troff.webdriver&.reset_cache_stats
     end
@@ -123,15 +125,15 @@ end
 # Extra file processing can be performed by passing postprocess: a method
 # which accepts the destination file name as an argument
 #
-# Unlike the collectionTask and manualTask, this task only copies missing
+# Unlike the collection_task and manual_task, this task only copies missing
 # or updated assets.
 #
 
-def assetsTask sources, idir, odir, cut_dirs: 0, postprocess: nil
+def assets_task(sources, idir, odir, cut_dirs: 0, postprocess: nil)
   task :assets do
     Dir.glob sources.map { |g| "**/#{g}" }, base: idir do |asset|
       adir = File.dirname(asset).split('/')
-      adir = "#{odir}/#{adir[(cut_dirs)..-1].join('/')}"
+      adir = "#{odir}/#{adir[cut_dirs..-1].join('/')}"
       afile = "#{adir}/#{File.basename asset}"
       directory(adir).invoke
       file afile => "#{idir}/#{asset}" do |t|
@@ -162,7 +164,7 @@ end
 # REVIEW is this working correctly on directory structures more than one level deep?
 #
 
-def collectionTask sources, srcdir, pubdir, limit: nil, vendor_class: nil, source_args: {}
+def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, source_args: {})
   pagecount = 0
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
@@ -173,7 +175,7 @@ def collectionTask sources, srcdir, pubdir, limit: nil, vendor_class: nil, sourc
     warn "symlink #{src} (skipped)" and next if File.symlink?(src)
     puts "<== #{src}" if limit
     pagecount += 1
-    manualTask(src, pubdir, vendor_class: vendor_class, source_args: source_args)
+    manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args)
   end
   warn Troff.webdriver.cache_stats if Troff.webdriver
   pagecount
@@ -182,12 +184,12 @@ end
 # Build an individual manual entry
 #
 
-def manualTask source, pubdir, vendor_class: nil, source_args: {}
+def manual_task(source, pubdir, vendor_class: nil, source_args: {})
   srcfile = File.basename(source)
   k = Kernel.const_defined?("#{vendor_class}::Manual") ? Kernel.const_get("#{vendor_class}::Manual") : ::Manual
   man = k.new source, vendor_class: vendor_class, source_args: source_args
   page = man.to_html
-  title = man.manual_entry || srcfile.tap { |x| "falling back to src filename #{srcfile.inspect} (no title)" }
+  title = man.manual_entry || srcfile.tap { |x| warn "falling back to src filename #{x.inspect} (no title)" }
   title = srcfile and warn "falling back to src filename #{srcfile.inspect} (title empty)" if title.empty?
   section = man.manual_section
   # can't find section? output to parent dir
@@ -195,22 +197,19 @@ def manualTask source, pubdir, vendor_class: nil, source_args: {}
   #      need to maintain some extra structure, not force man*/, etc.
   #odir = (section and !section.empty?) ? "#{pubdir}/man#{section.downcase}" : "#{pubdir}"
   odir = "#{pubdir}/#{man.output_directory}"
-  related = man.magic == :HTML ? [] : Nokogiri::HTML(page).search('a[@href]')  # TODO better
+  related = man.magic == :HTML ? [] : Nokogiri::HTML(page).search('a[@href]') # TODO better
 
   directory(odir).invoke
   taskcontext = binding
   # prevent these from masking the apache file index (TODO not necessary once we are building our own indices)
   title = '_index'   if title == 'index'   and man.magic != :HTML
   title = '_default' if title == 'default' and man.magic != :HTML
-  File.open("#{odir}/#{title}.html", File::CREAT|File::TRUNC|File::WRONLY, 0o644) do |f|
-    f.write ERB.new(Template, trim_mode: '-').result(taskcontext)
+  File.open("#{odir}/#{title}.html", File::CREAT | File::TRUNC | File::WRONLY, 0o644) do |f|
+    f.write ERB.new(TEMPLATE, trim_mode: '-').result(taskcontext)
   end
-
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"
-rescue FileIsEmptyError, IOError, SystemCallError => e
-  warn "#{srcfile}: #{e.message}"
-rescue StopIteration
+rescue StopIteration, FileIsEmptyError, IOError, SystemCallError => e
   warn "#{srcfile}: #{e.message}"
 rescue => e
   warn "#{srcfile}: unhandled exception #{e.message}\n#{e.backtrace.join("\n")}"
@@ -225,7 +224,7 @@ end
 # Necessary for the BeOS R3 manual.
 #
 
-def processMacBinary f
+def process_macbinary(f)
   tmpfile = "#{File.dirname f}/zztmp"
   # macbinary decode resets mtime, defeats rake "freshness"
   system %(macbinary probe "#{f}" \

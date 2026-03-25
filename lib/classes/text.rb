@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # Created by R. Stricklin <bear@typewritten.org> on 10/11/17.
 # Copyright 2017 Typewritten Software. All rights reserved.
 #
@@ -12,12 +14,22 @@ require_relative '../modules/immutable'
 
 class Text
   include Immutable
-  extend Forwardable
-  def_delegators :@text, :length, :empty?, :to_s#, :match, :match?, :sub, :sub!, :gsub, :gsub!
 
   attr_reader :text, :font, :style
 
-  def initialize(arg = Hash.new)
+  extend Forwardable
+  def_delegators :@text, :length, :empty?, :to_s
+
+  ENTITIES = {
+    '``' => '&ldquo;',
+    "''" => '&rdquo;',
+    '`' => '&lsquo;',
+    "'" => '&rsquo;',
+    '<' => '&lt;',
+    '>' => '&gt;'
+  }.freeze
+
+  def initialize(arg = {})
     self.font  = (arg[:font]  or Font::R.new)
     self.style = (arg[:style] or Style.new({}, object_exception_class))
     self.text  = (arg[:text]  or String.new)
@@ -73,12 +85,12 @@ class Text
     tab = @tab_width ? %(<span class="tab" style="width:#{@tab_width.round(3)};">) : ''
 
     if text.is_a?(RoffControl) or text.is_a?(Block::Inline)
-      ent = text.to_html#.tap {|n| warn "Control to html #{self.inspect}" }
+      ent = text.to_html
     else
       return '' if length.zero?
 
       # Multiple inter-word space characters found in the input are retained. §4.1
-      ent = text.dup#.tap {|n| warn "non-control #{self.inspect}" }
+      ent = text.dup
       while ent.match(/  /)
         ent.sub!(/  /, '&nbsp; ')
       end
@@ -86,20 +98,11 @@ class Text
       # troff treats ` and ' like typesetter's quotes (§2.1)
       # make sure < and > are printable while we're at it
       # TODO output complying &amp; without messing up any entities we already inserted
-      ent.gsub!(/<|>|`+|'+/) do |c|
-        case c
-        when '``' then '&ldquo;'
-        when "''" then '&rdquo;'
-        when '`'  then '&lsquo;'
-        when "'"  then '&rsquo;'
-        when '<'  then '&lt;'
-        when '>'  then '&gt;'
-        end
-      end
+      ent.gsub!(/<|>|`+|'+/, ENTITIES)
 
       # font face & size - TODO this should be delegated to the font class
       f = font.style
-      tags << (f[:tag] ? "<#{f[:tag]}#{f[:class] ? " class=#{f[:class]}" : ''}#{f[:styles] ? %( style="#{f[:styles]}") : ''}>" : '')
+      tags << %(<#{f[:tag]}#{f[:class] ? " class=#{f[:class]}" : ''}#{f[:styles] ? %( style="#{f[:styles]}") : ''}>) if f[:tag]
 
       if @style[:css].any?
         tags << %(<span#{@style}>) # TODO @styles.to_s incompatible with below probably
@@ -130,6 +133,10 @@ class Text
   alias style= immutable_setter
 
   private
+
+  def tag(style)
+    return '' unless style[:tag]
+  end
 
   # override this from Immutable so that our subclasses
   # don't all try to dispatch their own unique exceptions

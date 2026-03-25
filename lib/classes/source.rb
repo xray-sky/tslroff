@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # Created by R. Stricklin <bear@typewritten.org> on 05/10/14.
 # Copyright 2014 Typewritten Software. All rights reserved.
 #
@@ -6,7 +8,7 @@
 # Just a container to hold input lines & determine where to hand off
 #
 
-require_relative '../../ext/file/magic.rb'
+require_relative '../../ext/file/magic'
 
 class Source
   attr_reader :path, :lines, :magic, :dir, :file
@@ -30,20 +32,22 @@ class Source
     !@target.nil?
   end
 
-  # in-place edit - replaces re with repl on numbered line only, (uses gsub if global: true)
+  ###
+  ### in-place source edit
+  ###
 
+  # replaces re with repl on numbered line only, (uses gsub if global: true)
   def patch_line(l, re, repl, global: false)
-    @lines[l-1].send((global ? :gsub! : :sub!), re, repl) # 0-indexed array => 1-indexed lines
+    # 0-indexed array => 1-indexed lines
+    @lines[l - 1].send((global ? :gsub! : :sub!), re, repl)
   end
 
-  # in-place edit - replaces re with repl on each numbered line, (uses gsub if global: true)
-
+  # replaces re with repl on each numbered line, (uses gsub if global: true)
   def patch_lines(lines, re, repl, global: false)
     lines.each { |l| patch_line l, re, repl, global: global }
   end
 
-  # in-place edit - replaces re with repl, full file (uses gsub if global: true)
-
+  #replaces re with repl, full file (uses gsub if global: true)
   def patch(re, repl, global: false)
     @lines.each { |l| l.send((global ? :gsub! : :sub!), re, repl) }
   end
@@ -66,14 +70,12 @@ class Source
 
   def stream_decompress
     case File.magic @path
-    # OS X gzip does it all, even if zlib won't.
-    when 'compress' then %(|gzip -dc "#{@path}")
-    when 'gzip'     then %(|gzip -dc "#{@path}")
-    when 'oldpack'  then %(|gzip -dc "#{@path}")
-    when 'pack'     then %(|gzip -dc "#{@path}")
+    when 'tar'     then raise ArgumentError, "#{@path}: is tape archive (skipped)"
     # OS X 10.6 gzip does it all, even if zlib or OS X gzip won't.
-    when 'lzh_sco'  then %(|gzip_10.6 -dc "#{@path}")
-    when 'tar'      then raise ArgumentError, "#{@path}: is tape archive (skipped)"
+    when 'lzh_sco' then %(|gzip_10.6 -dc "#{@path}")
+    # OS X gzip does it all, even if zlib won't.
+    when 'compress', 'gzip', 'oldpack', 'pack'
+      %(|gzip -dc "#{@path}")
     else @path
     end
   end
@@ -82,7 +84,8 @@ class Source
   # files containing only whitespace or null bytes are considered empty
 
   def infer_magic
-    case @lines.detect { |l| l.match?(/[^\s\n\r\000]/) } # use the first non-blank line - cc(1) [GL2-W2.5]
+    # use the first non-blank line - cc(1) [GL2-W2.5]
+    case @lines.detect { |l| l.match?(/[^\0\s\n\r]/) }
     when nil         then raise ManualIsBlacklisted, "#{@filename}: empty file (skipped)" # there weren't any
     when /^\s*<.+?>/ then :HTML   # html, probably
     when /^[.']./    then :Troff  # troff source, probably

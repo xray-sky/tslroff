@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # Created by R. Stricklin <bear@typewritten.org> on 05/14/14.
 # Copyright 2014 Typewritten Software. All rights reserved.
 #
@@ -24,9 +26,9 @@ require_relative 'styles/tab'
 ManualIsBlacklisted = Class.new(RuntimeError)
 
 class TextFormatter
-  extend Forwardable
+  attr_reader :input_line_number, :manual_entry, :manual_section
 
-  attr_reader :input_line_number, :page_title, :manual_entry, :manual_section
+  extend Forwardable
   def_delegators :@source, :magic, :patch, :patch_line, :patch_lines
 
   def initialize(source, vendor_class: nil, source_args: nil)
@@ -73,10 +75,10 @@ require_relative '../modules/dom/groff'
 require_relative '../modules/dom/nroff'
 
 class Manual
-  extend Forwardable
-
   attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
   attr_reader   :language, :lines, :links
+
+  extend Forwardable
   def_delegators :@source, :link?, :magic, :patch, :patch_line, :patch_lines
   def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory, :xpath
 
@@ -98,7 +100,7 @@ class Manual
     #@manual_entry     ||= @source.file
     #@document ||= []
 
-    @language      ||= 'en'  # English
+    @language      ||= 'en' # English
     @related       ||= []
     @lines         ||= @source.lines.each
     @current_block ||= Block.new

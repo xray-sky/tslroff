@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # Created by R. Stricklin <bear@typewritten.org> on 10/11/17.
 # Copyright 2017 Typewritten Software. All rights reserved.
 #
@@ -27,7 +29,7 @@ class Style
 
   def inspect
     <<~MSG
-      #{keys.collect { |k| { k=>self[k] } }.inspect if keys.any?}
+      #{keys.collect { |k| { k => self[k] } }.inspect if keys.any?}
       attributes: #{@attributes.inspect}
       css:        #{@css.inspect}
       immutable?: #{immutable?.inspect}

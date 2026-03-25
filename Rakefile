@@ -37,15 +37,17 @@
 #   page titles for everything are messed up, due to the lack of
 #      `vendor`, `os`, and `ver`, which used to be supplied into the build
 #
+# frozen_string_literal: true
+#
 
 # under chomedriver control, chrome won't load css from a file??
 #$CSS_URL   = File.realpath("#{assets}/tslroff.css")
 $CSS_URL = 'http://dev.online.typewritten.org/Manual/tslroff.css'
 
-Srcroot = '/Volumes/Museum/Manual/in'
-Pubroot = '/Volumes/dev.online.typewritten.org/Manual'
-Assets = File.realpath("lib/assets")
-Template = File.read "#{Assets}/manual.erb"
+SRCROOT = '/Volumes/Museum/Manual/in'
+PUBROOT = '/Volumes/dev.online.typewritten.org/Manual'
+ASSETS = File.realpath("lib/assets")
+TEMPLATE = File.read "#{ASSETS}/manual.erb"
 
 # TODO this arrangement is only profiling the rakefile - is not what we wanted
 if ENV['RUBY_PROFILE']
@@ -57,27 +59,26 @@ require_relative 'ext/rake/namespace'
 require_relative 'lib/rake'
 require_relative 'lib/classes/manual'
 
-
 desc 'Copy static file assets'
-task :assets => [:fonts, :css, :gfx]
+task assets: [:fonts, :css, :gfx]
 
-task :fonts do |t|
-  directory Pubroot
-  cp_r 'assets/fonts', Pubroot
+task :fonts do
+  directory PUBROOT
+  cp_r 'assets/fonts', PUBROOT
 end
 
-task :css do |t|
-  cp "#{Assets}/tslroff.css", Pubroot
+task :css do
+  cp "#{ASSETS}/tslroff.css", PUBROOT
 end
 
-task :gfx do |t|
-  cp "#{Assets}/bell_logo.svg", Pubroot
+task :gfx do
+  cp "#{ASSETS}/bell_logo.svg", PUBROOT
 
   # Future love paradise
-  #gfxdir = "#{Pubroot}/assets"
+  #gfxdir = "#{PUBROOT}/assets"
   #directory gfxdir
-  #cp_r "#{Assets}/flags", gfxdir
-  #cp_r "#{Assets}/logos", gfxdir
+  #cp_r "#{ASSETS}/flags", gfxdir
+  #cp_r "#{ASSETS}/logos", gfxdir
 end
 
 # manual collections
@@ -117,21 +118,21 @@ require_relative 'lib/tasks/sun'
 require_relative 'lib/tasks/tektronix'
 require_relative 'lib/tasks/ucb'
 
-collectionNamespace '_internal' do
-  collectionNamespace '_test' do
-    manualNamespace '_pic',
-      odir: '_internal/_test/_pic',
-      idir: '_test',
-      sources: %w[ ./pic* ]
-    manualNamespace '_tbl',
-      odir: '_internal/_test/_tbl',
-      idir: '_test',
-      sources: %w[ ./stbl* ]
+collection_namespace '_internal' do
+  collection_namespace '_test' do
+    manual_namespace '_pic',
+                    odir: '_internal/_test/_pic',
+                    idir: '_test',
+                    sources: %w[./pic*]
+    manual_namespace '_tbl',
+                    odir: '_internal/_test/_tbl',
+                    idir: '_test',
+                    sources: %w[./stbl*]
   end
 end
 
 if ENV['RUBY_PROFILE']
   profile_results = RubyProf.stop
-  RubyProf::FlatPrinter.new(profile_results).print(STDOUT)
-  #RubyProf::GraphPrinter.new(profile_results).print(STDOUT, {})
+  RubyProf::FlatPrinter.new(profile_results).print($stdout)
+  #RubyProf::GraphPrinter.new(profile_results).print($stdout, {})
 end

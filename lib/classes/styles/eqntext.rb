@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+#
+
 class EqnBlock < Block
   def initialize(arg = {})
     super(arg)

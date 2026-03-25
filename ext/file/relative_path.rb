@@ -8,12 +8,13 @@
 # from and to must be absolute, or relative the same base directory.
 #
 # REVIEW seemingly unused? 20260323
+# REVIEW better done with Pathname class?
 #
 
 class File
   def self.relative_path(from, to)
     tpath = File.dirname(to).split('/').reject { |p| p == '.' }
-    fpath = File.dirname(from).split('/').reject { |p| p == '.' || p == tpath[0] and tpath.shift }.map { |p| '..' }
+    fpath = File.dirname(from).split('/').reject { |p| p == '.' || p == tpath[0] and tpath.shift }.map { '..' }
     fpath << tpath if tpath.any?
     fpath.any? ? "#{fpath.join('/')}/#{File.basename(to)}" : File.basename(to)
   end

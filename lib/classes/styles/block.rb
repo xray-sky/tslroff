@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+#
+
 class Block
   class Nroff < Block
     def to_html
@@ -195,11 +198,13 @@ class Block
       # NOTE Nroff Line class has its own link rewrite
 
       t = @text.collect(&:to_html).join
-      t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
-        caps = Regexp.last_match
-        entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
-        %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
-      end if style[:linkify]
+      if style[:linkify]
+        t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
+          caps = Regexp.last_match
+          entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
+          %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
+        end
+      end
 
       "<p#{@style}>\n#{t}\n</p>\n"
     end
@@ -214,7 +219,7 @@ class Block
       #
       #<g id="content" transform="translate(0.22375,0.55312) scale(1,-1) scale(0.00125) " xml:space="preserve" stroke="black" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10.433" stroke-dasharray="none" stroke-dashoffset="0" stroke-opacity="1" fill="none" fill-rule="evenodd" fill-opacity="1" font-style="normal" font-variant="normal" font-weight="normal" font-stretch="normal" font-size-adjust="none" letter-spacing="normal" word-spacing="normal" text-anchor="start">
       #EOD
-      <<~EOD
+      <<~FIGURE
         <svg version="1.1" baseProfile="full" viewBox="0 0 1 1" preserveAspectRatio="none">
         <g xml:space="preserve" fill="none" fill-rule="evenodd" fill-opacity="1"
           stroke="black" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10.433" stroke-dasharray="none" stroke-dashoffset="0" stroke-opacity="1"
@@ -222,7 +227,7 @@ class Block
         #{@text.collect(&:to_svg).join}
         </g>
         </svg>
-      EOD
+      FIGURE
     end
   end
 

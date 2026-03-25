@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+#
+
 class Pic
-  def initialize()
+  def initialize
     @objects = []
     @named_objects = {}
   end
@@ -17,20 +20,21 @@ end
 
 class Point
   attr_accessor :x, :y
+
   def initialize(pos: '0,0')
     (@x, @y) = pos.split(',').collect(&:strip)
   end
 
-  def -(pos)
-    Point.new("#{@x - pos.x},#{@y - pos.y}")
+  def -(other)
+    Point.new("#{@x - other.x},#{@y - other.y}")
   end
 
-  def +(pos)
-    Point.new("#{@x + pos.x},#{@y + pos.y}")
+  def +(other)
+    Point.new("#{@x + other.x},#{@y + other.y}")
   end
 
-  def *(pos) # feeble
-    Point.new "#{@x * pos.x},#{@y * pos.y}"
+  def *(other) # feeble
+    Point.new "#{@x * other.x},#{@y * other.y}"
   end
 
   def to_a
@@ -52,12 +56,12 @@ class Point
     @y.send __callee__, pos.y
   end
 
-  %w( += -= ).each do |m|
+  %w(+= -=).each do |m|
+    # alias :+= :translate
     class_eval("alias :#{m} :translate")
     public m.to_sym
   end
 end
-
 
 class PicElement
   def initialize(origin: Point.new, height: 0, width: 0, visible: true)

@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+#
 # Created by R. Stricklin <bear@typewritten.org> on 10/11/17.
 # Copyright 2017 Typewritten Software. All rights reserved.
-#
 #
 # Block class
 #
@@ -65,10 +66,10 @@ class Block
     when String then @text.last << t
     when Block # cruft catcher
       raise RuntimeError "appending non-bare block #{t.inspect}" #unless t.class == Block::Bare # bare blocks used by vms for inserting pre-formatted html; TODO probably create a Link text class
-      warn "we are in a degenerate part of the code - block.rb line 91"
-      @text += t.text
+      #warn "we are in a degenerate part of the code - block.rb line 91"
+      #@text += t.text
       # don't leave the last text object open, or else you'll start writing into the named string definition.
-      @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
+      #@text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
     end
     immutable! unless t.empty?
   end
@@ -81,16 +82,15 @@ class Block
     text.collect(&:to_s).join
   end
 
-  def to_selenium
-    %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS}"></link></head><body><div id="man"><span id="selenium">#{to_html}</span></div></body></html>)
-  end
-
   def to_html
     warn "we are in a degnerate part of the code - base class Block.to_html()"
     # TODO this needs more work to e.g. leave <!-->, etc. open for subsequent output, but stay whitespace safe (don't introduce whitespace by inserting newlines, etc.)
     # TODO don't output a <p> just for a comment - see ct(7) HP-UX 6.00
     # TODO we are still getting empty <p> in some circumstances - see ct(7) HP-UX 6.00
     t = text.collect(&(type == :comment ? :to_s : :to_html)).join
+    return unless style[:linkify]
+
+    # REVIEW why am I linkifying in the base class
 
     # insert related information references
     # REVIEW am I going to need to make overrides to this regexp?
@@ -100,8 +100,7 @@ class Block
       caps = Regexp.last_match
       entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
       %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
-    end if style[:linkify]
-
+    end
   end
 
   def inspect

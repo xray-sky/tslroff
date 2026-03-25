@@ -34,7 +34,7 @@
 
 		</div>
 
-<%= ERB.new(File.read("#{Assets}/menu_related.erb"), 0, nil, '_menu').result(taskcontext) if related.any? %>
+<%= ERB.new(File.read("#{ASSETS}/menu_related.erb"), 0, nil, '_menu').result(taskcontext) if related.any? %>
 
 	</div>
 </div>

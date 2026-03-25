@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # webdriver.rb
 # ---------------
 #    cached Selenium WebDriver wrapper class
@@ -29,20 +31,16 @@ class WebDriver
   attr_reader :ppi, :browser
 
   def initialize(driver: :chrome, options: nil)
-    case driver
-    when :chrome
-      unless options
-        options = Selenium::WebDriver::Chrome::Options.new
-        options.add_argument('--headless')
-        options.binary = chrome_binary
-      end
-    when :safari
-      unless options
-        options = Selenium::WebDriver::Safari::Options.new
-        # Safari can't run headless
-        #options.add_argument('--headless')
-      end
-    end
+    options || case driver
+               when :chrome
+                 options = Selenium::WebDriver::Chrome::Options.new
+                 options.add_argument('--headless')
+                 options.binary = chrome_binary
+               when :safari
+                 options = Selenium::WebDriver::Safari::Options.new
+                 # Safari can't run headless
+                 #options.add_argument('--headless')
+               end
 
     @browser = Selenium::WebDriver.for driver, options: options
     @ppi = calibrate '1in'
@@ -69,7 +67,7 @@ class WebDriver
   end
 
   def reset_cache
-    cache = {}
+    @cache = {}
     reset_cache_stats
   end
 
@@ -92,8 +90,7 @@ class WebDriver
       ~/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
       /usr/bin/chrome
       /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
-    ].map { |p| File.expand_path(p) }
-    .find { |b| File.executable?(b) }
+    ].map { |p| File.expand_path(p) }.find { |b| File.executable?(b) }
   end
 
   def calibrate(width)

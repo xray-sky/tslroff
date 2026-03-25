@@ -13,7 +13,7 @@
 #
 
 class Ardent_SysV::R3_0
-  class Troff < ::Ardent_SysV::Troff
+  class Troff < Ardent_SysV::Troff
 
     def init_ds
       super

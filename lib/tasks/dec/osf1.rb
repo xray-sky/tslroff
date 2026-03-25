@@ -1,25 +1,25 @@
-collectionNamespace 'OSF1' do
+collectionNamespace 'OSF/1' do
   # DEC OSF/1 SILVER Baselevel 4 (Rev. 36) for MIPS from tenox - prerelease for mips TODO tmac.an
   manualNamespace 'SILVER_Baselevel_4_rev36',
     vendor_class: OSF1,
     idir: 'dec/osf1/silver4_r36_mips',
-    odir: 'DEC/OSF1/SILVER_Baselevel_4_rev36',
+    odir: 'DEC/OSF:1/SILVER_Baselevel_4_rev36',
     sources: %w[usr/share/man/man[1-8]]
   # DEC OSF/1 V1.0 (TIN) for MIPS from tenox - TODO tmac.an
   manualNamespace '1.0/mips',
     vendor_class: OSF1,
     idir: 'dec/osf1/1.0_tin_mips',
-    odir: 'DEC/OSF1/1.0/mips',
+    odir: 'DEC/OSF:1/1.0/mips',
     sources: %w[usr/share/man/man[1-8]]
   # DEC OSF/1 X2.0-8 (Rev. 155) for MIPS from tenox - TODO tmac.an
   manualNamespace 'X2.0-8/mips',
     vendor_class: OSF1,
     idir: 'dec/osf1/2.0-8_mips',
-    odir: 'DEC/OSF1/X2.0-8/mips',
+    odir: 'DEC/OSF:1/X2.0-8/mips',
     sources: %w[usr/share/man/man[1-8]]
   manualNamespace '3.0',
     vendor_class: OSF1::V3_2c,  # identical apart from (c) date
-    odir: 'DEC/OSF1/3.0',
+    odir: 'DEC/OSF:1/3.0',
     sources: %w[share/man/man[1-8]]
 end
 

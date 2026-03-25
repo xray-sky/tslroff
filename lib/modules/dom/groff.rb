@@ -12,6 +12,8 @@
 #   has extra units allowed in expressions (s, z, f, M)
 #   has extra escapes (\A, \B)
 #   .if !\n(.g apparently works as a test for groff
+#   386BSD (UCB) manual includes groff
+#       probably useful reference for getting started on differences from troff, tbl, eqn, etc.
 #
 
 require_relative 'troff'

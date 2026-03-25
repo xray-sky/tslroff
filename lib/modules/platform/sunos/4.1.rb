@@ -18,25 +18,25 @@
 
 class SunOS::V4_1
 
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize file, vendor_class: nil, source_args: nil
       case File.basename(file)
-      when 'Xt-differences.3' then source_args.merge!({magic: 'Troff'})  # #.so macros.x
+      when 'Xt-differences.3' then source_args[:magic] = 'Troff'  # #.so macros.x
       end
       super file, vendor_class: vendor_class, source_args: source_args
     end
   end
 
-  class Nroff < ::SunOS::Nroff
+  class Nroff < SunOS::Nroff
 
-    def initialize(source)
+    def initialize source
       case source.file
       when 'ce_db_build.1', 'ce_db_merge.1' # no title line
         @manual_section = '1'
         @manual_entry = (source.file)[0..-3]
         # TODO also has see also link w/ whitespace (e.g. "ref (section)")
       end
-      super(source)
+      super source
       @lines_per_page = nil
     end
 
@@ -132,12 +132,12 @@ class SunOS::V4_1
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
 
-    def initialize(source)
-      super(source)
+    def initialize source
       case source.file
         when 'colorchooser.1'   then @manual_section = '1'  # TODO this is getting smashed by .TH. maybe use .em once that's implemented?
-        when 'Xt-differences.3' then patch_line(1, /^/, '.\"')
+        when 'Xt-differences.3' then patch_line 1, /^/, '.\"'
       end
+      super source
     end
 
     def init_ds

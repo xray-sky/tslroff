@@ -40,23 +40,36 @@
 # utmp.5 [18]: .so can't read /usr/include/utmp.h
 
 class GDT_UNX
-  class Troff < ::Troff
+  class Manual < Manual
+    def initialize file, vendor_class: nil, source_args: {}
+      case File.basename file
+      when 'Script', 'Scrit' then raise ManualIsBlacklisted, 'not a manual entry'
+      end
+      super file, vendor_class: vendor_class, source_args: source_args
+    end
+  end
+
+  class Nroff < Nroff
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+      @manual_section ||= Regexp.last_match[1]
+
+      super(source)
+      case @source.file
+      # REVIEW there are several pages that exist as 'copy___'. are these all strict duplicates?
+      # cpmcopy.9 is ~66 lines per page but the first page is short. Insert extra lines after the title.
+      when 'cpmcopy.9' then @source.lines.insert(25, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+      end
+    end
+  end
+
+  class Troff < Troff
 
     alias :LP :P
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1]
-
-      case source.file
-      # REVIEW there are several pages that exist as 'copy___'. are these all strict duplicates?
-      # cpmcopy.9 is ~66 lines per page but the first page is short. Insert extra lines after the title.
-      when 'cpmcopy.9'
-        source.lines.insert(25, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
-      when 'Script', 'Scrit'
-        raise ManualIsBlacklisted, 'not a manual entry'
-      end
-
       super(source)
     end
 

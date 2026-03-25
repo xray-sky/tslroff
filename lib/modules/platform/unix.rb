@@ -10,14 +10,15 @@
 #
 
 class UNIX
-  class Troff < ::Troff
+  class Manual < Manual ; end
+  class Troff < Troff
 
     alias :LP :P
 
-    def initialize(source)
+    def initialize source
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super source
     end
 
   end

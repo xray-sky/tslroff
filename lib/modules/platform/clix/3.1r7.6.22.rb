@@ -8,11 +8,10 @@
 #
 
 class CLIX::V3_1r7_6_22
-  class Nroff < ::CLIX::Nroff
+  class Nroff < CLIX::Nroff
 
     def initialize(source)
       case source.file
-      when 'index.3'   then @manual_entry = '_index'
       when 'convert.Z' then raise ManualIsBlacklisted, 'apparently not a manual entry'
       end
       super(source)

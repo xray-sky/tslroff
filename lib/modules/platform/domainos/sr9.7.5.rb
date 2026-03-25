@@ -17,15 +17,13 @@
 #
 
 class Aegis::SR9_7_5
-  class Nroff < ::Aegis::Nroff
+  class Nroff < Aegis::Nroff
 
     def initialize(source)
       @base_indent = 2
       @related_info_heading = 'RELATED TOPICS'
 
       case source.file
-      when 'index.hlp'
-        @manual_entry = '_index'
       when 'edacl.hlp'
         @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
       when 'cc.hlp', 'lisp.hlp', 'pas.hlp'

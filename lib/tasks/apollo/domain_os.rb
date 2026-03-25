@@ -1,9 +1,9 @@
-collectionNamespace 'DomainOS' do
+collectionNamespace 'Domain/OS' do
   # REVIEW extra content (install, dex, systest, etc.), multiple releases
   manualNamespace 'SR10.0',
     vendor_class: DomainOS::SR10_0,
     idir: 'apollo/domain_os/10.0',
-    odir: 'Apollo/DomainOS/SR10.0',
+    odir: 'Apollo/Domain:OS/SR10.0',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]
@@ -15,7 +15,7 @@ collectionNamespace 'DomainOS' do
   manualNamespace 'SR10.1',
     vendor_class: DomainOS::SR10_1,
     idir: 'apollo/domain_os/10.1',
-    odir: 'Apollo/DomainOS/SR10.1',
+    odir: 'Apollo/Domain:OS/SR10.1',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]
@@ -27,7 +27,7 @@ collectionNamespace 'DomainOS' do
   manualNamespace 'SR10.1_PSK4',
     vendor_class: DomainOS::SR10_1,
     idir: 'apollo/domain_os/10.1_psk4',
-    odir: 'Apollo/DomainOS/SR10.1_PSK4',
+    odir: 'Apollo/Domain:OS/SR10.1_PSK4',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]
@@ -39,7 +39,7 @@ collectionNamespace 'DomainOS' do
   manualNamespace 'SR10.2',
     vendor_class: DomainOS::SR10_2,
     idir: 'apollo/domain_os/10.2',
-    odir: 'Apollo/DomainOS/SR10.2',
+    odir: 'Apollo/Domain:OS/SR10.2',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]
@@ -51,7 +51,7 @@ collectionNamespace 'DomainOS' do
   manualNamespace 'SR10.3',
     vendor_class: DomainOS::SR10_3,
     idir: 'apollo/domain_os/10.3',
-    odir: 'Apollo/DomainOS/SR10.3',
+    odir: 'Apollo/Domain:OS/SR10.3',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]
@@ -64,7 +64,7 @@ collectionNamespace 'DomainOS' do
     # TODO (what though?) unbundled products for sure (lisp)
     vendor_class: DomainOS::SR10_3_5,
     idir: 'apollo/domain_os/10.3.5',
-    odir: 'Apollo/DomainOS/SR10.3.5',
+    odir: 'Apollo/Domain:OS/SR10.3.5',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]
@@ -77,7 +77,7 @@ collectionNamespace 'DomainOS' do
     # TODO (what though?) unbundled products for sure (lisp)
     vendor_class: DomainOS::SR10_4,
     idir: 'apollo/domain_os/10.4',
-    odir: 'Apollo/DomainOS/SR10.4',
+    odir: 'Apollo/Domain:OS/SR10.4',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]
@@ -91,7 +91,7 @@ collectionNamespace 'DomainOS' do
     # TODO (what though?) unbundled products probably (pascal, fortran, etc.)
     vendor_class: DomainOS::SR10_4_1,
     idir: 'apollo/domain_os/10.4.1',
-    odir: 'Apollo/DomainOS/SR10.4.1',
+    odir: 'Apollo/Domain:OS/SR10.4.1',
     sources: %w[
         sys/help/*
         bsd4.3/usr/man/cat[1-8]

@@ -16,10 +16,10 @@
 #
 
 class Motorola_SysV
-  class Nroff < ::Nroff ; end
+  class Nroff < Nroff ; end
 
   # looks like none of this matters much, as the provided pages are all nroff format except for X11.
-  class Troff < ::Troff
+  class Troff < Troff
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS ',

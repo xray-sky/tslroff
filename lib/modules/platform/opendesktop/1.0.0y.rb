@@ -12,7 +12,7 @@
 
 class OpenDesktop::V1_0_0y
 
-  class Manual < ::Manual
+  class Manual < OpenDesktop::Manual
     # these are the packed+compressed pages
     ZEXTRA = %w[
       Intro.ADM.z accept.ADM.z dial.ADM.z divvy.ADM.z dmesg.ADM.z dparam.ADM.z
@@ -96,28 +96,24 @@ class OpenDesktop::V1_0_0y
       mwm.X.z	xclock.X.z	xterm.X.z	X.X.z	xdm.X.z	bitmap.X.z	dos.X.z	xman.X.z
     ]
 
-    def initialize(file, vendor_class: nil, source_args: {})
+    def initialize(file, vendor_class: nil, source_args: nil)
+      srcargs = source_args.dup || {}
       if ZEXTRA.include? File.basename(file)
-        @source = Source.new(file, magic: 'Nroff', source_args: source_args) { |f| IO.readlines("| gzip_old -dc #{f} | zcat") }
+        srcargs[:magic] = 'Nroff'
+        super(file, vendor_class: vendor_class, source_args: srcargs) { |f| IO.readlines("| gzip_10.6 -dc #{f} | zcat") }
+      else
+        super(file, vendor_class: vendor_class, source_args: srcargs)
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
-  class Nroff < ::OpenDesktop::Nroff
+  class Nroff < OpenDesktop::Nroff
 
     def initialize(source)
-      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
-      @related_info_heading ||= 'See Also'
-      super(source)
-    end
-
-    def source_init
-      case @source.file
+      case source.file
       when 'assign.CMD.z', 'attrib.CMD.z', 'break.CMD.z', 'chdir.CMD', 'chkdsk.CMD.z',
            'cls.CMD', 'command.CMD.z', 'ctty.CMD.z', 'date.CMD.z', 'del.CMD.z'
-        @output_directory = 'manDOS'
+        @output_directory = 'man.DOS'
       when 'bdftosnf.X.z', 'ico.X.z', 'mkfontdir.X.z', 'oclock.X.z', 'showsnf.X.z',
            'xdpyinfo.X.z', 'xedit.X.z', 'xev.X', 'xeyes.X.z', 'xmodmap.X.z', 'xset.X.z',
            'xwininfo.X.z', 'Xsight.X.z', 'image.X.z', 'lccdm.X.z', 'resize.X.z', 'xanswer.X.z',
@@ -135,7 +131,10 @@ class OpenDesktop::V1_0_0y
         @related_info_heading = 'SEE ALSO'
         # TODO put back the numeric section linkify methods
       end
-      super
+      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
+      @related_info_heading ||= 'See Also'
+      super(source)
     end
 
   end

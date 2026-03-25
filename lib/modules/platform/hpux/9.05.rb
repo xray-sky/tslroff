@@ -24,15 +24,7 @@
 #
 
 class HPUX::V9_05
-  class Troff < ::HPUX::Troff
-
-    def source_init
-      case @source.file
-      when 'default.4'
-        @manual_entry = '_default'
-      end
-      super
-    end
+  class Troff < HPUX::Troff
 
     def init_ds
       super

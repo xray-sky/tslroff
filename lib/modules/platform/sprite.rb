@@ -10,7 +10,7 @@
 #
 
 class Sprite
-  class Troff < ::Troff
+  class Troff < Troff
 
     SPRITE_MANUAL_SECTION_NAMES = {
       'admin'   => 'Administrative Commands',
@@ -47,17 +47,10 @@ class Sprite
 
     alias :LP :P
 
-    def initialize(source)
-      k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(\d\S*|man)$/, '')
-      k.instance_variable_set '@manual_section', Regexp.last_match[1] if Regexp.last_match
-      super(source)
-    end
-
-    def source_init
-      case @source.file
-      when /^(default|index)\./ then @manual_entry = "_#{Regexp.last_match[1]}"
-      end
-      super
+    def initialize source
+      @manual_entry ||= source.file.sub(/\.(\d\S*|man)$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super source
     end
 
     def init_ds

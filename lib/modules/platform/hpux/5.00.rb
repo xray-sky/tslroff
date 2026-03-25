@@ -11,16 +11,11 @@
 #
 
 class HPUX::V5_00
-  class Troff < ::HPUX::Troff
+  class Troff < HPUX::Troff
 
     alias :LP :P
+    # .cm is not official nor in tmac.an but is apparently used in practice for comments
     alias :cm :'\"'
-
-
-    #def self.extended(k)
-    #  # .cm is not official nor in tmac.an but is apparently used in practice for comments
-    #  define_singleton_method :cm, method('\"')
-    #end
 
     def init_ds
       super

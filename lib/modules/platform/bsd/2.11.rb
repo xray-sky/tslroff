@@ -12,7 +12,7 @@
 #
 
 class BSD::V2_11
-  class Troff < ::BSD::Troff
+  class Troff < BSD::Troff
 
     # tmac.an.new
     define_method 'UC' do |v = nil, *_args|

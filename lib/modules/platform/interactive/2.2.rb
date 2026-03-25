@@ -11,7 +11,7 @@
 #
 
 class Interactive::V2_2
-  class Nroff < ::Interactive::Nroff
+  class Nroff < Interactive::Nroff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)(?:\.z)?$/, '')

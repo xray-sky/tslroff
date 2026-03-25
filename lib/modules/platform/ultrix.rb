@@ -11,25 +11,21 @@
 #
 
 class Ultrix
-  class Troff < ::Troff
 
-    # Triumvirate is essentially Helvetica
-    class Font::TR < ::Font::H ; end
-    class Font::TB < ::Font::HB ; end
-    class Font::TI < ::Font::HI ; end
+  # Triumvirate is essentially Helvetica
+  class Font::TR < ::Font::H ; end
+  class Font::TB < ::Font::HB ; end
+  class Font::TI < ::Font::HI ; end
+
+  class Troff < Troff
 
     alias :LP :P
 
-    def initialize(source)
+    def initialize source
       @manual_entry ||= source.file.sub(/\.([n\d][^.\s]*)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
-    end
-
-    def source_init
-      case @source.file
-      when /^(default|index)\./ then @manual_entry = "_#{Regexp.last_match[1]}"
-      end
+      @related_info_heading ||= %r{SEE(?: |&nbsp;)+ALSO}i  # 3.x, 4.x
+      super source
     end
 
     def init_ds

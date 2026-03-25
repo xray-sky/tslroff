@@ -42,7 +42,7 @@ class Troff < TextFormatter
     @source = source
     @register = {}
     @state = { header: Block::Header.new, footer: Block::Footer.new }
-    @related_info_heading ||= %r{SEE(?: |&nbsp;)+ALSO}
+    @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
 
     #xinit_selenium
     @@webdriver ||= WebDriver.new
@@ -60,22 +60,7 @@ class Troff < TextFormatter
     super(source)
   end
 
-  def source_init
-    ## call any initialization methods for .nr, .ds, etc.
-    ## may be supplemented or overridden by version-specific methods
-    ## REVIEW do this in a grown up way - these need ordered to succeed
-    ##  - if left to random wildcard chance, may throw exceptions
-    #
-    #xinit_selenium
-    #xinit_ec
-    #xinit_nr
-    #xinit_in
-    #
-    #methods.each do |m|
-    #  send(m) if m.to_s.start_with? 'init_'
-    #end
-  end
-
+  # TODO / REVIEW .so ugly
   def warn(msg)
     super("#{"#{@so_chain} [#{input_line_number}]: " if @so_chain}#{msg}")
   end
@@ -109,6 +94,12 @@ class Troff < TextFormatter
       warn e
       warn e.backtrace.join("\n")
     end
+  end
+
+  def output_directory
+    @manual_section and return "man#{@manual_section.downcase}"
+    warn "reading output directory without section set"
+    ''
   end
 
   private

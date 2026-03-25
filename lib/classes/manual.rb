@@ -29,7 +29,7 @@ class TextFormatter
   attr_reader :input_line_number, :page_title, :manual_entry, :manual_section
   def_delegators :@source, :magic, :patch, :patch_line, :patch_lines
 
-  def initialize(source, vendor_class: nil, source_args: {})
+  def initialize(source, vendor_class: nil, source_args: nil)
     @input_filename = source.file
     @input_line_number = 0
     @source ||= source
@@ -77,17 +77,17 @@ class Manual
 
   attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
   attr_reader   :language, :lines, :links
-  def_delegators :@source, :link?, :magic, :patch, :patch_line, :patch_lines, :xpath
-  def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section
+  def_delegators :@source, :link?, :magic, :patch, :patch_line, :patch_lines
+  def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory, :xpath
 
-  def initialize(file, vendor_class: nil, source_args: {})
+  def initialize(file, vendor_class: nil, source_args: nil, preprocess: nil, &block)
     @input_filename = file
     @input_line_number = 0
-    @source ||= Source.new file, source_args
+    @source ||= Source.new file, source_args, &block
     document_class = Kernel.const_get "#{vendor_class}::#{@source.magic}"
 
-    #warn "#{document_class} #{@input_filename}"
-    @document ||= document_class.send(:new, @source)#.tap {|x| warn x}
+    send preprocess if preprocess
+    @document ||= document_class.send :new, @source
 
     #@platform ||= os
     #@version  ||= ver
@@ -96,17 +96,12 @@ class Manual
     #@manual_section   = String.new
     #@output_directory = String.new
     #@manual_entry     ||= @source.file
-    @language         ||= 'en' # English
+    #@document ||= []
 
-    @document ||= []
-    @related  ||= []
-
-    #@source ||= Source.new file
+    @language      ||= 'en'  # English
+    @related       ||= []
+    @lines         ||= @source.lines.each
     @current_block ||= Block.new
-
-    #doctype_extend
-
-    @lines ||= @source.lines.each
 
     #@document.source_init # TODO this is why I have to ||= the init. do better.
     # >>> was just parse_title: (REVIEW check vendor overrides though)
@@ -118,11 +113,11 @@ class Manual
     # broken symlink (or symlink to directory) -- defer this to platform override code
     # don't rely on anything that needs @source! (magic, parse_title, etc.)
     @lines ||= [].each
-    #doctype_extend
   end
 
   # this is a Manual method, not (was) a Troff method.
   # REVIEW check for others that ought to move too
+  # REVIEW maybe it should continue being a Troff method after all.
   def parse_title
     # parse as far as the title, so we can have the odir immediately after
     # a Manual.new, then if we want to continue (aren't just figuring out
@@ -169,11 +164,7 @@ class Manual
 
 end
 
-Dir.glob("#{File.dirname(__FILE__)}/../modules/platform/*.rb").each do |i|
-  require i
-end
-
-Dir.glob("#{File.dirname(__FILE__)}/../modules/platform/**/*.rb").each do |i|
-  require i
+Dir.glob(%w[../modules/platform/*.rb ../modules/platform/**/*.rb], base: File.dirname(__FILE__)).each do |i|
+  require_relative i
 end
 

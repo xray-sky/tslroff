@@ -10,7 +10,7 @@
 #
 
 class NBI_4_2BSD
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 

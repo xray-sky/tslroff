@@ -15,7 +15,7 @@
 #   mv.5 uses absolute horizontal positioning
 #
 class GL2::W2_4
-  class Troff < ::GL2::Troff
+  class Troff < GL2::Troff
 
     def initialize(source)
       @version = "W2.4"
@@ -25,20 +25,20 @@ class GL2::W2_4
 end
 
 class GL2::W2_5
-  class Troff < ::GL2::Troff
+  class Troff < GL2::Troff
 
     def initialize(source)
-      @version = "W2.5"
+      case source.file
+      when 'intro.2'  then source.patch_line 189, /4em$/, '4m'
+      when 'tz.4'     then source.patch_line  43, /center\./, 'center;'
+      when 'regexp.5' then source.patch_line 419, /^\.in/, '.if'
+      when 'kmem.7'   then source.patch_line   1, /u_man/, 'a_man'
+      end
       super(source)
+      @version = "W2.5"
     end
 
     def source_init
-      case @source.file
-      when 'intro.2'  then @source.patch_line 189, /4em$/, '4m'
-      when 'tz.4'     then @source.patch_line  43, /center\./, 'center;'
-      when 'regexp.5' then @source.patch_line 419, /^\.in/, '.if'
-      when 'kmem.7'   then @source.patch_line   1, /u_man/, 'a_man'
-      end
       super
     end
 
@@ -46,11 +46,11 @@ class GL2::W2_5
 end
 
 class GL2::W2_5r1
-  class Troff < ::GL2::Troff
+  class Troff < GL2::Troff
 
     def initialize(source)
-      @version = "W2.5r1"
       super(source)
+      @version = "W2.5r1"
     end
   end
 end

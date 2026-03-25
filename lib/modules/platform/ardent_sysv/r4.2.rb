@@ -12,10 +12,10 @@
 #
 
 class Ardent_SysV::R4_2
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
-      when 'p162.7' then source_args.merge!({magic: 'Troff'})
+      when 'p162.7'    then source_args[:magic] = 'Troff'
       when 'tdore.sid' then raise ManualIsBlacklisted, 'is metadata'
       end
 
@@ -27,7 +27,7 @@ class Ardent_SysV::R4_2
     end
   end
 
-  class Troff < ::Ardent_SysV::Troff
+  class Troff < Ardent_SysV::Troff
 
     def init_ds
       super

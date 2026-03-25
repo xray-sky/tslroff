@@ -12,18 +12,9 @@
 #
 
 class Ultrix::V3_1_0
-  class Troff < ::Ultrix::Troff
+  class Troff < Ultrix::Troff
 
     alias :HB :TB
-
-    def initialize(source)
-      @related_info_heading ||= %r{SEE(?: |&nbsp;)+ALSO}i
-      case source.file
-      when 'VAX-RISC_tcpdump_patch'
-        raise ManualIsBlacklisted, 'not a manual entry - all nulls'
-      end
-      super(source)
-    end
 
     def init_ds
       super

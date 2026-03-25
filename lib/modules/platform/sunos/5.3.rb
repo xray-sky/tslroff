@@ -13,7 +13,7 @@
 #
 
 class SunOS::V5_3
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_NAMES = {
       'ABADMIN' => "Solaris 2.3 AnswerBook  Administration Guide",
@@ -184,8 +184,7 @@ class SunOS::V5_3
 
     def initialize(source)
       case source.file
-      when 'aspppls.1m'
-        raise ManualIsBlacklisted, 'pathological use of .so'
+      when 'aspppls.1m' then raise ManualIsBlacklisted, 'pathological use of .so'
       end
       super(source)
     end

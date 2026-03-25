@@ -16,29 +16,19 @@
 
 class AIX::V1_2_1
 
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
-      when '3270keys.5', 'cshrc.5', 'netrc.5', 'rhosts.5'
-        @source = Source.new(file, magic: 'Nroff', source_args: source_args)
+      when '3270keys.5', 'cshrc.5', 'netrc.5', 'rhosts.5' then source_args[:magic] = 'Nroff'
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
-  class Nroff < ::AIX::Nroff
+  class Nroff < AIX::Nroff
 
     def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(?:\d\S?)$/, '')
-      @heading_detection ||= %r(^(?<section>[A-Z][A-Z\s]+)$)
-      @title_detection ||= %r{^(?<manentry>(?<cmd>[-+_., A-Za-z0-9]+?)\((?<section>\S+?),(?<book>[CLF])\))}
-      @related_info_heading ||= 'RELATED INFORMATION'
-      super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'index.3' then @manual_entry = '_index'
+      case source.file
       when 'mark.1m', 'pick.1m', 'repl.1m'
         define_singleton_method :detect_links, method(:detect_links_alt)
       when 'Remote_Procedure_Call_(RPC).3n'
@@ -48,7 +38,12 @@ class AIX::V1_2_1
       when 'acctdir.8'
         @title_detection = %r{^(?<manentry>(?<cmd>acct/\*)\((?<section>\S+?),(?<book>[CLF])\))}
       end
-      super
+
+      @manual_entry ||= source.file.sub(/\.(?:\d\S?)$/, '')
+      @heading_detection ||= %r(^(?<section>[A-Z][A-Z\s]+)$)
+      @title_detection ||= %r{^(?<manentry>(?<cmd>[-+_., A-Za-z0-9]+?)\((?<section>\S+?),(?<book>[CLF])\))}
+      @related_info_heading ||= 'RELATED INFORMATION'
+      super(source)
     end
 
     def page_title

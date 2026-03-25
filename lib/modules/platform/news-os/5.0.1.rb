@@ -20,7 +20,7 @@ require_relative '../sunos'
 require_relative '../sunos/4.0'
 
 class NEWS_os::V5_0_1
-  class Nroff < ::NEWS_os::Nroff
+  class Nroff < NEWS_os::Nroff
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
@@ -30,7 +30,7 @@ class NEWS_os::V5_0_1
     end
   end
 
-  class Troff < ::SunOS::V4_0::Troff
+  class Troff < SunOS::V4_0::Troff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')

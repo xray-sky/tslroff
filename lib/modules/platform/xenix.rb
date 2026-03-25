@@ -11,17 +11,16 @@
 # √ master.list(C) - blacklist (not a manual page)
 #
 class Xenix
-
-  class Manual < ::Manual
-    def initialize(file, vendor_class: nil, source_args: {})
+  class Manual < Manual
+    def initialize file, vendor_class: nil, source_args: nil
       case File.basename(file)
       when 'master.list.C' then raise ManualIsBlacklisted, "not a manual entry"
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
+      super file, vendor_class: vendor_class, source_args: source_args
     end
   end
 
-  class Nroff < ::Nroff
+  class Nroff < Nroff
 
     def initialize(source)
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
@@ -35,7 +34,6 @@ class Xenix
       return unless title
       @manual_entry     = title[:cmd].downcase
       @manual_section   = title[:section]
-      @output_directory = "man#{@manual_section}"
       title
     end
 
@@ -45,6 +43,11 @@ class Xenix
       line.scan(/(?<=[\s,.;])((\S+?)\(([A-Z]+?)\))/).map do |text, ref, section|
         [text, "../man#{section}/#{ref}.html"]
       end.to_h
+    end
+
+    def output_directory
+      @manual_section and return "man#{@manual_section}"
+      super
     end
 
   end

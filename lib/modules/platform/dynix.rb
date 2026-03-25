@@ -10,7 +10,16 @@
 #
 
 class DYNIX_ptx
-  class Nroff < ::Nroff
+  class Manual < Manual
+    def initialize file, vendor_class: nil, source_args: {}
+      case File.basename file
+      when 'Makefile' then raise ManualIsBlacklisted, 'not a manual entry'
+      end
+      super file, vendor_class: vendor_class, source_args: source_args
+    end
+  end
+
+  class Nroff < Nroff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
@@ -18,17 +27,9 @@ class DYNIX_ptx
       super(source)
     end
 
-    def source_init
-      case @source.file
-      when 'Makefile' then raise ManualIsBlacklisted, 'not a manual entry'
-      end
-      super
-      @output_directory = "man#{@manual_section}"
-    end
-
   end
 
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 
@@ -36,14 +37,6 @@ class DYNIX_ptx
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'Makefile' then raise ManualIsBlacklisted, 'not a manual entry'
-      end
-      super
-      @output_directory = "man#{@manual_section}"
     end
 
     def init_ds

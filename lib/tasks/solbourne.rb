@@ -1,19 +1,19 @@
 collectionNamespace 'Solbourne' do
-  collectionNamespace 'OS-MP' do
+  collectionNamespace 'OS/MP' do
     manualNamespace '4.1A',
       vendor_class: OS_MP,
       idir: 'solbourne/os-mp/4.1A',
-      odir: 'Solbourne/OS-MP/4.1A',
+      odir: 'Solbourne/OS:MP/4.1A',
       sources: %w[share/man/man[1-8]]
     manualNamespace '4.1A3',
       vendor_class: OS_MP,
       idir: 'solbourne/os-mp/4.1A3',
-      odir: 'Solbourne/OS-MP/4.1A3',
+      odir: 'Solbourne/OS:MP/4.1A3',
       sources: %w[share/man/man[1-8]]
     manualNamespace '4.1C',
       vendor_class: OS_MP,
       idir: 'solbourne/os-mp/4.1C',
-      odir: 'Solbourne/OS-MP/4.1C',
+      odir: 'Solbourne/OS:MP/4.1C',
       sources: %w[share/man/man[1-8]]
     manualNamespace 'OpenWindows_3.0',
       vendor_class: OS_MP,

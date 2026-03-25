@@ -8,17 +8,10 @@
 #
 
 class A_UX::V3_0_1
-  class Nroff < ::Nroff
+  class Nroff < A_UX::Nroff
 
     def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(?<section>\d\S*?)(?:\.[zZ])?$/, '')
-      @heading_detection ||= %r(^(?<section>[A-Z][A-Za-z\s]+)$)
-      @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
-      super(source)
-    end
-
-    def source_init
-      case @source.file
+      case source.file
       when 'appres.1.Z'
         @heading_detection = %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
         @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
@@ -28,7 +21,10 @@ class A_UX::V3_0_1
       when 'Autologin.4.Z'
         raise ManualIsBlacklisted, 'is tar file' # TODO (later)
       end
-      super
+      @manual_entry ||= source.file.sub(/\.(?<section>\d\S*?)(?:\.[zZ])?$/, '')
+      @heading_detection ||= %r(^(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
+      super(source)
     end
 
   end

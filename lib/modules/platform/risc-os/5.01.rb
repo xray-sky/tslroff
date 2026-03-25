@@ -14,12 +14,12 @@
 #
 
 class RISC_os::V5_01
-  class Nroff < ::RISC_os::Nroff
+  class Nroff < RISC_os::Nroff
 
-    def source_init
-      case @source.file
+    def initialize source
+      case source.file
       when /prom.1m$/ # these are symlinks to the 1prom entries
-        @manual_entry = @source.file.sub(/\.prom.1m$/, '')
+        @manual_entry = source.file.sub(/\.prom.1m$/, '')
         define_singleton_method :retarget_symlink, method(:retarget_symlink_prom)
       when /1prom$/
         @manual_entry = @source.file.sub(/\.1prom$/, '')
@@ -31,7 +31,7 @@ class RISC_os::V5_01
       when 'proto.1'
         raise ManualIsBlacklisted, 'prototype entry (not real)'
       end
-      super
+      super source
     end
 
     def page_title

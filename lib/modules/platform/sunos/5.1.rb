@@ -9,7 +9,7 @@
 #
 
 class SunOS::V5_1
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_NAMES = {
       'APDEVGUIDE' => "Solaris 2.1 Application Developer's Guide",

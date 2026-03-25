@@ -12,7 +12,7 @@
 #
 
 class Inferno::FourthEd
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'INDEX' then raise ManualIsBlacklisted, 'is nonsense'
@@ -21,6 +21,6 @@ class Inferno::FourthEd
     end
   end
 
-  class Nroff < ::Inferno::Nroff ; end
-  class Troff < ::Inferno::Troff ; end
+  class Nroff < Inferno::Nroff ; end
+  class Troff < Inferno::Troff ; end
 end

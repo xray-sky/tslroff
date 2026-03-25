@@ -17,14 +17,15 @@
 #   pic(1) as well!
 #
 
-
 class Plan9
-  class Troff < ::Troff
 
-    class Font
-      #remove_const :L # name collision with "Geneva Light"
-      class L < ::Font::C ; end
-    end
+  # name collision with "Geneva Light"
+  #class Font::L < ::Font::C ; end  ### TypeError: superclass mismatch for class L
+  class Font::L < Font
+    def css_style ; %(font-family:'CMU Typewriter',monospace;) ; end
+  end
+
+  class Troff < Troff
 
     alias :LP :P
 

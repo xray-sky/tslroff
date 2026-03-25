@@ -19,20 +19,20 @@
 
 class CX_UX
 
-  class Nroff < ::Nroff
+  class Nroff < Nroff
     def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(\d\S*)(?:\.z)?$/, '') # nroff pages are compressed
+      @manual_entry ||= source.file.sub(/\.(\d\S*?)(?:\.z)?$/, '') # nroff pages are compressed
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       super(source)
     end
   end
 
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 
     def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(\d\S*)(?:\.z)?$/, '') # nroff pages are compressed
+      @manual_entry ||= source.file.sub(/\.(\d\S*?)(?:\.z)?$/, '') # troff pages are compressed
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       super(source)
     end

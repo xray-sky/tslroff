@@ -15,7 +15,7 @@
 #
 
 class A_UX
-  class Nroff < ::Nroff
+  class Nroff < Nroff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(?:\d\S?)(?:\.[zZ])?$/, '') # REVIEW: would this be better & more generic as a 'scan' call? everything after the section?

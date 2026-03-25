@@ -10,19 +10,19 @@
 #
 
 class RISC_os::V4_52
-  class Nroff < ::RISC_os::Nroff
+  class Nroff < RISC_os::Nroff
 
-    def source_init
-      case @source.file
+    def initialize source
+      case source.file
       when /1prom$/
-        @manual_entry = @source.file.sub(/\.1prom$/, '')
-        @heading_detection = %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
-        @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:-(?<systype>\S+?))?\))\s.+?\s\k<manentry>$}
+        @manual_entry ||= source.file.sub(/\.1prom$/, '')
+        @heading_detection ||= %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
+        @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:-(?<systype>\S+?))?\))\s.+?\s\k<manentry>$}
       when 'newsetup.1', 'newsgroups.1', 'patch.1', 'Pnews.1', 'Rnmail.1'
         # have section as 'entry(1 LOCAL)'
-        @title_detection = %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:\s(?<systype>\S+?))?\))}
+        @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:\s(?<systype>\S+?))?\))}
       end
-      super
+      super source
     end
 
     def page_title

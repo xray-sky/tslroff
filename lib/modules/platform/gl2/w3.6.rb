@@ -13,21 +13,17 @@
 #      our \*(.T is 'html' and we don't have an \(im defined. but maybe we want to implement something.
 #
 
-class GL2::W3_6 < ::GL2
-  class Troff < ::GL2::Troff
+class GL2::W3_6
+  class Troff < GL2::Troff
 
     def initialize(source)
-      @version = "W3.6"
-      super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'intro.2'  then @source.patch_line 317, /\\x-1/, '\s-1'
-      when 'tz.4'     then @source.patch_line  45, /center\./, 'center;'
-      when 'regexp.5' then @source.patch_line 419, /^\.in/, '.if'
+      case source.file
+      when 'intro.2'  then source.patch_line 317, /\\x-1/, '\s-1'
+      when 'tz.4'     then source.patch_line  45, /center\./, 'center;'
+      when 'regexp.5' then source.patch_line 419, /^\.in/, '.if'
       end
-      super
+      super(source)
+      @version = "W3.6"
     end
 
   end

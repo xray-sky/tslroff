@@ -11,22 +11,19 @@
 #
 
 class A_UX::V0_7
-  class Nroff < ::Nroff
+  class Nroff < A_UX::Nroff
 
-    def source_init
-      case @source.file
+    def initialize(source)
+      case source.file
       # title line: 'updater()     updater()'
       when 'updater.1.z'
-        define_singleton_method :parse_title, proc {
-          @manual_section = '1'
-          @output_directory = 'man1'
-          true
-        }
+        @manual_section = '1'
+        @output_directory = 'man1'
       end
-      super
+      super(source)
     end
 
   end
 end
 
-class A_UX::V2_0 < ::A_UX ; end
+class A_UX::V2_0 < A_UX ; end

@@ -26,16 +26,24 @@
 
 class RISCiX::V1_2
 
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
-      when 'sticky.8'
-        @source = Source.new(file, magic: 'Troff', source_args: source_args).patch_line(1, /^/, '.\\"')
+      when 'sticky.8' then source_args[:magic] = 'Troff'
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
+      super file, vendor_class: vendor_class, source_args: source_args
     end
   end
 
-  class Troff < ::Troff ; end
+  class Troff < RISCiX::Troff
+
+    def initialize(source)
+      case source.file
+      when 'sticky.8' then source.patch_line(1, /^/, '.\"')
+      end
+      super source
+    end
+
+  end
 
 end

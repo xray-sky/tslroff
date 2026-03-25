@@ -13,11 +13,11 @@
 # TODO getting extra section info in filename for e.g. 1csh, 1sccs (not 1m, etc.)
 
 class UTek
-  class Nroff < ::Nroff
+  class Nroff < Nroff
 
-    def initialize(source)
+    def initialize source
       @manual_entry ||= source.file.sub(/\.([\dZz][^.]*)$/, '')
-      super(source)
+      super source
     end
 
   end

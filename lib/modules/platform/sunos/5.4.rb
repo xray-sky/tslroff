@@ -9,7 +9,7 @@
 #
 
 class SunOS::V5_4
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     HARDCOPY_TITLES = {
           # Hard Copy Docs Only

@@ -27,7 +27,18 @@
 #  mv(7) has tofu
 
 class AIX::V2_2_1
-  class Nroff < ::Nroff
+
+  class Manual < Manual
+    def initialize file, vendor_class: nil, source_args: {}
+      ## this is working to set the input encoding and avoid the invalid character exception,
+      ## but I'm getting nonsense characters out.
+      #source_args[:encoding] = Encoding::IBM437
+      source_args[:encoding] = Encoding::ASCII_8BIT
+      super file, vendor_class: vendor_class, source_args: source_args
+    end
+  end
+
+  class Nroff < AIX::Nroff
 
     EXTENDED_CHARACTER_TRANSLATIONS = {
       "\x8C".force_encoding(Encoding::ASCII_8BIT) => "<\cH_",
@@ -39,6 +50,27 @@ class AIX::V2_2_1
     EXTENDED_CHARACTERS = EXTENDED_CHARACTER_TRANSLATIONS.keys.join()
 
     def initialize(source)
+      ## this generates the correct translations of CP437 -> UTF-8 (with <meta charset="UTF-8">)
+      ## but compare to what actually shows on the RT, both on the console and in aixterm
+      ##  - printed doc matches our guesses, but not description of RT CP0 from `data stream`(4)
+      source.lines.each { |l| l.gsub!(%r{[#{EXTENDED_CHARACTERS}]}, EXTENDED_CHARACTER_TRANSLATIONS) }
+
+      # 14 char filename length damage
+      case source.file
+      when 'create_ipc_pro'
+        @manual_entry = 'create_ipc_prof'
+        @manual_section = '3'
+      when 'getdtablesize.'
+        @manual_entry = 'getdtablesize'
+        @manual_section = '3'
+      when 'gethostbyaddr.'
+        @manual_entry = 'gethostbyaddr'
+        @manual_section = '3'
+      when 'index.3'
+        @manual_section = '3'
+      when 'a.out.5.z' then @base_indent = 0
+      end
+
       @manual_entry ||= source.file.sub(/\.(?<section>\d\S?)(?:\.[zZ])?$/, '')
       @manual_section ||= Regexp.last_match[:section] if Regexp.last_match
       # REVIEW do we have the manual section in every case (section 1 specifically)?
@@ -50,40 +82,6 @@ class AIX::V2_2_1
       super(source)
 
       @lines_per_page = nil
-    end
-
-    def source_init
-      # REVIEW: have I made changes allowing this to be done more orderly? external encoding?
-
-      ## this is working to set the input encoding and avoid the invalid character exception,
-      ## but I'm getting nonsense characters out.
-      ##src.lines.collect! { |k| k.force_encoding Encoding::IBM437 }
-
-      ## this generates the correct translations of CP437 -> UTF-8 (with <meta charset="UTF-8">)
-      ## but compare to what actually shows on the RT, both on the console and in aixterm
-      ##  - printed doc matches our guesses, but not description of RT CP0 from `data stream`(4)
-      #src.lines.collect! { |k| k.force_encoding(Encoding::IBM437).encode!(Encoding::UTF_8) }
-
-      @source.lines.collect! do |l|
-        l.force_encoding Encoding::ASCII_8BIT
-        l.gsub(%r{[#{EXTENDED_CHARACTERS}]}, EXTENDED_CHARACTER_TRANSLATIONS)
-      end
-
-      # 14 char filename length damage
-      case @source.file
-      when 'create_ipc_pro'
-        @manual_entry = 'create_ipc_prof'
-        @manual_section = '3'
-      when 'getdtablesize.'
-        @manual_entry = 'getdtablesize'
-        @manual_section = '3'
-      when 'gethostbyaddr.'
-        @manual_entry = 'gethostbyaddr'
-        @manual_section = '3'
-      when 'index.3'   then @manual_entry = '_index'
-      when 'a.out.5.z' then @base_indent = 0
-      end
-      super
     end
 
     def page_title

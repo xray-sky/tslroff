@@ -36,7 +36,7 @@ class UNIX::V6
         t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)\s{0,1}(?:<[^<]+?>)*\s{0,1}\((?:<[^<]+?>)*(?<fullsec>(?<section>[IV]*?))(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
           caps = Regexp.last_match
           entry = caps[:entry].sub(/&minus;/, '-')  # this was interfering with link generation - ali(1) [AOS 4.3]
-          %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
+          %(#{caps[:break]}<a href="../man#{caps[:fullsec]}/#{entry}.html">#{caps[:text]}</a>)
         end if style[:linkify]
 
         "<p#{@style}>\n#{t}\n</p>\n"
@@ -44,7 +44,7 @@ class UNIX::V6
     end
   end
 
-  class Troff < ::UNIX::Troff
+  class Troff < UNIX::Troff
 
     alias :Bd :bd
     alias :Dt :dt
@@ -56,6 +56,13 @@ class UNIX::V6
     alias :LP :P
     alias :dt :DT
     alias :sh :SH
+
+    def initialize source
+      case source.file
+      when 'greek.5' then source.patch_line 17, /\s([.1])/, ' +\1', global: true
+      end
+      super source
+    end
 
     def init_ds
       super
@@ -87,15 +94,13 @@ class UNIX::V6
       })
     end
 
-    def source_init
-      case @source.file
-      when 'greek.5' then @source.patch_line(17, /\s([.1])/, ' +\1', global: true)
-      end
-      super
-    end
-
     def blockproto(type = Block::Paragraph)
       super(type)
+    end
+
+    def output_directory
+      @manual_section and return "man#{@manual_section}"
+      super
     end
 
     def bd(*args)

@@ -29,41 +29,34 @@ require_relative './en_us'
 
 class NEWS_os::V4_2_1R_ja_JP
 
-  class Manual < ::Manual
-    def initialize(file, vendor_class: nil, source_args: {})
+  class Manual < Manual
+    def initialize(file, vendor_class: nil, source_args: nil)
+      @language ||= 'ja'
+      srcargs = source_args.dup || {}
+      srcargs[:encoding] ||= Encoding::Shift_JIS
       case File.basename(file)
-      when 'ntpq.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+      when 'ntpq.8' then srcargs[:magic] = 'Troff'
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
+      super(file, vendor_class: vendor_class, source_args: srcargs)
     end
   end
 
-  class Troff < ::NEWS_os::V4_2_1R_en_US::Troff
+  class Troff < NEWS_os::V4_2_1R_en_US::Troff
 
     def initialize(source)
-      @language = 'ja'
-      source.lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }
       @related_info_heading ||= %r{関連事項}u
-      super(source)
-    end
-
-    # REVIEW patch interaction with super (4.2.1R en_US)
-    def source_init
-      case @source.file
-      when 'index.3', 'index.3f7768'
-        @manual_entry = '_index'
+      case source.file
       # TODO when we resolve the baseline/font issue with \u, \d, and \s
       # current status in un-messed-with state is, ugly but not broken. tried to fix it and achieved broken.
       # also there's the issue of doing rewrites in .so for gamma.3m
-      #when 'lgamma.3m'
-      #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
-      when 'ntpq.8'
-        # incorrectly recognized as nroff source as the first character is '@'
-        @source.patch_line(1, /^/, '.')
+      #when 'lgamma.3m' then source.lines[26].gsub!(/\\s10/, "\\s12")
+      # incorrectly recognized as nroff source as the first character is '@'
+      when 'ntpq.8' then source.patch_line(1, /^/, '.')
       end
-      super
+      super(source)
     end
 
+    # TODO revisit this if we ever fix .so to go through Source.new
     def so(name, breaking: nil)
       super(name, breaking: breaking) do |lines|
         lines.collect! { |l| l.force_encoding(Encoding::Shift_JIS).encode!(Encoding::UTF_8) }

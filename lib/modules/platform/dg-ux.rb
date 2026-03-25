@@ -11,11 +11,14 @@
 #        and a couple with super long names match "maaaaaaaaaaan(smaaaaaaaaan(sec)"
 # - but with backspaces are they looking ok? perhaps not or I'd get type clashes?
 #
+# (5.4.2) still linking header line when see also spans page breaks
+#
 # REVIEW how did I end up with a bunch of zero length .z files in 5.4R3.00 ?
 #
 
 class DG_UX
-  class Nroff < ::Nroff
+  class Manual < Manual ; end
+  class Nroff < Nroff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(?:\d\S?)\.g?[zZ]$/, '')

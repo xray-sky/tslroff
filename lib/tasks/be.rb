@@ -97,7 +97,8 @@ collectionNamespace 'Be' do
         beos/documentation/Virtual_Press_Kit/aboutbe/pressreleases
         develop/BeIDE/Documentation/BeOS?doc?/*_html
       ] do |t|
-          assetsTask %w(*.jp*g *.[gG][iI][fF]), t[:idir], t[:odir], cut_dirs: 2
+          assetsTask %w(beos/**/*.jp*g beos/**/*.[gG][iI][fF]), t[:idir], t[:odir], cut_dirs: 2
+          assetsTask %w(develop/**/*.[gG][iI][fF]), t[:idir], t[:odir], cut_dirs: 1
           task :all => [:assets]
         end
     manualNamespace 'R5',
@@ -118,7 +119,8 @@ collectionNamespace 'Be' do
         beos/documentation/User?s?Guide/0[1-7]_*
         develop/BeIDE/Documentation/BeOS?doc?/*_html
       ] do |t|
-          assetsTask %w(*.jp*g *.[gG][iI][fF]), t[:idir], t[:odir], cut_dirs: 2
+          assetsTask %w(beos/**/*.jp*g beos/**/*.[gG][iI][fF]), t[:idir], t[:odir], cut_dirs: 2
+          assetsTask %w(develop/**/*.[gG][iI][fF]), t[:idir], t[:odir], cut_dirs: 1
           task :all => [:assets]
         end
   end

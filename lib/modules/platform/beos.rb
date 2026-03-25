@@ -28,20 +28,23 @@
 #
 
 class BeOS
-  class Nroff < ::Nroff ; end
-  class HTML < ::HTML
-    def initialize source, vendor_class: nil, source_args: {}
-      super source, vendor_class: vendor_class, source_args: source_args
-      #@output_directory = './' + source.dir.sub(%r{^.+(?:beos/documentation|develop)/?}, '') # wrong
-      @manual_entry = @source.file.sub(/\.html$/, '')
-      #@manual_section = ""
+  class Manual < Manual
+    def output_directory
+      @source.dir.partition(%r{^.*/(?:beos/documentation|develop)/?}).last
+    end
+  end
+
+  class Nroff < Nroff ; end
+
+  class HTML < HTML
+    def initialize source
+      @manual_entry = source.file.sub(/\.html$/, '')
+      super source
     end
 
     def to_html(halt_on: nil)
       return nil if halt_on
-      source_init
-      title = @source.title
-      body = @source.xpath('//body')
+      body = xpath('//body')
 
       body_styles = ''
       bgcolor = body.attribute('bgcolor')
@@ -56,12 +59,6 @@ class BeOS
         link['href'] &&= link['href'].sub(/\.1L?$/, '.html')
       end
 
-      # warn about page assets
-      #asset_locations = body.css('img').collect do |img|
-      #  File.dirname(img['src'])
-      #end.compact
-      #warn "asset locations: #{asset_locations.sort.uniq.inspect}" if asset_locations.any?
-
       <<~DOC
         <div class="title"><h1>#{title}</h1></div>
         <div class="htbody"#{%( style="#{body_styles}") unless body_styles.empty?}>
@@ -72,23 +69,18 @@ class BeOS
       DOC
     end
 
-    def to_html_metrowerks
+    def to_html_metrowerks(halt_on: nil)
+      return nil if halt_on
       title = "CodeWarrior &mdash; #{@platform} #{@version}"
 
       <<~DOC
         <div class="title"><h1>#{title}</h1></div>
         <div class="htbody" style="background-color:white;background-image:url('images/arnoldbg.gif');background-repeat:repeat;">
             <div id="man">
-        #{@source_lines[@content_start..@content_end].join}
+        #{@source.lines[@content_start..@content_end].join}
             </div>
         </div>
       DOC
-    end
-
-    # don't let the pages mis-magicked as nroff source mess up the output directory
-    # there's no need to parse the title anyway, since we can ask Nokogiri for it
-    def do_nothing
-      true
     end
 
   end

@@ -10,50 +10,8 @@
 # √ binary garbage in several pages?? - they're packed AND compressed.
 #
 
-=begin
-# TODO this is no good
-class Source
-  def magic
-    case File.basename(@file)
-    when 'acct.ADM.z', 'accton.ADM.z', 'acctsh.ADM.z', 'addx.ADM.z', 'adfmt.ADM.z', 'auditd.ADM.z',
-         'authck.ADM.z', 'backup.ADM.z', 'badtrk.ADM.z', 'chroot.ADM.z',
-         'custom.ADM.z', 'ff.ADM.z', 'fsck.ADM.z', 'fsdb.ADM.z', 'fstyp.ADM.z',
-         'fwtmp.ADM.z', 'goodpw.ADM.z', 'id.ADM.z', 'idinst.ADM.z', 'ipcs.ADM.z', 'majors.ADM.z',
-         'mkdev.ADM.z', 'mmdf.ADM.z', 'mount.ADM.z', 'proto.ADM.z', 'reduce.ADM.z', 'sag.ADM.z',
-         'sar.ADM.z', 'setmnt.ADM.z', 'shtdwn.ADM.z', 'sync.ADM.z', 'tcbck.ADM.z', 'uadmin.ADM.z',
-         'uucico.ADM.z', 'uulist.ADM.z', 'uutry.ADM.z', 'wall.ADM.z', 'xtt.ADM.z', '300.C.z', '450.C.z',
-         'Intro.C.z', 'banner.C.z', 'basename.C.z', 'bc.C.z', 'bdiff.C.z', 'cat.C.z', 'cd.C.z',
-         'chmod.C.z', 'chown.C.z', 'clear.C.z', 'comm.C.z', 'copy.C.z', 'cpio.C.z', 'cron.C.z',
-         'crontab.C.z', 'csh.C.z', 'cut.C.z', 'dd.C.z', 'devnm.C.z', 'dircmp.C.z', 'dirname.C.z',
-         'diskcp.C.z', 'dtype.C.z', 'echo.C.z', 'ed.C.z', 'ex.C.z', 'factor.C.z', 'false.C.z',
-         'file.C.z', 'find.C.z', 'finger.C.z', 'fixhdr.C.z', 'format.C.z', 'getopts.C.z', 'gets.C.z',
-         'greek.C.z', 'grep.C.z', 'head.C.z', 'hp.C.z', 'id.C.z', 'jterm.C.z', 'jwin.C.z',
-         'ksh.C.z', 'last.C.z', 'ln.C.z', 'logname.C.z', 'lp.C.z', 'lpstat.C.z', 'machid.C.z',
-         'mail.C.z', 'mesg.C.z', 'mnt.C.z', 'mv.C.z', 'newform.C.z', 'nl.C.z', 'paste.C.z',
-         'pax.C.z', 'pr.C.z', 'pwcheck.C.z', 'rcvtrip.C.z', 'remote.C.z', 'rmdir.C.z', 'sddate.C.z',
-         'setkey.C.z', 'sh.C.z', 'shl.C.z', 'spell.C.z', 'spline.C.z', 'split.C.z', 'tail.C.z',
-         'tapecntl.C.z', 'tar.C.z', 'tee.C.z', 'tset.C.z', 'umask.C.z', 'uname.C.z', 'uniq.C.z',
-         'uustat.C.z', 'uuto.C.z', 'uux.C.z', 'vi.C.z', 'vidi.C.z', 'w.C.z', 'what.C.z',
-         'who.C.z', 'whodo.C.z', 'xargs.C.z', 'yes.C.z', 'a.out.F.z', 'authcap.F.z', 'clock.F.z',
-         'core.F.z', 'filehdr.F.z', 'filesyst.F.z', 'fspec.F.z', 'group.F.z', 'hs.F.z', 'inittab.F.z',
-         'limits.F.z', 'linenum.F.z', 'mapchan.F.z', 'mem.F.z', 'mfsys.F.z', 'micnet.F.z',
-         'mnttab.F.z', 'nl_type.F.z', 'permiss.F.z', 'plot.F.z', 'pnch.F.z', 'poll.F.z', 'reloc.F.z',
-         'sccsfile.F.z', 'scnhdr.F.z', 'scr_dump.F.z', 'sdevice.F.z', 'tables.F.z', 'termcap.F.z',
-         'terminfo.F.z', 'top.F.z', 'types.F.z', 'utmp.F.z', 'x.out.F.z', 'xbackup.F.z', 'Intro.HW.z',
-         'boot.HW.z', 'cdrom.HW.z', 'cmos.HW.z', 'hd.HW.z', 'machine.HW.z', 'mouse.HW.z', 'ramdisk.HW.z',
-         'rtc.HW.z', 'screen.HW.z', 'tape.HW.z', 'xt.HW.z', 'ascii.M.z', 'cvtomf.M.z', 'fcntl.M.z',
-         'isverify.M.z', 'jagent.M.z', 'login.M.z', 'mapchan.M.z', 'messages.M.z', 'mestbl.M.z', 'numtbl.M.z',
-         'prof.M.z', 'profile.M.z', 'rmb.M.z', 'streamio.M.z', 'sxt.M.z', 'terminfo.M.z', 'timtbl.M.z',
-         'tirdwr.M.z', 'values.M.z', 'xtproto.M.z', 'X.X.z', 'mwm.X.z', 'xdm.X.z', 'xedit.X.z'
-      'Nroff'
-    else @magic
-    end
-  end
-end
-=end
-
 class OpenDesktop::V1_1_0
-  class Manual < ::Manual
+  class Manual < OpenDesktop::Manual
     # these are the packed+compressed pages
     ZEXTRA = %w[
       Intro.ADM.z	accept.ADM.z	authsh.ADM.z	brc.ADM.z	clri.ADM.z	cprint.ADM.z
@@ -137,25 +95,21 @@ class OpenDesktop::V1_1_0
       tirdwr.M.z	values.M.z	xtproto.M.z
     ]
 
-    def initialize(file, vendor_class: nil, source_args: {})
+    def initialize(file, vendor_class: nil, source_args: nil)
+      srcargs = source_args.dup || {}
       if ZEXTRA.include? File.basename(file)
-        @source = Source.new(file, magic: 'Nroff', source_args: source_args) { |f| IO.readlines("| gzip_old -dc #{f} | zcat") }
+        srcargs[:magic] = 'Nroff'
+        super(file, vendor_class: vendor_class, source_args: srcargs) { |f| IO.readlines("| gzip_10.6 -dc #{f} | zcat") }
+      else
+        super(file, vendor_class: vendor_class, source_args: srcargs)
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
-  class Nroff < ::OpenDesktop::Nroff
+  class Nroff < OpenDesktop::Nroff
 
     def initialize(source)
-      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
-      @related_info_heading ||= 'See Also'
-      super(source)
-    end
-
-    def source_init
-      case @source.file
+      case source.file
       when 'assign.CMD.z', 'attrib.CMD.z', 'break.CMD.z', 'chdir.CMD', 'chkdsk.CMD.z',
            'cls.CMD', 'command.CMD.z', 'ctty.CMD.z', 'date.CMD.z', 'del.CMD.z'
         @output_directory = 'manDOS'
@@ -164,8 +118,13 @@ class OpenDesktop::V1_1_0
         #@title_detection = %r{^\s{4}(?<manentry>(?<cmd>\S+?)\s\((?<section>[A-Z]+)\))\s+}
         @related_info_heading = 'SEE ALSO'
       end
-      super
+      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
+      @related_info_heading ||= 'See Also'
+      super(source)
     end
 
   end
 end
+
+class SCO_SysV386::V3_2v2_0n < OpenDesktop::V1_1_0 ; end

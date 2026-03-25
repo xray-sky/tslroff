@@ -122,12 +122,14 @@ class Aegis
     end
 =end
 
-  class Nroff < ::Nroff
+  class Manual < Manual ; end
+  class Nroff < Nroff
 
     include Utils
 
     def initialize(source)
       @systype = Regexp.last_match[1] if source.dir.match(%r{(bsd|sys5)})
+      @manual_entry = source.file if source.dir.end_with? '/doc'  # release notes REVIEW
       @manual_entry ||= source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '') + (@systype ? ".#{@systype}" : '')
       @title_detection ||= %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
       #@base_indent ||= 5  # REVIEW unimplemented
@@ -147,13 +149,6 @@ class Aegis
 	    alias :detect_links :detect_links_syscalls
         @lines_per_page = nil # REVIEW this was everything
 	  end
-    end
-
-    def source_init
-      case @source.file
-      when 'index.hlp' then @manual_entry = '_index'
-      end
-      super
     end
 
     def page_title
@@ -296,9 +291,13 @@ class Aegis
       end.to_h
     end
 
+    def output_directory
+      return @source.dir.sub(%r{^.*/(help)}, '\1') if @source.dir.include?('/help')
+      super
+    end
   end
 
-  class Troff < ::Troff
+  class Troff < Troff
 
     include Utils
 

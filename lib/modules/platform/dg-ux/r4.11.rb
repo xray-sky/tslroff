@@ -8,19 +8,24 @@
 #
 
 class DG_UX::R4_11
-  class Nroff < ::DG_UX::Nroff
-
-    def initialize(source)
-      # REVIEW encoding -> can it be done better now?
-      source.lines.collect! { |l| l.force_encoding(Encoding::ISO_8859_1).encode!(Encoding::UTF_8) }
-
-      case source.file
+  class Manual < DG_UX::Manual
+    def initialize file, vendor_class: nil, source_args: nil
+      case File.basename file
       when /^(?:contents|index)\d?\.(?:B2|C2|dgux|failover|nfs|onc|sdk|tcpip|X11)/
         raise ManualIsBlacklisted, 'is metadata'
       end
 
-      super(source)
+      srcargs = source_args.dup || {}
+      srcargs[:encoding] = Encoding::ISO_8859_1
 
+      super file, vendor_class: vendor_class, source_args: srcargs
+    end
+  end
+
+  class Nroff < DG_UX::Nroff
+
+    def initialize(source)
+      super(source)
       @lines_per_page = nil
     end
 

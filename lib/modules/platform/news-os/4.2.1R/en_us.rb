@@ -12,35 +12,30 @@
 
 class NEWS_os::V4_2_1R_en_US
 
-  class Manual < ::Manual
-    def initialize(file, vendor_class: nil, source_args: {})
+  class Manual < Manual
+    def initialize(file, vendor_class: nil, source_args: nil)
+      srcargs = source_args.dup || {}
       case File.basename(file)
-      when 'chgrp.1', 'prof.1'
-        @source = Source.new(file, magic: 'Troff', source_args: source_args)
+      when 'chgrp.1', 'prof.1' then srcargs[:magic] = 'Troff'
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
+      super(file, vendor_class: vendor_class, source_args: srcargs)
     end
   end
 
-  class Troff < ::NEWS_os::Troff
+  class Troff < NEWS_os::Troff
 
-    def source_init
-      case @source.file
-      when 'index.3', 'index.3f7768'
-        @manual_entry = '_index'
+    def initialize source
+      case source.file
       # TODO when we resolve the baseline/font issue with \u, \d, and \s
       # current status in un-messed-with state is, ugly but not broken. tried to fix it and achieved broken.
       # also there's the issue of doing rewrites in .so for gamma.3m
-      #when 'lgamma.3m'
-      #  k.instance_variable_get('@source').lines[26].gsub!(/\\s10/, "\\s12")
-      when 'chgrp.1'
-        # incorrectly recognized as nroff source as the first character is ' '
-        @source.patch_line(1, /^ /, '')
-      when 'prof.1'
-        # incorrectly recognized as nroff source as the first character is 'p'
-        @source.patch_line(1, /^p/, '.')
+      #when 'lgamma.3m' then source.lines[26].gsub!(/\\s10/, "\\s12")
+      # incorrectly recognized as nroff source as the first character is ' '
+      when 'chgrp.1' then source.patch_line(1, /^ /, '')
+      # incorrectly recognized as nroff source as the first character is 'p'
+      when 'prof.1' then source.patch_line(1, /^p/, '.')
       end
-      super
+      super source
     end
 
     def init_ds

@@ -12,7 +12,7 @@
 #
 
 class IRIX
-  class Nroff < ::Nroff
+  class Nroff < Nroff
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
@@ -23,7 +23,7 @@ class IRIX
   end
 
   class V6_5
-    class Nroff < ::IRIX::Nroff
+    class Nroff < IRIX::Nroff
       def initialize(source)
         @manual_entry ||= source.file.sub(/\.z$/, '')
         @heading_detection ||= %r(^\s{0,5}(?<section>[A-Z][A-Za-z\s]+)$)

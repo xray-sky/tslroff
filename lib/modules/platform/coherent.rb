@@ -14,21 +14,22 @@
 #
 
 class Coherent
-  class Nroff < ::Nroff
+  class Manual < Manual
+    def output_directory
+      @source.dir.split('/').last
+    end
+  end
+
+  class Nroff < Nroff
 
     def initialize(source)
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\(\S*?\))\s.+?\s\k<manentry>$}
-      @output_directory ||= @source.dir
       @related_info_heading ||= '***** See Also *****'
 
       case source.file
-      when 'default'
-        @manual_entry ||= '_default'
-      when 'index'
-        @manual_entry ||= '_index'
       when /^_(23|5F)/
-        trname = @manual_entry.slice(1..-1)
+        trname = source.file.slice(1..-1)
         trname.gsub!(/5F5F/, '__')
         trname.gsub!(/23/, '#')
         @manual_entry = trname

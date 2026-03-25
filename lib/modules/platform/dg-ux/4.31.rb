@@ -10,7 +10,7 @@
 #
 
 class DG_UX::V4_31
-  class Nroff < ::DG_UX::Nroff
+  class Nroff < DG_UX::Nroff
 
     def initialize(source)
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)

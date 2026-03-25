@@ -9,16 +9,16 @@
 
 class SunOS::V3_0
 
-  class Manual < ::Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'skyversion.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+  class Manual < Manual
+    def initialize file, vendor_class: nil, source_args: {}
+      case File.basename file
+      when 'skyversion.8' then source_args[:magic] = 'Troff'
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
+      super file, vendor_class: vendor_class, source_args: source_args
     end
   end
 
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',

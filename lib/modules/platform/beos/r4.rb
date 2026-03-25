@@ -17,24 +17,31 @@
 
 class BeOS::R4
 
-  class Manual < ::Manual
-    def initialize(file, vendor_class: nil, source_args: {})
+  class Manual < BeOS::Manual
+    def initialize(file, vendor_class: nil, source_args: nil)
+      srcargs = source_args.dup || {}
       case File.basename(file)
       when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
-        source_args.merge!({encoding: Encoding::ISO_8859_1})
+        srcargs[:encoding] = Encoding::ISO_8859_1
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
+
+      super(file, vendor_class: vendor_class, source_args: srcargs, preprocess: :preprocessing)
+
+      case @source.dir
+      when /The_Be_FAQs/
+        xpath('//body').css('form').each { |form| form['action'] = '' }
+        # this spacer gif is messing up the box model
+        xpath('//img[@src="../graphics/spacer.gif"]').each { |img| img['width'] = '0' }
+      end
     end
-  end
 
-  class HTML < ::BeOS::HTML
+  private
 
-    def source_init
-      dir = @source.dir
+    def preprocessing
       @source.patch(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;', global: true)
-      super
-      @source.xpath('//body').css('form').each { |form| form['action'] = '' } if dir.include?('The_Be_FAQs')
     end
-
   end
+
+  class HTML < BeOS::HTML ; end
+
 end

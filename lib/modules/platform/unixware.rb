@@ -17,23 +17,20 @@
 #
 
 class UnixWare
-  class Nroff < ::Nroff
+  class Nroff < Nroff
 
-    def initialize(source)
-      @manual_entry ||= source.file.sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
-      @heading_detection ||= %r(^\s{6,7}(?<section>[A-Z][A-Za-z\s]+)$)
-      @title_detection ||= %r{^       (?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
-      @related_info_heading ||= 'REFERENCES'
-      super(source)
-    end
-
-    def source_init
-      if @source.file =~ /_to_.+\.3/
+    def initialize source
+      if source.file =~ /_to_.+\.3/
         @manual_section = '3BSD'
         @output_directory = 'man3bsd'
         ''
       end
-      super # REVIEW didn't used to super if above true
+
+      @manual_entry ||= source.file.sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
+      @heading_detection ||= %r(^\s{6,7}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^       (?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
+      @related_info_heading ||= 'REFERENCES'
+      super source
     end
 
   end

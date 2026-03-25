@@ -15,7 +15,7 @@
 #
 
 class SunOS::V5_10
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     HARDCOPY_TITLES = {
             # Hard Copy Docs Only
@@ -351,9 +351,10 @@ class SunOS::V5_10
     HARDCOPY_TITLES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
 
-    def initialize(source)
+    def initialize source
       @manual_entry ||= source.file.sub(/\.(\d\S*)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super source
     end
 
     def init_ds
@@ -368,13 +369,17 @@ class SunOS::V5_10
 
     def init_fp
       super
-      @mounted_fonts[4] = 'BI' # REVIEW is this right? or is it H ...or S???
-      @mounted_fonts[5] = 'CW'
-    end
+      @mounted_fonts[4] = 'BI'  # Times-BoldItalic
+      @mounted_fonts[5] = 'CW'  # Courier
+      @mounted_fonts[6] = 'H'   # Helvetica
+      @mounted_fonts[7] = 'HB'  # Helvetica-Bold
+      @mounted_fonts[8] = 'HX'  # Helvetica-BoldOblique
 
-    def init_sunos551
-      @state[:sections] = {
-      }
+      # these are set but we don't care.
+      # ...probably
+
+      #@mounted_fonts[9] = 'S1'  # Times-Roman
+      #@mounted_fonts[10] = 'S'  # Symbol
     end
 
     define_method 'SB' do |*args|

@@ -27,8 +27,6 @@ class DomainOS::SR10_4
 
     def initialize(source)
       case source.file
-      when 'index.hlp'
-        @manual_entry = '_index'
       when 'coffdump.1'
         define_singleton_method(:detect_links, method(:detect_links_sysv_coffdump)) if @source.dir.include? 'sys5'
       when 'edacl.hlp'

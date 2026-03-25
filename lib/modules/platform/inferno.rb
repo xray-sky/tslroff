@@ -11,9 +11,9 @@
 #
 
 class Inferno
-  class HTML < ::HTML ; end
-  class Nroff < ::Nroff ; end
-  class Troff < ::Troff
+  class HTML < HTML ; end
+  class Nroff < Nroff ; end
+  class Troff < Troff
     alias :LP :P
   end
 end

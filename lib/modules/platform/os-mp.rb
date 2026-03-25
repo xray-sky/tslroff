@@ -11,7 +11,7 @@
 #
 
 class OS_MP
-  class Troff < ::Troff
+  class Troff < Troff
 
     MANUAL_NAMES = {
       'DOCBOX'   => 'Documentation Set',
@@ -110,13 +110,6 @@ class OS_MP
       @manual_entry ||= source.file.sub(/\.(\d\S*)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       super(source)
-    end
-
-    def source_init
-      case k.instance_variable_get '@input_filename'
-      when /^(index|default)\./ then @manual_entry = "_#{Regexp.last_match[1]}"
-      end
-      super
     end
 
     def init_ds

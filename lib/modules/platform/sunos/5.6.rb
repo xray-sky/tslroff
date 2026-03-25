@@ -11,7 +11,7 @@
 #
 
 class SunOS::V5_6
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize file, vendor_class: nil, source_args: {}
       case file
       when 'xil.macs' then raise ManualIsBlacklisted, 'is XIL manual macro package'
@@ -20,7 +20,7 @@ class SunOS::V5_6
     end
   end
 
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     HARDCOPY_TITLES = {
             # Hard Copy Docs Only

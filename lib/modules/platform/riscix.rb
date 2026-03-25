@@ -8,12 +8,12 @@
 #
 
 class RISCiX
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 
     def initialize(source)
-      @manual_entry ||= @input_filename.sub(/\.(\d\S*)$/, '')
+      @manual_entry ||= source.file.sub(/\.(\d\S*)$/, '')
       @manual_section ||= Regexp.last_match[1]
       super(source)
     end

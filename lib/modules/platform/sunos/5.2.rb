@@ -9,18 +9,17 @@
 #
 
 class SunOS::V5_2
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       # misdetected as nroff due to slightly truncated file start
-      when 'xcalc.1'
-          @source = Source.new(file, magic: 'Troff', source_args: source_args).patch_line(1, /^/, '.de ')
+      when 'xcalc.1' then source_args[:magic] = 'Troff'
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_NAMES = {
       'APDEVGUIDE' => "Solaris 2.1 Application Developer's Guide",
@@ -189,6 +188,13 @@ class SunOS::V5_2
     }
 
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
+
+    def initialize source
+      case source.file
+      when 'xcalc.1' then source.patch_line 1, /^/, '.de '
+      end
+      super source
+    end
 
     def init_ds
       super

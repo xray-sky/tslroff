@@ -8,23 +8,25 @@
 #
 
 class GL2::W2_3
-  class Troff < ::GL2::Troff
-
+  class Nroff < GL2::Nroff
     def initialize(source)
-      @version = "W2.3"
-      super(source)
-    end
-
-    def source_init
-      case @source.file
+      case source.file
       when 'trenter.1'  # is nroff
         @heading_detection = %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
         @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
-      when 'regexp.5' then @source.patch_line 418, /^\.in/, '.if'
       end
-      super
+      super(source)
     end
+  end
 
+  class Troff < GL2::Troff
+    def initialize(source)
+      case source.file
+      when 'regexp.5' then source.patch_line 418, /^\.in/, '.if'
+      end
+      super(source)
+      @version = "W2.3"
+    end
   end
 end
 

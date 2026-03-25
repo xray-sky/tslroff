@@ -33,8 +33,8 @@
 #
 
 class GL2
-  class Nroff < ::Nroff ; end  # This is temporarily supporting 4D1 ThirdParty
-  class Troff < ::Troff
+  class Nroff < Nroff ; end  # This is temporarily supporting 4D1 ThirdParty
+  class Troff < Troff
 
     alias :LP :P
 

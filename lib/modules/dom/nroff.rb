@@ -111,6 +111,12 @@ class Nroff < TextFormatter
     end
   end
 
+  def output_directory
+    @manual_section and return "man#{@manual_section.downcase}"
+    warn "reading output directory without section set"
+    ''
+  end
+
   private
 
   def unformat(line)

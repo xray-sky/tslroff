@@ -20,7 +20,7 @@ class AIX
         [ text, "#{text.split(/[,:]\s?/).first}.html" ]
       end.to_h
 
-      if line.count('"').odd # an odd number of double quotes; some ref is split to next line
+      if line.count('"').odd? # an odd number of double quotes; some ref is split to next line
         @refs_continue = :quoted_break
         line.scan(/"([^"]+),?\s*$/).map do |text, _x|
           @continued_ref = "#{text.split(/[,:]\s?/).first}.html"

@@ -59,7 +59,7 @@ require_relative 'lib/classes/manual'
 
 
 desc 'Copy static file assets'
-task :assets => [:fonts, :css]
+task :assets => [:fonts, :css, :gfx]
 
 task :fonts do |t|
   directory Pubroot
@@ -68,6 +68,16 @@ end
 
 task :css do |t|
   cp "#{Assets}/tslroff.css", Pubroot
+end
+
+task :gfx do |t|
+  cp "#{Assets}/bell_logo.svg", Pubroot
+
+  # Future love paradise
+  #gfxdir = "#{Pubroot}/assets"
+  #directory gfxdir
+  #cp_r "#{Assets}/flags", gfxdir
+  #cp_r "#{Assets}/logos", gfxdir
 end
 
 # manual collections

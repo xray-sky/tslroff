@@ -10,14 +10,17 @@
 #
 
 class Ardent_SysV::R4_1
-  class Troff < ::Ardent_SysV::Troff
-
-    def source_init
-      case @source.file
+  class Manual < Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.basename(file)
       when 'tdore.sid' then raise ManualIsBlacklisted, 'is metadata'
       end
-      super
+
+      super file, vendor_class: vendor_class, source_args: source_args
     end
+  end
+
+  class Troff < Ardent_SysV::Troff
 
     def init_ds
       super
@@ -31,5 +34,3 @@ class Ardent_SysV::R4_1
 
   end
 end
-
-class Ardent_SysV::R4_2 < Ardent_SysV::R4_1 ; end

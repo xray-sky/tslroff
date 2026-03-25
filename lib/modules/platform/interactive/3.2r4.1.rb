@@ -16,7 +16,7 @@
 
 class Interactive::V3_2r4_1
 
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'i596.7' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
@@ -25,7 +25,7 @@ class Interactive::V3_2r4_1
     end
   end
 
-  class Troff < ::Interactive::Troff
+  class Troff < Interactive::Troff
 
     def initialize(source)
       case source.file

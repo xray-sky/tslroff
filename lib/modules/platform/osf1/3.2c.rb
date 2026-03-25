@@ -14,15 +14,15 @@
 #
 
 class OSF1::V3_2c
-  class Manual < ::Digital_UNIX::Manual ; end
-  class Nroff < ::Digital_UNIX::Nroff ; end
-  class Troff < ::Digital_UNIX::Troff
+  class Manual < Digital_UNIX::Manual ; end
+  class Nroff < Digital_UNIX::Nroff ; end
+  class Troff < Digital_UNIX::Troff
 
-    def source_init
-      case @source.file
-      when 'vrestore.8' then @source.patch_line 111, /\\\*\\-/, "\\*L\\-"
+    def initialize source
+      case source.file
+      when 'vrestore.8' then source.patch_line 111, /\\\*\\-/, "\\*L\\-"
       end
-      super
+      super source
     end
 
   end

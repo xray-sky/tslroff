@@ -23,7 +23,7 @@
 #
 
 class SunOS::V0_3
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_SECTION_NAMES = {
       '1'  => "User's Manual \\(em Commands",
@@ -58,13 +58,6 @@ class SunOS::V0_3
         raise ManualIsBlacklisted, 'apparently detritus'
       end
       super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'index.3f' then @manual_entry = '_index'
-      end
-      super
     end
 
     def init_ds

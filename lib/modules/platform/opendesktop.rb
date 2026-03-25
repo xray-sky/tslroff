@@ -11,7 +11,8 @@
 #
 
 class OpenDesktop
-  class Nroff < ::Nroff
+  class Manual < Manual ; end
+  class Nroff < Nroff
 
     def initialize(source)
       #@manual_entry ||= source.file.sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
@@ -26,9 +27,8 @@ class OpenDesktop
     def parse_title
       title = get_title or warn "reached end of document without finding title!"
       return unless title
-      @manual_entry     = title[:cmd].downcase
+      @manual_entry     = title[:cmd].downcase # this is where I'm losing capital letters... philosophical conflict between all caps title and truncated filename
       @manual_section   = title[:section]
-      @output_directory = "man#{@manual_section}"
       title
     end
 
@@ -38,6 +38,11 @@ class OpenDesktop
       line.scan(/(?<=[\s,.;])((\S+?)\(([A-Z]+?)\))/).map do |text, ref, section|
         [text, "../man#{section}/#{ref}.html"]
       end.to_h
+    end
+
+    def output_directory
+      @manual_section and return "man#{@manual_section}"
+      super
     end
 
   end

@@ -24,48 +24,48 @@
 #   ar.5 [27]: .so can't read /usr/include/ar.h
 
 class AOS::V4_3
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'async_daemon.2', 'setdomainname.2',
            'yp_all.3n', 'yp_bind.3n', 'yp_match.3n', 'yp_next.3n',
            'yp_order.3n', 'yp_unbind.3n', 'yperr_string.3n', 'ypprot_err.3n'
-          @source = Source.new(file, magic: 'Troff', source_args: source_args)
+          source_args[:magic] = 'Troff'
       end
       super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
-  class Troff < ::AOS::Troff
+  class Troff < AOS::Troff
 
-    def source_init
-      case @source.file
-      when 'bf77.1' then @source.patch_line(240, /^/, '\\\\&') # non-macro line starts with .
+    def initialize(source)
+      case source.file
+      when 'bf77.1' then source.patch_line(240, /^/, '\\\\&') # non-macro line starts with .
       # REVIEW maybe this kind of thing should be left alone?
       # -- this appears to have been specific to the aek distrib
       #when 'f77.1'
       #  k.patch_line(277, /^/, "\\&") # non-macro line starts with .
       when 'fpr.1' # there's a preprocessed tbl in here, but also some comments with the tbl input which we should use instead
-        @source.patch_lines(29..38, /^\.\\"\s/, '')
-        @source.patch_lines(41..157, /^/, '\"')
+        source.patch_lines(29..38, /^\.\\"\s/, '')
+        source.patch_lines(41..157, /^/, '\"')
       # REVIEW maybe this kind of thing should be left alone?
-      when 'ftp.1c' then @source.patch_line(210, /f$/, 'fP')
+      when 'ftp.1c' then source.patch_line(210, /f$/, 'fP')
       when 'help.1' # also in olh.1 but uses .so
-        @source.patch_line(21, /^/, "\\&")	# non-macro line starts with '
+        source.patch_line(21, /^/, "\\&")	# non-macro line starts with '
       when 'mdtar.1'
-        @source.patch_line(97, /\\\*\s+$/, '*')
-        @source.patch_line(103, /\\\*$/, '*') # nroff ignores these, but they are intended to output
+        source.patch_line(97, /\\\*\s+$/, '*')
+        source.patch_line(103, /\\\*$/, '*') # nroff ignores these, but they are intended to output
       when 'async_daemon.2', 'setdomainname.2',
            'yp_all.3n', 'yp_bind.3n', 'yp_match.3n', 'yp_next.3n', 'yp_order.3n',
            'yp_unbind.3n', 'yperr_string.3n', 'ypprot_err.3n'
-        @source.patch_lines(1..3, /^#/, '.\\"')
-      when 'index.3' then @manual_entry = '_index'
-      when 'mouse.4' # there's preprocessed eqn in here, but also some comments with the eqn input which we should use instead
-        @source.patch_lines(123..141, /^\.\\"/, '')
-        @source.patch_line(255, /t/, 'n')
+        source.patch_lines(1..3, /^#/, '.\\"')
+      when 'mouse.4' # there's preprocessed eqn in here, but also some comments with the eqn input which we could use instead
+        source.patch_lines(123..141, /^\.\\"/, '')
+        source.patch_line(255, /t/, 'n')
       #when 'Script', 'Scrit'
       #  raise ManualIsBlacklisted, 'not a manual entry'
       end
+      super(source)
     end
 
   end

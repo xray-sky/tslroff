@@ -10,11 +10,13 @@ collectionNamespace 'mips' do
   collectionNamespace 'RISC/os' do
     manualNamespace '4.52',
       vendor_class: RISC_os::V4_52,
-      odir: 'mips/RISC-os/4.52',
+      idir: 'mips/risc-os/4.52',
+      odir: 'mips/RISC:os/4.52',
       sources: %w[man/catman/?_man/*man[1-8]]
     manualNamespace '5.01',
       vendor_class: RISC_os::V5_01,
-      odir: 'mips/RISC-os/5.01',
+      idir: 'mips/risc-os/5.01',
+      odir: 'mips/RISC:os/5.01',
       sources: %w[share/man/catman/?_man/*man[1-8]]
   end
 end

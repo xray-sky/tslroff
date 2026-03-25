@@ -11,7 +11,7 @@
 
 class SunOS::V3_2
 
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'mc68881version.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
@@ -20,7 +20,7 @@ class SunOS::V3_2
     end
   end
 
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',
@@ -56,12 +56,12 @@ class SunOS::V3_2
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
 
-    def initialize(source)
+    def initialize source
       case source.file
       when 'Makefile'            then raise ManualIsBlacklisted, 'is makefile'
       when 'configuration.file5' then raise ManualIsBlacklisted, 'is nonsense'  # SYS4 only
       end
-      super(source)
+      super source
     end
 
     def init_ds

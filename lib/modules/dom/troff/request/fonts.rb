@@ -135,7 +135,7 @@ class Troff
   end
 
   def init_ss
-    @state[:default_ss] = 12/36.0
+    @state[:default_ss] = 12/36.0 # REVIEW is this correctly Font.defaultsize/36.0?
   end
 
 end

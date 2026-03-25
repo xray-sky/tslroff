@@ -11,8 +11,8 @@
 #
 
 class NEWS_os
-  class Nroff < ::Nroff ; end
-  class Troff < ::Troff
+  class Nroff < Nroff ; end
+  class Troff < Troff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.([\dnop][^.]*)$/, '')

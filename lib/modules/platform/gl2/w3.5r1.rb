@@ -8,22 +8,22 @@
 #
 
 class GL2::W3_3_1
-  class Troff < ::GL2::Troff
+  class Troff < GL2::Troff
 
     def initialize(source)
-      @version = "W3.3.1"
       super(source)
+      @version = "W3.3.1"
     end
 
   end
 end
 
 class GL2::W3_5r1
-  class Troff < ::GL2::Troff
+  class Troff < GL2::Troff
 
     def initialize(source)
-      @version = "W3.5r1"
       super(source)
+      @version = "W3.5r1"
     end
 
   end

@@ -17,7 +17,7 @@
 #
 
 class Ultrix::V2_0_0
-  class Troff < ::Ultrix::Troff
+  class Troff < Ultrix::Troff
 
     def init_ds
       super

@@ -164,13 +164,14 @@ end
 
 def collectionTask sources, srcdir, pubdir, limit: nil, vendor_class: nil, source_args: {}
   pagecount = 0
-  # need to cover both file and directory (deep) wildcards
-  fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/**/*" ] }.flatten)
+  # need to cover both file and directory wildcards
+  fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
   fl.each do |src|
     next if File.directory?(src)
     next if limit and !File.basename(src).match?(limit)
     # TODO symlinks - checked first to avoid file? from following them
     warn "symlink #{src} (skipped)" and next if File.symlink?(src)
+    puts "<== #{src}" if limit
     pagecount += 1
     manualTask(src, pubdir, vendor_class: vendor_class, source_args: source_args)
   end
@@ -192,14 +193,15 @@ def manualTask source, pubdir, vendor_class: nil, source_args: {}
   # can't find section? output to parent dir
   # TODO busted as hell for HTML, Aegis help, etc.
   #      need to maintain some extra structure, not force man*/, etc.
-  odir = (section and !section.empty?) ? "#{pubdir}/man#{section.downcase}" : "#{pubdir}"
+  #odir = (section and !section.empty?) ? "#{pubdir}/man#{section.downcase}" : "#{pubdir}"
+  odir = "#{pubdir}/#{man.output_directory}"
   related = man.magic == :HTML ? [] : Nokogiri::HTML(page).search('a[@href]')  # TODO better
 
   directory(odir).invoke
   taskcontext = binding
   # prevent these from masking the apache file index (TODO not necessary once we are building our own indices)
-  title = '_index' if title == 'index'
-  title = '_default' if title == 'default'
+  title = '_index'   if title == 'index'   and man.magic != :HTML
+  title = '_default' if title == 'default' and man.magic != :HTML
   File.open("#{odir}/#{title}.html", File::CREAT|File::TRUNC|File::WRONLY, 0o644) do |f|
     f.write ERB.new(Template, trim_mode: '-').result(taskcontext)
   end

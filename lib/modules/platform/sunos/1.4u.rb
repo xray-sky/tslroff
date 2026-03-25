@@ -14,7 +14,7 @@
 #
 
 class SunOS::V1_4U
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',

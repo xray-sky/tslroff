@@ -8,5 +8,6 @@
 #
 
 class AMIX::V2_01
-  class Troff < ::AMIX::Troff ; end
+  class Nroff < AMIX::Nroff ; end
+  class Troff < AMIX::Troff ; end
 end

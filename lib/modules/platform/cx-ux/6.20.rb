@@ -24,8 +24,8 @@
 #
 
 class CX_UX::V6_20
-  class Nroff < ::CX_UX::Nroff ; end
-  class Troff < ::CX_UX::Troff
+  class Nroff < CX_UX::Nroff ; end
+  class Troff < CX_UX::Troff
 
     def initialize(source)
       case source.file
@@ -33,8 +33,6 @@ class CX_UX::V6_20
       when 'ftp.1c'
         source.patch_line(210, /$/, 'P') # suppress the warning, doesn't need action
         source.patch_line(356, /\\P/, 'P') # suppress the warning, doesn't need action
-      when 'index.3c.z', 'index.3f.z', 'index.3x.z'
-        @manual_entry ||= '_index'
       when 'localeconv.3c' then source.patch_lines([38, 42], /\\fp/, '') # suppress the warning, doesn't need action
       when 'gps.4'         then source.patch_line(17, /$/, 'P') # suppress the warning, doesn't need action
       end

@@ -18,13 +18,10 @@
 #
 
 class HPUX::V5_20
-  class Troff < ::HPUX::Troff
+  class Troff < HPUX::Troff
 
-    def initialize(source)
-      # .cm is not official nor in tmac.an but is apparently used in practice for comments
-      #k.define_singleton_method(:req_cm, k.method('req_\"')) if k.methods.include?('req_\"')
-      super(source)
-    end
+    # .cm is not official nor in tmac.an but is apparently used in practice for comments
+    #alias :cm :'\"'
 
     def init_ds
       super

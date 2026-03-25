@@ -8,8 +8,8 @@
 #
 
 class HPUX
-  class Nroff < ::Nroff ; end
-  class Troff < ::Troff
+  class Nroff < Nroff ; end
+  class Troff < Troff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')

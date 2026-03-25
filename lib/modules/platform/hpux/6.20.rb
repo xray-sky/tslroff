@@ -17,15 +17,14 @@
 #
 
 class HPUX::V6_20
-  class Troff < ::HPUX::Troff
+  class Troff < HPUX::Troff
 
-    def source_init
-      # .cm is not official nor in tmac.an but is apparently used in practice for comments
-      #k.define_singleton_method(:req_cm, k.method('req_\"')) if k.methods.include?('req_\"')
-      case @source.file
-      when 'wmove.3w' # has "upper-\left". how did that _ever_ work. REVIEW how does troff handle that pathological input?
-        @source.patch_line(17, /\\l/, 'l')
+    def initialize source
+      case source.file
+      # has "upper-\left". how did that _ever_ work. REVIEW how does troff handle that pathological input?
+      when 'wmove.3w' then source.patch_line(17, /\\l/, 'l')
       end
+      super source
     end
 
     def init_ds

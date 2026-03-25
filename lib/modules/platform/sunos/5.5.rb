@@ -56,7 +56,7 @@
 #
 
 class SunOS::V5_5
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     HARDCOPY_TITLES = {
           # Hard Copy Docs Only
@@ -329,15 +329,17 @@ class SunOS::V5_5
     HARDCOPY_TITLES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
 
-    def source_init
-      case @source.file
-      when 'ld.1' then @source.patch_line(768, /\\h/, 'h')
-      when 'a.out.4' # h4x: collapsed tbl cells due to line-height:0 from \u...\d
-        @source.patch_lines([55, 59, 61], /(\\u.+?\\d)/, '\\ \1\\ ', global: true)
-      when 'ar.4' # h4x: missing single quote in input; not sure how troff copes - perhaps \(ga matches ' ?? ugh... TODO
-        @source.patch_line(42, /\\h\\\(ga/, "\\h'")
+    def initialize source
+      case source.file
+      when 'ld.1' then source.patch_line 768, /\\h/, 'h'
+      when 'a.out.4'
+        # h4x: collapsed tbl cells due to line-height:0 from \u...\d
+        source.patch_lines [55, 59, 61], /(\\u.+?\\d)/, '\\ \1\\ ', global: true
+      when 'ar.4'
+        # h4x: missing single quote in input; not sure how troff copes - perhaps \(ga matches ' ?? ugh... TODO
+        source.patch_line 42, /\\h\\\(ga/, "\\h'"
       end
-      super
+      super source
     end
 
     def init_ds

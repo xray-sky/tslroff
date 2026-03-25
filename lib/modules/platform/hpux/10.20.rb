@@ -40,7 +40,7 @@
 
 class HPUX::V10_20
 
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'x_open_800.5' then source_args.merge!({magic: 'Nroff'})
@@ -55,7 +55,7 @@ class HPUX::V10_20
     end
   end
 
-  class Nroff < ::HPUX::Nroff
+  class Nroff < HPUX::Nroff
     def initialize(source)
       case source.file
       when 'x_open_800.5'
@@ -74,7 +74,7 @@ class HPUX::V10_20
     end
   end
 
-  class Troff < ::HPUX::Troff
+  class Troff < HPUX::Troff
 
     def initialize(source)
       case source.file

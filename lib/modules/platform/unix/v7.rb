@@ -10,7 +10,7 @@
 #
 
 class UNIX::V7
-  class Troff < ::UNIX::Troff
+  class Troff < UNIX::Troff
 
     alias :LP :P
 

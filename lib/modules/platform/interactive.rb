@@ -10,7 +10,7 @@
 #
 
 class Interactive
-  class Nroff < ::Nroff
+  class Nroff < Nroff
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.([n\d]\S*)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
@@ -20,7 +20,7 @@ class Interactive
     end
   end
 
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 

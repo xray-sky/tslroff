@@ -24,18 +24,24 @@
 #                  (avoids some extraneous \n with .to_s on output)
 #
 
-class HTML < TextFormatter
-  def source_init
-    # might need to re-encode based on input charset; save this so that is possible
-    @source_lines = @source.lines
-    # REVIEW this is abstraction-breaking - i.e. see sequencing in BeOS R3, PR2
-    @source = Nokogiri::HTML @source_lines.join
+require 'forwardable'
 
-    #load_platform_overrides
-    #load_version_overrides
+class HTML < TextFormatter
+
+  extend Forwardable
+  def_delegators :@structured_source, :title, :xpath
+
+  def initialize source
+    super source
+    @structured_source = Nokogiri::HTML @source.lines.join
   end
 
   def input_line_number
     '*'
+  end
+
+  # default behavior: flatten
+  def output_directory
+    ''
   end
 end

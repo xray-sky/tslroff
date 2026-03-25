@@ -32,36 +32,35 @@
 #
 
 class OSF1
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize file, vendor_class: nil, source_args: {}
       case File.dirname file
       when /SJIS/
-        source_args.merge!({encoding: Encoding::Shift_JIS})
+        source_args[:encoding] = Encoding::Shift_JIS
         @language ||= 'ja'
       end
       super file, vendor_class: vendor_class, source_args: source_args
     end
   end
 
-  class Nroff < ::Nroff ; end
-  class Troff < ::Troff
+  # OSF1/Digital UNIX/Tru64 custom fonts
+  # Gothic/Geneva and Triumvirate are all essentially Helvetica
+  class Font::TR < ::Font::H ; end
+  class Font::TB < ::Font::HB ; end
+  class Font::TI < ::Font::HI ; end
+  class Font::G  < ::Font::H ; end
+  class Font::GB < ::Font::HB ; end
+  class Font::GL < ::Font::HI ; end
 
-    # OSF1/Digital UNIX/Tru64 custom fonts
-    # Gothic/Geneva and Triumvirate are all essentially Helvetica
-    class Font::TR < ::Font::H ; end
-    class Font::TB < ::Font::HB ; end
-    class Font::TI < ::Font::HI ; end
-    class Font::G  < ::Font::H ; end
-    class Font::GB < ::Font::HB ; end
-    class Font::GL < ::Font::HI ; end
+  class Nroff < Nroff ; end
+  class Troff < Troff
 
     alias :LP :P
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
-      @related_info_heading ||= %r{関連項目}u if source.dir.include?('SJIS')
+      @related_info_heading ||= %r{関連項目}u if source.dir.include? 'SJIS'
       super(source)
     end
 
@@ -93,7 +92,7 @@ class OSF1
 
     def init_PD
       super
-      @register['PD'] = @register[')P']         # OSF .PD sets \n(PD instead of \n()P - the OSF macros make extensive use of it
+      @register['PD'] = @register[')P']  # OSF .PD sets \n(PD instead of \n()P - the OSF macros make extensive use of it
     end
 
     def init_TH

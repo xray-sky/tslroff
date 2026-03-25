@@ -16,12 +16,10 @@
 #
 
 class DomainOS::SR10_4_1
-  class Nroff < ::DomainOS::Nroff
+  class Nroff < DomainOS::Nroff
 
     def initialize(source)
       case source.file
-      when 'index.hlp'
-        @manual_entry = '_index'
       when 'edacl.hlp'
         @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
         @related_info_heading = 'SEE ALS0'

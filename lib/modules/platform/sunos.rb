@@ -11,15 +11,15 @@
 #    - separate from G ("geneva regular") so: helvetica light
 
 class SunOS
-  class Nroff < ::Nroff ; end
-  class Troff < ::Troff
+  class Nroff < Nroff ; end
+  class Troff < Troff
 
     alias :LP :P
 
-    def initialize(source)
+    def initialize source
       @manual_entry ||= source.file.sub(/\.(\d\S{0,2})$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super source
     end
 
     def init_ds

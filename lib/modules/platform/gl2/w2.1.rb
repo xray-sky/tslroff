@@ -10,18 +10,14 @@
 #
 
 class GL2::W2_1
-  class Troff < ::GL2::Troff
+  class Troff < GL2::Troff
 
     def initialize(source)
-      @version = "W2.1"
-      super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'regexp.5' then @source.patch_line 418, /^\.in/, '.if'
+      case source.file
+      when 'regexp.5' then source.patch_line 418, /^\.in/, '.if'
       end
-      super
+      super(source)
+      @version = "W2.1"
     end
 
   end

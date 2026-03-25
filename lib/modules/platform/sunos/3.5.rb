@@ -9,7 +9,7 @@
 
 class SunOS::V3_5
 
-  class Manual < ::Manual
+  class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename(file)
       when 'mc68881version.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
@@ -18,7 +18,7 @@ class SunOS::V3_5
     end
   end
 
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',
@@ -54,33 +54,26 @@ class SunOS::V3_5
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
 
-    def initialize(source)
+    def initialize source
       case source.file
       when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
         raise ManualIsBlacklisted, 'not a manual entry'
       when 'eqn.eqn', 'eqnchar.eqn'
-        raise ManualIsBlacklisted, 'eqn preprocessed entries'
-      end
-      super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'default.1' then @manual_entry = '_default'
+        raise ManualIsBlacklisted, 'eqn preprocessed entries (duplicates)'
       when 'erf.3m'
         # troff switches font size to do the baseline shift, and I can't get that in html.
         # the ouput shift is in em, at the (smaller) size of the outputted text.
-        @source.patch_line(31, /\\s10/, '\s12', global: true)
-        @source.patch_line(31, /(\\u)/, '\\v@-0.5v@', global: true)
-        @source.patch_line(31, /(\\d)/, '\\v@0.5v@', global: true)
+        source.patch_line 31, /\\s10/, '\s12', global: true
+        source.patch_line 31, /(\\u)/, '\\v@-0.5v@', global: true
+        source.patch_line 31, /(\\d)/, '\\v@0.5v@', global: true
       when 'lgamma.3m' # REVIEW gamma.3m? (doesn't exist, so isn't a problem?)
         # troff switches font size to do the baseline shift, and I can't get that in html.
         # the ouput shift is in em, at the (smaller) size of the outputted text.
-        @source.patch_line(27, /\\s10/, '\s12', global: true)
-        @source.patch_line(27, /(\\u)/, '\\v@-0.5v@', global: true)
-        @source.patch_line(27, /(\\d)/, '\\v@0.5v@', global: true)
+        source.patch_line 27, /\\s10/, '\s12', global: true
+        source.patch_line 27, /(\\u)/, '\\v@-0.5v@', global: true
+        source.patch_line 27, /(\\d)/, '\\v@0.5v@', global: true
       end
-      super
+      super source
     end
 
     def init_ds

@@ -20,7 +20,7 @@
 #
 
 class SunOS::V1_0
-  class Troff < ::SunOS::Troff
+  class Troff < SunOS::Troff
 
     MANUAL_SECTION_NAMES = {
       '1'  => "User's Manual \\(em Commands",

@@ -12,7 +12,7 @@
 #
 
 class Atari_SysV
-  class Nroff < ::Nroff
+  class Nroff < Nroff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
@@ -25,7 +25,7 @@ class Atari_SysV
 
   end
 
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 

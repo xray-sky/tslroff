@@ -8,10 +8,11 @@
 #
 # TODO
 #   db(3) wants to use the F font - what is it? ...appears to be a mistake.
+#   hilarious results with tex(1l), apparently related to baseline shift in TeX logo?
 #
 
 class NEXTSTEP
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 

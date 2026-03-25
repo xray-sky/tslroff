@@ -26,7 +26,7 @@
 #
 
 class AOS
-  class Troff < ::Troff
+  class Troff < Troff
 
     alias :LP :P
 

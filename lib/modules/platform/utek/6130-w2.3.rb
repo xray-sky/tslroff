@@ -8,15 +8,15 @@
 #
 
 class UTek::W2_3_6130
-  class Nroff < ::UTek::Nroff
+  class Nroff < UTek::Nroff
 
-    def source_init
-      case @source.file
+    def initialize source
+      case source.file
       when 'access.5n'
         # malformed title line: ACCESS (dfs)(5N)
-        @output_directory = 'man5n'
+        @manual_section = '5n'
       end
-      super
+      super source
     end
 
   end

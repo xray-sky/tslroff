@@ -26,7 +26,8 @@ class Font
   def css_style ; nil ; end
 
   def face
-    self.class.name[6..-1] # strip off the 'Font::' part, to match what goes in @mounted_fonts
+    #self.class.name[6..-1] # strip off the 'Font::' part, to match what goes in @mounted_fonts
+    self.class.name.split('::').last
   end
 
   def style

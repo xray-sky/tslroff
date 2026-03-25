@@ -8,7 +8,7 @@
 #
 
 class RISC_os
-  class Nroff < ::Nroff
+  class Nroff < Nroff
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.([\dZz]\S?)$/, '')
@@ -25,7 +25,7 @@ class RISC_os
       t = @manual_entry.sub(/\.#{@systype}$/, '')
       t << "(#{@manual_section})"
       t << " &mdash; #{@systype}" if @systype
-      t << " &mdash; mips #{@version.tr('_', ' ')}"
+      t << " &mdash; mips" # #{@version.tr('_', ' ')}"  # TODO need replacement for @version
     end
 
     def parse_title

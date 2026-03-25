@@ -10,18 +10,20 @@
 #
 
 class DomainIX::SR9_5
-  class Nroff < ::DomainIX::Nroff
+  class Manual < DomainIX::Manual
+    def initialize file, vendor_class: nil, source_args: nil
+      case File.basename file
+      when 'root.3m' then raise ManualIsBlacklisted, 'not a manual entry'
+      end
+      super file, vendor_class: vendor_class, source_args: source_args
+    end
+  end
+
+  class Nroff < DomainIX::Nroff
 
     def initialize(source)
       @related_info_heading ||= 'RELATED INFORMATION'
       super(source)
-    end
-
-    def source_init
-      case @source.file
-      when 'root.3m' then raise ManualIsBlacklisted, 'not a manual entry'
-      end
-      super
     end
 
     def page_title
@@ -30,43 +32,38 @@ class DomainIX::SR9_5
 
   end
 
-  class Troff < ::DomainIX::Troff ; end
+  class Troff < DomainIX::Troff ; end
 
 end
 
-=begin
-  def self.extended(k)
-    k.instance_variable_set '@lines_per_page', 66	# REVIEW: at least for /IX
-    k.instance_variable_set '@related_info_heading', 'RELATED INFORMATION'
-    case k.instance_variable_get '@input_filename'
-    when 'index.hlp'
-      k.instance_variable_set '@manual_entry', '_index'
-    when 'edacl.hlp'
-      k.instance_variable_set '@heading_detection', %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
-      k.instance_variable_set '@related_info_heading', 'RELATED TOPICS'
-    when 'root.3m'
-      raise ManualIsBlacklisted, 'not a manual entry'
+class AUX < DomainIX ; end
+class AUX::SR8_0 < AUX ; end
+
+class AUX::SR8_1
+  class Nroff < DomainIX::Nroff
+    def initialize(source)
+      case source.file
+      when 'aux.release_notes.sr8.1' then @lines_per_page = 63
+      end
+      super(source)
     end
   end
-=end
+end
 
-class AUX < :: DomainIX ; end
-class AUX::SR8_0 < :: AUX ; end
-class AUX::SR8_1_update < :: AUX ; end
-class Aegis::SR7_B < ::Aegis ; end
-class Aegis::SR8_0 < ::Aegis ; end
-class Aegis::SR8_1 < ::Aegis ; end
-class Aegis::SR8_1_update < ::Aegis ; end
-class Aegis::SR9_0 < ::Aegis ; end
-class Aegis::SR9_0_020 < ::Aegis ; end
-class Aegis::SR9_2 < ::Aegis ; end
-class Aegis::SR9_5 < ::DomainIX::SR9_5 ; end
-class Aegis::SR9_6 < ::Aegis ; end
-class Aegis::SR9_7 < ::Aegis ; end
-class Aegis::SR9_7_1 < ::Aegis ; end
-class DomainIX::SR9_2_3 < ::DomainIX ; end
-class DomainOS::SR10_0 < ::DomainOS ; end
-class DomainOS::SR10_1 < ::DomainOS ; end
-class DomainOS::SR10_1_PSK4 < ::DomainOS ; end
-class DomainOS::SR10_2 < ::DomainOS ; end
-class DomainOS::SR10_3 < ::DomainOS ; end
+class Aegis::SR7_B < Aegis ; end
+class Aegis::SR8_0 < Aegis ; end
+class Aegis::SR8_1 < Aegis ; end
+class Aegis::SR8_1_update < Aegis ; end
+class Aegis::SR9_0 < Aegis ; end
+class Aegis::SR9_0_020 < Aegis ; end
+class Aegis::SR9_2 < Aegis ; end
+class Aegis::SR9_5 < DomainIX::SR9_5 ; end
+class Aegis::SR9_6 < Aegis ; end
+class Aegis::SR9_7 < Aegis ; end
+class Aegis::SR9_7_1 < Aegis ; end
+class DomainIX::SR9_2_3 < DomainIX ; end
+class DomainOS::SR10_0 < DomainOS ; end
+class DomainOS::SR10_1 < DomainOS ; end
+class DomainOS::SR10_1_PSK4 < DomainOS ; end
+class DomainOS::SR10_2 < DomainOS ; end
+class DomainOS::SR10_3 < DomainOS ; end

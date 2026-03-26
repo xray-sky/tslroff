@@ -105,7 +105,7 @@ class Troff
     n = argstr.split.first || '1'
 
     if n == '0'
-      @state[:input_trap].delete_if { |k,v| v[0] == ':R' }#:finalize_ce }
+      @input_traps.delete_if { |k,v| v[0] == ':R' }#:finalize_ce }
       send '[C'
     else
       n = n.to_i
@@ -151,7 +151,7 @@ class Troff
   end
 
   def na(_argstr = '', breaking: nil)
-    @state[:adjust] = false
+    @adjust = false
     # REVIEW this should keep .P followed by .na from collapsing margin_top
     if !nofill? and @current_block.immutable?
       @current_block = blockproto
@@ -181,6 +181,6 @@ class Troff
   end
 
   def init_ad
-    @state[:adjust] = true
+    @adjust = true
   end
 end

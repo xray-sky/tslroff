@@ -36,7 +36,7 @@ class RISCiX
 
     def init_PD
       super
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     # "some support to get the RCS format date into a more normal text form (dd/mm/yy)"

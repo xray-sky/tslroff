@@ -63,7 +63,7 @@ class CX_UX
 
     def init_TH
       #super
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     define_method 'TH' do |*args|

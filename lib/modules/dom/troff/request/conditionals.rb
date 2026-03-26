@@ -52,99 +52,116 @@
 #
 #
 # remember we came here without our args parsed (split)
-# "the last line must end with a right delimiter" apparently doesn't exclude whitespace/comments.
+# "the last line must end with a right delimiter" apparently doesn't preclude whitespace/comments.
 #
 
 class Troff
-  def ie(argstr = '', breaking: nil, quiet: false)
-    @state[:else] = !send(:if, argstr, breaking: breaking, quiet: quiet)
+  def ie(argstr = '', breaking: nil, quiet: true)
+    #warn ".ie : sending #{argstr.inspect} to .if"
+    @else = !send(:if, argstr, breaking: breaking, quiet: quiet)
   end
 
   def el(argstr = '', breaking: nil)
+    #warn ".ie : processing #{argstr.inspect}"
     resc = Regexp.quote(@escape_character)
     # we probably have a straight else block, .el \{ foo
     # but there is a crazy interaction if there is a block .if we are not going to execute
-    if argstr.sub!(/^#{resc}{/, '') or (argstr.match?(/#{resc}{/) and !@state[:else])
+    if argstr.sub!(/^#{resc}{/, '') or (argstr.match?(/#{resc}{/) and !@else)
       loop do
-        parse(argstr) if @state[:else]
+        #warn ".el : looping on #{argstr.inspect} to #{@else ? "run" : "not run"}"
+        parse(argstr) if @else
         argstr = next_line
         break if argstr.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
       end
     end
-    parse(argstr) if @state[:else]
+    #warn ".el : parsing final #{argstr.inspect} to #{@else ? "run" : "not run"}"
+    parse(argstr) if @else
   end
 
-  define_method 'if' do |argstr = '', breaking: nil, quiet: false|
-    rcc  = Regexp.quote("#{@state[:cc]}#{@state[:c2]}")
+  define_method 'if' do |argstr = '', breaking: nil, quiet: true|
     resc = Regexp.quote(@escape_character)
-    test = argstr.slice!(0, get_char(argstr).length)
-    predicate = if test == '!'
-                  test = argstr.slice!(0, get_char(argstr).length)
-                  false
-                else
-                  true
-                end
+
+    # block .if? set aside the command or text
+    argstr.sub! %r{\s*(?<!#{resc})#{resc}\{\s*(.*)$}, ''
+    block = Regexp.last_match&.[](1)
+
+    negate = true and argstr.slice!(0, 1) if argstr.start_with? '!'
+    test_op = argstr.slice(0, get_char(argstr).length)
 
     # get the full escape, if that's what we're on the road to
-    # REVIEW I think this is irrelevant now that get_char returns the full escape?
-    #test << argstr.slice!(0, get_escape(argstr).length) if test == @escape_character
-    condition = case test
-                when 'e', 'E' then quiet or warn 'can\'t test for even page number'
-                when 'o', 'O' then quiet or warn 'can\'t test for odd page number'
+    condition = case test_op
+                when 'e', 'E'
+                  argstr.slice!(0, 1)
+                  warn %(can't test for even page number) unless quiet
+                when 'o', 'O'
+                  argstr.slice!(0, 1)
+                  warn %(can't test for odd page number) unless quiet
                 when 'n', 't', 'N', 'T'
-                  test.downcase == 't'
-                when /^[-(0-9]/, /^#{resc}[wn]/  # this is going to be a numeric expression REVIEW is this condition complete?
-                  expr = test
-                  until argstr.start_with?(' ') or argstr.empty? # sccsfile(4) [HPUX 6.20] has .if !\ns and that's it. causes infinite loop here without .empty?
-                    expr << argstr.slice!(0, get_char(argstr).length)
-                  end
-                  #to_u(__unesc_w(unescape(expr, copymode: true))).to_f.tap { |n| warn ".if evaluating numeric expression #{expr.inspect}" } > 0
-                  to_u(expr).to_f.tap { |n| quiet or warn ".if evaluating numeric expression #{expr.inspect}" } > 0
-                else
-                  # TODO this is getting parsed oddly. maybe the results are ok, but we should figure out the correct deal
-                  #      see pvs(1) [SunOS 5.5.1] lines 112, 113
-                  quote_char = Regexp.escape test
-                  # TODO probably better to re-do this without regexp, using get_char
-                  argstr.sub!(%r{(?<lhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}(?<rhs>.*?)(?<!(?<!#{resc})#{resc})#{quote_char}}, '')
-                  (lhs, rhs) = [Regexp.last_match(:lhs), Regexp.last_match(:rhs)]
-                  if lhs.nil? and rhs.nil?
-                    # we probably got an invalid condition, which is ignored
-                    quiet or warn "invalid condition to .if? #{(test+argstr).inspect} - evaluating as false"
-                    false
-                  else
+                  argstr.slice!(0, 1)
+                  negate ^ (test_op.downcase == 't')
+                # numeric expression  - relies on test_numeric to remove test_op from argstr
+                # REVIEW is this condition complete?
+                when /^(?:[-.(0-9]|#{resc}[wn])/
+                  negate ^ test_numeric(argstr, quiet: quiet).tap do |c|
                     # warn is too chatty with .}S conditionals coming through here
-                    quiet or warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect} is: #{predicate.inspect}?"
-                    # this fails; '\f2' == '' -- restore(1m) [ HP-UX 10.20 ]
-                    #lhs == rhs
-                    lp = Block::Bare.new
-                    unescape(lhs, output: lp)
-                    rp = Block::Bare.new
-                    unescape(rhs, output: rp)
-                    lp.to_s == rp.to_s
+                    warn "    calculated #{"negated " if negate}#{test_op.inspect} predicate: #{c.inspect}" unless quiet
+                  end
+                # string comparison - relies on test_string to remove test_op from argstr
+                else
+                  negate ^ test_string(argstr, quiet: quiet).tap do |c|
+                    # warn is too chatty with .}S conditionals coming through here
+                    warn "    calculated #{"negated " if negate}#{test_op.inspect} predicate: #{c.inspect}" unless quiet
                   end
                 end
 
-    # warn is too chatty with .}S conditionals coming through here
-    activated = condition == predicate
-    quiet or warn "rejecting condition#{predicate ? ' ' : ' !'}#{condition.inspect}" unless activated or test == 'n'
 
     # TODO if we .TS inside .if \{ \} ,the .TE\} won't happen in the right order (.TS tries to parse .TE with arg \})
     #      we get an exception and things don't reset until after the next .if -- although the output looks ok.
     #      making .TE tolerate receiving args (which it should probably do anyway) suppressed the exception,
     #      but we still parse the .if badly. if the condition is false then we won't have this problem because
     #      .TS is not entered.
-    argstr.strip!
-    if argstr.sub!(/^#{resc}{\s*/, '')
+    rcc = Regexp.quote("#{@cc}#{@c2}")
+    if block
       loop do
-        warn "parsing tbl in block .if -- check correct block end results" if argstr.match?(/^[#{rcc}]\s*TS/) and activated
-        parse(argstr) if activated
-        argstr = next_line
-        break if argstr.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
+        #warn ".if : looping on #{argstr.inspect} to #{condition ? "run" : "not run"}"
+        if condition
+          warn "parsing tbl in block .if -- check correct block end results" if argstr.match?(/^[#{rcc}]\s*TS/)
+          parse(block)
+        end
+        block = next_line
+        break if block.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
       end
+    else
+      #warn ".if : single line on #{argstr.inspect} to #{condition ? "run" : "not run"}"
+      parse(argstr.lstrip) if condition
     end
-    parse(argstr) if activated
 
     # .if needs to return its evaluated condition, so .ie can work
-    activated
+    condition
+  end
+
+  private
+
+  # destructive of e (rely on this in .if)
+  def test_numeric(e, quiet: false)
+    e.replace(__unesc_w(e)) # should be safe enough
+    # get_expression is destructive of e
+    expr = get_expression(e).tap { |n| warn ".if evaluating numeric expression #{n.inspect}" unless quiet }
+    to_u(expr).to_f > 0
+  end
+
+  # destructive of e (rely on this in .if)
+  def test_string(e, quiet: false)
+    lhs = get_quot_str(e)[1..-2] # lose the quotes
+    e.slice!(0, lhs.length  + 1) # leave one behind for rhs
+    rhs = get_quot_str(e)[1..-2] # lose the quotes
+    e.slice!(0, rhs.length  + 2) # lose the entire arrangement
+
+    warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect}" unless quiet
+    lp = Block::Bare.new
+    rp = Block::Bare.new
+    unescape lhs, output: lp
+    unescape rhs, output: rp
+    lp.to_s == rp.to_s
   end
 end

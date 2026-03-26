@@ -3,12 +3,12 @@ class Troff
 
     def eqn_gfont(f)
       warn "eqn requests gfont #{f}"
-      @state[:eqn_gfont] = f
+      @eqn_gfont = f
     end
 
     def eqn_gsize(s)
       warn "eqn requests gsize #{s}"
-      @state[:eqn_gsize] = s.to_i + 2 # troff default size 10 vs. ours 12 TODO this is actually causing something of a mess
+      @eqn_gsize = s.to_i + 2 # troff default size 10 vs. ours 12 TODO this is actually causing something of a mess
     end
 
     def eqn_size(parse_tree)
@@ -30,7 +30,7 @@ class Troff
     def eqn_font(parse_tree)
       ft parse_tree.shift
       gen_eqn [parse_tree.shift]
-      ft @state[:eqn_gfont]
+      ft @eqn_gfont
     end
 
     # bar and under are made the right length for the entire construct

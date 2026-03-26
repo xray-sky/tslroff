@@ -94,7 +94,7 @@ class GDT_UNX
 
     def init_PD
       super
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     # REVIEW

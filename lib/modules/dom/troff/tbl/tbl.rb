@@ -130,7 +130,7 @@ module Troff::Tbl
     ps "#{@register[:tbl_dsize]}"
 
     loop do
-      cell = case fmt = @state[:tbl_formats].get.dup
+      cell = case fmt = @tbl_formats.get.dup
              when nil   then break
              when /^s/i then Block::ColSpan.new
              when /\^/  then fmt = '' and Block::RowSpan.new
@@ -163,14 +163,14 @@ module Troff::Tbl
         when /^([\.\d]+)/
           col = row.text.length
           spc = Regexp.last_match[1].to_f
-          @state[:tbl_colspc][col] ||= spc
-          @state[:tbl_colspc][col] = spc if spc > @state[:tbl_colspc][col]
+          @tbl_column_spacing[col] ||= spc
+          @tbl_column_spacing[col] = spc if spc > @tbl_column_spacing[col]
         when /^(w\(?([\d.]+(?:[uicpmnv])?)\)?)/i		# minimum column width
          cell.style.css[:min_width] = to_em(to_u(Regexp.last_match[2], default_unit: 'n')).to_s + "em"
         when /^(e)/	# TODO this doesn't really work, since e only works on columns marked e, and not all may be
           # TODO (maybe): all columns marked 'e' get equal width - gethitcode(3g) [GL2-W2.5]
           warn "tbl wants equal width columns"
-          #cell.style.css[:width] = "#{1.0 / @state[:tbl_formats].columns]}%"
+          #cell.style.css[:width] = "#{1.0 / @tbl_formats.columns]}%"
 
         # alignments
         when /^(a)/i  then warn "unimplemented tbl alignment #{Regexp.last_match(1)}" # TODO: "center longest line; left adjust remaining lines with respect to centered line" -- how to do this in HTML?? how is it different in practice from L?
@@ -206,10 +206,10 @@ module Troff::Tbl
 
         # box rules
         when /^(\|{1,2})/
-          current_row = @state[:tbl_formats].row?
-          current_col = @state[:tbl_formats].column?
-          if current_row > 0 and current_col < (@state[:tbl_formats].columns - 1) and @state[:tbl_formats][current_row - 1][current_col + 1].chars.select { |c| ['_', '='].include?(c) }.any? # that's a lot of work to avoid a regexp, which would foul up the last_match at the bottom of the case statement
-            @state[:tbl_formats][current_row][current_col + 1].prepend(Regexp.last_match(1))
+          current_row = @tbl_formats.row?
+          current_col = @tbl_formats.column?
+          if current_row > 0 and current_col < (@tbl_formats.columns - 1) and @tbl_formats[current_row - 1][current_col + 1].chars.select { |c| ['_', '='].include?(c) }.any? # that's a lot of work to avoid a regexp, which would foul up the last_match at the bottom of the case statement
+            @tbl_formats[current_row][current_col + 1].prepend(Regexp.last_match(1))
           else
             cell.style.css[:border_right] = case Regexp.last_match(1)
                                             when '|'  then '1px solid black'
@@ -224,7 +224,7 @@ module Troff::Tbl
           # other rows? because the rule takes up some space? maybe?
           cell.style.css[:line_height] = '49%'
           boxrule_cell.style.css[:line_height] = '49%'
-          @state[:tbl_formats].box_extend?.each do |corner|
+          @tbl_formats.box_extend?.each do |corner|
             case corner
             when :nw  then cell.style.css[:border_left]  = '1px solid black'
             when :nw2 then cell.style.css[:border_left]  = '3px double black'
@@ -250,7 +250,7 @@ module Troff::Tbl
         end
         fmt.sub!(Regexp.last_match(1), '')
       end
-      @state[:tbl_formats].next_col
+      @tbl_formats.next_col
       row << cell
     end
 
@@ -258,7 +258,7 @@ module Troff::Tbl
     # reset font and size to default - this didn't seem to be working in all circumstances? sysconf(3c) [SunOS 5.5.1]
     #ps(Font.defaultsize)
 
-    @state[:tbl_formats].next_row
+    @tbl_formats.next_row
 
     #row << row_adj if row_adj.text.any?
     row.boxrule_adjust = row_adj if row_adj.text.any?
@@ -282,22 +282,22 @@ module Troff::Tbl
     when /^ *$/ then '' # treat a line of all whitespace same as an empty line.
     when /^.\s*T&/       # special case for format change.
       parse line
-      @state[:tbl_bottom_rules] = @state[:tbl_top_rules].dup
-      @state[:tbl_top_rules] = nil
+      @tbl_bottom_rules = @tbl_top_rules.dup
+      @tbl_top_rules = nil
       next_line_tbl
     when /^\./           # is a request. process it. do over.
       parse line
       next_line_tbl
     when /^(\s*#{resc}\^|\s*#{resc}?_|\s*=)+$/   # TODO allow changed field separator - prtdiag(1m) [SunOS 5.5.1] has \_ \_ \_ that is accepted
       # TODO _ or = followed by a space (before the tab) are literal _ or =, not borders
-      rules = Regexp.last_match(0).split(@state[:tbl_cell_delim])
-      @state[:tbl_formats].next_row if rules.length > 1 # ditch the format given for this row... _if it has tabs_
+      rules = Regexp.last_match(0).split(@tbl_cell_delim)
+      @tbl_formats.next_row if rules.length > 1 # ditch the format given for this row... _if it has tabs_
       # based on Documenter's Workbench sample table 3 maybe we want bottom borders if there was a row span
       # REVIEW this is arbitrary, and probably we'll find out there's no correct decision.
       if rules.detect { |r| r.match? /^(\s*#{resc}\^)/ }
-        @state[:tbl_bottom_rules] = rules.tap { |n| warn "bottom border change line #{n.inspect}" }
+        @tbl_bottom_rules = rules.tap { |n| warn "bottom border change line #{n.inspect}" }
       else
-        @state[:tbl_top_rules] = rules.tap { |n| warn "top border change line #{n.inspect}" }
+        @tbl_top_rules = rules.tap { |n| warn "top border change line #{n.inspect}" }
       end
       next_line_tbl
     else

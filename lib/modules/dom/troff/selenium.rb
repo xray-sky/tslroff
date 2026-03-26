@@ -3,6 +3,8 @@
 #    Troff \w support
 # ---------------
 #
+# frozen_string_literal: true
+#
 
 class Troff
 

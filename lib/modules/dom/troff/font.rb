@@ -1,6 +1,8 @@
 # Fonts (troff)
 #   definition of the \f (change font) escape
 #
+# frozen_string_literal: true
+#
 #   §2.2
 #
 # \fN, \fx
@@ -17,6 +19,7 @@ class Troff
   def ft(argstr = '', breaking: nil)
     argstr.slice!(0) if argstr.start_with? '(' # a two char font name from \f will have a ( up front
     pos = argstr.slice(0, 2).strip
+
     font = case pos
            when 'P', '' then @register[:prev_fp].value
            when /^[A-Z]+$/
@@ -54,6 +57,9 @@ class Troff
     ''
   end
 
+  alias_method :esc_f, :ft
+  alias_method :esc_s, :ps
+
   def change_font
     begin
       fontclass = Kernel.const_get("Font::#{@mounted_fonts[@register['.f'].value]}")
@@ -68,8 +74,4 @@ class Troff
     @register[:prev_ps] = Register.new
     true
   end
-
-  alias_method :esc_f, :ft
-  alias_method :esc_s, :ps
-
 end

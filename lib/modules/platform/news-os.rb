@@ -27,7 +27,7 @@ class NEWS_os
 
     def init_TH
       #super
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     # doesn't matter, ]W not used in header or footer

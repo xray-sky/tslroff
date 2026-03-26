@@ -72,6 +72,9 @@ class Troff
 #                                          and so does bcopy(1m) - so I'll add @ to the delims? REVIEW
 #                                          and hp(1) uses `; mv(5) uses #
 #
+# seems [[ \w'word'+1n ]] actually gives [[ 96+1n ]] and it's
+# up to whatever request or escape to evaluate the expression
+#
 # TODO "will not affect the current environment"
 # TODO set number registers -- REVIEW is it necessary? (is it used in practice)
 # REVIEW i'm in big trouble if I ever get a \w with a tab in it (why did I think this? seems ok maybe)

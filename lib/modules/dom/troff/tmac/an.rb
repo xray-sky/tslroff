@@ -114,7 +114,7 @@ class Troff
         @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
         @current_block = blockproto
         @document << @current_block
-        indent(@state[:base_indent] + @register[')R'] + @register[')I'])
+        indent(@base_indent + @register[')R'] + @register[')I'])
         temp_indent -@register[')I']
       end
 
@@ -132,12 +132,12 @@ class Troff
         # called from .RS - TODO maybe find a better way to do it that allows us to merge init_ methods
         @register[')I'] = Register.new(to_u('0.5i'))
         # this is effectively a constant. nothing changes it.
-        # @state[:tag_padding] = to_u('3p').to_i
+        # @tag_padding = to_u('3p').to_i
         # CMU font hack; was: 3p (50u)
         # seems to improve page outcomes
         # 37u was enough to fix bullets in c89(1) [ OSF/1 3.0 ]
         # 12u to fix intro(1) [ GL2-W2.5 ] - still gives reasonable gap
-        @state[:tag_padding] = 12
+        @tag_padding = 12
       end
 
       define_method 'IP' do |tag = '', indent = nil, *_args|	# )I reg holds carryover indent
@@ -180,7 +180,7 @@ class Troff
         init_IP		# .PP resets \n()I to 0.5i
         @current_block = blockproto
         @document << @current_block
-        indent(@state[:base_indent] + @register[')R'])
+        indent(@base_indent + @register[')R'])
       end
 
 #   .PD v
@@ -199,8 +199,8 @@ class Troff
 #       see bfs(1) Description, xbz/xbn [GL2-W2.5]
 
       def init_PD
-        @state[:default_pd] = to_u('1m').to_i
-        @register[')P'] = Register.new(@state[:default_pd])
+        @default_para_distance = to_u('1m').to_i
+        @register[')P'] = Register.new(@default_para_distance)
       end
 
       define_method 'PD' do |v = nil, *_args|
@@ -239,7 +239,7 @@ class Troff
           @current_block.style.css[:margin_top] = '0'
           @document << @current_block
         end
-        indent(@state[:base_indent] + @register[')R'])
+        indent(@base_indent + @register[')R'])
       end
 
 #   .RS in
@@ -280,7 +280,7 @@ class Troff
           @current_block.style.css[:margin_top] = '0'
           @document << @current_block
         end
-        indent(@state[:base_indent] + @register[')R'])
+        indent(@base_indent + @register[')R'])
 
       end
 
@@ -298,7 +298,7 @@ class Troff
         @current_block = blockproto Block::Head
         @document << @current_block
         unescape(args.join(' '))
-        @state[:section] = @current_block.to_s
+        @section_heading = @current_block.to_s
         send 'P'
       end
 
@@ -406,7 +406,7 @@ class Troff
       end
 
       def tagpara(tag)
-        indent(@state[:base_indent] + @register[')R'] + @register[')I'])
+        indent(@base_indent + @register[')R'] + @register[')I'])
         unless tag.empty?
           temp_indent(-@register[')I'])
           tag.class == String ? unescape(tag) : @current_block.text = tag
@@ -419,7 +419,7 @@ class Troff
           ps "#{Font.defaultsize}"
 
           # is the tag wider than 3 points less than the indent?
-          if @register[')I'] < tag_width + @state[:tag_padding]
+          if @register[')I'] < tag_width + @tag_padding
             br
           else
             tab_width = to_em("#{@register[')I']}u")

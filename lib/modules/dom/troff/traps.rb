@@ -3,6 +3,8 @@
 #    Troff trap processing routines
 # ---------------
 #
+# frozen_string_literal: true
+#
 
 class Troff
 
@@ -10,18 +12,14 @@ class Troff
 
   def process_input_traps
     # decrement the line counters
-    @state[:input_trap] = Hash[ @state[:input_trap].collect do |trap, macros|
-                                  [ trap -= 1 , macros ]
-                                end ]
+    @input_traps = @input_traps.transform_keys { |k| k -= 1 }
 
     # select the ones that should happen now
-    macros = @state[:input_trap].delete(0)
+    macros = @input_traps.delete(0)
 
-    if macros
-      macros.reverse.each do |macro|
-        send macro[0]
-      end
+    return unless macros
+    macros.reverse.each do |macro|
+      send macro[0]
     end
   end
-
 end

@@ -3,6 +3,8 @@
 #    html methods
 # ---------------
 #
+# frozen_string_literal: true
+#
 # TODO
 #   background watermark alpha blend (instead of white background & matte) should allow it to overlay an asset background image
 #    - can an svg background maybe do this?
@@ -31,7 +33,7 @@ class HTML < TextFormatter
   extend Forwardable
   def_delegators :@structured_source, :title, :xpath
 
-  def initialize source
+  def initialize(source)
     super source
     @structured_source = Nokogiri::HTML @source.lines.join
   end

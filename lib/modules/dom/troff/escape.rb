@@ -3,6 +3,8 @@
 #    Troff.escapes source
 # ---------------
 #
+# frozen_string_literal: true
+#
 # TODO not happy about the proliferation of basically identical methods
 #
 
@@ -30,7 +32,7 @@ class Troff
 
     # eqn delims can be hidden by escaping them
     resc = Regexp.quote @escape_character || ''
-    if @state[:eqn_start] and str.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
+    if @eqn_start and str.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @eqn_start}|(?<!#{resc})#{Regexp.quote @eqn_start}/)
       parse_eqn str
     else
       if @escape_character
@@ -68,7 +70,7 @@ class Troff
       #str = str.split(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/).join(esc_star(req_str))
       # doing replacement in a block appears to prevent characters in the replacement string
       # with special meaning to Regexp from being interpreted
-      str.gsub!(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/) { |_x| send 'esc_*', req_str }
+      str.gsub!(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/) { send 'esc_*', req_str }
     end
     str
   end # TODO is there a sensible way to make this reusable with _n and _w ?
@@ -80,7 +82,7 @@ class Troff
     resc = Regexp.escape(esc)
     loop do
       break unless n = str.index(/(?<!#{resc})#{resc}n/)
-      req_str = get_def_str(str[(n+2)..-1])
+      req_str = get_reg_str(str[(n+2)..-1])
       str.gsub!(/(?<!#{resc})#{resc}n#{Regexp.quote(req_str)}/, esc_n(req_str))
     end
     str
@@ -100,21 +102,23 @@ class Troff
     str
   end
 
-# TODO §7.2 Copy mode input interpretation
-#           During the definition and extension of strings and macros, the input is
-#           read in copy mode. The input is copied without interpretation except that
-#           * the contents of number registers, indicated by '\n', are substituted.
-#           * Strings, indicated by '\*x' and '\*(xx', are read into the text.
-#           * Arguments indicated by '\$' are replaced by the appropriate values at
-#             the current macro level.
-#           * Concealed new-lines indicated by '\(new-line)' are eliminated.
-#           * Comments indicated by '\"' are eliminated.
-#           * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
-#           * '\\' is interpreted as '\'.
-#           * '\.' is interpreted as '.'.
-#           These interpretations can be suppressed by prepending a \. For example,
-#           since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
-#           as a number register indicator when the macro or string is reread.
+# §7.2
+# Copy mode input interpretation
+# During the definition and extension of strings and macros, the input is
+# read in copy mode. The input is copied without interpretation except that
+#  * the contents of number registers, indicated by '\n', are substituted.
+#  * Strings, indicated by '\*x' and '\*(xx', are read into the text.
+#  * Arguments indicated by '\$' are replaced by the appropriate values at
+#      the current macro level.
+#  * Concealed new-lines indicated by '\(new-line)' are eliminated.
+#  * Comments indicated by '\"' are eliminated.
+#  * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
+#  * '\\' is interpreted as '\'.
+#  * '\.' is interpreted as '.'.
+#
+# These interpretations can be suppressed by prepending a \. For example,
+# since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
+# as a number register indicator when the macro or string is reread.
 #
 # FIX copy mode is currently expanding \\*(xx when it shouldn't be (double escaped)
 
@@ -125,7 +129,7 @@ class Troff
       # we got the full escape back from get_char, as c
       case c[0]
       when @escape_character
-        esc_method = "esc_#{c[1]}" #"esc_#{Troff.quote_method(c[1])}"
+        esc_method = "esc_#{c[1]}"
         if %w[esc_n esc_*].include? esc_method
           copy << send(esc_method, c[2..-1])
         else
@@ -163,12 +167,6 @@ class Troff
     # TODO split the output, with tabs and fields and translation, from unescape
     #      that's going to be hard as long as we are spitting e.g. font changes out
     #      directly into the document, instead of returning
-
-    #if broke?
-    #  @current_block << String.new
-    #  @current_tabstop = @current_block.terminal_text_obj
-    #  @current_tabstop[:tab_stop] = 0
-    #end
 
     # start by breaking up fields, then re-entering for each field part, if fields are enabled
     # skip entirely if all field markers are preceeded by single escape.
@@ -228,6 +226,8 @@ class Troff
           @current_block << send(esc_method, c[2..-1])
         else
           @current_block << case c[1] #esc
+                            # TODO \{ and \} separate from .if appears to output nothing printable.
+                            # thus, should break if appearing on a line with only spaces or by itself.
                             when 'a', 't' then ''                  # always ignored during output mode; "\a" is "non-interpreted leader character"
                             when '_' then '_'                      # underrule, equivalent to \(ul
                             when '-' then '&minus;'                # "minus sign in current font"

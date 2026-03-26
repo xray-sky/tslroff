@@ -1,14 +1,18 @@
+# frozen_string_literal: true
+#
+
 class Nroff
 
   class TypeClashError < RuntimeError
     attr_accessor :pile
+
     def initialize(pile)
       super
       @pile = pile
     end
   end
 
-  Overstrikes = {
+  OVERSTRIKES = {
     %w[&]   => '&amp;',     %w[<]   => '&lt;',      %w[>]    => '&gt;',
     %w[O c]  => '&copy;',   %w[< a]  => '&alpha;',  %w[, f]  => '&fnof;',
     %w[/ E o] => '&exist;', %w[- C]  => '&isin;',   %w[- n]  => '&pi;',     %w[- V]  => '&forall;',
@@ -36,12 +40,12 @@ class Nroff
     %w[- d |]   => %(<span class="clash">d<span class="pile">&dagger;</span></span>), # see cw(1), etc. [A/UX 3.0.1]
   }
 
-  Overstrikes.default_proc = proc do |_hash, key|
-    key.collect! { |c| c.sub(/(.)\cN/) { Typebox[Regexp.last_match[1]] } }
+  OVERSTRIKES.default_proc = proc do |_hash, key|
+    key.collect! { |c| c.sub(/(.)\cN/) { TYPEBOX[Regexp.last_match[1]] } }
     key.length == 1 and next key[0]
     raise TypeClashError.new(key), 'unresolved overstrike'
   end
 
-  Overstrikes.freeze # REVIEW do I really want to freeze this, or make it platform overrideable somehow
+  OVERSTRIKES.freeze # REVIEW do I really want to freeze this, or make it platform overrideable somehow
 
 end

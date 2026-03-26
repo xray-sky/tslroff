@@ -4,12 +4,12 @@ class Troff
     def eqn_delim(delim)
       if delim == 'off'
         # TODO quit with @state{}
-        @state.delete(:eqn_start)
-        @state.delete(:eqn_end)
+        @eqn_start = nil
+        @eqn_end = nil
         nil
       else
-        (@state[:eqn_start], @state[:eqn_end]) = delim.chars
-        #warn @state[:eqn_start].inspect
+        (@eqn_start, @eqn_end) = delim.chars
+        #warn @eqn_start.inspect
       end
     end
 
@@ -19,16 +19,15 @@ class Troff
       delim = defstr.slice!(/\S\s*/).strip
       remainder = defstr.slice!(defstr.rindex(delim)..-1)
       warn "eqn extra text in define?? #{remainder[1..-1].inspect}" if remainder[1]
-      if @state[:eqnchars].include? word
+      if @eqnchars.include? word
         # this is totally legal but in practice seems used to construct characters not
         # available on the typesetter. we have all the characters we need, already
         warn "eqn rejecting redefinition of existing eqnchar #{word}"
         nil
       else
-        warn "eqn wants to define new word #{word.inspect} as #{defstr.inspect}"
-        define_singleton_method("eqn_#{word}") do
+        define_singleton_method("eqn_#{word}") do |parse_tree|
           gen_eqn eqn_parse_tree(defstr)
-          gen_eqn [parse_tree.shift]
+          #gen_eqn [parse_tree.shift]
         end
       end
     end

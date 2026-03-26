@@ -19,7 +19,7 @@ class Troff
           break if @line.match?(formats_terminator)
           format_lines << next_line
         end
-        @state[:tbl_formats] = Troff::Tbl.formats(format_lines)
+        @tbl_formats = Troff::Tbl.formats(format_lines)
       end
 
       define_method 'TE' do |*_args|
@@ -29,7 +29,7 @@ class Troff
       define_method 'TS' do |*args|
         warn "processing tbl -"
         resc = Regexp.quote @escape_character
-        @state[:tbl_cell_delim] = "\t"
+        @tbl_cell_delim = "\t"
         tbl = blockproto(Block::Table)
         tbl.text = Array.new
         @document << tbl
@@ -54,7 +54,7 @@ class Troff
         # but table padding goes _inside_ the border.
         #
         # <table> is 4em currently, based on <p> 2em + 2em padding - change this if the css changes.
-        tbl.style.css[:margin_left] = "#{to_em(to_u(@register['.i'].to_s + '+2m'))}em" unless @register['.i'] == @state[:base_indent]
+        tbl.style.css[:margin_left] = "#{to_em(to_u(@register['.i'].to_s + '+2m'))}em" unless @register['.i'] == @base_indent
 
         # a lot of the tables in e.g. SunOS 5 manuals are text layout - no borders
         # fudge the style to get leftmost column text margins to line up
@@ -77,7 +77,7 @@ class Troff
             when 'box'       then tbl.style.css[:border] = '1px solid black' and tbl.style.attributes.delete(:class)
             when 'doublebox' then tbl.style.css[:border] = '3px double black' and tbl.style.attributes.delete(:class)
             when 'allbox'    then tbl.style.css[:border_collapse] = 'collapse' and tbl.style[:allbox] = true and tbl.style.attributes.delete(:class)
-            when /^tab\((.)\)/   then @state[:tbl_cell_delim] = Regexp.last_match(1)	# TODO not going to see this if there's a space between, because it's been split already
+            when /^tab\((.)\)/   then @tbl_cell_delim = Regexp.last_match(1)	# TODO not going to see this if there's a space between, because it's been split already
             #when /^delim\s*\((..)\)/     then # TODO: -- recognizes . and . as eqn delimiters
             #when /^linesize\s*\((\d+)\)/ then # TODO: -- sets lines or rules in n point type
             else warn "unimplemented tbl global #{option.inspect}"
@@ -89,10 +89,10 @@ class Troff
         send 'T&'
 
         # initialize numeric alignment and data before block gets frozen
-        tbl[:nalign] = Array.new(@state[:tbl_formats].columns) { Array.new(2,0) }
+        tbl[:nalign] = Array.new(@tbl_formats.columns) { Array.new(2,0) }
 
         # initialize array to track column spacing (default, 3n)
-        @state[:tbl_colspc] = Array.new(@state[:tbl_formats].columns, nil)
+        @tbl_column_spacing = Array.new(@tbl_formats.columns, nil)
 
         resc = Regexp.quote @escape_character
 
@@ -102,37 +102,37 @@ class Troff
           line = next_line_tbl
 
           # apply held rules to either the bottom of the last row, or the top of the next
-          if @state[:tbl_bottom_rules]
+          if @tbl_bottom_rules
             tbl.terminal_string.each_with_index do |cell, column|
-              cell.style.css[:border_bottom] = case @state[:tbl_bottom_rules][column] || @state[:tbl_bottom_rules][0]
+              cell.style.css[:border_bottom] = case @tbl_bottom_rules[column] || @tbl_bottom_rules[0]
                                                when '', "\\^"  then next # bottom border. no upward row spanning involved.
                                                when '_', "\\_" then '1px solid black'
                                                when '=', "\\=" then '3px double black'
-                                               else warn "applying invalid rule from #{@state[:tbl_bottom_rules].inspect}"
+                                               else warn "applying invalid rule from #{@tbl_bottom_rules.inspect}"
                                                end
             end
-            @state.delete(:tbl_bottom_rules)
+            @tbl_bottom_rules = nil
           end
 
           # format the new row
           current_row = format_row
 
-          if @state[:tbl_top_rules]
+          if @tbl_top_rules
             current_row.text.each_with_index do |cell, column|
-              cell.style.css[:border_top] = case @state[:tbl_top_rules][column] || @state[:tbl_top_rules][0]
+              cell.style.css[:border_top] = case @tbl_top_rules[column] || @tbl_top_rules[0]
                                             when ''  then next
                                             when '_', "\\_" then '1px solid black'
                                             when '=', "\\=" then '3px double black'
-                                            else warn "applying invalid rule from #{@state[:tbl_top_rules].inspect}"
+                                            else warn "applying invalid rule from #{@tbl_top_rules.inspect}"
                                             end
             end
-            @state.delete(:tbl_top_rules)
+            @tbl_top_rules = nil
           end
 
           # row data
-          #cells = line.split(@state[:tbl_cell_delim]) # we will get [] if we have input a blank line (see history(1) note, below)
+          #cells = line.split(@tbl_cell_delim) # we will get [] if we have input a blank line (see history(1) note, below)
           # delims can be hidden by preceeding them with an escape char
-          cells = line.split(/(?<!(?<!#{resc})#{resc})#{@state[:tbl_cell_delim]}/) # we will get [] if we have input a blank line (see history(1) note, below)
+          cells = line.split(/(?<!(?<!#{resc})#{resc})#{@tbl_cell_delim}/) # we will get [] if we have input a blank line (see history(1) note, below)
           current_row.text.each_with_index do |cell, column|
 
             if cell.is_a? Block::ColSpan
@@ -189,7 +189,7 @@ class Troff
                   # => restore @current_block to cell context
                   @current_block = cell
                 end
-                cells = (text.split(@state[:tbl_cell_delim])[1..-1] || []).tap {|n| warn "replacing cells #{cells.inspect} after blockmode with #{n.inspect}" }
+                cells = (text.split(@tbl_cell_delim)[1..-1] || []).tap {|n| warn "replacing cells #{cells.inspect} after blockmode with #{n.inspect}" }
               else
                 unescape(text) # TODO tbl adds \R (repeated character, to fill cell width). Watch for this; hopefully we don't need to implement it.
               end
@@ -240,23 +240,23 @@ class Troff
         end
       rescue EndOfTbl => e
         # encountered .TE with held box rules. apply them as bottom borders on the last table row.
-        if @state[:tbl_top_rules]
+        if @tbl_top_rules
           tbl.terminal_string.each_with_index do |cell, column|
-            cell.style.css[:border_bottom] = case @state[:tbl_top_rules][column] || @state[:tbl_top_rules][0]
+            cell.style.css[:border_bottom] = case @tbl_top_rules[column] || @tbl_top_rules[0]
                                              when '', "\\^"  then next # bottom border. no upward row spanning involved.
                                              when '_' then '1px solid black'
                                              when '=' then '3px double black'
-                                             else warn "applying invalid rule from #{@state[:tbl_top_rules]}"
+                                             else warn "applying invalid rule from #{@tbl_top_rules}"
                                              end
           end
-          @state.delete(:tbl_top_rules)
+          @tbl_top_rules = nil
         end
 
         # apply non-standard column spacing, if there was any
-        if @state[:tbl_colspc].compact.any?
+        if @tbl_column_spacing.compact.any?
           tbl.text.each do |row|
             row.text.each_with_index do |cell, column|
-              space = @state[:tbl_colspc][column]
+              space = @tbl_column_spacing[column]
               next unless space
               pad = to_em(to_u("#{space/2}", default_unit: 'n'))
               cell.style.css[:padding_right] = "#{pad}em"

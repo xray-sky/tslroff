@@ -198,6 +198,8 @@ class Block
       # NOTE Nroff Line class has its own link rewrite
 
       t = @text.collect(&:to_html).join
+      return t if t.empty? # REVIEW side effects?
+
       if style[:linkify]
         t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
           caps = Regexp.last_match

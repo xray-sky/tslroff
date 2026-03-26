@@ -3,6 +3,8 @@
 #    Troff adjustments methods
 # ---------------
 #
+# frozen_string_literal: true
+#
 
 class Troff
 
@@ -21,14 +23,12 @@ class Troff
       return
     end
 
-    return if @current_block.empty? || broke? || @state[:eqn_active] #|| continuation? - @current_block.empty covers continuation as RoffControl
+    return if @current_block.empty? || broke? || @eqn_active #|| continuation? - @current_block.empty covers continuation as RoffControl
 
     # An input text line ending with ., ?, !, .), ?), or !) is taken to be the end
     # of a sentence, and an additional space character is automatically provided during
     # filling.  §4.1
     sentence_end? and @current_block << ' '
     @current_block << ' '
-
   end
-
 end

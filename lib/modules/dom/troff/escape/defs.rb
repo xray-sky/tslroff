@@ -9,35 +9,35 @@
 
 class Troff
 
-#   \* - named string
-#
-#  the string could contain escapes that need further processing
-#          e.g. '.dsS \s\n()S'
-#    so we send back the expanded string, so that it might be unescaped
-#
-#  TODO: align this implementation with \n
-#
+ #   \* - named string
+ #
+ #   the string could contain escapes that need further processing
+ #          e.g. '.dsS \s\n()S'
+ #    so we send back the expanded string, so that it might be unescaped
+ #
+ #  TODO: align this implementation with \n
+ #
 
   define_method 'esc_*' do |s|
     s.slice!(0) if s.start_with?('(')
     s = __unesc_star(__unesc_n(s))
-    @named_strings[s] || ''.tap { warn "undefined named string #{s}" }
+    @named_strings[s] || ''.tap { warn "\\* : undefined named string #{s.inspect}" }
   end
 
-#   \( - special character
-#
-#  most of these are groff-only (man groff_chars) -- TODO separate
-#
-#  special case for translating special characters, if one is in effect.
-#
+ #   \( - special character
+ #
+ #  most of these are groff-only (man groff_chars) -- TODO separate
+ #
+ #  special case for translating special characters, if one is in effect.
+ #
 
   define_method 'esc_(' do |s|
     translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @character_translations.key? "#{@escape_character}(#{s}"
-    @state[:special_char][s] || ''.tap { warn "undefined special character #{s}" }
+    @special_chars[s] || ''.tap { warn "\\( : undefined special character #{s.inspect}" }
   end
 
   def init_sc
-    @state[:special_char] = {
+    @special_chars = {
       'bu'  => '&bull;',
       'co'  => '&copy;',
       'rg'  => '&reg;',

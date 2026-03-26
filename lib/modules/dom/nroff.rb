@@ -3,19 +3,21 @@
 #    nroff source
 # ---------------
 #
+# frozen_string_literal: true
+#
 # REVIEW add anchors menu for detected headings ?
 
 class Nroff < TextFormatter
 
-  Dir.glob("#{File.dirname(__FILE__)}/nroff/*.rb").each do |i|
-    require i
+  Dir.glob("nroff/*.rb", base: File.dirname(__FILE__)).sort.each do |i|
+    require_relative i
   end
 
   #attr_reader :input_line_number, :output_directory, :manual_section
 
-  Typebox = Typesetter::ASR37::Symbols
-  Typebox.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
-  Typebox.freeze
+  TYPEBOX = Typesetter::ASR37::Symbols
+  TYPEBOX.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
+  TYPEBOX.freeze
 
   def initialize(source)
     @input_line_number ||= 0
@@ -57,7 +59,6 @@ class Nroff < TextFormatter
       section = plaintext.match(@heading_detection) { |head| head[:section] } || section unless input_line == @title_line
 
       input_line.each_char do |char|
-
         page = @lines_per_page ? platen_position / (2 * @lines_per_page) : 0
         document[page] ||= Block::Nroff.new(text: [])
 
@@ -92,14 +93,14 @@ class Nroff < TextFormatter
         else
           if escape_shift
             case char
-            when '7' then platen_position -= 2 unless (platen_position < 2 and warn "tried to backfeed off the document?" and true)
-            when '8' then platen_position -= 1 unless (platen_position < 1 and warn "tried to half-backfeed off the document?" and true)
+            when '7' then platen_position -= 2 unless (platen_position < 2).tap { |q| warn "tried to backfeed off the document?" if q }
+            when '8' then platen_position -= 1 unless (platen_position < 1).tap { |q| warn "tried to half-backfeed off the document?" if q }
             when '9' then platen_position += 1
             else warn "processing unknown escape sequence [#{char}"
             end
             escape_shift = false
           else
-            warn "processing unknown control character #{char.inspect}" if char.bytes.detect { |b| b<32 }
+            warn "processing unknown control character #{char.inspect}" if char.bytes.detect { |b| b < 32 }
             text.print_at(printhead_position, char)
             text.print_at(printhead_position, "\cN") if alt_typebox_shift
             printhead_position += 1

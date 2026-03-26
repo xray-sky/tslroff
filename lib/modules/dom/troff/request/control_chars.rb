@@ -18,13 +18,13 @@
 class Troff
   def cc(argstr = '', breaking: nil)
     chr = argstr.empty? ? '.' : argstr[0]
-    @state[:cc] = chr
+    @cc = chr
     true
   end
 
   def c2(argstr = '', breaking: nil)
     chr = argstr.empty? ? "'" : argstr[0]
-    @state[:c2] = chr
+    @c2 = chr
     true
   end
 

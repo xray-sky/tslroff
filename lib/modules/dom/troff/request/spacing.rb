@@ -65,11 +65,11 @@ class Troff
   def ne(_argstr = '', breaking: nil) ; end
 
   def ns(_argstr = '', breaking: nil)
-    @state[:nospace] = true
+    @nospace = true
   end
 
   def rs(_argstr = '', breaking: nil)
-    @state.delete(:nospace)
+    @nospace = nil
   end
 
   def sp(argstr = '', breaking: true)  # TODO everything is wrong?

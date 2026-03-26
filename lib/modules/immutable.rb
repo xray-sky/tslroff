@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # Created by R. Stricklin <bear@typewritten.org> on 10/11/17.
 # Copyright 2017 Typewritten Software. All rights reserved.
 #
@@ -30,14 +32,11 @@ module Immutable
   end
 
   def prototype
-    # TODO rubocop hates this. figure out what we were after and fix it
-    Hash[(keys.collect do |k|
-      begin
-        [k, self[k].dup]
-      rescue TypeError
-        [k, self[k]]
-      end
-    end)]
+    keys.collect do |k|
+      [k, self[k].dup]
+    rescue TypeError
+      [k, self[k]]
+    end.to_h
   end
 
   def dup
@@ -46,16 +45,12 @@ module Immutable
 
   def ==(other)
     return false unless keys.sort == other.keys.sort
-    keys.each do |k|
-      return false unless self[k] == other[k]
-    end
+    keys.each { |k| return false unless self[k] == other[k] }
   end
 
   def each
     return enum_for(__callee__) unless block_given?
-    keys.each do |k|
-      yield [k, self[k]]
-    end
+    keys.each { |k| yield [k, self[k]] }
     self
   end
 
@@ -80,9 +75,7 @@ module Immutable
   end
 
   def values
-    keys.collect do |v|
-      send v
-    end.compact
+    keys.collect { |v| send v }.compact
   end
 
   private

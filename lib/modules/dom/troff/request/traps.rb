@@ -112,17 +112,17 @@ class Troff
     macro = argstr.slice(0, 2).strip
     unless macro.empty?
       warn ".da appending diversion #{macro.inspect}"
-      @state[:diversion_stack] << @current_block
+      @diversion_stack << @current_block
       @current_block = blockproto
-      @state[:diversions][macro] ||= [] # .da of a not-previously .di'ed macro is the same as .di'ing it
-      @state[:diversions][macro] << @current_block
+      @diversions[macro] ||= [] # .da of a not-previously .di'ed macro is the same as .di'ing it
+      @diversions[macro] << @current_block
       define_singleton_method macro do |*args|
         warn "inserting diversion #{macro.inspect}"
-        @document += @state[:diversions][macro]
+        @document += @diversions[macro]
       end unless macro == :selenium or respond_to? macro
     else
       warn ".da ending prior diversion"
-      @current_block = @state[:diversion_stack].pop
+      @current_block = @diversion_stack.pop
     end
   end
 
@@ -130,16 +130,16 @@ class Troff
     macro = argstr.slice(0, 2).strip
     unless macro.empty?
       warn ".di creating diversion #{macro.inspect}"
-      @state[:diversion_stack] << @current_block
+      @diversion_stack << @current_block
       @current_block = blockproto
-      @state[:diversions][macro] = [ @current_block ]
+      @diversions[macro] = [ @current_block ]
       define_singleton_method macro do |*args|
         warn "inserting diversion #{macro.inspect}"
-        @document += @state[:diversions][macro]
+        @document += @diversions[macro]
       end unless macro == :selenium
     else
       warn ".di ending prior diversion"
-      @current_block = @state[:diversion_stack].pop
+      @current_block = @diversion_stack.pop
     end
   end
 
@@ -148,8 +148,8 @@ class Troff
     if pos and macro
       warn "!! setting diversion trap #{pos.inspect} #{macro.inspect}"
       pos = to_u(pos).to_i
-      @state[:diversion_trap][pos] ||= []
-      @state[:diversion_trap][pos] << [ macro, args ]
+      @diversion_traps[pos] ||= []
+      @diversion_traps[pos] << [ macro, args ]
     else
       warn "clearing all diversion traps due to .dt #{pos.inspect} #{macro.inspect}"
       init_dt
@@ -160,8 +160,8 @@ class Troff
     (count, macro) = argstr.split
     if count and macro and respond_to?(macro)
       count = count.to_i
-      @state[:input_trap][count] ||= []
-      @state[:input_trap][count] << [ macro ]
+      @input_traps[count] ||= []
+      @input_traps[count] << [ macro ]
     else
       warn "clearing all input traps due to .it #{count.inspect} #{macro.inspect}"
       init_it
@@ -169,18 +169,18 @@ class Troff
   end
 
   def init_di
-    @state[:diversion_stack] = []
-    @state[:diversions] = {
+    @diversion_stack = []
+    @diversions = {
       :selenium => []
     }
   end
 
   def init_dt
-    @state[:diversion_trap] = Hash.new
+    @diversion_traps = Hash.new
   end
 
   def init_it
-    @state[:input_trap] = Hash.new
+    @input_traps = Hash.new
   end
 
   def init_traps

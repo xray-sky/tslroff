@@ -97,7 +97,7 @@ class OSF1
 
     def init_TH
       #super
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     # .so with absolute path, osf/1 macros in /usr/share/lib/tmac
@@ -178,7 +178,7 @@ class OSF1
     end
 
     define_method 'EX' do |*args|
-      nr 'EX ' + to_u("#{args[0] || 0}n+#{@state[:base_indent]}u")
+      nr 'EX ' + to_u("#{args[0] || 0}n+#{@base_indent}u")
       nf
       sp '.5'
       send :in, "+#{@register['EX'].value}u"

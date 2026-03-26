@@ -3,6 +3,8 @@
 #    Troff conversions and expressions
 # ---------------
 #
+# frozen_string_literal: true
+#
 #   §1.3
 #
 #    basic units (u) - device specific (use pixels for html? - does it matter if I want to keep things in the output as ems?)
@@ -68,6 +70,8 @@
 
 class Troff
 
+  private
+
   @@units_per_inch = 1200 # REVIEW: does this even matter?
 
   # str.to_s -- tolerate receiving integer/register argument
@@ -90,17 +94,20 @@ class Troff
   end
 
   def to_u(str, default_unit: 'u')
-
     # troff issues a warning for any characters not allowed in a numeric expression
     # (like ',') and disregards everything after one. not sure what to return though
-    # if the entire expression is disregarded. REVIEWED. zero? - yes. REVIEW does it depend on \w vs. other places expressions accepted??
+    # if the entire expression is disregarded. REVIEWED. zero? - yes.
+    # REVIEW does it depend on .nr or other places expressions accepted??
     str.sub!(%r{[^-+()\d.cimnPpuv/*%<>=&:].*$}, '') and warn "disregarding extra chars in numeric expression #{Regexp.last_match[0].inspect}"
-    return '0' if str.empty? # everything was rejected as invalid
+    return String.new('0') if str.empty? # everything was rejected as invalid - temporary unfrozen before rewriting expr parsing
 
     # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
     # in order to avoid having to differentiate between '-' as subtraction vs. negation
     str.prepend('0u') if str.match(/^[+-]/)
-    str = str.gsub('+-', '-').gsub('--', '+').gsub('++', '+').gsub(/=-([\d.]+?[cimnPpuv]?)/, "=(-\\1)")
+    str = str.gsub('+-', '-')
+             .gsub('--', '+')
+             .gsub('++', '+')
+             .gsub(/=-([\d.]+?[cimnPpuv]?)/, "=(-\\1)")
 
     # try to break down the expression
     # start with parens; work inside -> out
@@ -117,7 +124,7 @@ class Troff
     # example - hpterm(1) [HPUX 10.20] line 733
     # example - cc(1) [OSF/1 3.0] line 954 (.VL 3m and def of VL attempts to .nr $1n giving .nr 3mn)
     operand = operands.shift.match(/^([\d.]+)([cimnPpuv]?)/)
-    return '0'.tap { warn "garbage in evaluating expression #{str.inspect}" } unless operand
+    return String.new('0').tap { warn "garbage in evaluating expression #{str.inspect}" } unless operand # temporary unfrozen before rewriting expr parsing
 
     (magnitude, unit) = operand[1..2]
     unit = default_unit if unit.empty?
@@ -151,7 +158,6 @@ class Troff
     end
 
     lhs.to_s
-
   end
 
 end

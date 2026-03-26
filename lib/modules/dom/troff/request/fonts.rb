@@ -95,10 +95,10 @@ class Troff
 
     if width
       warn "wishfully enabling .cs #{[face, width, ptsiz].inspect}"
-      @state[:cs] = face
+      @cs = face
     else
       "disabling .cs #{[face, width, ptsiz].inspect}"
-      @state.delete(:cs) if @state[:cs]
+      @cs = nil if @cs
     end
     @current_block = blockproto
     @document << @current_block
@@ -109,15 +109,15 @@ class Troff
     return nil unless pos and font
     return nil.tap { warn "illegal load of font position 0" } if pos == '0'
     warn "loading font #{font} on position #{pos} (file: #{file.inspect})"
-    @state[:font][pos.to_i] = font
+    @fonts[pos.to_i] = font
   end
 
   def ss(argstr = '', breaking: nil)
     ss = argstr.split.first || Font.defaultsize
     new_style = Style.new(@current_block.terminal_text_style.dup)
-    current_spacing = new_style[:word_spacing] || @state[:default_ss]
+    current_spacing = new_style[:word_spacing] || @default_word_spacing
     new_spacing = ss.to_f / 36
-    if new_spacing == @state[:default_ss]
+    if new_spacing == @default_word_spacing
       apply { @current_block.terminal_text_style.delete(:word_spacing) }
     else
       apply { @current_block.terminal_text_style[:word_spacing] = new_spacing }
@@ -135,7 +135,7 @@ class Troff
   end
 
   def init_ss
-    @state[:default_ss] = 12/36.0 # REVIEW is this correctly Font.defaultsize/36.0?
+    @default_word_spacing = 12/36.0 # REVIEW is this correctly Font.defaultsize/36.0?
   end
 
 end

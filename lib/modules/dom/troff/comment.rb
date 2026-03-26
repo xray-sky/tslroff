@@ -7,9 +7,10 @@
 #
 #   A line beginning with \" will appear as a blank line and behave like .sp 1. (TODO)
 #
+# frozen_string_literal: true
+#
 
 class Troff
-
   define_method '\\"' do |argstr, breaking: nil|
     return nil unless argstr
     # This was done as a block, but then it was breaking up a block it was encountered during. So now it's inline.
@@ -23,5 +24,4 @@ class Troff
     send '\\"', s[1..-1]
     ''
   end
-
 end

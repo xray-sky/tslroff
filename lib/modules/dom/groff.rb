@@ -5,6 +5,7 @@
 #
 #   https://www.gnu.org/software/groff/manual/groff.html#gtroff-Reference
 #
+# frozen_string_literal: true
 #
 # TODO
 #   requests/macros MUST be followed by a space, because there are some longer than two characters?

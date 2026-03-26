@@ -36,8 +36,9 @@
 #  because the internal registers still need to be updated, just not from document context
 #
 #  what happens when given not-an-N as second arg (invalid expression)
-#  - ignored. doesn't set anything. same as if no number passed at all.
-#  TODO which means bad interaction from to_u returning '0' in that case
+#  -> ignored. doesn't set anything. same as if no number passed at all.
+#  we set the register = 0, but an unused register in troff has the value 0
+#  so that's probably fine?
 #
 #  Registers are always arabic until changed by .af
 #
@@ -60,18 +61,26 @@ class Troff
   end
 
   def nr(argstr = '', breaking: nil)
-    (reg, value, increment) = argstr.split
-    return nil unless reg and value
+    reg = argstr.split(/\s/).first or return
 
-    @register[reg] = Register.new unless @register.has_key?(reg)
-    unless @register[reg].read_only?
-      if value.start_with? '+' or value.start_with? '-'
-        @register[reg].value = to_u("#{@register[reg].value}#{value}").to_i
-      else
-        @register[reg].value = to_u(value).to_i
-      end
-      @register[reg].increment = increment.to_i if increment
+    # value expression may contain whitespace e.g. .nr g \w'sock gnome'+9n
+    # - I don't _think_ we need to worry about doing any other unescaping?
+    #   can't think of any other way whitespace might end up in the expression
+    (value, increment) = __unesc_w(argstr[reg.length..-1]).split
+    return unless value
+
+    @register[reg] = Register.new unless @register.has_key?(reg) # default value means no ||=
+    return if @register[reg].read_only?
+
+    if value.start_with? '+' or value.start_with? '-'
+      # leading +/- is treated as increment/decrement, separately from expression
+      # so "-1-6" is "decrement -5" (i.e. "add 5") and not "subtract 7"
+      @register[reg].value = @register[reg].value + (to_u(value[1..-1]).to_i * (value[0] == '-' ? -1 : 1))
+    else
+      @register[reg].value = to_u(value).to_i
     end
+
+    @register[reg].increment = increment.to_i if increment
   end
 
   def rr(argstr = '', breaking: nil)
@@ -119,7 +128,7 @@ class Troff
       '.f' => Register.new(1, ro: true),                                  # current font position.
       #.g                                                                 # set non-zero for groff
       #.h                                                                 # text baseline high-water mark on current page or diversion (?)
-      #.i' => Register.new(@state[:base_indent], ro: true),               # current indent. - circular dependency referencing @base_indent here - see xinit_in
+      #.i' => Register.new(@base_indent, ro: true),               # current indent. - circular dependency referencing @base_indent here - see xinit_in
       '.j' => Register.new(1, ro: true),                                  # current adj mode and type. can be saved for use with .ad to restore
       #.k                                                                 # horizontal size of text (minus indent) of current partially collected output line, if any, in current env.
       '.l' => Register.new(to_u('7.5i'), ro: true),                       # current line length. TODO connect this to some future implementation of .ll ??

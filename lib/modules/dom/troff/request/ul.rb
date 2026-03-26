@@ -39,18 +39,18 @@
 class Troff
   def ul(argstr = '', breaking: nil)
     n = argstr.split.first || '1'
-    ft @state[:ul_font]
+    ft @ul_font
     it "#{n} [U"
   end
 
   def uf(argstr = '', breaking: nil)
     pos = argstr.slice(0, 2).strip
     # REVIEW does this actually get some other font mounted on position 2?
-    @state[:ul_font] = case pos
-                       when ''     then 'I'
-                       when /^\d$/ then @mounted_fonts[pos.to_i]
-                       else        pos
-                       end
+    @ul_font = case pos
+               when ''     then 'I'
+               when /^\d$/ then @mounted_fonts[pos.to_i]
+               else        pos
+               end
   end
 
   #def finalize_ul
@@ -59,7 +59,7 @@ class Troff
   end
 
   def init_ul
-    @state[:ul_font] = 'I'
+    @ul_font = 'I'
   end
 
   alias_method :cu, :ul

@@ -3,53 +3,32 @@
 #    Troff predicate routines
 # ---------------
 #
+# frozen_string_literal: true
+#
 
 class Troff
 
   private
 
   def nobreak?
-    @state[:break_suppressed]
+    @break_suppressed
   end
 
   def broke?
-    #return false if @current_block.is_a? String # we are trying to reduce() an escape
     return true if @current_block.empty?
-    #return true if @current_block.terminal_string.is_a?(LineBreak)
     return true if @current_block.terminal_text_obj.is_a?(LineBreak) # REVIEW this probably never happens anymore,
                                                              # since << LineBreak automatically appends another empty Text after
-    #if @current_block.text[-2]&.text and !@current_block.text[-2].text.is_a?(LineBreak)
-    # this is getting ridiculous
-    return true if @current_block.text[-2].is_a?(LineBreak) and @current_block.terminal_text_obj.empty?.tap{|n| "last is empty? #{n.inspect}" }
+    return true if @current_block.text[-2].is_a?(LineBreak) and @current_block.terminal_text_obj.empty?.tap{ |n| "last is empty? #{n.inspect}" }
     return true if @current_block.text[-2].is_a?(VerticalSpace) and @current_block.terminal_text_obj.empty?
-    #if !@current_block.text[-2].is_a?(LineBreak)
-      #return true if @current_block.terminal_string.empty? and @current_block.text[-2].text.start_with?('&roffctl_vs')
-    #  return true if @current_block.terminal_string.empty? and @current_block.text[-2].is_a? VerticalSpace
-    #end
     false
   end
 
-  # was only used by space_adj, now redundant since Continuation became a RoffControl
-  # and an empty Text will always follow one that has been Block <<'ed
-  #
-  #def continuation?
-  #  #@current_block.to_s.match(/&roffctl_continuation;$/)
-  #  #@current_block.terminal_text_obj.is_a? Continuation
-  #  # We've already appended an extra Text object in order to avoid writing into Continuation.text
-  #  # REVIEW maybe it's sensible to let Continuation be written into, let it be a straight subclass
-  #  #        of Text, treat it as effectively just another name for Text
-  #  #@current_block.text[-2].is_a? Continuation
-  #  #@current_block.terminal_text_obj.is_a? Continuation
-  #  # no, we do not want to let Continuation be another name for Text, as it screws up space_adj
-  #  @current_block.text[-2].is_a? Continuation
-  #end
-
   def adj?
-    @state[:adjust] == true
+    @adjust == true
   end
 
   def noadj?
-    @state[:adjust] == false
+    @adjust == false
   end
 
   def fill?
@@ -61,11 +40,11 @@ class Troff
   end
 
   def space?
-    @state[:nospace].nil?
+    @nospace.nil?
   end
 
   def nospace?
-    @state[:nospace] == true
+    @nospace == true
   end
 
   def sentence_end?
@@ -80,15 +59,4 @@ class Troff
   def fields?
     !@field_delimiter.nil?
   end
-
-  def self.macro?(req)
-    # TODO a macro with lowercase letters is not illegal
-    req.length.between?(1,2) and req.upcase == req
-  end
-
-  def self.req?(line)
-    # TODO these request characters are selectable
-    line.match(/^[\.\']\s*\S{1,2}\s*(?:\S.*|$)/)
-  end
-
 end

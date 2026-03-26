@@ -28,8 +28,8 @@ class Troff
       define_method 'EQ' do |*args|
         warn ".EQ received #{args.inspect} as margin equation number" unless args.empty?
 
-        @state[:eqn_gfont] ||= '2' # appears the default font is italic.
-        @state[:eqn_gsize] ||= Font.defaultsize
+        @eqn_gfont ||= '2' # appears the default font is italic.
+        @eqn_gsize ||= Font.defaultsize
         #@current_block = Block::Null.new
 
         loop do

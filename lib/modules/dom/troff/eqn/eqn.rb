@@ -73,18 +73,18 @@ class Troff
   module Eqn
 
     def eqn_setup
-      @state[:eqn_active] = true
+      @eqn_active = true
       @eqnhold = @current_block
       @current_block = EqnBlock.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
       # save and set fonts
       @register['98'] = @register['.f'].dup
       @register['99'] = @register['.s'].dup
-      ft @state[:eqn_gfont].to_s
-      ps @state[:eqn_gsize].to_s
+      ft @eqn_gfont.to_s
+      ps @eqn_gsize.to_s
     end
 
     def eqn_restore
-      @state[:eqn_active] = false
+      @eqn_active = false
       @eqnhold << @current_block
       @current_block = @eqnhold
       # restore fonts
@@ -122,21 +122,21 @@ class Troff
       #
       # so, if there are no delimiters, then we are in .EQ/.EN and the whole line goes
       resc = Regexp.quote @escape_character
-      if @state[:eqn_start] and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @state[:eqn_start]}|(?<!#{resc})#{Regexp.quote @state[:eqn_start]}/)
+      if @eqn_start and line.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @eqn_start}|(?<!#{resc})#{Regexp.quote @eqn_start}/)
         ## need to temporarily suppress :nofill
         fill = @register['.u'].value
         # fi breaks, has block-related side effects
         @register['.u'].value = 1
         loop do
           break if line.empty?
-          rbeg = Regexp.escape @state[:eqn_start]
-          rend = Regexp.escape @state[:eqn_end]
+          rbeg = Regexp.escape @eqn_start
+          rend = Regexp.escape @eqn_end
           mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rbeg}|(?<!#{resc})#{rbeg}/)
           if mark
             head = line.slice!(0..mark).chop
             mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rend}|(?<!#{resc})#{rend}/)
             unless mark
-              warn "eqn unterminated delim #{@state[:eqn_end].inspect}! -- pulling next line"
+              warn "eqn unterminated delim #{@eqn_end.inspect}! -- pulling next line"
               line << next_line
             end
             unescape head
@@ -169,6 +169,8 @@ class Troff
         break if parse_tree.empty?
 
         elem = parse_tree.shift
+        # could be nil, if we defined e.g. bare "sup down 20 \(fm\(fm" e.g. spline(1) [ GL2-W3.6 ]
+        next unless elem.tap { |e| warn "disembodied eqn element ahead of #{parse_tree[0].inspect}" unless elem }
         if respond_to? "eqn_#{elem}"
           send "eqn_#{elem}", parse_tree
         else
@@ -192,9 +194,9 @@ class Troff
           when 'back', 'fwd', 'up', 'down'
             warn "eqn no support yet for keyword '#{elem} #{parse_tree.shift.inspect}'"
             gen_eqn [ parse_tree.shift ]
-          when /^(?:#{@state[:eqnchars].keys.collect{|c|Regexp.quote c}.join('|')})$/
+          when /^(?:#{@eqnchars.keys.collect{|c|Regexp.quote c}.join('|')})$/
             unescape "\\|" if @register['.f'].value == 2 and !@current_block.empty?
-            unescape "\\f1#{@state[:eqnchars][elem]}\\fP"
+            unescape "\\f1#{@eqnchars[elem]}\\fP"
           else
             loop do
               break if elem.empty?
@@ -210,7 +212,7 @@ class Troff
                   m
                 end
                 # these "shorthands" apparently needn't be surrounded by spaces, so won't be caught by the eqnchars match
-                unescape txt.gsub(%r{(==>|==<|<=>|<->|==|!=|\+-|>>|<<|<=|>=|\|<|\|>|->|<-|-)}) { |m| @state[:eqnchars][m] }
+                unescape txt.gsub(%r{(==>|==<|<=>|<->|==|!=|\+-|>>|<<|<=|>=|\|<|\|>|->|<-|-)}) { |m| @eqnchars[m] }
               end
             end
           end
@@ -223,8 +225,9 @@ class Troff
       eqn = []
       loop do
         # whoa, eqn_get_token is destructive
+        #warn "loop eqn_parse_tree #{eqn.inspect} #{str.inspect}"
         break if str.empty? or eqn.length == limit
-        case tok = str.slice!(0, get_eqn_token(str).length)
+        case tok = str.slice!(0, get_eqn_token(str).length) #.tap { |x| warn "got token #{x.inspect}" }
         when terminate then return eqn
         #when '~', '^', "\t" then eqn << tok
         when '{' then eqn << [ eqn_parse_tree(str, terminate: '}') ]
@@ -246,7 +249,7 @@ class Troff
           eqn << [ tok, eqn.pop ]
         when 'dot', 'dotdot', 'dyad', 'vec'
           eqn << [ eqn.pop, tok ]
-        when 'above', 'sub', 'sup'
+        when 'above', 'sub', 'sup' # floating superscripts will put nil into parse tree
           eqn << [ eqn.pop, [ tok, eqn_parse_tree(str, limit: 1) ] ]
         when 'from', 'to'
           eqn << [ eqn.pop, [ tok, eqn_parse_tree(str, limit: 1) ] ]
@@ -271,7 +274,7 @@ class Troff
       when ' ' then str.slice!(0) and get_eqn_token(str) # do over? NOTE destructive
       #when '~', '^', ' ', "\t" then str[0]
       when '~', '^', "\t", '{', '}' then str[0]
-      when @escape_character then str[0] + get_escape(str[1..-1])
+      #when @escape_character then str[0] + get_escape(str[1..-1]) # REVIEW Why are we treating a single escape char as a full token? breaks spline(1) [ GL2-W3.6 ]
       when '"'
         last = str.index(/(?<!#{resc})#{resc}#{resc}"|(?<!#{resc})"/, 1)
         str[0..last]
@@ -284,7 +287,7 @@ class Troff
     end
 
     def init_eqnchar
-      @state[:eqnchars] = {
+      @eqnchars = {
         #'~'        => '&nbsp;',
         #'^'        => '&thinsp;',
         '-'        => '&minus;',

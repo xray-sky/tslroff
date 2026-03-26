@@ -3,6 +3,8 @@
 #    Troff tab processing routines
 # ---------------
 #
+# frozen_string_literal: true
+#
 # TODO: how do tabs interact with .TP / .IP / .RS etc. ?
 #
 # REVIEW details in §9.1, §9.2

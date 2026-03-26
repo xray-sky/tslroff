@@ -3,6 +3,8 @@
 #    Troff.getargs source
 # ---------------
 #
+# frozen_string_literal: true
+#
 # there's a lot going on here.
 #
 # to be quoted, the arg must begin with a double quote				.ds L" ""
@@ -40,8 +42,9 @@
 
 class Troff
 
+  private
+
   def getargs(str)
-    resc = Regexp.quote(@escape_character.to_s) # escape mechanism may be disabled
     args = []
     #argstr = str.sub(%r{\s*\\".*$}, '')	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
     # Interactive makes it pretty clear that we process the args in copymode first, _then_ split them up
@@ -55,7 +58,7 @@ class Troff
       case arg
       when ' ' then next
       when '"'
-        arg = '' # these double quotes don't copy
+        arg = String.new # these double quotes don't copy
         loop do
           break if argstr.empty?
           chr = get_char(argstr)

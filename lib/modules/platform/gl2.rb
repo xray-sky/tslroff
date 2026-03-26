@@ -66,7 +66,7 @@ class GL2
 
     def init_sc
       super
-      @state[:special_char].merge!(
+      @special_chars.merge!(
         {
           'ga' => '&#96;' # grave, U0060; this seems to be intended as a spacing character (non-spacing is default, U0300) - see csh(1)
         }
@@ -81,7 +81,7 @@ class GL2
     def init_PD
       super
       @register['PD'] = @register[')P']
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     # index info - what even makes sense to do with this

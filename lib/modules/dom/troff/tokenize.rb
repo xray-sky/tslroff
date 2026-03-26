@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # methods for tokenizing input lines
 #
 #  where there are many kinds of edge cases -
@@ -13,16 +15,16 @@
 
 class Troff
 
-# return one or more input characters.
-# \P counts as one character, as does \*(xx.
-# TODO cope with problems like \f\*(xx where xx is not a defined string (or is defined empty)
-#      without throwing an exception. REVIEW what troff does with this
-#      see:
-#        hpux 10.20 remove_object(1m) \*C problem
-#        du 4.0f dthelpprint(1) [496,501] - \n\n problems
+  # return one or more input characters.
+  # \P counts as one character, as does \*(xx.
+  # TODO cope with problems like \f\*(xx where xx is not a defined string (or is defined empty)
+  #      without throwing an exception. REVIEW what troff does with this
+  #      see:
+  #        hpux 10.20 remove_object(1m) \*C problem
+  #        du 4.0f dthelpprint(1) [496,501] - \n\n problems
 
-  def get_char(s, count:  1)
-    chars = ''
+  def get_char(s, count: 1)
+    chars = String.new
     loop do
       break if count < 1 or s.empty?
       chars << s[chars.length]
@@ -32,29 +34,29 @@ class Troff
     chars
   end
 
-# return one input escape sequence.
-# may be \P, \fP, \*n, \*(nn, \h'|\n(xx+\w'this sucks..'u+3m', etc.
+  # return one input escape sequence.
+  # may be \P, \fP, \*n, \*(nn, \h'|\n(xx+\w'this sucks..'u+3m', etc.
 
   def get_escape(s)
-   esc = s[0]
-   esc << case esc
-          when '"'                     then s[1..-1]
-          when 'z'                     then get_printing_char(s[1..-1])
-          when '('                     then get_char(s[1..-1], count: 2)
-          when 'n'                     then get_reg_str(s[1..-1])
-          when 'f', 'g', 'k', 'n', '*' then get_def_str(s[1..-1])
-          when 's'                     then get_size_str(s[1..-1])
-          when 'b', 'h', 'l', 'o', 'v', 'w', 'x',
-               'D', 'H', 'L', 'S'      then get_quot_str(s[1..-1])
-          else ''
-          end
+    esc = s[0]
+    esc << case esc
+           when '"'                     then s[1..-1]
+           when 'z'                     then get_printing_char(s[1..-1])
+           when '('                     then get_char(s[1..-1], count: 2)
+           when 'n'                     then get_reg_str(s[1..-1])
+           when 'f', 'g', 'k', '*'      then get_def_str(s[1..-1])
+           when 's'                     then get_size_str(s[1..-1])
+           when 'b', 'h', 'l', 'o', 'v', 'w', 'x',
+                'D', 'H', 'L', 'S'      then get_quot_str(s[1..-1])
+           else ''
+           end
     esc
   end
 
-# return one definition
-# either a single character, or a two-character definition preceeded by (
-# as accepted by \f, \g, \k, \*, \(, etc.
-# \n may have a + or - in front of the register name
+  # return one definition
+  # either a single character, or a two-character definition preceeded by (
+  # as accepted by \f, \g, \k, \*, \(, etc.
+  # \n may have a + or - in front of the register name
 
   def get_def_str(s)
     req = get_char(s)
@@ -63,9 +65,9 @@ class Troff
     req
   end
 
-# return one register
-# either a single character, or a two-character definition preceeded by (
-# may have a + or - in front of the register name
+  # return one register
+  # either a single character, or a two-character definition preceeded by (
+  # may have a + or - in front of the register name
 
   def get_reg_str(s)
     req = get_char(s)
@@ -75,13 +77,13 @@ class Troff
     req
   end
 
-# return one size
-# optional ±, and some number of digits.
-# as accepted by \s
-#
-# REVIEWED - sizes only valid up to 39. \s40 is parsed as \s4 and 0 is copied.
-#            \s0 returns to previous size. \s03 is parsed as \s0 and 3 is copied.
-#            \s+10 is parsed as \s+1 and 0 is copied
+  # return one size
+  # optional ±, and some number of digits.
+  # as accepted by \s
+  #
+  # REVIEWED - sizes only valid up to 39. \s40 is parsed as \s4 and 0 is copied.
+  #            \s0 returns to previous size. \s03 is parsed as \s0 and 3 is copied.
+  #            \s+10 is parsed as \s+1 and 0 is copied
 
   def get_size_str(s)
     siz = s.slice!(0, get_char(s).length)
@@ -89,16 +91,16 @@ class Troff
     #max_digits = 1 if siz.match?(/^\d/)
     next_char = get_char(s)
     siz << next_char if next_char.match?(/^\d$/)
-  	siz
+    siz
   end
 
-# get a quoted string
-# second instance of first character terminates
-# as accepted by \h, \w, etc.
-#
-# relies on get_char fetching escapes as single characters
-# to avoid getting tripped up by escaped quotes, or embedded
-# escapes also using the same quote character.
+  # get a quoted string
+  # second instance of first character terminates
+  # as accepted by \h, \w, etc.
+  #
+  # relies on get_char fetching escapes as single characters
+  # to avoid getting tripped up by escaped quotes, or embedded
+  # escapes also using the same quote character.
 
   def get_quot_str(s)
     endchar = get_char(s)
@@ -116,29 +118,67 @@ class Troff
     req
   end
 
-# get one printing character
-# used for \z to collect font changes, vertical shifts, whatever,
-# plus the one printing character that will be output as non-spacing
+  # get one printing character
+  # used for \z to collect font changes, vertical shifts, whatever,
+  # plus the one printing character that will be output as non-spacing
 
   def get_printing_char(s)
     req = ''
     loop do
       c = get_char s
-      if c.start_with?(@escape_character) and %w[d f k r s u v x].include?(c[1])
-        req << s.slice!(0, c.length)
-      else
-        break
-      end
+      break unless c.start_with?(@escape_character) and %w[d f k r s u v x].include?(c[1])
+      req << s.slice!(0, c.length)
     end
     req << s.slice!(0, get_char(s).length)
   end
 
-# get one expression
-# used for \l to read a width
+  # get one expression
+  # used for \l to read a width, .if, etc.
 
   def get_expression(s)
-    #s.scan(/^[-|]?[\d.]+[cimnPpuv]?/).first
-    s.scan(%r(^[-|]?[\d\.cimnPpuv]+|[-+/*%<>=&:]+)).first
+    #s.scan(%r(^[-|]?[\d.cimnPpuv]+|[-+/*%<>=&:]+)).first
+    tok = String.new
+    n = get_num_expr(s)
+    return tok unless n
+    s.slice!(0, n.length)
+    tok << n
+
+    loop do
+      op = get_oper_expr(s)
+      break unless op
+      s.slice!(0, op.length) # might be zero if we're forcing into a (
+
+      e = get_num_expr(s)
+      break unless e
+      s.slice!(0, e.length)
+      tok << op
+      tok << e
+    end
+    tok
+  end
+
+  # signed magnitude number or parenthesized numeric expression
+  def get_num_expr(s)
+    n = s.scan(%r(^(?:[-+]*(?:\d*\.?\d+)|[-+]*(?=\()))).first
+    return nil unless n
+    pos = n.length
+    if s[pos] == '('
+      n = String.new('') # need to clear the magnitude in case the whole thing is a bust
+      e = get_expression(s[(pos + 1)..-1])
+      return n unless e
+      backpos = pos + e.length + 1
+      n << "#{s[0..backpos]}" if s[backpos] == ')'
+    end
+    u = get_unit_expr(s[n.length..-1]) # optional unit
+    "#{n}#{u}"
+  end
+
+  def get_oper_expr(s)
+    s.scan(%r(^[-+/*%<>=^:])).first
+  end
+
+  def get_unit_expr(s)
+    s.scan(%r(^[cimnPpuv])).first
   end
 
 end

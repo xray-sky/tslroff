@@ -50,7 +50,7 @@ class Ardent_SysV
 
     def init_TH
       #super
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     # end of document processing (print final page number, etc.)

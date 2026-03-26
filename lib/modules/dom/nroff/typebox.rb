@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+#
+
 module Typesetter
   module ASR37
     Symbols = {

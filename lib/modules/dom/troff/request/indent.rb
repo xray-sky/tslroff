@@ -59,15 +59,15 @@ class Troff
     warn ".in invoked with nobreak - how to?" unless breaking
     indent = argstr.split.first
 
-    previous = @state[:previous_indent]
-    @state[:previous_indent] = @register['.i'].value
+    previous = @previous_indent
+    @previous_indent = @register['.i'].value
 
     @current_block = blockproto
     @current_block.style.css[:margin_top] = '0'
     @document << @current_block
 
     indent(if indent
-             indent.sub!(/^([-+])/, "#{@state[:previous_indent]}u\\1")
+             indent.sub!(/^([-+])/, "#{@previous_indent}u\\1")
              to_u("#{indent}", default_unit: 'm')
            else
              previous
@@ -77,7 +77,7 @@ class Troff
   def indent(margin)
     @register['.i'].value = margin
     apply { @current_block.style.css[:margin_left] = "#{to_em(margin.to_s)}em" }
-    @current_block.style.css.delete(:margin_left) if margin == @state[:base_indent]
+    @current_block.style.css.delete(:margin_left) if margin == @base_indent
   end
 
   def temp_indent(hang)
@@ -85,8 +85,8 @@ class Troff
   end
 
   def xinit_in
-    @state[:base_indent] = to_u('2m').to_i		# from the CSS; TODO link this with css
-    @register['.i'] = Register.new(@state[:base_indent], :ro => true)
-    @state[:previous_indent] = @register['.i'].value
+    @base_indent = to_u('2m').to_i		# from the CSS; TODO link this with css
+    @register['.i'] = Register.new(@base_indent, :ro => true)
+    @previous_indent = @register['.i'].value
   end
 end

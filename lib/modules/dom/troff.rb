@@ -3,6 +3,8 @@
 #    troff main
 # ---------------
 #
+# frozen_string_literal: true
+#
 # REVIEW add anchors menu for .SH ?
 # TODO .foot => /tsl-print.css (center, n% grey, extra margin-top)
 # TODO tabs and probably other contrivances also need copying to print css. check especially eqn.
@@ -15,8 +17,8 @@ require_relative '../../classes/webdriver'
 class Troff < TextFormatter
 
   %w[. request escape eqn tbl].each do |t|
-    Dir.glob("#{File.dirname(__FILE__)}/troff/#{t}/*.rb").each do |i|
-      require i
+    Dir.glob("troff/#{t}/*.rb", base: File.dirname(__FILE__)).sort.each do |i|
+      require_relative i
     end
   end
 
@@ -27,21 +29,25 @@ class Troff < TextFormatter
   include Tbl
   include Macros::Tbl
 
-  Delimiters = %w[ \002 \003 \005 \006 \007 " ' ] # unused. REVIEW necessary? useful?
-  Requests = %w[ ab ad af am as bd bp br c2 cc ce cf ch cs cu da de di ds dt ec el em eo ev ex fc fi
-                 fl fp ft hc hw hy ie if ig in it lc lf lg ll ls lt mc mk na ne nf nh nm nn nr ns nx
-                 os pc pi pl pm pn po ps rd rm rn rr rs rt so sp ss sv ta tc ti tl tm tr ul vs wh \" ] # REVIEW \" isn't really a request but I want to not parse its args
+  DELIMITERS = %w[\002 \003 \005 \006 \007 " '].freeze # unused. REVIEW necessary? useful?
+  REQUESTS = %w[
+    ab ad af am as bd bp br c2 cc ce cf ch cs cu da de di ds dt ec el em eo ev ex fc fi
+    fl fp ft hc hw hy ie if ig in it lc lf lg ll ls lt mc mk na ne nf nh nm nn nr ns nx
+    os pc pi pl pm pn po ps rd rm rn rr rs rt so sp ss sv ta tc ti tl tm tr ul vs wh \"
+  ].freeze # REVIEW \" isn't really a request but I want to not parse its args
 
   @@webdriver = nil
 
   def self.webdriver ; @@webdriver ; end
-  def self.requests ; Requests ; end  # REVIEW smrtr?
-  def self.useGroff? ; false ; end  # REVIEW necessary? (I think no)
+  def self.requests ; REQUESTS ; end # REVIEW smrtr? - does this need to be a class method??
+  def self.use_groff? ; false ; end # REVIEW necessary? (I think no)
 
   def initialize(source)
     @source = source
     @register = {}
-    @state = { header: Block::Header.new, footer: Block::Footer.new }
+    @state = {} # TODO still in use in osf1 to track sml/rsml inclusion
+    @header ||= Block::Header.new
+    @footer ||= Block::Footer.new
     @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
 
     #xinit_selenium
@@ -58,6 +64,10 @@ class Troff < TextFormatter
     end
 
     super(source)
+  end
+
+  def request?(req)
+    REQUESTS.include? req
   end
 
   # TODO / REVIEW .so ugly
@@ -81,12 +91,12 @@ class Troff < TextFormatter
       # REVIEW maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
       # TODO this is quite wrong if we are doing halt_on e.g. from parse_title and don't find one (e.g. unix v7 intro.0)
       if @named_strings[:header]
-        unescape @named_strings[:header], output: @state[:header]
-        @document.insert(0, @state[:header])
+        unescape @named_strings[:header], output: @header
+        @document.insert(0, @header)
       end
       if @named_strings[:footer]
-        unescape @named_strings[:footer], output: @state[:footer]
-        @document << @state[:footer]
+        unescape @named_strings[:footer], output: @footer
+        @document << @footer
       end
       return "#{@document.collect(&:to_html).join}\n    </div>\n</div>" # REVIEW closes main doc divs start ed by :th
     rescue => e
@@ -114,7 +124,7 @@ class Troff < TextFormatter
   end
 
   def next_line
-    line = @lines.tap { @register['.c'].incr }.next.chomp  # REVIEW do we ever need to perserve the trailing \n ?
+    line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
     #line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
 
     # Hidden newlines -- REVIEW does this need to be any more sophisticated?
@@ -136,17 +146,17 @@ class Troff < TextFormatter
     break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will REVIEW is this working??
               # - no, it's eating the final break in a nofill, when we go to .ig! but we don't need blockproto in .ig
               #   so that is the solution for now. but watch this.
-    type = Block::Monospace if @state[:cs]
+    type = Block::Monospace if @cs
     block = type.new
-    block.style[:section] = @state[:section] if @state[:section]
-    block.style[:linkify] = true if @state[:section] =~ @related_info_heading
-    block.style.css[:margin_top] = "#{to_em(@register[')P'])}em" unless @register[')P'] == @state[:default_pd]
+    block.style[:section] = @section_heading if @section_heading
+    block.style[:linkify] = true if @section_heading =~ @related_info_heading
+    block.style.css[:margin_top] = "#{to_em(@register[')P'])}em" unless @register[')P'] == @default_para_distance
     block.style.css[:margin_top] = '0' if nospace? #if nofill? or nospace?
     block.style.css[:margin_left] = "#{to_em(@register['.i'])}em"
-    block.style.css.delete(:margin_left) if @register['.i'] == @state[:base_indent]
+    block.style.css.delete(:margin_left) if @register['.i'] == @base_indent
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j']] unless @register['.j'] == 1
     block.style.css[:text_align] = 'left' if noadj? # .na sets left adjust without changing .j
-    block.style.attributes[:class] = 'synopsis' if @state[:section]&.match?(/^synopsis$/i) and block.is_a? Block::Paragraph
+    block.style.attributes[:class] = Regexp.last_match[1].downcase if @section_heading&.match(/^(name|synopsis)$/i) and block.is_a? Block::Paragraph
     block
   end
 

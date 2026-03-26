@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # methods for tokenizing input lines
 #
 #  override Troff methods

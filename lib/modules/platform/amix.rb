@@ -65,7 +65,7 @@ class AMIX
       'CGI'      => "SunCGI Reference Manual",
       'CORE'     => "Amiga Unix Core Reference Manual",
       '4ASSY'    => "Sun-4 Assembly Language Reference Manual",
-            # non-Sun titles
+                          # non-Sun titles
       'KR'       => "The C Programming Language"
     }
 
@@ -134,7 +134,7 @@ class AMIX
 
     def init_TH
       #super
-      @register['IN'] = Troff::Register.new(@state[:base_indent])
+      @register['IN'] = Troff::Register.new(@base_indent)
     end
 
     # .so with absolute path, headers in /usr/include

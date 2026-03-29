@@ -50,20 +50,20 @@ class SunOS
 
     # index info - what even makes sense to do with this
     # probably nothing, as it seems to be for bound manuals (absolute page number)
-    define_method 'IX' do |*_args| ; end
+    def IX(*_args) ; end
 
     # some pages call this, but the def is commented out all the way back to 0.3
     # defining it as a no-op suppresses the warning.
-    define_method 'UC' do |*_args| ; end
+    def UC(*_args) ; end
 
     # good news - margin characters don't seem to be used anywhere in the Sun manual
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

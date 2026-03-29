@@ -101,26 +101,26 @@ class Plan9
     # .2C, .1C, .C1, .C2, .C3
     # no proprietary markings (.PM, .)G) either, apparently
 
-    define_method 'EE' do |*_args|
+    def EE(*_args)
       ft '1'
       fi
     end
 
-    define_method 'EX' do |*_args|
+    def EX(*_args)
       ft '5'
       nf
     end
 
-    define_method 'HY' do |*_args|
+    def HY(*_args)
       hy '14'
     end
 
-    define_method 'TF' do |*args|
+    def TF(*args)
       parse %(.IP "" "\\w'\f5#{args[0]}\\ \\ \\fP'u")
       send 'PD', '0'
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       #ds "]L (\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty?
       ds "]L #{args[2]}" # I choose not to take tmac.an's parens
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?

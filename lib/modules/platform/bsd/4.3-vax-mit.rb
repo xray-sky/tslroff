@@ -13,7 +13,7 @@ class BSD::V4_3_VAX_MIT
   class Troff < BSD::Troff
 
     # tmac.an.new
-    define_method 'UC' do |v = nil, *_args|
+    def UC(v = nil, *_args)
       ds(']W ' + case v
                  when '4' then '4th Berkeley Distribution'
                  when '5' then '4.2 Berkeley Distribution'

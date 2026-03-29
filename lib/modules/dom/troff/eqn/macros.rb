@@ -20,12 +20,12 @@ class Troff
   module Macros
     module Eqn
 
-      define_method 'EN' do |*args|
+      def EN(*args)
         warn ".EN received #{args.inspect} (why?)" unless args.empty?
-        raise EndOfEqn
+        raise EndOfEqn # awkwardly throws exception on bare .EN without .EQ
       end
 
-      define_method 'EQ' do |*args|
+      def EQ(*args)
         warn ".EQ received #{args.inspect} as margin equation number" unless args.empty?
 
         @eqn_gfont ||= '2' # appears the default font is italic.

@@ -12,7 +12,7 @@ module Immutable
 
   def self.included(baseclass)
     # Create an ImmutableObject exception class for the class that's been extended
-    Object.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
+    Kernel.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
   end
 
   def [](key)
@@ -21,13 +21,13 @@ module Immutable
 
   def []=(key, val)
     attr = "@#{key}"
-    raise object_exception_class if immutable? and instance_variable_get(attr) != val
+    raise @object_exception_class if immutable? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
   def delete(key)
     attr = "@#{key}"
-    raise object_exception_class if immutable? and instance_variable_defined?(attr)
+    raise @object_exception_class if immutable? and instance_variable_defined?(attr)
     remove_instance_variable(attr) if instance_variable_defined?(attr)
   end
 
@@ -40,7 +40,7 @@ module Immutable
   end
 
   def dup
-    self.class.new(prototype)
+    self.class.new(**prototype)
   end
 
   def ==(other)
@@ -55,8 +55,9 @@ module Immutable
   end
 
   def immutable_setter(val)
-    attr = "@#{__callee__.to_s.sub(/=$/, '')}"
-    raise object_exception_class, "Attr: #{attr} => Val: #{val}" if immutable? and instance_variable_get(attr) != val
+    #attr = "@#{__callee__.to_s.sub(/=$/, '')}"
+    attr = "@#{__callee__.to_s.chop}"
+    raise @object_exception_class, "Attr: #{attr} => Val: #{val}" if immutable? and instance_variable_get(attr) != val
     instance_variable_set(attr, val)
   end
 
@@ -70,7 +71,7 @@ module Immutable
 
   def keys
     instance_variables.collect do |v|
-      v.to_s.sub(/^@/, '').to_sym unless [:@immutable, :@tag, :@css, :@attributes].include?(v)
+      v.to_s.sub(/^@/, '').to_sym unless [:@immutable, :@tag, :@css, :@attributes, :@object_exception_class].include?(v)
     end.compact
   end
 
@@ -78,9 +79,9 @@ module Immutable
     keys.collect { |v| send v }.compact
   end
 
-  private
+  #private
 
-  def object_exception_class
-    Kernel.const_get("Immutable#{self.class.name}Error")
-  end
+  #def object_exception_class
+  #  Kernel.const_get("Immutable#{self.class.name}Error")
+  #end
 end

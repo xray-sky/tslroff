@@ -56,7 +56,7 @@ class SunOS::V3_2
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
 
-    def initialize source
+    def initialize(source)
       case source.file
       when 'Makefile'            then raise ManualIsBlacklisted, 'is makefile'
       when 'configuration.file5' then raise ManualIsBlacklisted, 'is nonsense'  # SYS4 only
@@ -81,7 +81,7 @@ class SunOS::V3_2
       parse("\\&" + next_line)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L Last change: #{args[2]}"
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
 

@@ -38,9 +38,14 @@ class Troff
       if @escape_character
         __unesc(str.dup)
       else
-        # need to apply translations to str
-        until str.empty? do
-          translate str.slice!(0)
+        # escapes disabled; still need to apply translations to str
+        #until str.empty? do
+        #  translate str.slice!(0)
+        #end
+        strpos = 0
+        strlen = str.length
+        until strpos == strlenlength
+          translate str[strpos]
         end
       end
     end
@@ -124,13 +129,18 @@ class Troff
 
   def __unesc_cm(str)
     copy = String.new
-    until str.empty?
-      c = get_char str
+    #until str.empty?
+    strpos = 0
+    strlen = str.length
+    until strpos == strlen
+      #c = get_char str
+      c = get_char str[strpos..-1]
       # we got the full escape back from get_char, as c
       case c[0]
       when @escape_character
         esc_method = "esc_#{c[1]}"
-        if %w[esc_n esc_*].include? esc_method
+        #if %w[esc_n esc_*].include? esc_method
+        if esc_method == 'esc_n' or esc_method == 'esc_*'
           copy << send(esc_method, c[2..-1])
         else
           copy << case c[1]
@@ -141,9 +151,12 @@ class Troff
                   else c[0..1] + __unesc_cm(c[2..-1] || '') # gotta go into e.g. \h'foo' and parse 'foo' in copymode too
                   end
         end
-        str.slice! 0, c.length # remove processed esc from str
+        #str.slice! 0, c.length # remove processed esc from str
+        strpos += c.length
       else
-        copy << str.slice!(0) # remove processed chr from str
+        #copy << str.slice!(0) # remove processed chr from str
+        copy << str[strpos]
+        strpos += 1
       end
     end
     copy
@@ -196,16 +209,19 @@ class Troff
     end
 
     str = __unesc_star(str)
-    until str.empty?
-      c = get_char str
+    #until str.empty?
+    strpos = 0
+    strlen = str.length
+    until strpos == strlen
+      #c = get_char str
+      c = get_char str[strpos..-1]
       case c[0]
       when "\t"
         # collect however many sequential tabs there might be
         count = 1
-        str.slice!(0)
-        while str.start_with?("\t")
-          get_char str
-          str.slice!(0)
+        while str[strpos] == "\t" #.start_with?("\t")
+          #get_char str
+          strpos += 1
           count += 1
         end
         stop = next_tab(count)
@@ -241,12 +257,13 @@ class Troff
                             when '|' then NarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)          # 1/6 em      narrow space char
                             when '^' then HalfNarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)      # 1/12em half-narrow space char
                             when 'c' # apparently everything past the \c is discarded
-                              str.slice!(0..-1)
+                              #str.slice!(0..-1)
+                              strpos = strlen - 2 # we're done, everything past the \c is discarded (leave 2 chars left from end, we'll add \c at the end of the loop)
                               Continuation.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
                             when 'e' then @escape_character.dup # printable escape char - don't push a reference, or << may modify it!
                             when 'p'
                               if fill?
-                                warn "uncertain use of \\p (fill break)" # p.29
+                                warn 'uncertain use of \\p (fill break)' # p.29
                                 # TODO this breaks at _end of word_, which might not be where the \p is
                                 # REVIEW should also cause the line to be justified normally
                                 LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
@@ -254,10 +271,10 @@ class Troff
                                 ''
                               end
                             when 'H'
-                              warn "uncertain use of \\H (char height)" # p.24 - default unit 'p'
+                              warn 'uncertain use of \\H (char height)' # p.24 - default unit 'p'
                               ''
                             when 'S'
-                              warn "uncertain use of \\S (char slant)" # p.26
+                              warn 'uncertain use of \\S (char slant)' # p.26
                               ''
                             when @escape_character then @escape_character
                             else
@@ -265,9 +282,12 @@ class Troff
                               c[1..-1] # REVIEW subject this to .tr, or not?
                             end
         end
-        str.slice! 0, c.length # remove processed esc from str
+        #str.slice! 0, c.length # remove processed esc from str
+        strpos += c.length
       else
-        translate str.slice!(0) # remove processed chr from str
+        #translate str.slice!(0) # remove processed chr from str
+        translate str[strpos]
+        strpos += 1
       end
     end
   end
@@ -278,13 +298,12 @@ class Troff
 
   def translate(chr = '')
     return '&shy;' if chr == @hyphenation_character
-    xlc = @character_translations[chr]
-    return @current_block << chr unless xlc
-    #return __unesc(xlc.dup) unless xlc.start_with?("\e")
-    return @current_block << xlc.dup unless xlc.start_with?("\e")
+    xlc = @character_translations[chr]&.dup or return @current_block << chr
+    #return @current_block << chr unless xlc
+    return @current_block << xlc unless xlc.start_with?("\e")
     oesc = @escape_character
     ec "\e"
-    __unesc(xlc.dup)
+    __unesc(xlc)
     ec oesc
   end
 

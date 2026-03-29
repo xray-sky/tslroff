@@ -104,10 +104,13 @@ class Block
     #      but.. we're not rendering style into selenium div, how are we getting text-align:center??
     #      we are not, something else must be happening
     def to_html
-      payload = @text.collect(&:to_html).join
-                     .gsub(/(?<!&)#(?!\d+;)/, '&num;') # don't let selenium eat text following a bare # (why does it eat text following a #)
-                     .sub(/(\s+)$/) { |s| '&nbsp;' * s.length } # don't let selenium lose trailing whitespace
+      payload = fragment.gsub(/(?<!&)#(?!\d+;)/, '&num;') # don't let selenium eat text following a bare # (why does it eat text following a #)
+                        .sub(/(\s+)$/) { |s| '&nbsp;' * s.length } # don't let selenium lose trailing whitespace
       %(data:text/html;charset=utf-8,<html><head><link rel="stylesheet" type="text/css" href="#{$CSS_URL}"></link></head><body><div id="man"><span id="selenium"#{@style}>#{payload}</span></div></body></html>)
+    end
+
+    def fragment
+      @text.collect(&:to_html).join
     end
   end
 

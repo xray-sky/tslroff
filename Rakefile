@@ -49,11 +49,7 @@ PUBROOT = '/Volumes/dev.online.typewritten.org/Manual'
 ASSETS = File.realpath("lib/assets")
 TEMPLATE = File.read "#{ASSETS}/manual.erb"
 
-# TODO this arrangement is only profiling the rakefile - is not what we wanted
-if ENV['RUBY_PROFILE']
-  require 'ruby-prof'
-  RubyProf.start
-end
+require 'ruby-prof' if ENV['RUBY_PROFILE']
 
 require_relative 'ext/rake/namespace'
 require_relative 'lib/rake'
@@ -129,10 +125,4 @@ collection_namespace '_internal' do
                     idir: '_test',
                     sources: %w[./stbl*]
   end
-end
-
-if ENV['RUBY_PROFILE']
-  profile_results = RubyProf.stop
-  RubyProf::FlatPrinter.new(profile_results).print($stdout)
-  #RubyProf::GraphPrinter.new(profile_results).print($stdout, {})
 end

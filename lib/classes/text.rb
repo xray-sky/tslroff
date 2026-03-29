@@ -30,8 +30,9 @@ class Text
   }.freeze
 
   def initialize(arg = {})
+    @object_exception_class = Kernel.const_get(:ImmutableTextError)
     self.font  = (arg[:font]  or Font::R.new)
-    self.style = (arg[:style] or Style.new({}, object_exception_class))
+    self.style = (arg[:style] or Style.new({}, @object_exception_class))
     self.text  = (arg[:text]  or String.new)
   end
 
@@ -140,8 +141,8 @@ class Text
 
   # override this from Immutable so that our subclasses
   # don't all try to dispatch their own unique exceptions
-  def object_exception_class
-    Kernel.const_get("ImmutableTextError")
-  end
+  #def object_exception_class
+  #  Kernel.const_get("ImmutableTextError")
+  #end
 
 end

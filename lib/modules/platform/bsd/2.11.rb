@@ -15,7 +15,7 @@ class BSD::V2_11
   class Troff < BSD::Troff
 
     # tmac.an.new
-    define_method 'UC' do |v = nil, *_args|
+    def UC(v = nil, *_args)
       ds(']W ' + case v
                  when '2' then '2nd Berkeley Distribution' # is actually "2rd" in tmac.an.new
                  when '4' then '4th Berkeley Distribution'

@@ -24,21 +24,21 @@ collection_namespace 'Apple' do
   collection_namespace 'Rhapsody' do
     manual_namespace '5.0',
                     idir: 'apple/rhapsody/dr1',
-                    odir: 'Apple/Rhapsody/5.0',
+                    #odir: 'Apple/Rhapsody/5.0',
                     sources: %w[man/man[1-8]]
     manual_namespace '5.1',
                     idir: 'apple/rhapsody/dr2',
-                    odir: 'Apple/Rhapsody/5.1',
+                    #odir: 'Apple/Rhapsody/5.1',
                     sources: %w[usr/share/man/man[1-8l]]
     # REVIEW are there more man pages (e.g. for sections 2 & 3)
     #        in the dev pkgs?
     manual_namespace '5.3',
                     idir: 'apple/rhapsody/5.3',
-                    odir: 'Apple/Rhapsody/5.3',
+                    #odir: 'Apple/Rhapsody/5.3',
                     sources: %w[man/man[145678n]]
     manual_namespace '5.5',
                     idir: 'apple/rhapsody/5.5',
-                    odir: 'Apple/Rhapsody/5.5',
+                    #odir: 'Apple/Rhapsody/5.5',
                     sources: %w[man/man[145678n]]
   end
 end

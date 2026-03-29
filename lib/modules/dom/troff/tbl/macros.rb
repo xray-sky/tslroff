@@ -22,11 +22,11 @@ class Troff
         @tbl_formats = Troff::Tbl.formats(format_lines)
       end
 
-      define_method 'TE' do |*_args|
-        raise EndOfTbl
+      def TE(*_args)
+        raise EndOfTbl # awkwardly throws exception on bare .TE without .TS
       end
 
-      define_method 'TS' do |*args|
+      def TS(*args)
         warn "processing tbl -"
         resc = Regexp.quote @escape_character
         @tbl_cell_delim = "\t"

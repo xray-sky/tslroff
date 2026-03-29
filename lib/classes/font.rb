@@ -19,6 +19,7 @@ class Font
   attr_reader :size
 
   def initialize(size: FONT_DEFAULT_SIZE)
+    @object_exception_class = Kernel.const_get(:ImmutableFontError)
     @size = size
   end
 

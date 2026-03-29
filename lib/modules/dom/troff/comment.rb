@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # Comments (troff)
 #
 #   §10.7
@@ -7,9 +9,9 @@
 #
 #   A line beginning with \" will appear as a blank line and behave like .sp 1. (TODO)
 #
-# frozen_string_literal: true
+# REVIEW we'll never get here as long as parse() is stripping comments
 #
-
+=begin
 class Troff
   define_method '\\"' do |argstr, breaking: nil|
     return nil unless argstr
@@ -25,3 +27,4 @@ class Troff
     ''
   end
 end
+=end

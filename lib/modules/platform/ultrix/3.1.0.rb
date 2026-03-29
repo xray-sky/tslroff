@@ -27,24 +27,24 @@ class Ultrix::V3_1_0
       )
     end
 
-    define_method 'CW' do |*_args|
+    def CW(*_args)
       ft 'CW'
     end
 
-    define_method 'De' do |*args|
+    def De(*args)
       warn "REVIEW .De #{args.inspect}"
       ce '0'
       fi
     end
 
-    define_method 'Ds' do |*args|
+    def Ds(*args)
       warn "REVIEW .Ds #{args.inspect}"
       nf
       send "#{args[0]}D", "#{args[1]} #{args[0]}"
       ft 'R'
     end
 
-    define_method 'EE' do |*_args|
+    def EE(*_args)
       fi
       ps Font.defaultsize.to_s
       send 'in', "-#{@register['EX'].value}u"
@@ -52,7 +52,7 @@ class Ultrix::V3_1_0
       ft '1'
     end
 
-    define_method 'EX' do |*args|
+    def EX(*args)
       nr "EX #{to_u "#{args[0] || 0}n+#{@state[:base_indent]}u"}"
       nf
       sp '.5'
@@ -62,11 +62,11 @@ class Ultrix::V3_1_0
       #vs '-2' # probably don't need this even once it's implemented; the browser will take care of it based on point size.
     end
 
-    define_method 'Pn' do |*args|
+    def Pn(*args)
       parse "#{args[0]}\\&\\f(CW\\|#{args[1]}\\|\\fP#{args[2]}"
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]H #{args[0]}\\|(\\^#{args[1]}\\^)"
       ds "]W #{args[0]}\\|(\\^#{args[1]}\\^)"
       ds "]W #{args[0]}" unless args.count == 2

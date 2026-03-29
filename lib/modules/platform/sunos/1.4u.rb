@@ -62,7 +62,7 @@ class SunOS::V1_4U
       parse("\\&" + next_line)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L Last change: #{args[2]}"
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
 

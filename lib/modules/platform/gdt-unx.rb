@@ -41,7 +41,7 @@
 
 class GDT_UNX
   class Manual < Manual
-    def initialize file, vendor_class: nil, source_args: {}
+    def initialize(file, vendor_class: nil, source_args: {})
       case File.basename file
       when 'Script', 'Scrit' then raise ManualIsBlacklisted, 'not a manual entry'
       end
@@ -110,7 +110,7 @@ class GDT_UNX
       super(name, breaking: breaking, basedir: basedir)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
@@ -120,12 +120,12 @@ class GDT_UNX
     end
 
     # tmac.an.new
-    define_method 'UC' do |v = '', *_args|
+    def UC(v = '', *_args)
       ds "]W #{v.empty? ? '3rd Berkeley Distribution' : "#{v}th Berkeley Distribution"}"
     end
 
     # .NOP - does nothing but I would like to insert this text as a comment
-    define_method 'NO' do |*args|
+    def NO(*args)
       comment = *args.join(' ').slice(1..-1) # kill the initial P (from .NOP)
       send '\\"', comment
     end

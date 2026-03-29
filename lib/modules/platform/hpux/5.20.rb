@@ -35,7 +35,7 @@ class HPUX::V5_20
       )
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]D #{args[5]}"
       ds "]L \\^#{args[3]}\\^" if args[3] and !args[3].strip.empty?
       as "]L \" \\|(\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty? # attend: append ]L

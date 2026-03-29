@@ -29,7 +29,7 @@ class HPUX::V8_05
       )
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]W #{__unesc_star('\\*(]V')}"
       ds "]L #{args[3]}"
       ds "]O #{args[2]}"

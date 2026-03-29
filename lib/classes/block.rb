@@ -20,7 +20,8 @@ class Block
   attr_accessor :style
 
   def initialize(arg = {})
-    self.style = (arg[:style] or Style.new({}, object_exception_class))
+    @object_exception_class = Kernel.const_get(:ImmutableBlockError)
+    self.style = (arg[:style] or Style.new({}, @object_exception_class))
     self.text  = (arg[:text]  or Text.new)
     @last_tab_position = 0
     @last_tab_stop = 0
@@ -48,22 +49,22 @@ class Block
   def terminal_font=(arg)       ; @text.last.font = arg  ; end
   def terminal_text_style=(arg) ; @text.last.style = arg ; end
 
-  def <<(t)
-    case t
+  def <<(obj)
+    case obj
     when Tab # insert_tab does its own hold/append, since it changes @text.last
-      @text << t
-      @last_tab_position = t.stop
+      @text << obj
+      @last_tab_position = obj.stop
       @last_tab_stop = @text.count
     when RoffControl, EqnBlock # don't leave this as the last bit of text, or it'll eat appends to @text
       # we might be at the very start of Block when @text is still [] - TODO some smarter strategy
-      @text << t
-      if t.is_a? LineBreak or t.is_a? VerticalSpace
+      @text << obj
+      if obj.is_a? LineBreak or obj.is_a? VerticalSpace
         @last_tab_position = 0
         @last_tab_stop = @text.count
       end
       @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
-    when Text, Block::TableCell, Block::Inline then @text << t
-    when String then @text.last << t
+    when Text, Block::TableCell, Block::Inline then @text << obj
+    when String then @text.last << obj
     when Block # cruft catcher
       raise RuntimeError "appending non-bare block #{t.inspect}" #unless t.class == Block::Bare # bare blocks used by vms for inserting pre-formatted html; TODO probably create a Link text class
       #warn "we are in a degenerate part of the code - block.rb line 91"
@@ -71,7 +72,7 @@ class Block
       # don't leave the last text object open, or else you'll start writing into the named string definition.
       #@text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
     end
-    immutable! unless t.empty?
+    immutable! unless obj.empty?
   end
 
   def coerce(obj)
@@ -121,8 +122,8 @@ class Block
 
   # override this from Immutable so that our subclasses
   # don't all try to dispatch their own unique exceptions
-  def object_exception_class
-    Kernel.const_get("ImmutableBlockError")
-  end
+  #def object_exception_class
+  #  Kernel.const_get("ImmutableBlockError")
+  #end
 
 end

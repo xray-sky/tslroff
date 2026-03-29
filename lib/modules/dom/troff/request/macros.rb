@@ -83,29 +83,27 @@
 class Troff
   def as(argstr = '', breaking: nil)
     return nil if argstr.empty?
-    name = argstr.slice!(0, 2).rstrip
-    defstr = argstr.sub(/^ *"?/, '') # a leading tab is preserved
+    name = argstr[0..1].rstrip
+    defstr = argstr[2..-1].sub(/^ *"?/, '') # don't lstrip, a leading tab is preserved
 
     @named_strings[name] ||= String.new
-    #@named_strings[name] << unescape(args.sub(/^"/, ''), :copymode => true)
     @named_strings[name] << defstr
     #warn "appended to named string #{name.inspect}: #{@named_strings[name].inspect}"
   end
 
   def ds(argstr = '', breaking: nil)
     return nil if argstr.empty?
-    name = argstr.slice!(0, 2).rstrip
-    defstr = argstr.sub(/^ *"?/, '') # a leading tab is preserved
+    name = argstr[0..1].rstrip
+    defstr = argstr[2..-1].sub(/^ *"?/, '') # don't lstrip, a leading tab is preserved
 
-    #@named_strings[name] = unescape(defstr.sub(/^"/, ''), copymode: true)
     @named_strings[name] = defstr
     #warn "defined string #{name} as #{@named_strings[name].inspect}" if name.start_with? '%'
   end
 
   def am(argstr = '', breaking: nil)
     return nil if argstr.empty?
-    name = argstr.slice!(0, 2).strip
-    delim = argstr.sub(/^ */, '').slice(0, 2)
+    name = argstr[0..1].rstrip
+    delim = argstr[2..-1].sub(/^ */, '')[0..1]
     delim = '.' if delim.empty?
 
     # .EQ/.EN and I think .CW can be defined as macros _in addition_
@@ -216,7 +214,7 @@ class Troff
 
   def rm(argstr = '', *args, breaking: nil)
     return nil if argstr.empty?
-    arg = argstr.slice(0, 2).strip
+    arg = argstr[0..1].strip
     #@named_strings.delete(string) or define_singleton_method(string) { |*args| true } # REVIEW instance_eval(':undef foo') instead?
     #warn arg.inspect
     @named_strings.delete(arg) or instance_eval("undef #{arg.to_sym.inspect}") # REVIEW need to update Requests?
@@ -225,13 +223,13 @@ class Troff
   end
 
   def rn(argstr = '', breaking: nil)
-    oldname = argstr.slice!(0, 2).strip
-    newname = argstr.lstrip!.slice(0, 2)
+    oldname = argstr[0..1].strip
+    newname = argstr[2..-1].lstrip[0..1]
     return nil if oldname.empty? or newname.empty?
 
     # since we don't share the same namelist...
     if @named_strings[oldname]
-      warn ".rn renaming string #{name.inspect} as #{newname.inspect}"
+      warn ".rn renaming string #{oldname.inspect} as #{newname.inspect}"
       @named_strings[newname] = @named_strings[oldname]
       @named_strings.delete oldname
       return true

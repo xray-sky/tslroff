@@ -57,7 +57,7 @@ class DYNIX_ptx
       @character_translations['*'] = "\e(**"
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       rm '}C' if @named_strings['V)'].empty?
       nr 'IN .5i'
       ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
@@ -74,7 +74,7 @@ class DYNIX_ptx
     end
 
     # tmac.an.new
-    define_method 'UC' do |v = '', *args|
+    def UC(v = '', *args)
       ds(']W ' + case v
                  when ''  then '3rd Berkeley Distribution'
                  when '4' then '4th Berkeley Distribution'
@@ -83,15 +83,15 @@ class DYNIX_ptx
             )
     end
 
-    define_method 'VE' do |*_args|
+    def VE(*_args)
       warn ".VE can't yet draw margin characters (.mc)"
     end
 
-    define_method 'VS' do |*_args|
+    def VS(*_args)
       warn ".VS can't yet draw margin characters (.mc)"
     end
 
-    define_method 'Ps' do |*args|
+    def Ps(*args)
       warn "REVIEW .Ps #{args.inspect}"
       ft '5'
       sp
@@ -99,7 +99,7 @@ class DYNIX_ptx
       send :in, '+0.5i'
     end
 
-    define_method 'Pe' do |*args|
+    def Pe(*args)
       warn "REVIEW .Pe #{args.inspect}"
       sp
       fi

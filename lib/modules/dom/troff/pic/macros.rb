@@ -8,11 +8,11 @@ class EndOfPic < RuntimeError ; end
 
 module Troff
 
-  define_method 'PE' do |*_args|
+  def PE(*_args)
     raise EndOfPic
   end
 
-  define_method 'PS' do |*args|
+  def PS(*args)
     warn ".PS received #{args.inspect} as absolute size" unless args.empty?
 
     @current_block = Block::Bare

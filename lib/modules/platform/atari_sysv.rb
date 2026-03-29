@@ -89,13 +89,13 @@ class Atari_SysV
 
     # end of everything macros; irrelevant for us
     def ee(*_args) ; end
-    define_method 'Ee' do |*_args| ; end
+    def Ee(*_args) ; end
 
-    define_method 'DT' do |*_args|
+    def DT(*_args)
       init_ta
     end
 
-    define_method 'PM' do |*args|
+    def PM(*args)
       warn ".PM #{args.inspect} - testing"
       ph = Block.new(text: Text.new(font: Font::I.new))
       pm = Block.new(text: Text.new(font: Font::B.new))
@@ -134,7 +134,7 @@ class Atari_SysV
       @document << blockproto
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L (\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty?
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 

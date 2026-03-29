@@ -143,9 +143,9 @@ class HPUX::V10_20
     # appears to take one arg, matching the first letter of the command the manual entry is for?
     # (not accounting for .so -- so bg(1) has '.TA s', because of '.so sh.1'
     # ...seems irrelevant to us. suppress the warning on every page by defining.
-    define_method 'TA' do |*_args| ; end
+    def TA(*_args) ; end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]W #{__unesc_star('\\*(]V')}"
       ds "]O #{args[2]}"
       ds "]L #{args[3]}"

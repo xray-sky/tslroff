@@ -98,7 +98,7 @@ class Motorola_SysV
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]D #{MANUAL_SECTION_NAMES[args[1]&.strip]}"
       ds "]L #{args[2]}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
@@ -110,13 +110,13 @@ class Motorola_SysV
       super(*args, heading: heading)
     end
 
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

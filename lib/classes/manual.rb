@@ -85,7 +85,7 @@ class Manual
   def initialize(file, vendor_class: nil, source_args: nil, preprocess: nil, &block)
     @input_filename = file
     @input_line_number = 0
-    @source ||= Source.new file, source_args, &block
+    @source ||= Source.new file, **source_args, &block
     document_class = Kernel.const_get "#{vendor_class}::#{@source.magic}"
 
     send preprocess if preprocess

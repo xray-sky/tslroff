@@ -25,6 +25,7 @@ class Troff
 
   def get_char(s, count: 1)
     chars = String.new
+    return chars unless s # string[] can return nil, but why is our __unesc logic busted enough to cause that?
     loop do
       break if count < 1 or s.empty?
       chars << s[chars.length]
@@ -123,7 +124,7 @@ class Troff
   # plus the one printing character that will be output as non-spacing
 
   def get_printing_char(s)
-    req = ''
+    req = String.new
     loop do
       c = get_char s
       break unless c.start_with?(@escape_character) and %w[d f k r s u v x].include?(c[1])
@@ -163,7 +164,7 @@ class Troff
     return nil unless n
     pos = n.length
     if s[pos] == '('
-      n = String.new('') # need to clear the magnitude in case the whole thing is a bust
+      n = String.new # need to clear the magnitude in case the whole thing is a bust
       e = get_expression(s[(pos + 1)..-1])
       return n unless e
       backpos = pos + e.length + 1

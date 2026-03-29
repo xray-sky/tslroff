@@ -51,7 +51,8 @@ class Troff
     # and also that double quotes need preserving into .ds
     # it APPEARS as though double quotes are only lost passing args to macros??
     # - I guess that helps with .if/.ie argparsing but it means I need to take care about macros vs. requests!
-    argstr = __unesc_w(unescape(str.sub(%r{\s*\\".*$}, ''), copymode: true)) # TODO programmable escape char / disabled escapes
+    #argstr = __unesc_w(unescape(str.sub(%r{\s*\\".*$}, ''), copymode: true)) # TODO programmable escape char / disabled escapes
+    argstr = __unesc_w(unescape(str, copymode: true)) # already removed trailing space and comments in parse()
     until argstr.empty?
       # eat leading space
       arg = argstr.slice!(0, get_char(argstr).length)

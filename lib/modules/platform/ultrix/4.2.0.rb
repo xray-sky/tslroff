@@ -28,24 +28,24 @@ class Ultrix::V4_2_0
       )
     end
 
-    define_method 'CW' do |*_args|
+    def CW(*_args)
       ft 'CW'
     end
 
-    define_method 'De' do |*args|
+    def De(*args)
       warn "REVIEW .De #{args.inspect}"
       ce '0'
       fi
     end
 
-    define_method 'Ds' do |*args|
+    def Ds(*args)
       warn "REVIEW .Ds #{args.inspect}"
       nf
       send "#{args[0]}D", "#{args[1]} #{args[0]}"
       ft 'R'
     end
 
-    define_method 'EE' do |*_args|
+    def EE(*_args)
       fi
       ps Font.defaultsize.to_s
       send 'in',  "-#{@register['EX'].value}u"
@@ -53,7 +53,7 @@ class Ultrix::V4_2_0
       ft '1'
     end
 
-    define_method 'EX' do |*args|
+    def EX(*args)
       nr "EX #{to_u "#{args[0] || 0}n+#{@state[:base_indent]}u"}"
       nf
       sp '.5'
@@ -64,11 +64,11 @@ class Ultrix::V4_2_0
     end
 
     # uses Courier fonts for 4.0
-    define_method 'MS' do |*args|
+    def MS(*args)
       parse "\\&\\f(CW\\|#{args[0]}\\|\\fP\\fR(#{args[2]})\\fP#{args[2]}"
     end
 
-    define_method 'NT' do |*args|
+    def NT(*args)
       ds 'NO Note' # <- this is the difference from base Ultrix ('NO NOTE') - actually still NOTE in 4.0
       ds "NO #{args[1]}" if args[1] and args[1] != 'C'
       ds "NO #{args[0]}" if args[0] and args[0] != 'C'
@@ -85,20 +85,20 @@ class Ultrix::V4_2_0
       send 'R'
     end
 
-    define_method 'Pn' do |*args|
+    def Pn(*args)
       parse "#{args[0]}\\&\\f(CW\\|#{args[1]}\\|\\fP#{args[2]}"
     end
 
     # uses Courier fonts for 4.0
-    define_method 'PN' do |*args|
+    def PN(*args)
       parse "\\&\\f(CW\\|#{args[0]}\\|\\fP#{args[1]}"
     end
 
-    define_method 'R' do |*_args|
+    def R(*_args)
       ft 'R'
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
       ds "]W #{args[3]}"
       ds "]D #{args[4]}"

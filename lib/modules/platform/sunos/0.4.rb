@@ -53,7 +53,7 @@ class SunOS::V0_4
       parse("\\&" + next_line)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
 

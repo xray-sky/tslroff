@@ -51,7 +51,7 @@ class Troff < TextFormatter
     @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
 
     #xinit_selenium
-    @@webdriver ||= WebDriver.new
+    @@webdriver ||= WebDriver.new backing_store: ENV['WEBDRIVER_CACHE']
     @@pixels_per_inch ||= @@webdriver.ppi
 
     xinit_ec
@@ -81,6 +81,12 @@ class Troff < TextFormatter
     loop do
       parse(next_line)
       return true if halt_on and instance_variable_get halt_on
+    #rescue EndOfEqn, EndOfTbl
+    #  # .EN, .TE without .EQ, .TS - will be caught in .EQ/.TS if
+    #  # this suppressed exceptions in the logs but didn't include the warning? disabling for now
+    #  # also not clear why this was happening e.g. Domain/IX SR9.0 BSD eqn(1) - does have .EN/.EQ pairs
+    #  warn "encountered #{e.class} outside of relevant preprocessor context"
+    #  retry
     rescue StopIteration
       # prevent double header/footer if e.g. we didn't hit halt_on condition & re-entered later
       if halt_on and !instance_variable_get halt_on
@@ -98,6 +104,7 @@ class Troff < TextFormatter
         unescape @named_strings[:footer], output: @footer
         @document << @footer
       end
+
       return "#{@document.collect(&:to_html).join}\n    </div>\n</div>" # REVIEW closes main doc divs start ed by :th
     rescue => e
       warn "#{@line.inspect} -"

@@ -134,13 +134,13 @@ class OS_MP
     end
 
     # index info - what even makes sense to do with this
-    define_method 'IX' do |*_args| ; end
+    def IX(*_args) ; end
 
-    define_method 'SB' do |*args|
+    def SB(*args)
       parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
       ds "]L #{args[2]}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
@@ -152,22 +152,22 @@ class OS_MP
       super(*args, heading: heading)
     end
 
-    define_method 'TX' do |*args|
+    def TX(*args)
       ds "Tx #{MANUAL_NAMES[args[0]]}"
       parse "\\fI\\*(Tx\\f1#{args[1]}"
     end
 
     # some pages call this, but the def is commented out all the way back to 0.3
     # defining it as a no-op suppresses the warning.
-    define_method 'UC' do |*_args| ; end
+    def UC(*_args) ; end
 
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

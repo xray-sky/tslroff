@@ -311,7 +311,7 @@ class Aegis
 
     # Troff methods <= tmac.an
     # tmac.an.new
-    define_method 'AT' do |*args|
+    def AT(*args)
       ds(']W ' + case args[0]
                  when '3' then '7th Edition'
                  when '4' then 'System III'
@@ -322,7 +322,7 @@ class Aegis
     end
 
     # tmac.an.new
-    define_method 'UC' do |v = nil, *_args|
+    def UC(v = nil, *_args)
       ds(']W ' + case v
                  when '3' then '3rd Berkeley Distribution'
                  when '4' then '4th Berkeley Distribution'

@@ -76,7 +76,7 @@ class Sprite
     end
 
     # tmac.sprite
-    define_method 'AP' do |*args|
+    def AP(*args)
       warn "REVIEW - use of .AP #{args.inspect}"
       if args[3] and !args[3].strip.empty?
         send 'TP', args[3]
@@ -100,7 +100,7 @@ class Sprite
     end
 
     # tmac.sprite
-    define_method 'AS' do |*args|
+    def AS(*args)
       nr ')A 10n'
       nr ")A #{to_u(__unesc_w("\\w'#{args[1]}'u+3n"))}" if args[0] and !args[0].strip.empty?
       nr ")B #{to_u("#{@register[')A'].value}u+15n")}"
@@ -111,16 +111,16 @@ class Sprite
     # tmac.sprite
     # start/end boxed text
     # TODO
-    define_method 'BE' do |*args|
+    def BE(*args)
       warn "don't know how to .BE #{args.inspect} yet"
     end
 
-    define_method 'BS' do |*args|
+    def BS(*args)
       warn "don't know how to .BS #{args.inspect} yet"
     end
 
     # tmac.sprite
-    define_method 'HS' do |*args|
+    def HS(*args)
       send 'PD'
       send 'AS'
       send 'TH', *args
@@ -132,7 +132,7 @@ class Sprite
     end
 
     # tmac.sprite
-    define_method 'LG' do |*args|
+    def LG(*args)
       ps "+1"
       if args.any?
         parse args.join(' ')
@@ -143,7 +143,7 @@ class Sprite
     end
 
     # replaced by .HS
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]H #{args[0]}"
       ds "]D #{UNIX_MANUAL_SECTION_NAMES[args[1]]}"
       ds "]L #{args[2]}"
@@ -153,12 +153,12 @@ class Sprite
       super(*args, heading: heading)
     end
 
-    define_method 'VE' do |*args|
+    def VE(*args)
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"
     end

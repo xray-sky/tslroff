@@ -44,7 +44,7 @@ class NEXTSTEP
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
-    define_method 'AT' do |*args|
+    def AT(*args)
       ds ']W ' + case args[0]
                  when '3' then '7th Edition'
                  when '4' then 'System III'
@@ -53,19 +53,19 @@ class NEXTSTEP
                  end
     end
 
-    define_method 'DE' do |*_args|
+    def DE(*_args)
       send 'RE'
       fi
       sp '.5'
     end
 
-    define_method 'DS' do |*_args|
+    def DS(*_args)
       send 'RS'
       nf
       sp
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
@@ -77,7 +77,7 @@ class NEXTSTEP
       super(*args, heading: heading)
     end
 
-    define_method 'UC' do |*args|
+    def UC(*args)
       ds ']W ' + case args[0]
                  when '3' then '3rd Berkeley Distribution'
                  when '4' then '4th Berkeley Distribution'
@@ -87,13 +87,13 @@ class NEXTSTEP
                  end
     end
 
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

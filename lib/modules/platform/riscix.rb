@@ -40,12 +40,12 @@ class RISCiX
     end
 
     # "some support to get the RCS format date into a more normal text form (dd/mm/yy)"
-    define_method 'dA' do |*args|
+    def dA(*args)
       send 'rR', *(args[0]&.split('/'))
     end
 
     # "puts new date format in string Da"
-    define_method 'rR' do |*args|
+    def rR(*args)
       ds "Da #{args[2]}/#{args[1]}/#{args[0]}"
     end
 
@@ -53,12 +53,12 @@ class RISCiX
     #  into the footer of the manual page from information
     #  provided by RCS. The argument is of form:
     #  .AH $Revision: 1.5 $ $Date: 88/10/20 11:12:34 $"
-    define_method 'AH' do |*args|
+    def AH(*args)
       send 'dA', args[4]
       ds "]L Revision #{args[1]} of \\*(Da"
     end
 
-    define_method 'AT' do |*args|
+    def AT(*args)
       ds ']W ' + case args[0]
                  when '3' then '7th Edition'
                  when '4' then 'System III'
@@ -67,27 +67,27 @@ class RISCiX
                  end
     end
 
-    define_method 'DE' do |*_args|
+    def DE(*_args)
       fi
       send 'RE'
       sp '.5'
     end
 
-    define_method 'DS' do |*_args|
+    def DS(*_args)
       send 'RS'
       nf
       sp
     end
 
     # indexing and other undefined macros. ignore.
-    define_method 'BY' do |*_args| ; end
-    define_method 'iX' do |*_args| ; end
-    define_method 'IX' do |*_args| ; end # defined in tmac.s
-    define_method 'SB' do |*_args| ; end # REVIEW this one looks like we lost content
-    define_method 'TX' do |*_args| ; end
-    define_method 'UX' do |*_args| ; end # defined in tmac.s
+    def BY(*_args) ; end
+    def iX(*_args) ; end
+    def IX(*_args) ; end # defined in tmac.s
+    def SB(*_args) ; end # REVIEW this one looks like we lost content
+    def TX(*_args) ; end
+    def UX(*_args) ; end # defined in tmac.s
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
@@ -98,7 +98,7 @@ class RISCiX
       super(*args, heading: heading)
     end
 
-    define_method 'UC' do |*args|
+    def UC(*args)
       ds ']W ' + case args[0]
                  when '3' then '3rd Berkeley Distribution'
                  when '4' then '4th Berkeley Distribution'
@@ -109,13 +109,13 @@ class RISCiX
     end
 
     # good news - margin characters don't seem to be used anywhere in the Sun manual
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

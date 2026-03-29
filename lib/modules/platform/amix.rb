@@ -143,7 +143,7 @@ class AMIX
       super(name, breaking: breaking, basedir: basedir)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
       ds("]D #{MANUAL_SECTION_NAMES[args[1]]}")
       ds("]L Last change: #{args[2]}")
@@ -153,23 +153,23 @@ class AMIX
       super(*args, heading: heading)
     end
 
-    define_method 'TX' do |*args|
+    def TX(*args)
       ds("Tx #{MANUAL_NAMES[args[0]]}")
       parse "\\fI\\*(Tx\\fP#{args[1]}"
     end
 
     # some pages call this, but the def is commented out
     # defining it as a no-op suppresses the warning.
-    define_method 'UC' do |*_args| ; end
+    def UC(*_args) ; end
 
     # good news - margin characters don't seem to be used anywhere in the Sun manual
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

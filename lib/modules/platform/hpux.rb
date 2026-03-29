@@ -42,16 +42,16 @@ class HPUX
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
-    define_method 'DT' do |*_args|
+    def DT(*_args)
       ta '3.6m 7.2m 10.8m 14.4m 18m 21.6m 28.8m 32.4m 36m 39.6m 43.2m 46.8m'
     end
 
     # index info - what even makes sense to do with this
     # probably nothing, as it seems to be for bound manuals (absolute page number)
     def iX(*_args) ; end
-    define_method 'IX' do |*_args| ; end
+    def IX(*_args) ; end
 
-    define_method 'PM' do |*args|
+    def PM(*args)
       warn ".PM #{args.inspect} - testing"
       pm = Block.new(text: Text.new(font: Font::B.new))
       pm.style.css[:text_align] = 'center'

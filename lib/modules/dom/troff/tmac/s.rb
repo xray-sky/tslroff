@@ -12,7 +12,7 @@ class Troff
   module Macros
     module S
 
-  define_method 'RT' do |*args| # reset everything to normal state
+  def RT(*args) # reset everything to normal state
     send 'BG' if @register['1T'] <= 0
     req_ce '0'
     req_di if @register['IK'] <= 0 and @register['IF'] <= 0 and @register['IX'] <= 0 and @register['BE'] <= 0
@@ -40,7 +40,7 @@ class Troff
     req_fi
   end
 
-  define_method 'IZ' do |*args| # initialization
+  def IZ(*args) # initialization
     req_nr 'TN 0'
     req_em 'EM'
     # REVIEW are HTML entities safe through \* ?? - this might take rewrites (\*'e or \*`e to get é or è)
@@ -99,247 +99,247 @@ class Troff
     req_nr 'GW 0-1'
   end
 
-  define_method 'TM' do |*args|
+  def TM(*args)
   end
 
-  define_method 'IM' do |*args| # internal memorandum
+  def IM(*args) # internal memorandum
   end
 
-  define_method 'MF' do |*args| # memorandum for file.
+  def MF(*args) # memorandum for file.
   end
 
-  define_method 'MR' do |*args| # memo for record
+  def MR(*args) # memo for record
   end
 
-  define_method 'EG' do |*args|
+  def EG(*args)
   end
 
-  define_method 'LT' do |*args|
+  def LT(*args)
   end
 
-  define_method 'OK' do |*args|
+  def OK(*args)
   end
 
-  define_method 'RP' do |*args|
+  def RP(*args)
   end
 
-  define_method 'TR' do |*args|  # Comp. Sci. Tech Rept series.
+  def TR(*args)  # Comp. Sci. Tech Rept series.
   end
 
-  define_method 'TL' do |*args| # title and initialization
+  def TL(*args) # title and initialization
   end
 
-  define_method 'TX' do |*args|
+  def TX(*args)
   end
 
-  define_method 'AU' do |*args| # author(s)
+  def AU(*args) # author(s)
   end
 
-  define_method 'AX' do |*args|
+  def AX(*args)
   end
 
-  define_method 'AI' do |*args| # authors institution
+  def AI(*args) # authors institution
   end
 
-  define_method 'AB' do |*args| # begin an abstract
+  def AB(*args) # begin an abstract
   end
 
-  define_method 'AE' do |*args| # end of an abstract
+  def AE(*args) # end of an abstract
   end
 
-  define_method 'SY' do |*args| # cover sheet of released paper
+  def SY(*args) # cover sheet of released paper
   end
 
-  define_method 'S2' do |*args| # first text page, released paper format
+  def S2(*args) # first text page, released paper format
   end
 
-  define_method 'S0' do |*args| # mike lesk conserve paper style
+  def S0(*args) # mike lesk conserve paper style
   end
 
-  define_method 'S3' do |*args| # CSTR style
+  def S3(*args) # CSTR style
   end
 
-  define_method 'SG' do |*args| # signature
+  def SG(*args) # signature
   end
 
-  define_method 'TS' do |*args| # Tables.  TS - table start, TE - table end
+  def TS(*args) # Tables.  TS - table start, TE - table end
   end
 
-  define_method 'TQ' do |*args|
+  def TQ(*args)
   end
 
-  define_method 'TH' do |*args|
+  def TH(*args)
   end
 
-  define_method 'TE' do |*args|
+  def TE(*args)
   end
 
-  define_method 'EQ' do |*args|  #equation, breakout and display
+  def EQ(*args)  #equation, breakout and display
   end
 
-  define_method 'EN' do |*args|  # end of a displayed equation
+  def EN(*args)  # end of a displayed equation
   end
 
-  define_method 'PS' do |*args|	# start picture (bwk)
+  def PS(*args)	# start picture (bwk)
   end
 
-  define_method 'PE' do |*args|	# end of picture
+  def PE(*args)	# end of picture
   end
 
-  define_method 'ME' do |*args|
+  def ME(*args)
   end
 
-  define_method 'EM' do |*args| # end up macro - process left over keep-release
+  def EM(*args) # end up macro - process left over keep-release
   end
 
-  define_method 'NP' do |*args| # new page
+  def NP(*args) # new page
   end
 
-  define_method 'XK' do |*args|
+  def XK(*args)
   end
 
-  define_method 'KD' do |*args|
+  def KD(*args)
   end
 
-  define_method 'PT' do |*args|
+  def PT(*args)
   end
 
-  define_method 'FO' do |*args| # footer of page
+  def FO(*args) # footer of page
   end
 
-  define_method '2C' do |*args| # begin double column
+  def 2C(*args) # begin double column
   end
 
-  define_method 'MC' do |*args| # multiple columns- arg is line length
+  def MC(*args) # multiple columns- arg is line length
   end
 
-  define_method 'RC' do |*args|
+  def RC(*args)
   end
 
-  define_method 'C1' do |*args|
+  def C1(*args)
   end
 
-  define_method 'C2' do |*args|
+  def C2(*args)
   end
 
-  define_method '1C' do |*args| # return to single column format
+  def 1C(*args) # return to single column format
   end
 
-  define_method 'MH' do |*args|
+  def MH(*args)
   end
 
-  define_method 'PY' do |*args|
+  def PY(*args)
   end
 
-  define_method 'BT' do |*args|
+  def BT(*args)
   end
 
-  define_method 'PP' do |*args| # paragraph
+  def PP(*args) # paragraph
   end
 
-  define_method 'SH' do |*args| # (unnumbered) section heading
+  def SH(*args) # (unnumbered) section heading
   end
 
-  define_method 'NH' do |*args| # numbered heading
+  def NH(*args) # numbered heading
   end
 
-  define_method 'BG' do |*args| # begin, execute at first PP
+  def BG(*args) # begin, execute at first PP
   end
 
-  define_method 'TL' do |*args|
+  def TL(*args)
   end
 
-  define_method 'AU' do |*args|
+  def AU(*args)
   end
 
-  define_method 'AI' do |*args|
+  def AI(*args)
   end
 
-  define_method 'RA' do |*args| #redefine abstract macros
+  def RA(*args) #redefine abstract macros
   end
 
-  define_method 'AB' do |*args|
+  def AB(*args)
   end
 
-  define_method 'AE' do |*args|
+  def AE(*args)
   end
 
-  define_method 'IP' do |*args| # indented paragraph
+  def IP(*args) # indented paragraph
   end
 
-  define_method 'LP' do |*args| # left aligned (block) paragraph
+  def LP(*args) # left aligned (block) paragraph
   end
 
-  define_method 'QP' do |*args|
+  def QP(*args)
   end
 
-  define_method 'IE' do |*args| # synonym for .LP
+  def IE(*args) # synonym for .LP
   end
 
-  define_method 'XP' do |*args|
+  def XP(*args)
   end
 
-  define_method 'RS' do |*args| # prepare for double indenting
+  def RS(*args) # prepare for double indenting
   end
 
-  define_method 'RE' do |*args| # retreat to the left
+  def RE(*args) # retreat to the left
   end
 
-  define_method 'TC' do |*args|
+  def TC(*args)
   end
 
-  define_method 'TD' do |*args|
+  def TD(*args)
   end
 
-  define_method 'CM' do |*args| # cut mark
+  def CM(*args) # cut mark
   end
 
-  define_method 'B' do |*args| # bold font
+  def B(*args) # bold font
   end
 
-  define_method 'BI' do |*args|	# bold italic -- only on 202
+  def BI(*args)	# bold italic -- only on 202
   end
 
-  define_method 'R' do |*args| # Roman font
+  def R(*args) # Roman font
   end
 
-  define_method 'I' do |*args| # italic font
+  def I(*args) # italic font
   end
 
-  define_method 'TA' do |*args| # tabs set in ens or chars
+  def TA(*args) # tabs set in ens or chars
     ta(args.join('n ') + 'n')
   end
 
-  define_method 'SM' do |*args| # make smaller size
+  def SM(*args) # make smaller size
 #.if \\n(.$>0 \&\\$3\s-2\\$1\s0\\$2
 #.if \\n(.$=0 .ps -2
   end
 
-  define_method 'LG' do |*args| # make larger size
+  def LG(*args) # make larger size
     ps '+2'
   end
 
-  define_method 'NL' do |*args| # return to normal size
+  def NL(*args) # return to normal size
     ps '\\n(PS'
   end
 
-  define_method 'DA' do |*args| # force date; ND - no date or new date.
+  def DA(*args) # force date; ND - no date or new date.
 #.if \\n(.$ .ds DY \\$1 \\$2 \\$3 \\$4
 #.ds CF \\*(DY
   end
 
-  define_method 'ND' do |*args|
+  def ND(*args)
 #.ME
 #.rm ME
 #.ds DY \\$1 \\$2 \\$3 \\$4
 #.rm CF
   end
 
-  define_method 'FN' do |*args| # footnote end
+  def FN(*args) # footnote end
     send 'FS'
   end
 
-  define_method 'FJ' do |*args|
+  def FJ(*args)
 #'ce 0
 #.nr IA \\n(IP
 #.nr IB \\n(.i
@@ -353,7 +353,7 @@ class Troff
 #.if !\\n+(XX-1 .FA
   end
 
-  define_method 'FK' do |*args|
+  def FK(*args)
 #.br
 #.in 0
 #.nr IF 0
@@ -371,14 +371,14 @@ class Troff
 #'in \\n(IBu
   end
 
-  define_method 'FS' do |*args| # First page footer
+  def FS(*args) # First page footer
 #.ev1
 #.br
 #.ll \\n(FLu
 #.da FG
   end
 
-  define_method 'FE' do |*args|
+  def FE(*args)
 #.br
 #.di
 #.nr FP \\n(dn
@@ -387,12 +387,12 @@ class Troff
 #.ev
   end
 
-  define_method 'FA' do |*args|
+  def FA(*args)
 #.if t \l'1i'
 #.br
   end
 
-  define_method 'FV' do |*args|
+  def FV(*args)
 #.FS
 #.nf
 #.ls 1
@@ -402,12 +402,12 @@ class Troff
 #.FE
   end
 
-  define_method 'FX' do |*args|
+  def FX(*args)
 #.if \\n(XX>0 .di FY
 #.if \\n(XX>0 .ns
   end
 
-  define_method 'XF' do |*args|
+  def XF(*args)
 #.if \\n(nlu+1v>(\\n(.pu-\\n(FMu) .ch FX \\n(nlu+1.9v
 #.ev1
 #.nf
@@ -422,33 +422,33 @@ class Troff
 #.ev
   end
 
-  define_method 'FL' do |*args|
+  def FL(*args)
 #.ev1
 #.nr FL \\$1n
 #.ll \\$1
 #.ev
   end
 
-  define_method 'HO' do |*args|
+  def HO(*args)
     parse 'Bell Laboratories'
     parse 'Holmdel, New Jersey 07733'
   end
 
-  define_method 'WH' do |*args|
+  def WH(*args)
     parse 'Bell Laboratories'
     parse 'Whippany, New Jersey 07981'
   end
 
-  define_method 'IH' do |*args|
+  def IH(*args)
     parse 'Bell Laboratories'
     parse 'Naperville, Illinois 60540'
   end
 
-  define_method 'UL' do |*args| # underline argument, don't italicize
+  def UL(*args) # underline argument, don't italicize
 #.if t \\$1\l'|0\(ul'\\$2
   end
 
-  define_method 'UX' do |*args|
+  def UX(*args)
 #.ie \\n(GA>0 \\$2\s-1UNIX\s0\\$1
 #.el \{\
 #.if n \\$2UNIX\\$1*
@@ -462,25 +462,25 @@ class Troff
 #.nr GA 1\}
   end
 
-  define_method 'US' do |*args|
+  def US(*args)
     parse 'the'
     send 'UX'
     parse 'operating system'
   end
 
-  define_method 'QS' do |*args|
+  def QS(*args)
     br
     send 'LP'
     in '+\\n(QIu'
   end
 
-  define_method 'QE' do |*args|
+  def QE(*args)
     br
     send 'in', '-\\n(QIu'
     send 'LP'
   end
 
-  define_method 'B1' do |*args| # begin boxed stuff
+  def B1(*args) # begin boxed stuff
 #.br
 #.di BB
 #.nr BC 0
@@ -488,7 +488,7 @@ class Troff
 #.nr BE 1
   end
 
-  define_method 'B2' do |*args| # end boxed stuff
+  def B2(*args) # end boxed stuff
 #.br
 #.nr BI 1n
 #.if \\n(.$>0 .nr BI \\$1n
@@ -514,19 +514,19 @@ class Troff
 #.br
   end
 
-  define_method 'AT' do |*args|
+  def AT(*args)
     nf
     sp
     parse 'Attached:'
   end
 
-  define_method 'CT' do |*args|
+  def CT(*args)
     nf
     sp
     parse args.any? ? "Copy to #{args[0]}:" : 'Copy to:'
   end
 
-  define_method 'BX' do |*args|
+  def BX(*args)
     parse "\\(br\\|#{args[0]}\\|\\(br\\l'|0\\(rn'\\l'|0\\(ul'"
   end
 
@@ -542,31 +542,31 @@ class Troff
 # tmac.sdisp
 #
 
-  define_method 'DS' do |*args| # DS - display.  If .DS C, center; L, left-adjust; I, indent.
+  def DS(*args) # DS - display.  If .DS C, center; L, left-adjust; I, indent.
   end
 
-  define_method 'D' do |*args|
+  def D(*args)
   end
 
-  define_method 'CD' do |*args|
+  def CD(*args)
   end
 
-  define_method 'ID' do |*args|
+  def ID(*args)
   end
 
-  define_method 'LD' do |*args|
+  def LD(*args)
   end
 
-  define_method 'XD' do |*args|
+  def XD(*args)
   end
 
-  define_method 'BD' do |*args| # block display: save everything, then center it.
+  def BD(*args) # block display: save everything, then center it.
   end
 
-  define_method 'DE' do |*args| # DE - display end
+  def DE(*args) # DE - display end
   end
 
-  define_method 'DF' do |*args| # finish a block display to be recentered.
+  def DF(*args) # finish a block display to be recentered.
   end
 
 #
@@ -622,22 +622,22 @@ class Troff
 # tmac.scover
 #
 
-  define_method 'OK' do |*args|
+  def OK(*args)
   end
 
-  define_method 'CS' do |*args|
+  def CS(*args)
   end
 
-  define_method 'CG' do |*args|
+  def CG(*args)
   end
 
-  define_method 'CB' do |*args|
+  def CB(*args)
   end
 
-  define_method 'CZ' do |*args|
+  def CZ(*args)
   end
 
-  define_method 'S1' do |*args|
+  def S1(*args)
   end
 
 
@@ -645,25 +645,25 @@ class Troff
 # tmac.skeep
 #
 
-  define_method 'KS' do |*args|
+  def KS(*args)
   end
 
-  define_method 'KQ' do |*args|
+  def KQ(*args)
   end
 
-  define_method 'KF' do |*args|
+  def KF(*args)
   end
 
-  define_method 'FQ' do |*args|
+  def FQ(*args)
   end
 
-  define_method 'KP' do |*args|
+  def KP(*args)
   end
 
-  define_method 'KE' do |*args|
+  def KE(*args)
   end
 
-  define_method 'RQ' do |*args|
+  def RQ(*args)
   end
 
 

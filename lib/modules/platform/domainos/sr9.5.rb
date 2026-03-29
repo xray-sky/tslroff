@@ -7,6 +7,8 @@
 # Domain/OS SR9.5 Platform Overrides
 #
 # TODO:
+#    SR9.0 BSD eqn(1) has postprocessed EQN. it kinda works but has "issues". and badly parsed See Also
+#    SR9.0 Sys5 pages (many, not all) are not correctly processing title for manual section
 #
 
 class DomainIX::SR9_5

@@ -189,7 +189,7 @@ class SunOS::V5_2
 
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
 
-    def initialize source
+    def initialize(source)
       case source.file
       when 'xcalc.1' then source.patch_line 1, /^/, '.de '
       end
@@ -214,11 +214,11 @@ class SunOS::V5_2
       @mounted_fonts[6] = 'B'
     end
 
-    define_method 'SB' do |*args|
+    def SB(*args)
       parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
       ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
       ds "]L Last change: #{args[2]}"
@@ -232,7 +232,7 @@ class SunOS::V5_2
       super(*args, heading: heading)
     end
 
-    define_method 'TZ' do |*args|
+    def TZ(*args)
       ds "Tz #{MANUAL_NAMES[args[0]]}"
       parse "\\fI\\*(Tz\\f1#{args[1]}"
     end

@@ -81,34 +81,34 @@ class Interactive
     end
 
     # whoa, danger
-    define_method 'Pp' do |*args|
+    def Pp(*args)
       warn ".Pp attempting to include process output from #{args.inspect} ?!"
       #system "#{args[0]} #{args[1]} >/tmp/DIT.#{Process.pid}"
       #so "/tmp/DIT.#{Process.pid}"
       #File.delete "/tmp/DIT.#{Process.pid}"
     end
 
-    define_method 'BA' do |*args|
+    def BA(*args)
       return nil.tap { warn ".BA has illegal number of args - #{args.inspect}" } unless args.any? and args.count < 3
       send 'RB', '[\\0', "\\&#{args[0]}", "#{args[1]}\\0]\\%"
     end
 
-    define_method 'BX' do |*args|
+    def BX(*args)
       warn ".BX wants to draw box from #{args.inspect} - punt"
       unescape args.join(' ')
     end
 
-    define_method 'IN' do |*args|
+    def IN(*args)
       parse "\\s-1INTERACTIVE\\s+1#{args[0]}"
     end
 
-    define_method 'LR' do |*args|
+    def LR(*args)
       send 'SH', "LICENSE REQUIRED"
       parse "This entry applies only to the #{args[0]} license."
     end
 
     # small caps
-    define_method 'SC' do |*args|
+    def SC(*args)
       if args.any?
         parse '.nr ;S \\n(.s'
         ps
@@ -127,7 +127,7 @@ class Interactive
       end
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       #ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
       # cut mark stuff, output from }C, along with ]U and ]V
       #ds "]W Rev. #{args[2]}"

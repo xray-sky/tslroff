@@ -44,7 +44,7 @@ collection_namespace 'Be' do
                       beos/documentation/The_Be_FAQs/faqs
                       beos/documentation/User?s?Guide
                     ] do |t|
-                      assets_task %w(*.jp*g *.[gG][iI][fF] *.map *.tiff *.eps), t[:idir], t[:odir], cut_dirs: 2, postprocess: :processMacBinary
+                      assets_task %w(*.jp*g *.[gG][iI][fF] *.map *.tiff *.eps), t[:idir], t[:odir], cut_dirs: 2, postprocess: :process_macbinary
                       task all: [:assets]
                     end
 

@@ -30,7 +30,7 @@ class Ultrix::V2_0_0
       )
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)" # tmac.an uses \f(TB
       super(*args, heading: heading)
     end

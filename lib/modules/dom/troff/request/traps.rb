@@ -156,6 +156,8 @@ class Troff
     end
   end
 
+  # we may enter .it with arbitrarily named macros, from renaming "internal" macros
+  # like .}S to something more ruby-friendly, but not standard two-letter troff names
   def it(argstr = '', breaking: nil)
     (count, macro) = argstr.split
     if count and macro and respond_to?(macro)
@@ -189,4 +191,18 @@ class Troff
     init_it
   end
 
+  private
+
+  def process_input_traps
+    # decrement the line counters
+    @input_traps = @input_traps.transform_keys { |k| k -= 1 }
+
+    # select the ones that should happen now
+    macros = @input_traps.delete(0)
+
+    return unless macros
+    macros.reverse.each do |macro|
+      send macro[0]
+    end
+  end
 end

@@ -26,7 +26,7 @@ class UNIX::V7
       )
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
 
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"

@@ -86,9 +86,9 @@ class GL2
 
     # index info - what even makes sense to do with this
     # probably nothing, as it seems to be for bound manuals (absolute page number)
-    define_method 'IX' do |*args| ; end
+    def IX(*args) ; end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}" if args[2] and !args[2].strip.empty?
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
@@ -98,7 +98,7 @@ class GL2
       super(*args, heading: heading)
     end
 
-    define_method 'UC' do |*_args| ; end
+    def UC(*_args) ; end
 
   end
 end

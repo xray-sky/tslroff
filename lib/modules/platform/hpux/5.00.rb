@@ -14,8 +14,6 @@ class HPUX::V5_00
   class Troff < HPUX::Troff
 
     alias :LP :P
-    # .cm is not official nor in tmac.an but is apparently used in practice for comments
-    alias :cm :'\"'
 
     def init_ds
       super
@@ -34,7 +32,11 @@ class HPUX::V5_00
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
-    define_method 'TH' do |*args|
+    # .cm is not official nor in tmac.an but is apparently used in practice for comments
+    #alias :cm :'\"'
+    def cm(*_args) ; end
+
+    def TH(*args)
       heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
       ds "]L \\^#{args[2]}\\^" if args[2] and !args[2].strip.empty?
       ds "]D #{args[3]}"

@@ -149,16 +149,16 @@ class UNIX::V6
       ti "-#{args[1]}n"
     end
 
-    define_method 's1' do |*_args|
+    def s1(*_args)
       sp '1v'
       #ne '2'
     end
 
-    define_method 's2' do |*_args|
+    def s2(*_args)
       sp '.5v'
     end
 
-    define_method 's3' do |*_args|
+    def s3(*_args)
       sp '.5v'
       #ne '2'
     end

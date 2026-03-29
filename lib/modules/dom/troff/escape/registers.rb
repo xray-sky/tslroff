@@ -32,12 +32,13 @@ class Troff
   #
 
   def esc_n(s)
-    incr = case s.slice!(0)
-           when '+' then :incr
-           when '-' then :decr
-           end if s.start_with?('-', '+')
-    s.slice!(0) if s.start_with?('(')
-    s = __unesc_star(__unesc_n(s))
+    pos = 0
+    incr = case s[pos]
+           when '+' then pos += 1 and :incr
+           when '-' then pos += 1 and :decr
+           end
+    pos += 1 if s[pos] == '('
+    s = __unesc_star(__unesc_n(s[pos..-1]))
 
     # I think we can get away with relying on the @register default value
     # but let's keep the diagnostic for now.

@@ -19,7 +19,7 @@
 class SunOS::V4_1
 
   class Manual < Manual
-    def initialize file, vendor_class: nil, source_args: nil
+    def initialize(file, vendor_class: nil, source_args: nil)
       case File.basename(file)
       when 'Xt-differences.3' then source_args[:magic] = 'Troff'  # #.so macros.x
       end
@@ -29,7 +29,7 @@ class SunOS::V4_1
 
   class Nroff < SunOS::Nroff
 
-    def initialize source
+    def initialize(source)
       case source.file
       when 'ce_db_build.1', 'ce_db_merge.1' # no title line
         @manual_section = '1'
@@ -149,11 +149,11 @@ class SunOS::V4_1
       )
     end
 
-    define_method 'SB' do |*args|
+    def SB(*args)
       parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
       ds "]L Last change: #{args[2]}"
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
@@ -166,7 +166,7 @@ class SunOS::V4_1
       super(*args, heading: heading)
     end
 
-    define_method 'TX' do |*args|
+    def TX(*args)
       ds "Tx #{MANUAL_NAMES[args[0]]}"
       parse "\\fI\\*(Tx\\f1#{args[1]}"
     end

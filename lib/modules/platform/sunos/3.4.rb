@@ -60,7 +60,7 @@ class SunOS::V3_4
       parse("\\&" + next_line)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L Last change: #{args[2]}"
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
       ds "]W #{args[3]}" if args[3] and !args[3].empty?

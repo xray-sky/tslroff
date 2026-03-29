@@ -56,18 +56,18 @@ class Ardent_SysV
     # end of document processing (print final page number, etc.)
     # don't care.
     def ee(*_args) ; end
-    define_method 'Ee' do |*_args| ; end
+    def Ee(*_args) ; end
 
     # assorted index processing
     # don't care.
     def iX(*_args) ; end
-    define_method 'IX' do |*_args| ; end
+    def IX(*_args) ; end
 
-    define_method 'PD' do |*args|
+    def PD(*args)
       nr "PD " + ((args[0] and !args[0].strip.empty?) ? "#{args[0]}v" : '.4v')
     end
 
-    define_method 'PM' do |*args|
+    def PM(*args)
       warn ".PM #{args.inspect} - testing"
       ph = Block.new(text: Text.new(font: Font::I.new))
       pm = Block.new(text: Text.new(font: Font::B.new))
@@ -106,7 +106,7 @@ class Ardent_SysV
       @document << blockproto
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L (\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty?
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
@@ -115,7 +115,7 @@ class Ardent_SysV
       #heading << "(#{args[1]})" if args[1] and !args[1].strip.empty?
       heading << "\\^(\\^#{args[1]}\\^)" if args[1] and !args[1].strip.empty?
       heading << '\\0\\0\\(em\\0\\0\\*(]D'
-      heading << ' \\|\\*(]L' unless @named_strings[']L'].empty?
+      heading << ' \\|\\*(]L' unless @named_strings[']L']&.empty?
       # REVIEW consider moving ]D to footer; removing parens from ]L and separating by \(em
 
       super(*args, heading: heading)

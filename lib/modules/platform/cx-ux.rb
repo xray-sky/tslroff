@@ -66,7 +66,7 @@ class CX_UX
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       #ds ']W 7th Edition' # tmac.an.new
       #ds ']D 32B Virtual UNIX Programmer\'s Manual' # tmac.an.new
       ds "]L #{args[2]}"

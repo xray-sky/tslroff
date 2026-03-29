@@ -15,7 +15,7 @@ class Troff
   private
 
   def typesetter_width(fragment)
-    to_u(@@webdriver.width(fragment.to_html).to_s, default_unit: 'px')
+    to_u(@@webdriver.width(fragment).to_s, default_unit: 'px')
   end
 
 end

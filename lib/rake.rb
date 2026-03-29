@@ -168,6 +168,7 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
   pagecount = 0
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
+  RubyProf.start if ENV['RUBY_PROFILE']
   fl.each do |src|
     next if File.directory?(src)
     next if limit and !File.basename(src).match?(limit)
@@ -177,7 +178,13 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     pagecount += 1
     manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args)
   end
+  if ENV['RUBY_PROFILE']
+    profile_results = RubyProf.stop
+    RubyProf::FlatPrinter.new(profile_results).print($stdout)
+    RubyProf::GraphPrinter.new(profile_results).print($stdout, {})
+  end
   warn Troff.webdriver.cache_stats if Troff.webdriver
+  Troff.webdriver.persist_cache
   pagecount
 end
 

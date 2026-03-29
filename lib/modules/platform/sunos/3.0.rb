@@ -10,7 +10,7 @@
 class SunOS::V3_0
 
   class Manual < Manual
-    def initialize file, vendor_class: nil, source_args: {}
+    def initialize(file, vendor_class: nil, source_args: {})
       case File.basename file
       when 'skyversion.8' then source_args[:magic] = 'Troff'
       end
@@ -68,7 +68,7 @@ class SunOS::V3_0
       parse("\\&" + next_line)
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L Last change: #{args[2]}"
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
 

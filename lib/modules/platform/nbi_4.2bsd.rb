@@ -7,6 +7,7 @@
 # ISI/NBI 4.2BSD Platform Overrides (tmac.an.new)
 #
 # TODO
+#   garbage from extraction in a bunch of the manuals
 #
 
 class NBI_4_2BSD
@@ -39,7 +40,7 @@ class NBI_4_2BSD
       @character_translations['*'] = "\e(**"
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
       #ds "]W #{args[3]}" # set in .TH but always overridden by .}F
       ds "]D #{args[4]}" if args[4] and !args[4].empty?
@@ -51,7 +52,7 @@ class NBI_4_2BSD
     end
 
     # tmac.an.new
-    define_method 'UC' do |*args|
+    def UC(*args)
       ds(']W ' + case args[0]
                  when '', nil then '3rd Berkeley Distribution'
                  when '4' then '4th Berkeley Distribution'
@@ -60,11 +61,11 @@ class NBI_4_2BSD
         )
     end
 
-    define_method 'VE' do |*_args|
+    def VE(*_args)
       warn ".VE can't yet draw margin characters (.mc)"
     end
 
-    define_method 'VS' do |*_args|
+    def VS(*_args)
       warn ".VS can't yet draw margin characters (.mc)"
     end
 

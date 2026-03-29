@@ -106,7 +106,7 @@ class SunOS::V4_0
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}"}
     MANUAL_SECTION_NAMES.default = 'MISC. REFERENCE MANUAL PAGES'
 
-    def initialize source
+    def initialize(source)
       case source.file
       when 'disablenumlock.1' then source.patch_line 1, /dis/, 'en'  # exists in 4.0.2; tries to .so itself
       end
@@ -122,11 +122,11 @@ class SunOS::V4_0
       )
     end
 
-    define_method 'SB' do |*args|
+    def SB(*args)
       parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L Last change: #{args[2]}"
       ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
       ds "]W #{args[3]}" if args[3] and !args[3].empty?
@@ -138,7 +138,7 @@ class SunOS::V4_0
       super(*args, heading: heading)
     end
 
-    define_method 'TX' do |*args|
+    def TX(*args)
       ds "Tx #{MANUAL_NAMES[args[0]]}"
       parse "\\fI\\*(Tx\\f1#{args[1]}"
     end

@@ -5,6 +5,55 @@
 #
 # frozen_string_literal: true
 #
+# TODO some escapes are processed before we ever do request parsing?!
+# \* at least - what else?? what order? whitespace stripped before or after?
+#
+# observations:
+#
+#   .ds yo .ab
+#   \*(yo
+#   nroff: User Abort; line 26, file <standard input>
+#
+#   .de 99
+#   .ab
+#   ..
+#   .nr a 99
+#   .\na          # yes \n
+#   nroff: User Abort; line 15, file <standard input>
+#
+#   \w'foo'
+#   .fl
+#   72
+#   .de 72
+#   .ab
+#   ..
+#   .\w'foo'      # not \w
+#   .nr a 72
+#   .ds n \\na
+#   .\*n          # so \* then \n
+#   nroff: User Abort; line 3, file <standard input>
+#
+# trailing whitespace apparently stripped on output, not input.
+#
+#   .ds yo "
+#   \*(yo foo.
+#   .fl
+#           foo.
+#   \w' '
+#   .fl
+#   24
+#   \w'\*(yo'
+#   .fl
+#   168
+#   .ds yo "       \" crud
+#   \w'\*(yo'
+#   .fl
+#   168
+#
+#   \! foooo \" bar
+#   .fl
+#   foooo         # so comments o before transparent throughput even
+
 
 class Troff
 
@@ -13,6 +62,9 @@ class Troff
   def parse(line)
     if escapes?
       resc = Regexp.escape @escape_character
+
+      # strip comments - all text following \"
+      #line.sub!(/(?<!#{resc})#{resc}"(?<comment>.*)?$/, '')
 
       # lines starting with \! are read in copy mode and transparently output
       if line.sub!(/^#{resc}!/, '')
@@ -32,7 +84,8 @@ class Troff
       #
       # REVIEW this algorithm is suspect; '\ \    ' should still rstrip some spaces.
       #line.rstrip! unless line.match(/#{resc} +$/)
-      line.sub!(/((?<!#{resc})#{resc} )? *(?:(?<!#{resc})#{resc}".*)?$/, '\1')
+      line.sub!(/(?<preserve>(?<!#{resc})#{resc} )? *(?:(?<!#{resc})#{resc}"(?<comment>.*))?$/, '\k<preserve>')
+      #line.sub!(/((?<!#{resc})#{resc} )? *$/, '\1')
     end
 
     line.start_with?(@cc, @c2) ? request(line) : output(line)
@@ -98,8 +151,8 @@ class Troff
     breaking = line.slice!(0) != @c2
     # one of the few places tabs and spaces are equivalent: between cc & req
     line.lstrip!
-    req = line.slice(0, 2).rstrip
-    argstr = line.slice(2..-1)&.lstrip || ''
+    req = line[0..1].rstrip
+    argstr = line[2..-1]&.lstrip || ''
 
     # until we bring back comments stripped in parse so .\" can work again:
     return if req.empty?
@@ -116,7 +169,7 @@ class Troff
     raise unless e.message.match(/^undefined method .+ for #<#{self.class}:/)
 
     # Control lines with unrecognized names are ignored. §1.1
-    warn "Unrecognized request #{breaking ? @cc : @c2 }#{req.inspect} #{argstr}"
+    warn "Unrecognized request #{breaking ? @cc : @c2 }#{req} #{argstr}"
   end
 
 

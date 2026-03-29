@@ -51,7 +51,7 @@ class BSD
     end
 
     # tmac.an.new
-    define_method 'AT' do |*args|
+    def AT(*args)
       ds(']W ' + case args[0]
                  when '4' then 'System III'
                  when '5' then "System V#{" Release #{args[1]}" if !args[1]&.empty?}"
@@ -60,19 +60,19 @@ class BSD
         )
     end
 
-    define_method 'DE' do |*_args|
+    def DE(*_args)
       fi
       send 'RE'
       sp '.5'
     end
 
-    define_method 'DS' do |*_args|
+    def DS(*_args)
       send 'RS'
       nf
       sp
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       ds "]L #{args[2]}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
@@ -84,7 +84,7 @@ class BSD
     end
 
     # tmac.an.new
-    #define_method 'UC' do |v = nil, *_args|
+    #def UC(v = nil, *_args)
     #  ds(']W ' + case v
     #             when '4' then '4th Berkeley Distribution'
     #             when '5' then '4.2 Berkeley Distribution'
@@ -94,11 +94,11 @@ class BSD
     #    )
     #end
 
-    define_method 'VE' do |*_args|
+    def VE(*_args)
       warn ".VE can't yet draw margin characters (.mc)"
     end
 
-    define_method 'VS' do |*_args|
+    def VS(*_args)
       warn ".VS can't yet draw margin characters (.mc)"
     end
 

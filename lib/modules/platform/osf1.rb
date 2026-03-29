@@ -77,12 +77,17 @@ class OSF1
       super
       # Geneva Light changed to Triumvirate Italic for LN01
       # Geneva Regular changed to Triumvirate Regular for LN01
-      @mounted_fonts[4] = 'BI'
-      @mounted_fonts[5] = 'CW' # assumes font position 5 is the constant width font
-      @mounted_fonts[7] = 'H'  # Gothic
-      #@mounted_fonts[8] = 'L'  # Gothic Light
-      @mounted_fonts[8] = 'HI' # Gothic Light
-      @mounted_fonts[9] = 'HB' # Gothic Bold
+      #@mounted_fonts[4] = 'BI'
+      #@mounted_fonts[5] = 'CW' # assumes font position 5 is the constant width font
+      #@mounted_fonts[7] = 'H'  # Gothic
+      ##@mounted_fonts[8] = 'L'  # Gothic Light
+      #@mounted_fonts[8] = 'HI' # Gothic Light
+      #@mounted_fonts[9] = 'HB' # Gothic Bold
+      mount_font 4, 'BI'
+      mount_font 5, 'CW'
+      mount_font 7, 'H'
+      mount_font 8, 'HI'
+      mount_font 9, 'HB'
     end
 
     def init_tr
@@ -109,17 +114,22 @@ class OSF1
     def so(name, breaking: nil)
       name = "../../../..#{name}" if name.start_with?('/')
       file = File.basename(name)
-      if %w[sml rsml].include? file
-        # guard against double-inclusion. e.g. lp(1) :: OSF/1 1.0
-        # This feature is present in e.g. >3.0 sml/rsml macro files, but not in earlier OSF/1.
-        super(name, breaking: breaking) { |lines| lines.reject! { |l| l.start_with? '...\\"' } } unless @state[file]
-        @state[file] = true
-      else
-        super(name, breaking: breaking)
+      #if %w[sml rsml].include? file
+      #  # guard against double-inclusion. e.g. lp(1) :: OSF/1 1.0
+      #  # This feature is present in e.g. >3.0 sml/rsml macro files, but not in earlier OSF/1.
+      #  super(name, breaking: breaking) { |lines| lines.reject! { |l| l.start_with? '...\\"' } } unless @state[file]
+      #  @state[file] = true
+      #else
+      #  super(name, breaking: breaking)
+      #end
+      case file
+      when 'sml'  then extend OSF1::SML
+      when 'rsml' then extend OSF1::RSML
+      else super name, breaking: breaking
       end
     end
 
-    define_method 'AT' do |*args|
+    def AT(*args)
       ds(']W ' + case args[0]
                  when '3' then '7th Edition'
                  when '4' then 'System III'
@@ -132,7 +142,7 @@ class OSF1
                  end)
     end
 
-    define_method 'CM' do |*args|
+    def CM(*args)
       ds(']W ' + case args[0]
                  when '', '1' then '1st Carnegie-Mellon Update'
                  when '2'     then '2nd Carnegie-Mellon Update'
@@ -141,35 +151,35 @@ class OSF1
                  end)
     end
 
-    define_method 'CT' do |*args|
+    def CT(*args)
       parse "\\s-2<\\|CTRL\\|#{args[0]}\\|>\\s+2"
     end
 
-    define_method 'CW' do |*_args|
+    def CW(*_args)
       ft 'CW'
     end
 
-    define_method 'De' do |*args|
+    def De(*args)
       warn "REVIEW .De #{args.inspect}"
       ce '0'
       fi
     end
 
-    define_method 'Ds' do |*args|
+    def Ds(*args)
       warn "REVIEW .Ds #{args.inspect}"
       nf
       send "#{args[0]}D", "#{args[1]} #{args[0]}"
       ft 'R'
     end
 
-    define_method 'DE' do |*args|
+    def DE(*args)
       warn "REVIEW .DE #{args.inspect}"
       fi
       send 'RE'
       sp '.5'
     end
 
-    define_method 'EE' do |*_args|
+    def EE(*_args)
       fi
       ps Font.defaultsize.to_s
       send :in, "-#{@register['EX'].value}u"
@@ -177,7 +187,7 @@ class OSF1
       ft '1'
     end
 
-    define_method 'EX' do |*args|
+    def EX(*args)
       nr 'EX ' + to_u("#{args[0] || 0}n+#{@base_indent}u")
       nf
       sp '.5'
@@ -187,7 +197,7 @@ class OSF1
       #vs '-2' # probably don't need this even once it's implemented; the browser will take care of it based on point size.
     end
 
-    define_method 'G' do |*args| # Gothic (Sans-Serif) assumes font position 7 is Helvetica
+    def G(*args) # Gothic (Sans-Serif) assumes font position 7 is Helvetica
       ft 'H'
       if args.any?
         parse args.join(' ')
@@ -199,7 +209,7 @@ class OSF1
 
     # .GB doesn't actually have an input trap! .HB is different from .GB but also has no .it, so I'll alias them.
     # TODO this isn't actually how GB (or HB) work.
-    define_method 'GB' do |*args| # Gothic Bold (Sans-Serif Bold) assumes font position 9 is Helvetica Bold
+    def GB(*args) # Gothic Bold (Sans-Serif Bold) assumes font position 9 is Helvetica Bold
       warn "REVIEW use of #{__callee__}"
       ft 'HB'
       if args.any?
@@ -210,7 +220,7 @@ class OSF1
       end
     end
 
-    define_method 'GL' do |*args| # Gothic Light (Sans-Serif Italic) assumes font position 8 is Helvetica Italic
+    def GL(*args) # Gothic Light (Sans-Serif Italic) assumes font position 8 is Helvetica Italic
       #ft 'GL'
       ft 'HI'
       if args.any?
@@ -222,31 +232,31 @@ class OSF1
     end
 
     # apparently for indexing; do nothing for now but suppress the warning
-    define_method 'iX' do |*_args| ; end
+    def iX(*_args) ; end
 
-    define_method 'I1' do |*args|
+    def I1(*args)
       warn "REVIEW .I1 #{args.inspect}"
       ti "+\\w'#{args[0]}'u"
     end
 
-    define_method 'I2' do |*args|
+    def I2(*args)
       warn "REVIEW .I2 #{args.inspect}"
       sp '-1'
       ti "+\\w'#{args[0]}'u"
     end
 
     # uses Courier fonts for 4.0
-    define_method 'MS' do |*args|
+    def MS(*args)
       parse "\\f(CW\\|#{args[0]}\\|\\fP\\fR(#{args[2]})\\fP#{args[2]}"
     end
 
-    define_method 'NE' do |*_args|
+    def NE(*_args)
       ce '0'
       send :in, '-5n'
       sp '12p'
     end
 
-    define_method 'NT' do |*args|
+    def NT(*args)
       ds 'NO Note'
       ds "NO #{args[1]}" if args[1] and args[1] != 'C'
       ds "NO #{args[0]}" if args[0] and args[0] != 'C'
@@ -264,27 +274,27 @@ class OSF1
     end
 
     # for indexing - don't care. uses \*(BK internally (default value: "Book Title")
-    define_method 'HH' do |*_args| ; end
-    define_method 'NX' do |*_args| ; end
+    def HH(*_args) ; end
+    def NX(*_args) ; end
 
-    define_method 'Pn' do |*args|
+    def Pn(*args)
       parse "#{args[0]}\\&\\f(CW\\|#{args[1]}\\|\\fP#{args[2]}"
     end
 
     # uses Courier fonts for 4.0
-    define_method 'PN' do |*args|
+    def PN(*args)
       parse "\\f(CW\\|#{args[0]}\\|\\fP#{args[1]}"
     end
 
-    define_method 'R' do |*_args|
+    def R(*_args)
       ft 'R'
     end
 
-    define_method 'RN' do |*_args|
+    def RN(*_args)
       parse "\\s-2<\\|RETURN\\|>\\s+2"
     end
 
-    define_method 'TB' do |*args|
+    def TB(*args)
       warn "REVIEW .TB #{args.inspect}"
       @register['PF'] = @register['.f'].dup
       ft 'HB' # Triumvirate Bold
@@ -296,7 +306,7 @@ class OSF1
       end
     end
 
-    define_method 'TH' do |*args|
+    def TH(*args)
       # these strings are deliberately blanked by .TH if not given in the args.
       ds "]L #{args[2]}"
       ds "]W #{args[3]}"
@@ -345,7 +355,7 @@ class OSF1
       super(*args, heading: heading)
     end
 
-    define_method 'UC' do |*args|
+    def UC(*args)
       ds(']W ' + case args[0]
                      when '3' then '3rd Berkeley Distribution'
                      when '4' then '4th Berkeley Distribution'
@@ -356,17 +366,17 @@ class OSF1
                      end)
     end
 
-    define_method 'UF' do |*args|
+    def UF(*args)
       ds "]T #{args[0]}"
     end
 
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

@@ -52,30 +52,30 @@ class Ultrix
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
-    define_method 'CT' do |*args|
+    def CT(*args)
       parse "\\s-2<\\|CTRL\\|#{args[0]}\\|>\\s+2"
     end
 
-    define_method 'CW' do |*_args|
+    def CW(*_args)
       ft 'CW'
       nr 'SF', '5'
     end
 
-    define_method 'EE' do |*_args|
+    def EE(*_args)
       fi
       send 'in', '-.5i'
       sp '.5'
       ft '1'
     end
 
-    define_method 'EX' do |*_args|
+    def EX(*_args)
       nf
       sp '.5'
       send 'in', '+.5i'
       ft 'CW' # Geneva regular (changed to Constant Width for LN01)
     end
 
-    define_method 'G' do |*args|
+    def G(*args)
       ft 'H'
       if args.any?
         parse args.join(' ')
@@ -85,7 +85,7 @@ class Ultrix
       end
     end
 
-    define_method 'GL' do |*args|
+    def GL(*args)
       ft 'L'
       if args.any?
         parse args.join(' ')
@@ -95,28 +95,28 @@ class Ultrix
       end
     end
 
-    define_method 'I1' do |*args|
+    def I1(*args)
       warn "REVIEW .I1 #{args.inspect}"
       ti "+\\w'#{args[0]}'u"
     end
 
-    define_method 'I2' do |*args|
+    def I2(*args)
       warn "REVIEW .I2 #{args.inspect}"
       sp '-1'
       ti "+\\w'#{args[0]}'u"
     end
 
-    define_method 'MS' do |*args|
+    def MS(*args)
       parse "\\f(TR\\|#{args[0]}\\|\\fP\\fR(#{args[2]})\\fP#{args[2]}"
     end
 
-    define_method 'NE' do |*_args|
+    def NE(*_args)
       ce '0'
       send 'in', '-5n'
       sp '12p'
     end
 
-    define_method 'NT' do |*args|
+    def NT(*args)
       ds 'NO NOTE'
       ds "NO #{args[1]}" if args[1] and args[1] != 'C'
       ds "NO #{args[0]}" if args[0] and args[0] != 'C'
@@ -134,22 +134,22 @@ class Ultrix
     end
 
     # appears to be for indexing purposes
-    define_method 'NX' do |*_args| ; end
+    def NX(*_args) ; end
 
-    define_method 'PN' do |*args|
+    def PN(*args)
       parse "\\f(TR\\|#{args[0]}\\|\\fP#{args[1]}"
     end
 
-    define_method 'R' do |*_args|
+    def R(*_args)
       ft '1'
       nr 'SF 1'
     end
 
-    define_method 'RN' do |*_args|
+    def RN(*_args)
       parse "\\s-2<\\|RETURN\\|>\\s+2"
     end
 
-    define_method 'TB' do |*args|
+    def TB(*args)
       warn "REVIEW .TB #{args.inspect}"
       @register['PF'] = @register['.f'].dup
       ft 'HB' # Triumvirate Bold
@@ -161,13 +161,13 @@ class Ultrix
       end
     end
 
-    define_method 'VE' do |*args|
+    def VE(*args)
       # .if '\\$1'4' .mc \s12\(br\s0
       # draws a 12pt box rule as right margin character
       warn "can't yet .VE #{args.inspect}"
     end
 
-    define_method 'VS' do |*args|
+    def VS(*args)
       # .mc
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"

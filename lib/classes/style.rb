@@ -13,15 +13,16 @@ require_relative '../modules/immutable'
 
 class Style
   include Immutable
-  attr_accessor :css, :attributes
+  attr_accessor :css, :attributes#, #:object_exception_class
 
   def initialize(arg = {}, exceptionclass = nil)
     @css = {}
     @attributes = {}
-    if exceptionclass
-      define_singleton_method('object_exception_class') { exceptionclass }
-      singleton_class.send(:private, :object_exception_class)
-    end
+    #if exceptionclass
+      #define_singleton_method('object_exception_class') { exceptionclass }
+      #singleton_class.send(:private, :object_exception_class)
+      @object_exception_class = exceptionclass
+    #end
     arg.each do |k, v|
       self[k] = v
     end
@@ -50,6 +51,6 @@ class Style
   end
 
   def dup
-    self.class.new(prototype, object_exception_class)
+    self.class.new(prototype, @object_exception_class)
   end
 end

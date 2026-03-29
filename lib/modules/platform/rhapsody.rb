@@ -7,6 +7,7 @@
 # Rhapsody Platform Overrides
 #
 # TODO
+#   text encoding (see groff_mm*.7)
 #   _actually_ using mdoc/doc-* macros. gadzooks. looks like all versions share the same macros though
 #
 

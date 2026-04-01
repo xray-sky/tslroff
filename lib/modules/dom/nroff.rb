@@ -20,7 +20,7 @@ class Nroff < TextFormatter
   TYPEBOX.freeze
 
   def initialize(source)
-    @input_line_number ||= 0
+    #@input_line_number ||= 0
     @tab_width ||= 8
     @lines_per_page ||= 66
     @related_info_heading ||= 'SEE ALSO'
@@ -51,8 +51,8 @@ class Nroff < TextFormatter
     section            = ''
 
     loop do
-      input_line = @lines.next
-      @input_line_number += 1
+      input_line = next_line
+      #@input_line_number += 1
 
       plaintext = unformat(input_line.chomp)
       #@summary << plaintext.strip if section =~ (@summary_heading) # REVIEW too simple? - yes. unix style find NAME section & use text from following lines; aegis style no section to detect, use first line to match pattern directly
@@ -63,7 +63,7 @@ class Nroff < TextFormatter
         document[page] ||= Block::Nroff.new(text: [])
 
         line = (platen_position - 2 * (@lines_per_page || 0) * page) / 2
-        document[page].text[line] ||= Line.new(source: @input_filename)
+        document[page].text[line] ||= Line.new(file: @source.file, line: @source.line_number) # file name, for formatting error messages
 
         text = document[page].text[line]
         text.section = section
@@ -153,8 +153,8 @@ class Nroff < TextFormatter
 
   def parse_title
     title = get_title or warn "reached end of document without finding title!"
-    @manual_section   = title&.[](:section)&.downcase
-    @output_directory = "man#{@manual_section}" if @manual_section
+    @manual_section   = title&.[](:section)#&.downcase
+    #@output_directory = "man#{@manual_section}" if @manual_section
     title
   end
 end

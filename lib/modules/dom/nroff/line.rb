@@ -10,8 +10,9 @@ class Nroff
 
     attr_accessor :section, :links
 
-    def initialize(source: '')
-      @input_filename = source
+    def initialize(file: '', line: 0)
+      @input_filename = file
+      @input_line_number = line
       @formats = []
       @superscript = []
       @baseline = []
@@ -98,10 +99,10 @@ class Nroff
           out << Nroff::OVERSTRIKES[cell.scan(/.\cN?/).sort]
         rescue Nroff::TypeClashError => e
           key = e.pile
-          warn "#{@input_filename}: #{e.message} #{key.inspect}"
+          warn "#{@input_filename} [#{@input_linenumber}]:  #{e.message} #{key.inspect}"
           out << %(<span class="clash">#{key.join('<br />')}</span>)
         end
-        out
+        #out
       end.join
 
       @links&.sort { |a, b| b[0].length <=> a[0].length }&.each do |entry, link|

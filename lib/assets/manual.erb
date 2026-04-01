@@ -14,6 +14,10 @@
   <meta name="generated" content="<%= Time.now.strftime('%Y%m%d %H:%M:%S') %>">
   <meta name="source_file" content="<%= srcfile %>">
   <meta name="source_format" content="<%= man.magic %>">
+<% unless indexing.empty? -%>
+  <meta name="names" content="<%= indexing[0][0] %>">
+  <meta name="description" content="<%= indexing[0][1] %>">
+<% end -%>
 </head>
 <body>
 <div id="left">

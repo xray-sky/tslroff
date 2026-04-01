@@ -1,9 +1,9 @@
+# frozen_string_literal: true
+#
 # escapes.rb
 # ---------------
 #    Troff.escapes source
 # ---------------
-#
-# frozen_string_literal: true
 #
 # TODO not happy about the proliferation of basically identical methods
 #
@@ -22,7 +22,7 @@ class Troff
     #      (including translations to escapes)
 
     if copymode
-      return @escape_character ? __unesc_cm(str.dup) : str
+      return __unesc_cm(str) # no longer destructive of str
     end
 
     if output
@@ -32,10 +32,10 @@ class Troff
 
     # eqn delims can be hidden by escaping them
     resc = Regexp.quote @escape_character || ''
-    if @eqn_start and str.match?(/(?<!#{resc})#{resc}#{resc}#{Regexp.quote @eqn_start}|(?<!#{resc})#{Regexp.quote @eqn_start}/)
+    if @eqn_start and str.match?(/(?<!#{@resc})#{@resc}#{@resc}#{Regexp.quote @eqn_start}|(?<!#{@resc})#{Regexp.quote @eqn_start}/)
       parse_eqn str
     else
-      if @escape_character
+      if escapes?
         __unesc(str.dup)
       else
         # escapes disabled; still need to apply translations to str
@@ -44,8 +44,9 @@ class Troff
         #end
         strpos = 0
         strlen = str.length
-        until strpos == strlenlength
+        until strpos == strlen
           translate str[strpos]
+          strpos += 1
         end
       end
     end
@@ -53,122 +54,79 @@ class Troff
     @current_block = hold_block if output
   end
 
-  # these __unesc_ methods were rewritten to avoid the use of .sub! because
-  # the replacement strings could reasonably contain strings with special
-  # meanings to Regexp, e.g. \', that would need special escaping.
-  # split on regex followed by join with replacement seems a reasonable
-  # way to avoid this complication.
-  #
-  # but the split/join algorithm fails to replace an end-of-string escape
-  #
-  # _n and _w will only ever return numeric values so probably were always safe
+  # Perform a single unescape class on a string. These must always return plain String types
+  # e.g. \w, \n, \* -- nothing that could emit typesetter state or an object, e.g. \f, \h
 
-  # this is used by .if, __unesc
-  def __unesc_star(str)	# want this in .if for testing string equality; this is the only escape that would need processing
-    esc = @escape_character
-    return str unless esc	# REVIEW how does this interact with copymode?
-    resc = Regexp.escape(esc)
-    loop do
-      break unless star = str.index(/(?<!#{resc})#{resc}\*/)
-      req_str = get_def_str(str[(star+2)..-1])
-      # this fails if the string ends with an \* escape, since there won't be something to join
-      #str = str.split(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/).join(esc_star(req_str))
-      # doing replacement in a block appears to prevent characters in the replacement string
-      # with special meaning to Regexp from being interpreted
-      str.gsub!(/(?<!#{resc})#{resc}\*#{Regexp.quote(req_str)}/) { send 'esc_*', req_str }
-    end
-    str
-  end # TODO is there a sensible way to make this reusable with _n and _w ?
+  def __unesc_single(str)
+    return str unless escapes?
+    method = __callee__.to_s[-1]
 
-  # this is used by getargs and .if
-  def __unesc_n(str)
-    esc = @escape_character
-    return str unless esc	# REVIEW how does this interact with copymode?
-    resc = Regexp.escape(esc)
+    i = 0
+    out = String.new
+    resc = Regexp.escape @escape_character
+    rmethod = Regexp.escape method # could be '*'
     loop do
-      break unless n = str.index(/(?<!#{resc})#{resc}n/)
-      req_str = get_reg_str(str[(n+2)..-1])
-      str.gsub!(/(?<!#{resc})#{resc}n#{Regexp.quote(req_str)}/, esc_n(req_str))
+      break unless e = str.index(/(?<!#{@resc})#{@resc}#{rmethod}/, i)
+      out << str[i..e - 1] unless e.zero?
+      esc = get_char str[e..-1]
+      out << send("esc_#{method}", esc[2..-1])
+      i = e + esc.length
     end
-    str
+    out << str[i..-1]
   end
 
-  # this is used by getargs and .if
-  def __unesc_w(str)
-    esc = @escape_character
-    # TODO this is trying to parse \\w (which shouldn't, as it's a _printing_ escape) - zwgc(1) [AOS 4.3]
-    return str unless esc # REVIEW how does this interact with copymode?
-    resc = Regexp.escape(esc)
-    loop do
-      break unless w = str.index(/(?<!#{resc})#{resc}w/)
-      req_str = get_quot_str(str[(w+2)..-1])
-      str.gsub!(/(?<!#{resc})#{resc}w#{Regexp.quote(req_str)}/, esc_w(req_str))
-    end
-    str
-  end
+  alias :'__unesc_*' :__unesc_single
+  #alias :__unesc_n :__unesc_single
+  alias :__unesc_w :__unesc_single
 
 # §7.2
+#
 # Copy mode input interpretation
-# During the definition and extension of strings and macros, the input is
-# read in copy mode. The input is copied without interpretation except that
-#  * the contents of number registers, indicated by '\n', are substituted.
-#  * Strings, indicated by '\*x' and '\*(xx', are read into the text.
-#  * Arguments indicated by '\$' are replaced by the appropriate values at
-#      the current macro level.
-#  * Concealed new-lines indicated by '\(new-line)' are eliminated.
-#  * Comments indicated by '\"' are eliminated.
-#  * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
-#  * '\\' is interpreted as '\'.
-#  * '\.' is interpreted as '.'.
 #
-# These interpretations can be suppressed by prepending a \. For example,
-# since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
-# as a number register indicator when the macro or string is reread.
+#   During the definition and extension of strings and macros, the input is
+#   read in copy mode. The input is copied without interpretation except that
 #
-# FIX copy mode is currently expanding \\*(xx when it shouldn't be (double escaped)
+#     * the contents of number registers, indicated by '\n', are substituted.
+#     * Strings, indicated by '\*x' and '\*(xx', are read into the text.
+#     * Arguments indicated by '\$' are replaced by the appropriate values at
+#         the current macro level.
+#     * Concealed new-lines indicated by '\(new-line)' are eliminated.
+#     * Comments indicated by '\"' are eliminated.
+#     * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
+#     * '\\' is interpreted as '\'.
+#     * '\.' is interpreted as '.'.
+#
+#   These interpretations can be suppressed by prepending a \. For example,
+#   since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
+#   as a number register indicator when the macro or string is reread.
+#
+# We do it right-to-left, since \*(\n(aa and \*(\*(ab and \n(\*(ac and \n(\n(ad (...etc...) are allowed
 
   def __unesc_cm(str)
+    return str unless escapes?
     copy = String.new
-    #until str.empty?
-    strpos = 0
-    strlen = str.length
-    until strpos == strlen
-      #c = get_char str
-      c = get_char str[strpos..-1]
-      # we got the full escape back from get_char, as c
-      case c[0]
-      when @escape_character
-        esc_method = "esc_#{c[1]}"
-        #if %w[esc_n esc_*].include? esc_method
-        if esc_method == 'esc_n' or esc_method == 'esc_*'
-          copy << send(esc_method, c[2..-1])
-        else
-          copy << case c[1]
-                  when '.' then '.'
-                  when 't' then "\t"
-                  when 'a' then "\a"
-                  when @escape_character then @escape_character
-                  else c[0..1] + __unesc_cm(c[2..-1] || '') # gotta go into e.g. \h'foo' and parse 'foo' in copymode too
-                  end
-        end
-        #str.slice! 0, c.length # remove processed esc from str
-        strpos += c.length
-      else
-        #copy << str.slice!(0) # remove processed chr from str
-        copy << str[strpos]
-        strpos += 1
+    strend = str.length
+    while i = str.rindex(/#{@resc}[.tan*"#{@resc}]/, strend) and !(strend < 0)
+      esc = get_escape(str, offset: i)
+      copy.prepend str[i + esc.length..strend]
+      case esc[1]
+      when @escape_character then copy.prepend @escape_character
+      when '.' then copy.prepend '.'
+      when 't' then copy.prepend "\t" # tab
+      when 'a' then copy.prepend "\a" # SOH
+      when 'n' then copy.prepend esc_n esc[2..-1]
+      when '*' then copy.prepend send 'esc_*', esc[2..-1]
+      when '"' then  # \" comment
+        #@current_block << Comment.new(text: copy) # TODO wrong
+        copy = String.new
       end
+      strend = i - 1
     end
+    copy.prepend str[0..strend] unless strend < 0
     copy
   end
 
   def __unesc(str)
-    # REVIEW are we meant to do a copy-mode pass first, then do everything else? is this how
-    #        to keep .ds with stuff like \h from vanishing prematurely?? (instead of unescaping
-    #        the output of \* directly in esc_star, which causes it to be parsed during assignment in .ds?)
-
-    resc = Regexp.quote @escape_character
-
     # TODO lines with escape chars prior to tabs result in that text living outside the tab span!
     #      csh(1) [GL2-W2.5]
     # - to this end, fix up the text block if we just broke. we oughtn't need to deal with
@@ -184,10 +142,10 @@ class Troff
     # start by breaking up fields, then re-entering for each field part, if fields are enabled
     # skip entirely if all field markers are preceeded by single escape.
     # TODO this is processing fields in too many places - in macro args, etc.
-    if fields? and str =~ /(?<!(?<!#{resc})#{resc})#{Regexp.quote @field_delimiter}/
+    if fields? and str.match?(/(?<!(?<!#{@resc})#{@resc})#{Regexp.quote @field_delimiter}/)
       warn "processing fields - #{str.inspect}"
       # don't match a field character preceeded by a single escape.
-      fields = str.split(%r{(?<!(?<!#{resc})#{resc})#{Regexp.quote @field_delimiter}})
+      fields = str.split(%r{(?<!(?<!#{@resc})#{@resc})#{Regexp.quote @field_delimiter}})
       # if the last character is a delimiter, then the last index is a field (otherwise, ordinary text)
       str = str.end_with?(@field_delimiter) ? '' : fields.pop
       # the first part is outside the field. if delim is the first character, the string will be empty
@@ -208,19 +166,15 @@ class Troff
       end
     end
 
-    str = __unesc_star(str)
-    #until str.empty?
     strpos = 0
     strlen = str.length
     until strpos == strlen
-      #c = get_char str
       c = get_char str[strpos..-1]
       case c[0]
       when "\t"
         # collect however many sequential tabs there might be
-        count = 1
-        while str[strpos] == "\t" #.start_with?("\t")
-          #get_char str
+        count = 0
+        while str[strpos] == "\t"
           strpos += 1
           count += 1
         end
@@ -305,6 +259,10 @@ class Troff
     ec "\e"
     __unesc(xlc)
     ec oesc
+  end
+
+  def output_translated(str)
+
   end
 
 end

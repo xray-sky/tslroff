@@ -1,9 +1,9 @@
+# frozen_string_literal: true
+#
 # unknown.rb
 #
 # unknown source magic
 # defer to platform overrides
-#
-# frozen_string_literal: true
 #
 # REVIEW still necessary?
 #

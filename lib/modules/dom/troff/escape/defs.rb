@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # defs.rb
 # -------------
 #   troff
@@ -19,9 +21,7 @@ class Troff
  #
 
   define_method 'esc_*' do |s|
-    s.slice!(0) if s.start_with?('(')
-    s = __unesc_star(__unesc_n(s))
-    @named_strings[s] || ''.tap { warn "\\* : undefined named string #{s.inspect}" }
+    @named_strings[s.start_with?('(') ? s[1, 2] : s[0]] || String.new.tap { warn "\\* : undefined named string #{s.inspect}" }
   end
 
  #   \( - special character
@@ -33,10 +33,11 @@ class Troff
 
   define_method 'esc_(' do |s|
     translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @character_translations.key? "#{@escape_character}(#{s}"
-    @special_chars[s] || ''.tap { warn "\\( : undefined special character #{s.inspect}" }
+    @special_chars[s] || String.new.tap { warn "\\( : undefined special character #{s.inspect}" }
   end
 
   def init_sc
+    # TODO most of these are groff characters
     @special_chars = {
       'bu'  => '&bull;',
       'co'  => '&copy;',

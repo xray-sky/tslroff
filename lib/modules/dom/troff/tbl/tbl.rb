@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+#
+
 module Troff::Tbl
 
   # The format section specifies the layout of the columns. Each line in the format

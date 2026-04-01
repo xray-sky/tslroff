@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # this is the approximate distance by which we fall short of a complete troff implementation
 
 class Troff

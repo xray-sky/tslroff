@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # troff.rb
 # ---------------
 #    troff main
@@ -66,14 +68,10 @@ class Troff < TextFormatter
     super(source)
   end
 
-  def request?(req)
-    REQUESTS.include? req
-  end
-
   # TODO / REVIEW .so ugly
-  def warn(msg)
-    super("#{"#{@so_chain} [#{input_line_number}]: " if @so_chain}#{msg}")
-  end
+  #def warn(msg)
+  #  super("#{"#{@so_chain} [#{input_line_number}]: " if @so_chain}#{msg}")
+  #end
 
   def to_html(halt_on: nil)
     @current_block = blockproto
@@ -126,22 +124,22 @@ class Troff < TextFormatter
     block_given? ? yield(msg) : warn("debug: #{msg.collect(&:inspect).join(' ')}")
   end
 
-  def input_line_number
-    @register['.c']&.value || 0
-  end
+  #def input_line_number
+  #  @register['.c']&.value || 0
+  #end
 
   def next_line
-    line = @lines.tap { @register['.c'].incr }.next.chomp # REVIEW do we ever need to perserve the trailing \n ?
-    #line = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
+    l = super.tap { @register['.c'].incr }.chomp # REVIEW do we ever need to perserve the trailing \n ?
+    #l = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
 
     # Hidden newlines -- REVIEW does this need to be any more sophisticated?
     # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
     # TODO the new-line at the end of a comment cannot be concealed.
     # Doing it here means I don't have to do it everywhere we are doing local next_lines (.TS, .if, etc.)
     # But, this will give us "bad" line numbers for warnings. I can probably live with that.
-    line.chop! << next_line if @escape_character and line.end_with?(@escape_character) and line[-2] != @escape_character
+    l.chop! << next_line if escapes? and l.end_with?(@escape_character) and l[-2] != @escape_character
 
-    @line = line
+    @line = l
   end
 
   # TODO find where we're inserting paragraphs (with and without margin-top:0) containing only

@@ -26,14 +26,14 @@ require_relative 'styles/tab'
 ManualIsBlacklisted = Class.new(RuntimeError)
 
 class TextFormatter
-  attr_reader :input_line_number, :manual_entry, :manual_section
+  attr_reader :manual_entry, :manual_section
 
   extend Forwardable
-  def_delegators :@source, :magic, :patch, :patch_line, :patch_lines
+  def_delegators :@source, :magic, :file, :dir, :line_number, :next_line, :patch, :patch_line, :patch_lines
 
   def initialize(source, vendor_class: nil, source_args: nil)
-    @input_filename = source.file
-    @input_line_number = 0
+    #@input_filename = source.file
+    #@input_line_number = 0
     @source ||= source
 
     @language      ||= 'en' # English
@@ -42,11 +42,11 @@ class TextFormatter
     @document      ||= []
     @current_block ||= Block.new
 
-    @lines ||= @source.lines.each
+    @lines ||= @source.iter
   end
 
   def warn(msg)
-    super("#{@source.file} [#{input_line_number}]: #{msg}")
+    super("#{@warn_prefix}#{file} [#{line_number}]: #{msg}")
   end
 
   def page_title
@@ -75,18 +75,18 @@ require_relative '../modules/dom/groff'
 require_relative '../modules/dom/nroff'
 
 class Manual
-  attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
-  attr_reader   :language, :lines, :links
+  #attr_accessor :blocks # REVIEW blocks, lines? where am I using those outside the class?
+  attr_reader   :language, :links #, :lines
 
   extend Forwardable
-  def_delegators :@source, :link?, :magic, :patch, :patch_line, :patch_lines
+  def_delegators :@source, :link?, :magic, :line_number, :next_line, :patch, :patch_line, :patch_lines
   def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory, :xpath
 
   def initialize(file, vendor_class: nil, source_args: nil, preprocess: nil, &block)
     @input_filename = file
-    @input_line_number = 0
+    #@input_line_number = 0
     @source ||= Source.new file, **source_args, &block
-    document_class = Kernel.const_get "#{vendor_class}::#{@source.magic}"
+    document_class = Kernel.const_get "#{vendor_class}::#{magic}"
 
     send preprocess if preprocess
     @document ||= document_class.send :new, @source
@@ -102,7 +102,8 @@ class Manual
 
     @language      ||= 'en' # English
     @related       ||= []
-    @lines         ||= @source.lines.each
+    #@lines         ||= @source.lines.each
+    @lines         ||= @source.iter
     @current_block ||= Block.new
 
     #@document.source_init # TODO this is why I have to ||= the init. do better.

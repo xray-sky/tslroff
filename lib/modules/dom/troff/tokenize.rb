@@ -23,59 +23,70 @@ class Troff
   #        hpux 10.20 remove_object(1m) \*C problem
   #        du 4.0f dthelpprint(1) [496,501] - \n\n problems
 
-  def get_char(s, count: 1)
-    chars = String.new
-    return chars unless s # string[] can return nil, but why is our __unesc logic busted enough to cause that?
+  def get_char(s, offset: 0, count: 1)
+    s[offset..get_char_end_pos(s, offset: offset, count: count)]
+  end
+
+  def get_char_end_pos(s, offset: 0, count: 1)
+    return offset + count unless escapes?
+    sptr = offset
+    slen = s.length
     loop do
-      break if count < 1 or s.empty?
-      chars << s[chars.length]
-      chars << get_escape(s[(chars.length)..-1]) if chars.end_with?(@escape_character) and chars.length < s.length # might end with an escape char
+      break if count < 1 or sptr == slen
+      if s[sptr] == @escape_character and sptr < slen - 1 # line could end with escape char
+        sptr = get_escape_end_pos(s, offset: sptr)
+      end
+      sptr += 1
       count -= 1
     end
-    chars
+    sptr - 1
   end
 
   # return one input escape sequence.
   # may be \P, \fP, \*n, \*(nn, \h'|\n(xx+\w'this sucks..'u+3m', etc.
 
-  def get_escape(s)
-    esc = s[0]
-    esc << case esc
-           when '"'                     then s[1..-1]
-           when 'z'                     then get_printing_char(s[1..-1])
-           when '('                     then get_char(s[1..-1], count: 2)
-           when 'n'                     then get_reg_str(s[1..-1])
-           when 'f', 'g', 'k', '*'      then get_def_str(s[1..-1])
-           when 's'                     then get_size_str(s[1..-1])
-           when 'b', 'h', 'l', 'o', 'v', 'w', 'x',
-                'D', 'H', 'L', 'S'      then get_quot_str(s[1..-1])
-           else ''
-           end
-    esc
+  def get_escape(s, offset: 0)
+    s[offset..get_escape_end_pos(s, offset: offset)]
+  end
+
+  def get_escape_end_pos(s, offset: 0)
+    return offset unless escapes?
+    case s[offset + 1]
+    when '"'                 then return s.length - 1 # comment
+    when 'z'                 then get_printing_char_end_pos(s, offset: offset + 2)
+    when '('                 then get_char_end_pos(s, offset: offset + 2, count: 2)
+    when 'n'                 then get_reg_str_end_pos(s, offset: offset + 2)
+    when 'f', 'g', 'k', '*'  then get_def_str_end_pos(s, offset: offset + 2)
+    when 's'                 then get_size_str_end_pos(s, offset: offset + 2)
+    when 'b', 'h', 'l', 'o',
+         'v', 'w', 'x', 'D',
+         'H', 'L', 'S'       then get_quot_str_end_pos(s, offset: offset + 2)
+    else offset + 1          # any other escaped character
+    end
   end
 
   # return one definition
   # either a single character, or a two-character definition preceeded by (
   # as accepted by \f, \g, \k, \*, \(, etc.
-  # \n may have a + or - in front of the register name
 
-  def get_def_str(s)
-    req = get_char(s)
-    n = 1
-    req << get_char(s[n..-1], count: 2) if req.end_with? '('
-    req
+  def get_def_str(s, offset: 0)
+    s[offset..get_def_str_end_pos(s, offset: offset)]
+  end
+
+  def get_def_str_end_pos(s, offset: 0)
+    s[offset] == '(' ? get_char_end_pos(s, offset: offset + 1, count: 2) : get_char_end_pos(s, offset: offset)
   end
 
   # return one register
   # either a single character, or a two-character definition preceeded by (
   # may have a + or - in front of the register name
 
-  def get_reg_str(s)
-    req = get_char(s)
-    n = 1
-    req << get_char(s[n]) and n = 2 if %[- +].include? req
-    req << get_char(s[n..-1], count: 2) if req.end_with? '('
-    req
+  def get_reg_str(s, offset: 0)
+    s[offset..get_reg_str_end_pos(s, offset: offset)]
+  end
+
+  def get_reg_str_end_pos(s, offset: 0)
+    get_def_str_end_pos(s, offset: (s[offset] == '+' or s[offset] == '-') ? offset + 1 : offset)
   end
 
   # return one size
@@ -86,13 +97,13 @@ class Troff
   #            \s0 returns to previous size. \s03 is parsed as \s0 and 3 is copied.
   #            \s+10 is parsed as \s+1 and 0 is copied
 
-  def get_size_str(s)
-    siz = s.slice!(0, get_char(s).length)
-    return siz if %w(0 4 5 6 7 8 9).include?(siz)
-    #max_digits = 1 if siz.match?(/^\d/)
-    next_char = get_char(s)
-    siz << next_char if next_char.match?(/^\d$/)
-    siz
+  def get_size_str(s, offset: 0)
+    s[offset..get_size_str_end_pos(s, offset: offset)]
+  end
+
+  def get_size_str_end_pos(s, offset: 0)
+    return offset if s[offset].start_with?('0', '4', '5', '6', '7', '8', '9') or !s[offset + 1].match?(/\d/)
+    offset + 1
   end
 
   # get a quoted string
@@ -103,75 +114,79 @@ class Troff
   # to avoid getting tripped up by escaped quotes, or embedded
   # escapes also using the same quote character.
 
-  def get_quot_str(s)
-    endchar = get_char(s)
-    req = endchar.dup # attend!
-    n = req.length
+  def get_quot_str(s, offset: 0)
+    s[offset..get_quot_str_end_pos(s, offset: offset)]
+  end
+
+  def get_quot_str_end_pos(s, offset: 0)
+    endchar = get_char(s, offset: offset)
+    sptr = offset + endchar.length
     begin
-      nextchar = get_char(s.slice(n..-1)) # REVIEW is .slice redundant
-      if nextchar == '' # we ran out of characters, probably due to a defect in the source (e.g. ex(1) [GL2-W2.3])
-        warn "get_quot_str ran out of characters in #{s.inspect} looking for matching quote"
-        return req
+      nextchar = get_char(s, offset: sptr)
+      if !nextchar or nextchar == '' # we ran out of characters, probably due to a defect in the source (e.g. ex(1) [GL2-W2.3])
+        warn "get_quot_str : ran out of characters in #{s[offset..-1].inspect} looking for matching quote #{endchar.inspect}"
+        return sptr
       end
-      n += nextchar.length
-      req << nextchar
+      sptr += nextchar.length
     end until nextchar == endchar
-    req
+    sptr - 1
   end
 
   # get one printing character
   # used for \z to collect font changes, vertical shifts, whatever,
   # plus the one printing character that will be output as non-spacing
 
-  def get_printing_char(s)
-    req = String.new
+  def get_printing_char(s, offset: 0)
+    s[offset..get_printing_char_end_pos(s, offset: offset)]
+  end
+
+  def get_printing_char_end_pos(s, offset: 0)
+    sptr = offset
     loop do
-      c = get_char s
+      c = get_char(s, offset: sptr)
+      sptr += c.length
       break unless c.start_with?(@escape_character) and %w[d f k r s u v x].include?(c[1])
-      req << s.slice!(0, c.length)
     end
-    req << s.slice!(0, get_char(s).length)
+    sptr
   end
 
   # get one expression
   # used for \l to read a width, .if, etc.
 
   def get_expression(s)
-    #s.scan(%r(^[-|]?[\d.cimnPpuv]+|[-+/*%<>=&:]+)).first
-    tok = String.new
-    n = get_num_expr(s)
-    return tok unless n
-    s.slice!(0, n.length)
-    tok << n
+    strpos = 0
+    strlen = s.length
+    n = get_num_expr(s[strpos..-1])
+    return n if n.empty?
+    strpos += n.length
 
-    loop do
-      op = get_oper_expr(s)
+    until strpos == strlen do
+      op = get_oper_expr(s[strpos..-1])
       break unless op
-      s.slice!(0, op.length) # might be zero if we're forcing into a (
+      strpos += op.length # might be zero if we're forcing into a (
 
-      e = get_num_expr(s)
+      e = get_num_expr(s[strpos..-1])
       break unless e
-      s.slice!(0, e.length)
-      tok << op
-      tok << e
+      strpos += e.length
     end
-    tok
+    s[0, strpos]
   end
 
   # signed magnitude number or parenthesized numeric expression
   def get_num_expr(s)
-    n = s.scan(%r(^(?:[-+]*(?:\d*\.?\d+)|[-+]*(?=\()))).first
-    return nil unless n
-    pos = n.length
-    if s[pos] == '('
-      n = String.new # need to clear the magnitude in case the whole thing is a bust
-      e = get_expression(s[(pos + 1)..-1])
-      return n unless e
-      backpos = pos + e.length + 1
-      n << "#{s[0..backpos]}" if s[backpos] == ')'
+    n = s.scan(%r(^[-+]*(?:\d*\.?\d+|(?=\()))).first
+    return String.new unless n
+    strpos = n.length
+    strlen = s.length
+    return s[0, strpos] if strpos == strlen
+    if s[strpos] == '('
+      e = get_expression(s[(strpos + 1)..-1])
+      return s[0, strpos] unless e
+      backpos = strpos + e.length + 1
+      strpos = backpos + 1 if s[backpos] == ')'
     end
-    u = get_unit_expr(s[n.length..-1]) # optional unit
-    "#{n}#{u}"
+    strpos += 1 if strpos < strlen and get_unit_expr(s[strpos]) # optional unit
+    s[0, strpos]
   end
 
   def get_oper_expr(s)

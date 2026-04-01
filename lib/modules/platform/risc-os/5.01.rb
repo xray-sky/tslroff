@@ -23,8 +23,8 @@ class RISC_os::V5_01
         define_singleton_method :retarget_symlink, method(:retarget_symlink_prom)
       when /1prom$/
         @manual_entry = @source.file.sub(/\.1prom$/, '')
+      # have section as 'entry(1 LOCAL)'
       when 'newsetup.1', 'newsgroups.1', 'patch.1', 'Pnews.1', 'Rnmail.1'
-        # have section as 'entry(1 LOCAL)'
         @title_detection = %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:\s(?<systype>\S+?))?\))}
       when 'tty.4' # there are two
         @title_detection = %r{^(?<manentry>(?<cmd>\S+?)\((?<section>4(?:spp)?)(?:-(?<systype>\S+?)|" " " ")?\))\s.+?\s\k<manentry>$}
@@ -38,18 +38,18 @@ class RISC_os::V5_01
       super.sub(/\S+$/, 'UMIPS RISC/os 5.01')
     end
 
-    # writes link into new directory; otherwise, same as Manual::retarget_symlink
+    # writes link into new directory; otherwise, same as Manual::retarget_symlink FIX FIX
     def retarget_symlink_prom
       link_dir = Pathname.new @source.dir
       target_dir = Pathname.new File.dirname(@symlink)
-      real_target = File.realpath("#{link_dir}/#{@input_filename}")
+      real_target = File.realpath("#{link_dir}/#{@source.file}")
 
       if (link_dir + target_dir) == link_dir and File.file?(real_target)
-        target_entry = Manual.new(real_target, @platform, @version)
-        return { link: "../man1m/#{@manual_entry}.html",
+        target_entry = Manual.new(real_target, @platform, @version) # FIX
+        return { link: "../man1m/#{@source.file}.html",
                  target: "../man1prom/#{target_entry.manual_entry}.html" }
       end
-      warn "encountered unsupported link type, #{link_dir}/#{@input_filename} => #{@symlink}"
+      warn "encountered unsupported link type, #{link_dir}/#{@source.file} => #{@symlink}"
     end
 
   end

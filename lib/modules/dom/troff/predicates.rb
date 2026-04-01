@@ -1,17 +1,17 @@
+# frozen_string_literal: true
+#
 # predicates.rb
 # ---------------
 #    Troff predicate routines
 # ---------------
-#
-# frozen_string_literal: true
 #
 
 class Troff
 
   private
 
-  def nobreak?
-    @break_suppressed
+  def request?(req)
+    REQUESTS.include? req
   end
 
   def broke?
@@ -21,6 +21,10 @@ class Troff
     return true if @current_block.text[-2].is_a?(LineBreak) and @current_block.terminal_text_obj.empty?.tap{ |n| "last is empty? #{n.inspect}" }
     return true if @current_block.text[-2].is_a?(VerticalSpace) and @current_block.terminal_text_obj.empty?
     false
+  end
+
+  def nobreak?
+    @break_suppressed
   end
 
   def adj?

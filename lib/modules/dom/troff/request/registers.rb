@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # nr.rb
 # -------------
 #   troff
@@ -165,11 +167,11 @@ class Troff
     attr_accessor :value, :format, :increment
     def_delegators :@value, :zero?, :>, :<, :<=, :>=, :==, :-@, :to_f, :to_i, :to_int
 
-    @@alpha_map = [ [0], 'a'..'z', 'aa'..'zz', 'aaa'..'zzz' ].map(&:to_a).flatten
-    @@roman_map = [ [ '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix' ],
-                    [ '', 'x', 'xx', 'xxx', 'xl', 'l', 'lx', 'lxx', 'lxxx', 'xc' ],
-                    [ '', 'c', 'cc', 'ccc', 'cd', 'd', 'dc', 'dcc', 'dccc', 'cm' ],
-                    [ '', 'm', 'mm', 'mmm' ] ]
+    ALPHA_MAP = [ [0], 'a'..'z', 'aa'..'zz', 'aaa'..'zzz' ].map(&:to_a).flatten.freeze
+    ROMAN_MAP = [ [ '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix' ],
+                  [ '', 'x', 'xx', 'xxx', 'xl', 'l', 'lx', 'lxx', 'lxxx', 'xc' ],
+                  [ '', 'c', 'cc', 'ccc', 'cd', 'd', 'dc', 'dcc', 'dccc', 'cm' ],
+                  [ '', 'm', 'mm', 'mmm' ] ].freeze
 
     def initialize(value = 0, increment = 0, ro: false)
       self.value = value
@@ -212,15 +214,15 @@ class Troff
       when '1'     then @value.to_s
       when /(\d+)/ then sprintf("%0#{Regexp.last_match(1).length}d", @value)
       when /(a)/i
-        Regexp.last_match(1) == 'A' ? @@alpha_map[@value].upcase : @@alpha_map[@value]
+        Regexp.last_match(1) == 'A' ? ALPHA_MAP[@value].upcase : ALPHA_MAP[@value]
       when /(i)/i
         return '0' if @value.zero?
         ord = 0
-        val = ''
+        val = String.new
         num = @value.to_s
-        while digit = num[-1] do
+        while digit = num[-1] do # REVIEW why am I doing this in reverse order??
           begin
-            val.prepend(@@roman_map[ord][digit.to_i])
+            val.prepend(ROMAN_MAP[ord][digit.to_i])
             num.chop!
             ord += 1
           rescue NoMethodError => e

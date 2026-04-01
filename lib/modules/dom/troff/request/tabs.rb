@@ -117,7 +117,7 @@ class Troff
 
   def ta(argstr = '', breaking: nil)
     args = argstr.split
-    @tabstops = Array.new
+    @tabstops = []
     while args.any? do
       stop = args.shift
       stop.prepend("#{@tabstops.last || 0}u") if stop.start_with?('+')

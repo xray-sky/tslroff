@@ -88,9 +88,6 @@ class Troff
   #                                           previous font.
 
   def ft(argstr = '', breaking: nil)
-    # tolerate having been called as \f(..
-    #f = (argstr.start_with?('(') and __callee__ == :esc_f) ? argstr[1..2].strip : argstr[0..1].strip
-
     f = argstr[0..1].strip
     pos = case f
           when 'P', '' then @previous_fp
@@ -103,12 +100,6 @@ class Troff
     activate_font
     ''
   end
-
-  def esc_f(argstr = '')
-    ft argstr.start_with?('(') ? argstr[1..2] : argstr[0]
-  end
-
-  #alias :esc_f :ft
 
   # Request       Initial   If no     Notes   Explanation
   #  form          value    argument

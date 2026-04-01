@@ -1,9 +1,9 @@
+# frozen_string_literal: true
+#
 # getargs.rb
 # ---------------
 #    Troff.getargs source
 # ---------------
-#
-# frozen_string_literal: true
 #
 # there's a lot going on here.
 #
@@ -37,49 +37,52 @@
 #
 # good.
 #
-# TODO details in §7.3 (including "arguments are copied in copy mode onto a stack")
+# Interactive makes it pretty clear that we process the args in copymode first, _then_ split them up
+# and also that double quotes need preserving into .ds
+# it APPEARS as though double quotes are only lost passing args to macros??
+# - I guess that helps with .if/.ie argparsing but it means I need to take care about macros vs. requests!
 #
 
 class Troff
 
   private
 
-  def getargs(str)
+  def getargs(s)
+    argc = 0
     args = []
-    #argstr = str.sub(%r{\s*\\".*$}, '')	# kill any comments => usr/athena/etc/tmac.h [AOS-4.3]
-    # Interactive makes it pretty clear that we process the args in copymode first, _then_ split them up
-    # and also that double quotes need preserving into .ds
-    # it APPEARS as though double quotes are only lost passing args to macros??
-    # - I guess that helps with .if/.ie argparsing but it means I need to take care about macros vs. requests!
-    #argstr = __unesc_w(unescape(str.sub(%r{\s*\\".*$}, ''), copymode: true)) # TODO programmable escape char / disabled escapes
-    argstr = __unesc_w(unescape(str, copymode: true)) # already removed trailing space and comments in parse()
-    until argstr.empty?
-      # eat leading space
-      arg = argstr.slice!(0, get_char(argstr).length)
+
+    # we will lose trailing whitespace as a natural consequence of parsing
+    sptr = 0
+    slen = s.length
+    while sptr < slen
+      arg = get_char s, offset: sptr
+      sptr += arg.length
       case arg
-      when ' ' then next
-      when '"'
+      when ' ' then next # whitespace delimited
+      when '"' # quoted arg
         arg = String.new # these double quotes don't copy
         loop do
-          break if argstr.empty?
-          chr = get_char(argstr)
+          break if sptr == slen # may be terminated by end of line
+          chr = get_char s, offset: sptr
           if chr == '"'
-            argstr.slice!(0) # eat this double quote
-            break if get_char(argstr) != '"' # pairs of double quotes inside double quoted args
+            (sptr += 1 and break) unless (s[sptr + 1] == '"' and sptr += 1) # pairs of double quotes inside double quoted args
           end
-          arg << argstr.slice!(0, chr.length)
+          arg << s[sptr, chr.length]
+          sptr += chr.length
         end
       else
         loop do
-          break if argstr.empty?
-          chr = get_char(argstr)
-          break if chr == ' '
-          arg << argstr.slice!(0, chr.length)
+          break if sptr == slen
+          chr = get_char s, offset: sptr
+          (sptr += 1 and break) if chr == ' '
+          arg << s[sptr, chr.length]
+          sptr += chr.length
         end
       end
+      argc += 1
       args << arg
     end
-    @register['.$'].value = args.count
+    @register['.$'].value = argc
     args
   end
 

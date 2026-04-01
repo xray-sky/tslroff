@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # lg.rb
 # -------------
 #   troff

@@ -11,7 +11,7 @@
 require_relative '../../ext/file/magic'
 
 class Source
-  attr_reader :path, :lines, :magic, :dir, :file
+  attr_reader :dir, :file, :path, :magic, :iter, :line_number #, :lines
 
   def initialize(file, magic: nil, encoding: nil, record_separator: $/, &block)
     @path = file
@@ -25,11 +25,19 @@ class Source
                IO.readlines(stream_decompress, record_separator, external_encoding: encoding, internal_encoding: Encoding::UTF_8)
              end
 
+    @line_number = 0
+    @iter = @lines.each
+
     @magic = magic || infer_magic
   end
 
   def link?
     !@target.nil?
+  end
+
+  def next_line
+    @line_number += 1
+    @iter.next
   end
 
   ###

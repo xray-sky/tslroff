@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # tmac.an.rb
 #
 #   man page macros
@@ -32,7 +34,8 @@ class Troff
       def tmac_an_fontreq1(*args)
         ft "#{@font_positions[__callee__.to_s]}"
         if args.any?
-          parse("\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}")
+          # trailing spaces from extra args which might be empty - parse this instead of converting to ruby
+          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}".+@
           #send '}N' # see note re: \n()E below
           send '}f'
         else
@@ -49,7 +52,8 @@ class Troff
         a = req[0]
         b = req[1]
 
-        parse %(.}S #{@font_positions[a]} #{@font_positions[b]} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
+        # trailing spaces from extra args which might be empty - parse this instead of converting to ruby
+        parse %(.}S #{@font_positions[a]} #{@font_positions[b]} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}").+@
       end
 
       alias :RI :tmac_an_fontreq2
@@ -316,7 +320,8 @@ class Troff
       def SM(*args)
         ps "#{Font.defaultsize - 1}"
         if !args[0]&.empty?
-          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
+          # trailing spaces from extra args which might be empty - parse this instead of converting to ruby
+          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}".+@
           send '}f'
         else
           it('1 }f')
@@ -391,10 +396,9 @@ class Troff
 
       def TP(indent = nil, *_args)
         warn "pointlessly received extra arguments to .TP #{_args.inspect} - why??" unless _args.empty?
-        indent = nil if indent == '&'	# TODO: ??? -- this isn't a special case, it's just an invalid expression. REVIEW does our expression handling cover it now?
+        #indent = nil if indent == '&'	# TODO: ??? -- this isn't a special case, it's just an invalid expression. REVIEW does our expression handling cover it now?
                                         # it will automatically when we fix .nr to abort non-numeric and make this follow tmac.an
         # can't do this anymore, after rewriting the req/macro parsing to work with Interactive
-        # TODO probably ought to eventually rewrite closer to actual tmac.an with \n()E, .ns, .di, and .}N
         #it('1', :finalize_TP, indent)
         @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
         it '1 }1'
@@ -402,8 +406,6 @@ class Troff
         @current_block = Block::Bare.new # for receiving the tag text
       end
 
-      #def finalize_TP(indent)
-      #  @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
       define_method '}1' do |*_args|
         tag = @current_block.text
         @current_block = @document.last

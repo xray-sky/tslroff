@@ -1,9 +1,9 @@
+# frozen_string_literal: true
+#
 # expressions.rb
 # ---------------
 #    Troff conversions and expressions
 # ---------------
-#
-# frozen_string_literal: true
 #
 #   §1.3
 #
@@ -98,66 +98,60 @@ class Troff
     # (like ',') and disregards everything after one. not sure what to return though
     # if the entire expression is disregarded. REVIEWED. zero? - yes.
     # REVIEW does it depend on .nr or other places expressions accepted??
-    str.sub!(%r{[^-+()\d.cimnPpuv/*%<>=&:].*$}, '') and warn "disregarding extra chars in numeric expression #{Regexp.last_match[0].inspect}"
-    return String.new('0') if str.empty? # everything was rejected as invalid - temporary unfrozen before rewriting expr parsing
+    expr = get_expression str
+    #return String.new('0') if expr.empty? # unfrozen - REVIEW do we need it to be
+    return '0' if expr.empty? # frozen - REVIEW do we need it not to be
 
-    # prepend '0u+' and treat '+-'/'--' (not valid in a troff expression) as '-'/'+'
-    # in order to avoid having to differentiate between '-' as subtraction vs. negation
-    str.prepend('0u') if str.match(/^[+-]/)
-    str = str.gsub('+-', '-')
-             .gsub('--', '+')
-             .gsub('++', '+')
-             .gsub(/=-([\d.]+?[cimnPpuv]?)/, "=(-\\1)")
+    l = expr.length
+    warn "disregarding extra chars #{str[l..-1]} following numeric expression #{expr}" if l < str.length
 
-    # try to break down the expression
-    # start with parens; work inside -> out
-    while str.include?('(') do
-      (a,b,_c) = str.partition(')')
-      (x,_y,z) = a.rpartition('(')
-      str.sub!("#{a}#{b}", "#{x}#{to_u z, default_unit: default_unit}u")
+    # this logic mirrors tokenize get_expression
+    units = %w[u i c P p m n v].freeze
+    strpos = 0
+    strlen = expr.length
+    val = 0
+    n = get_num_expr(expr[strpos..-1])
+    return val unless n
+    unit = n.end_with?(*units) ? n[-1] : default_unit
+    strpos += n.length
+    val += if n.start_with? '('
+             lhs = to_u n[1..(n.end_with?(')') ? -2 : -3)], default_unit: default_unit
+             to_u(lhs, default_unit: unit).to_i
+           else
+             case unit
+             when 'u'  then n.to_i
+             when 'i'  then n.to_f * @@units_per_inch
+             when 'c'  then n.to_f * @@units_per_inch * 50 / 127
+             when 'P'  then n.to_f * @@units_per_inch / 6
+             when 'p'  then n.to_f * @@units_per_inch / 72
+             when 'm'  then n.to_f * @register['.s'].to_f * @@units_per_inch / 72
+             when 'n'  then n.to_f * @register['.s'].to_f * @@units_per_inch / 144
+             when 'v'  then n.to_f * @register['.v'].to_f
+             # non-Troff unit for use with Selenium results -- must be accessed with :default_unit
+             when 'px' then n.to_f * @@units_per_inch / @@pixels_per_inch
+             end
+           end.round
+
+    # TODO troff allows e.g. ----9 = 9 or 9--9 = 18
+    # REVIEW presumably also ++++9 = 9 etc.
+
+    until strpos == strlen do
+      op = get_oper_expr(expr[strpos..-1])
+      break unless op
+      strpos += op.length # might be zero if we're forcing into a (
+
+      e = get_num_expr(expr[strpos..-1])
+      break unless e
+      strpos += e.length
+      rhs = to_u(e, default_unit: default_unit).to_i
+      val = case op
+            when '=' then val.send('==', rhs) ? 1 : 0
+            when ':' then val.send('||', rhs) ? 1 : 0
+            when '&' then val.send('&&', rhs) ? 1 : 0
+            else val.send(op, rhs)
+            end
     end
-
-    # tokenize the result
-    operands = str.scan(%r([\d.cimnPpuv]+|[-+/*%<>=&:]+)) # TODO somewhere in here I'm getting ==- as an operator (as in 10==-1 - end result works as it throws an exception and is rejected by if)
-
-    # we need to be tolerant of garbage in - e.g. text passed as indent to .IP which may look a little like an expression
-    # example - hpterm(1) [HPUX 10.20] line 733
-    # example - cc(1) [OSF/1 3.0] line 954 (.VL 3m and def of VL attempts to .nr $1n giving .nr 3mn)
-    operand = operands.shift.match(/^([\d.]+)([cimnPpuv]?)/)
-    return String.new('0').tap { warn "garbage in evaluating expression #{str.inspect}" } unless operand # temporary unfrozen before rewriting expr parsing
-
-    (magnitude, unit) = operand[1..2]
-    unit = default_unit if unit.empty?
-
-    lhs = case unit
-          when 'u'  then magnitude.to_i
-          when 'i'  then magnitude.to_f * @@units_per_inch
-          when 'c'  then magnitude.to_f * @@units_per_inch * 50 / 127
-          when 'P'  then magnitude.to_f * @@units_per_inch / 6
-          when 'p'  then magnitude.to_f * @@units_per_inch / 72
-          when 'm'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 72
-          when 'n'  then magnitude.to_f * @register['.s'].to_f * @@units_per_inch / 144
-          when 'v'  then magnitude.to_f * @register['.v'].to_f
-          # non-Troff unit for use with Selenium results -- must be accessed with :default_unit
-          when 'px' then magnitude.to_f * @@units_per_inch / @@pixels_per_inch
-          end.to_i
-
-    while operands.any?
-      op = case o = operands.shift
-           when '=' then '=='
-           when ':' then '||'
-           when '&' then '&&'
-           else o
-           end
-      rhs = to_u(operands.shift, default_unit: default_unit).to_i
-      # can't just send logical and/or - ruby doesn't have c-style numeric truth
-      # also && and || are not methods!
-      lhs = %w[|| &&].include?(op) ? eval("#{lhs > 0} #{op} #{rhs > 0}") : lhs.send(op, rhs)
-      lhs = 1 if lhs == true
-      lhs = 0 if lhs == false
-    end
-
-    lhs.to_s
+    val.to_s
   end
 
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # motion.rb
 # -------------
 #   troff
@@ -47,7 +49,7 @@ class Troff
 
   def esc_h(s)
     quotechar = Regexp.quote(get_char(s))
-    req_str = __unesc_w(__unesc_n(s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1'))) # we may have come here without having getargsed
+    req_str = __unesc_w(s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')) # we may have come here without having getargsed
     if req_str.match?(/^[-\w.]+/)
       warn "horizontal motion: #{req_str.inspect}"
       new_style = Style.new(@current_block.terminal_text_style.dup)
@@ -74,7 +76,7 @@ class Troff
     else
       warn "don't know how to \\h #{req_str.inspect}"
     end
-    ''
+    String.new
   end
 
 #   \k - store horizontal position
@@ -94,7 +96,7 @@ class Troff
     @register[s] = Register.new(0)
     @register[s].value = typesetter_width(block).to_i unless block.to_s.empty?
     warn "\\k stored #{@register[s].value} in #{s}"
-    ''
+    String.new
   end
 
 #   \r - reverse (up) 1 em vertical motion
@@ -146,6 +148,6 @@ class Troff
     else
       warn "don't know how to \\v #{req_str.inspect}"
     end
-    ''
+    String.new
   end
 end

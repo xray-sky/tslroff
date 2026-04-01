@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # rm.rb
 # -------------
 #   troff
@@ -81,25 +83,6 @@
 #
 
 class Troff
-  def as(argstr = '', breaking: nil)
-    return nil if argstr.empty?
-    name = argstr[0..1].rstrip
-    defstr = argstr[2..-1].sub(/^ *"?/, '') # don't lstrip, a leading tab is preserved
-
-    @named_strings[name] ||= String.new
-    @named_strings[name] << defstr
-    #warn "appended to named string #{name.inspect}: #{@named_strings[name].inspect}"
-  end
-
-  def ds(argstr = '', breaking: nil)
-    return nil if argstr.empty?
-    name = argstr[0..1].rstrip
-    defstr = argstr[2..-1].sub(/^ *"?/, '') # don't lstrip, a leading tab is preserved
-
-    @named_strings[name] = defstr
-    #warn "defined string #{name} as #{@named_strings[name].inspect}" if name.start_with? '%'
-  end
-
   def am(argstr = '', breaking: nil)
     return nil if argstr.empty?
     name = argstr[0..1].rstrip
@@ -140,6 +123,16 @@ class Troff
       warn ".am couldn't find #{name} to append - delegating to .de"
       de "#{name} #{delim}", breaking: nil
     end
+  end
+
+  def as(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    name = argstr[0..1].rstrip
+    defstr = argstr[2..-1].sub(/^ *"?/, '') # don't lstrip, a leading tab is preserved
+
+    @named_strings[name] ||= String.new
+    @named_strings[name] << defstr
+    #warn "appended to named string #{name.inspect}: #{@named_strings[name].inspect}"
   end
 
   def de(argstr = '', breaking: nil)
@@ -183,19 +176,18 @@ class Troff
 
     define_singleton_method(name) do |*args|
       olines = @lines
-      ofile = @input_filename.dup
       opos = @register['.c'].dup
       odol = @register['.$'].dup
       ochain = @so_chain.dup
       @register['.$'] = Register.new(args.count, nil, :ro => true)
       @register['.c'] = Register.new(0, 1, :ro => true)
-      @so_chain ||= ''
+      @so_chain ||= String.new
       @so_chain << " [#{opos}] => #{__callee__}"  # TODO still awkward, at least functional for now
       @lines = macro.each
 
       loop do
         begin
-          parse next_line.gsub(/(\s*)#{Regexp.quote(@escape_character)}\$(\d)/) {
+          parse next_line.gsub(/(\s*)#{Regexp.quote(@escape_character || '')}\$(\d)/) { # TODO REVIEW rcsfile.5:182 [DU 3.2c] does .de with escapes disabled??
             arg = args[$2.to_i - 1]
             (arg.nil? or arg.empty?) ? '' : $1+arg
           }#.tap { |n| warn "parsing #{n.inspect}" }
@@ -210,6 +202,14 @@ class Troff
       @register['.c'] = opos
 
     end
+  end
+
+  def ds(argstr = '', breaking: nil)
+    return nil if argstr.empty?
+    name = argstr[0..1].rstrip
+    defstr = argstr[2..-1].sub(/^ *"?/, '') # don't lstrip, a leading tab is preserved
+
+    @named_strings[name] = defstr
   end
 
   def rm(argstr = '', *args, breaking: nil)

@@ -168,7 +168,12 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
   pagecount = 0
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
-  RubyProf.start if ENV['RUBY_PROFILE']
+
+  if ENV['RUBY_PROFILE']
+    prof = RubyProf::Profile.new
+    prof.start
+  end
+
   fl.each do |src|
     next if File.directory?(src)
     next if limit and !File.basename(src).match?(limit)
@@ -178,13 +183,19 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     pagecount += 1
     manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args)
   end
+
   if ENV['RUBY_PROFILE']
-    profile_results = RubyProf.stop
+    profile_results = prof.stop
     RubyProf::FlatPrinter.new(profile_results).print($stdout)
-    RubyProf::GraphPrinter.new(profile_results).print($stdout, {})
+    #RubyProf::GraphPrinter.new(profile_results).print($stdout, {})
+    #RubyProf::GraphHtmlPrinter.new(profile_results).print(File.open "graph.html", "w")
   end
-  warn Troff.webdriver.cache_stats if Troff.webdriver
-  Troff.webdriver.persist_cache
+
+  if Troff.webdriver
+    warn Troff.webdriver.cache_stats
+    Troff.webdriver.persist_cache
+  end
+
   pagecount
 end
 
@@ -196,24 +207,38 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {})
   k = Kernel.const_defined?("#{vendor_class}::Manual") ? Kernel.const_get("#{vendor_class}::Manual") : ::Manual
   man = k.new source, vendor_class: vendor_class, source_args: source_args
   page = man.to_html
+
   title = man.manual_entry || srcfile.tap { |x| warn "falling back to src filename #{x.inspect} (no title)" }
   title = srcfile and warn "falling back to src filename #{srcfile.inspect} (title empty)" if title.empty?
-  section = man.manual_section
-  # can't find section? output to parent dir
-  # TODO busted as hell for HTML, Aegis help, etc.
-  #      need to maintain some extra structure, not force man*/, etc.
-  #odir = (section and !section.empty?) ? "#{pubdir}/man#{section.downcase}" : "#{pubdir}"
-  odir = "#{pubdir}/#{man.output_directory}"
-  related = man.magic == :HTML ? [] : Nokogiri::HTML(page).search('a[@href]') # TODO better
-
-  directory(odir).invoke
-  taskcontext = binding
   # prevent these from masking the apache file index (TODO not necessary once we are building our own indices)
   title = '_index'   if title == 'index'   and man.magic != :HTML
   title = '_default' if title == 'default' and man.magic != :HTML
+
+  # TODO better - indexing
+  related = []
+  indexing = []
+  unless man.magic == :HTML
+    html = Nokogiri::HTML(page)
+    indexing = html.search('p[@class="name"]').map do |e|
+      # how to about??
+      # looks like Nokogiri.text() gives us the UTF-8 character rather than the HTML entity...
+      # REVIEW maybe this should be created during text processing and queryable from the
+      #        man object, so we can do something overrideable by vendor class. for now though.
+      #        also how regular is this going to be?? catman -w known to have crazy results for
+      #        ill formed manual entries so it's not solely an us problem.
+      (names, _sep, descr) = e.text.strip.partition(/\s*(?:-|−)\s*/)
+      [names, descr]
+    end
+    related = html.search('a[@href]')
+  end
+
+  odir = "#{pubdir}/#{man.output_directory}"
+  directory(odir).invoke
+  taskcontext = binding
   File.open("#{odir}/#{title}.html", File::CREAT | File::TRUNC | File::WRONLY, 0o644) do |f|
     f.write ERB.new(TEMPLATE, trim_mode: '-').result(taskcontext)
   end
+
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"
 rescue StopIteration, FileIsEmptyError, IOError, SystemCallError => e

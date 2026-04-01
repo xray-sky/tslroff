@@ -72,7 +72,7 @@ class HPUX::V9_05
     end
 
     def TH(*args)
-      ds "]W #{__unesc_star('\\*(]V')}"
+      ds "]W #{send '__unesc_*', '\\*(]V'}"
       ds "]O #{args[2]}"
       ds "]L #{args[3]}"
       ds "]J #{args[4]}"

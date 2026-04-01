@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # registers.rb
 # -------------
 #   troff
@@ -17,11 +19,11 @@ class Troff
 
   def esc_g(s)
     warn "use of \\g - #{s.inspect} (check)"
-    s.slice!(0) if s.start_with?('(')
-    if @register[s]
-      @register[s].format
+    reg = s.start_with?('(') ? s[0..1] : s[0]
+    if @register[reg]
+      @register[reg].format
     else
-      warn "unselected number register #{s} from #{s.inspect}"
+      warn "\\g : unselected number register #{reg} from #{reg.inspect}"
       0
     end.to_s
   end
@@ -37,15 +39,14 @@ class Troff
            when '+' then pos += 1 and :incr
            when '-' then pos += 1 and :decr
            end
-    pos += 1 if s[pos] == '('
-    s = __unesc_star(__unesc_n(s[pos..-1]))
+    reg = s[pos] == '(' ? s[pos + 1, 2] : s[pos]
 
     # I think we can get away with relying on the @register default value
     # but let's keep the diagnostic for now.
     #warn "unselected number register #{s.inspect} - using 0" unless @register.key?(s)
 
-    @register[s].send(incr).tap { warn "auto incrementing register #{s.inspect}" } if incr
-    @register[s].to_s
+    @register[reg].send(incr).tap { warn "auto incrementing register #{reg.inspect}" } if incr
+    @register[reg].to_s
   end
 
 end

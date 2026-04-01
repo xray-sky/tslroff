@@ -13,6 +13,8 @@ class HPUX
   module RSML
 
     def self.extended(k)
+      # multiple-inclusion guard - prevent recursive re-def of PP
+      #return if k.instance_variable_get(:@register)['!r'].value == 1
       #k.send :nr, '!r 1'
       k.send :nr, 'Ll 0 1'
       k.send :nr, '$A 0 1'
@@ -61,7 +63,7 @@ class HPUX
       nr '$V +1'
       rS "#{@register["%#{@register['Ll']}"]}u" if @register['Ll'] > 0
       nr 'Ll +1'
-      nr(args[0]&.empty? ? "%#{@register['Ll']} 1i" : "%#{@register['Ll']} #{args[0]}n")
+      nr("#{args[0]}".empty? ? "%#{@register['Ll']} 1i" : "%#{@register['Ll']} #{args[0]}n")
       ds "##{@register['Ll']} V"
     end
 
@@ -146,7 +148,7 @@ class HPUX
 
     def SP(*args)
       br
-      nr(args[0]&.empty? ? "|Q #{args[0]}v" : "|Q #{@register['PD']}u")
+      nr("#{args[0]}".empty? ? "|Q #{args[0]}v" : "|Q #{@register['PD']}u")
       nr '|A 0' unless @register['nl'] == @register['|B']
       nr "|Q -#{@register['|A']}u"
       if @register['|Q'] > 0

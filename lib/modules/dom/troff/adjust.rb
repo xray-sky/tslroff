@@ -1,9 +1,9 @@
+# frozen_string_literal: true
+#
 # adjust.rb
 # ---------------
 #    Troff adjustments methods
 # ---------------
-#
-# frozen_string_literal: true
 #
 
 class Troff

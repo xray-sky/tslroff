@@ -38,11 +38,11 @@ class HTML < TextFormatter
     @structured_source = Nokogiri::HTML @source.lines.join
   end
 
-  def input_line_number
-    '*'
-  end
+  #def input_line_number
+  #  '*'
+  #end
 
-  # default behavior: flatten
+  # default behavior: flatten, single level
   def output_directory
     ''
   end

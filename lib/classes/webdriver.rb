@@ -90,6 +90,7 @@ class WebDriver
 
   def persist_cache
     return unless @cache_backing_file
+    puts "Webdriver: persisting #{@cache.count} cache entries"
     f = Zlib::GzipWriter.new File.new(@cache_backing_file, 'w')
     f.write Marshal.dump(@cache)
     f.close

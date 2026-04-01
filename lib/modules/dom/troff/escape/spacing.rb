@@ -122,7 +122,7 @@ class Troff
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
 
     space = to_u(req_str, default_unit: 'v').to_i
-    return '' if space.zero?
+    return String.new if space.zero?
 
     warn "trying to \\x#{space} - (\\#{req_str.inspect})"
     #container = Text.new(font: output.terminal_font.dup, style: output.terminal_text_style.dup)

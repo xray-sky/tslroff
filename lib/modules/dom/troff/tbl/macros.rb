@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # .TS
 #
 #   Starts table (tbl) processing
@@ -151,7 +153,7 @@ class Troff
 
 
             # fudge the contents of this cell to ensure the row doesn't get collapsed
-            @current_block << LineBreak.new and text='' if cell.style[:box_rule] or text.nil?
+            @current_block << LineBreak.new and text=String.new if cell.style[:box_rule] or text.nil?
 
             # handle cells that've been spanned downward
             # move bottom_border lines in the text; spanned cells have to be tabbed past

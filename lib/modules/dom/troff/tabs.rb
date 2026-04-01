@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # tabs.rb
 # ---------------
 #    Troff tab processing routines

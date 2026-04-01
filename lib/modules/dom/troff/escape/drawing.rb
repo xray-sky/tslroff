@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # drawing.rb
 # -------------
 #   troff
@@ -85,7 +87,7 @@ class Troff
       #warn "\\l parsed N as #{width.inspect} ; char is #{req_str.inspect}"
       warn "\\l neg/abs position #{width.inspect} - bailing out" and return '' if width.start_with? '|' or width.start_with? '-'
       width = to_em(to_u(width, default_unit: 'm'))
-      if ['', '\\(ul'].include? req_str
+      if req_str == '' or req_str == '\\(ul'
         warn "\\l special case for hr based on #{width.inspect}em of #{req_str.inspect}"
         @current_block << Rule.new(width: width, font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
       else

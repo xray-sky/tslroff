@@ -12,15 +12,9 @@ class HPUX
   module SML
 
     def self.extended(k)
+      # multiple-inclusion guard
+      #return if k.instance_variable_get(:@register)['!s'].value == 1
       #k.send :nr, '!s 1'
-      #k.send :ds, 'L \&\fB'
-      #k.send :ds, 'V \&\fI'
-      #k.send :ds, 'A \&\f(CW'
-      #k.send :ds, 'N \&\f(CW'
-      #k.send :ds, 'O \&\fR'
-      #k.send :ds, 'C \&\f(CW'
-      #k.send :ds, 'U \&\fB'
-      #k.send :ds, 'E \&\fI'
       k.send :nr, 'Nn 0 1'
     end
 
@@ -30,11 +24,6 @@ class HPUX
     def cS(*_args) ; ig 'cE' ; end
     def lE(*_args) ; end
     def lS(*_args) ; end
-    #def nL(*_args) ; br ; end
-    #def nP(*_args) ; bp ; end
-    #def pM(*_args) ; end
-    #def tH(*_args) ; send :TH ; end
-    #def wH(*_args) ; end
 
     # draft mode "changed regions" markings macros .zA and .zZ omitted
 

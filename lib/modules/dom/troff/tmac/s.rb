@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # tmac.s
 #
 #   usrdoc (mit afs), others

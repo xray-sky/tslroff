@@ -44,7 +44,7 @@ class HPUX::V6_20
       ds "]D #{args[5]}"
       ds "]L #{args[3]}"
       as "]L \" \\|(\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty? # attend: append ]L
-      ds "]W #{__unesc_star('\\*(]V')}"
+      ds "]W #{send '__unesc_*', '\\*(]V'}"
       if args[4] == 'HP-UX'
         ds ']L HP-UX'
         # TODO REVIEW

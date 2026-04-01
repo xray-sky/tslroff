@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # ul.rb
 # -------------
 #   troff
@@ -44,7 +46,7 @@ class Troff
   end
 
   def uf(argstr = '', breaking: nil)
-    pos = argstr.slice(0, 2).strip
+    pos = argstr[0..1].strip
     # REVIEW does this actually get some other font mounted on position 2?
     @ul_font = case pos
                when ''     then 'I'

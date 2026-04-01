@@ -1,91 +1,39 @@
+# frozen_string_literal: true
+#
 # parse.rb
 # ---------------
 #    Troff.parse source
 # ---------------
 #
-# frozen_string_literal: true
+# some escapes are processed before we ever do request parsing?!
+# \* at least - what else?? what order?
 #
-# TODO some escapes are processed before we ever do request parsing?!
-# \* at least - what else?? what order? whitespace stripped before or after?
+# Multiple inter-word space characters found in the input are retained §4.1
+# unescaped trailing spaces are not. (but not until output, .ds can define
+# a string with as much trailing space as provided)
 #
-# observations:
+# see observations, at bottom
 #
-#   .ds yo .ab
-#   \*(yo
-#   nroff: User Abort; line 26, file <standard input>
-#
-#   .de 99
-#   .ab
-#   ..
-#   .nr a 99
-#   .\na          # yes \n
-#   nroff: User Abort; line 15, file <standard input>
-#
-#   \w'foo'
-#   .fl
-#   72
-#   .de 72
-#   .ab
-#   ..
-#   .\w'foo'      # not \w
-#   .nr a 72
-#   .ds n \\na
-#   .\*n          # so \* then \n
-#   nroff: User Abort; line 3, file <standard input>
-#
-# trailing whitespace apparently stripped on output, not input.
-#
-#   .ds yo "
-#   \*(yo foo.
-#   .fl
-#           foo.
-#   \w' '
-#   .fl
-#   24
-#   \w'\*(yo'
-#   .fl
-#   168
-#   .ds yo "       \" crud
-#   \w'\*(yo'
-#   .fl
-#   168
-#
-#   \! foooo \" bar
-#   .fl
-#   foooo         # so comments o before transparent throughput even
-
 
 class Troff
 
   private
 
-  def parse(line)
+  def parse(l)
     if escapes?
-      resc = Regexp.escape @escape_character
-
-      # strip comments - all text following \"
-      #line.sub!(/(?<!#{resc})#{resc}"(?<comment>.*)?$/, '')
+      # copy mode expands \* and \n and strips comments.
+      # looks like reading a line in copy mode is the first step of every parse
+      #    .\*(xx  <== causes a macro name stored in xx to be invoked!
+      line = unescape l, copymode: true
 
       # lines starting with \! are read in copy mode and transparently output
-      if line.sub!(/^#{resc}!/, '')
+      # seemingly, with a break after
+      if line.start_with? "#{@escape_character}!"
         warn "transparent throughput? #{line.inspect}"
-        @current_block << unescape(line, copymode: true)
+        @current_block << line[2..-1]
+        br
         return true
       end
-
-      # trim trailing spaces, along with any following comments
-      # don't lose trailing spaces which have been escaped though
-      #
-      # this kills .\" "comment requests" that I had previously been
-      # outputting into <-- --> html comments
-      #
-      # Multiple inter-word space characters found in the input are retained §4.1
-      # unescaped trailing spaces are not.
-      #
-      # REVIEW this algorithm is suspect; '\ \    ' should still rstrip some spaces.
-      #line.rstrip! unless line.match(/#{resc} +$/)
-      line.sub!(/(?<preserve>(?<!#{resc})#{resc} )? *(?:(?<!#{resc})#{resc}"(?<comment>.*))?$/, '\k<preserve>')
-      #line.sub!(/((?<!#{resc})#{resc} )? *$/, '\1')
     end
 
     line.start_with?(@cc, @c2) ? request(line) : output(line)
@@ -95,7 +43,10 @@ class Troff
   ### ordinary text
   ###
 
-  def output(line)
+  def output(l)
+    # unescaped trailing spaces are stripped
+    line = l.sub(/((?<!#{@resc})#{@resc} )? *$/, '')
+
     # A blank text line causes a break and outputs a blank line
     # exactly like '.sp 1' §5.3 - also in nofill mode
     #
@@ -106,8 +57,6 @@ class Troff
     #
     # TODO hm, I'm getting an extra .br (because of a space adjustment??)
     #      on consecutive blank text lines. - hesinfo(1) [AOS-4.3]
-
-    # we should have already stripped any such spaces.
     if line.empty?
       br
       @current_block << '&nbsp;'
@@ -125,7 +74,7 @@ class Troff
 
     # we actually want to do this in a better order than l->r
     # because of ar(4) [SunOS 5.5.1] :: [30-31]
-    unescape(__unesc_w(__unesc_n(line)))
+    unescape(__unesc_w(line))
 
     if nofill?
       # this duplicates .br, but if that is guarded on nofill...
@@ -147,21 +96,22 @@ class Troff
   # TODO named strings can be invoked as macros! and vice versa!
   #   figure out how that works. quoting, breaking, these are odd
 
-  def request(line)
-    breaking = line.slice!(0) != @c2
+  def request(l)
+    breaking = l.slice!(0) != @c2
     # one of the few places tabs and spaces are equivalent: between cc & req
-    line.lstrip!
-    req = line[0..1].rstrip
-    argstr = line[2..-1]&.lstrip || ''
+    l.lstrip!
+    req = l[0..1].rstrip
+    argstr = l[2..-1]&.lstrip || ''
 
     # until we bring back comments stripped in parse so .\" can work again:
     return if req.empty?
 
-    if request?(req) and respond_to?(req) # it's not a macro and we haven't renamed it
-      send req, __unesc_w(unescape(argstr, copymode: true)), breaking: breaking
+    if request?(req) and respond_to?(req)
+      # it's not a macro and we haven't renamed it
+      send req, __unesc_w(argstr), breaking: breaking
     else
-      args = getargs argstr
-      @register['.$'].value = args.length
+      # macro - unescaped trailing spaces are stripped; getargs sets register .$
+      args = getargs __unesc_w(argstr)
       send req, *args
     end
   rescue NoMethodError => e
@@ -174,3 +124,85 @@ class Troff
 
 
 end
+
+=begin
+
+observations:
+
+   .ds yo .ab
+   \*(yo
+   nroff: User Abort; line 26, file <standard input>
+
+   .de 99
+   .ab
+   ..
+   .nr a 99
+   .\na          # yes \n
+   nroff: User Abort; line 15, file <standard input>
+
+   \w'foo'
+   .fl
+   72
+   .de 72
+   .ab
+   ..
+   .\w'foo'      # not \w
+   .nr a 72
+   .ds n \\na
+   .\*n          # so \* then \n
+   nroff: User Abort; line 3, file <standard input>
+
+trailing whitespace apparently stripped on output, not input.
+
+   .ds yo "
+   \*(yo foo.
+   .fl
+           foo.
+   \w' '
+   .fl
+   24
+   \w'\*(yo'
+   .fl
+   168
+   .ds yo "       \" crud
+   \w'\*(yo'
+   .fl
+   168
+
+   \! foooo \" bar
+   .fl
+   foooo         # so comments go before transparent throughput even
+
+\n and \* happen together, you can stack them either way
+
+   .ds aa 99
+   .nr 99 1 1
+   \n+(\*(aa
+   .fl
+   2
+   \n+(\*(aa
+   .fl
+   3
+   .ds 11 foo
+   .nr aa 11
+   \*(\n(aa
+   .fl
+   foo
+   .ds ab \w'foo'
+   \*(ab
+   .fl
+   72
+   .ds ac ab
+   \*(\*(ac
+   .fl
+   72
+
+\w also plays in this space - but is not interpreted in copy mode
+
+   .nr 72 101
+   \n(\w'foo'
+   .fl
+   101
+
+
+=end

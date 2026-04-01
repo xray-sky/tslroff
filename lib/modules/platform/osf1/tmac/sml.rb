@@ -16,6 +16,8 @@ class OSF1
   module SML
 
     def self.extended(k)
+      # multiple-inclusion guard
+      return if k.instance_variable_get(:@register)['!s'].value == 1
       k.send :nr, '!s 1'
       k.send :ds, 'L \&\fB'
       k.send :ds, 'V \&\fI'

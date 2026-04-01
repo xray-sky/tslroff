@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # if.rb
 # -------------
 #   troff
@@ -82,33 +84,39 @@ class Troff
     resc = Regexp.quote(@escape_character)
 
     # block .if? set aside the command or text
-    argstr.sub! %r{\s*(?<!#{resc})#{resc}\{\s*(.*)$}, ''
-    block = Regexp.last_match&.[](1)
+    #argstr.sub! %r{\s*(?<!#{resc})#{resc}\{\s*(.*)$}, ''
+    #block = Regexp.last_match&.[](1)
+    blockpos = argstr.index %r{\s*(?<!#{resc})#{resc}\{\s*(.*)$}
 
-    negate = true and argstr.slice!(0, 1) if argstr.start_with? '!'
-    test_op = argstr.slice(0, get_char(argstr).length)
+    strpos = 0
+    negate = true and strpos += 1 if argstr.start_with? '!'
+    test_op = get_char argstr[strpos..-1]
 
     # get the full escape, if that's what we're on the road to
     condition = case test_op
                 when 'e', 'E'
-                  argstr.slice!(0, 1)
+                  strpos += 1
                   warn %(can't test for even page number) unless quiet
                 when 'o', 'O'
-                  argstr.slice!(0, 1)
+                  strpos += 1
                   warn %(can't test for odd page number) unless quiet
                 when 'n', 't', 'N', 'T'
-                  argstr.slice!(0, 1)
+                  strpos += 1
                   negate ^ (test_op.downcase == 't')
-                # numeric expression  - relies on test_numeric to remove test_op from argstr
+                # numeric expression
                 # REVIEW is this condition complete?
                 when /^(?:[-.(0-9]|#{resc}[wn])/
-                  negate ^ test_numeric(argstr, quiet: quiet).tap do |c|
+                  (predicate, exprlen) = test_numeric(argstr[strpos..-1], quiet: quiet)
+                  strpos += exprlen
+                  negate ^ predicate.tap do |c|
                     # warn is too chatty with .}S conditionals coming through here
                     warn "    calculated #{"negated " if negate}#{test_op.inspect} predicate: #{c.inspect}" unless quiet
                   end
-                # string comparison - relies on test_string to remove test_op from argstr
+                # string comparison
                 else
-                  negate ^ test_string(argstr, quiet: quiet).tap do |c|
+                  (predicate, strlen) = test_string(argstr[strpos..-1], quiet: quiet)
+                  strpos += strlen
+                  negate ^ predicate.tap do |c|
                     # warn is too chatty with .}S conditionals coming through here
                     warn "    calculated #{"negated " if negate}#{test_op.inspect} predicate: #{c.inspect}" unless quiet
                   end
@@ -120,20 +128,22 @@ class Troff
     #      making .TE tolerate receiving args (which it should probably do anyway) suppressed the exception,
     #      but we still parse the .if badly. if the condition is false then we won't have this problem because
     #      .TS is not entered.
-    rcc = Regexp.quote("#{@cc}#{@c2}")
-    if block
+    if blockpos
+      block = argstr[blockpos..-1]
+      rcc = Regexp.quote("#{@cc}#{@c2}")
       loop do
         #warn ".if : looping on #{argstr.inspect} to #{condition ? "run" : "not run"}"
         if condition
-          warn "parsing tbl in block .if -- check correct block end results" if argstr.match?(/^[#{rcc}]\s*TS/)
-          parse(block)
+          warn "parsing tbl in block .if -- check correct block end results" if block.match?(/^[#{rcc}]\s*TS/)
+          parse block
         end
         block = next_line
         break if block.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
       end
+      parse block unless block.empty?
     else
       #warn ".if : single line on #{argstr.inspect} to #{condition ? "run" : "not run"}"
-      parse(argstr.lstrip) if condition
+      parse(argstr[strpos..-1].lstrip) if condition
     end
 
     # .if needs to return its evaluated condition, so .ie can work
@@ -142,26 +152,20 @@ class Troff
 
   private
 
-  # destructive of e (rely on this in .if)
   def test_numeric(e, quiet: false)
-    e.replace(__unesc_w(e)) # should be safe enough
-    # get_expression is destructive of e
-    expr = get_expression(e).tap { |n| warn ".if evaluating numeric expression #{n.inspect}" unless quiet }
-    to_u(expr).to_f > 0
+    expr = get_expression(__unesc_w(e)).tap { |n| warn ".if evaluating numeric expression #{n.inspect}" unless quiet }
+    [to_u(expr).to_i > 0, expr.length]
   end
 
-  # destructive of e (rely on this in .if)
   def test_string(e, quiet: false)
     lhs = get_quot_str(e)[1..-2] # lose the quotes
-    e.slice!(0, lhs.length  + 1) # leave one behind for rhs
-    rhs = get_quot_str(e)[1..-2] # lose the quotes
-    e.slice!(0, rhs.length  + 2) # lose the entire arrangement
+    rhs = get_quot_str(e, offset: lhs.length + 1)[1..-2] # lose the quotes
 
     warn ".if comparing strings #{lhs.inspect} == #{rhs.inspect}" unless quiet
     lp = Block::Bare.new
     rp = Block::Bare.new
     unescape lhs, output: lp
     unescape rhs, output: rp
-    lp.to_s == rp.to_s
+    [lp.to_s == rp.to_s, rhs.length + lhs.length + 3] # three total quote chars - "lhs"rhs"
   end
 end

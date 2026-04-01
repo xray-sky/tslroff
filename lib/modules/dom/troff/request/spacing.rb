@@ -1,4 +1,6 @@
 # sp.rb
+# frozen_string_literal: true
+#
 # -------------
 #   troff
 # -------------

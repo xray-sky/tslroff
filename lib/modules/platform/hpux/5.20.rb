@@ -41,7 +41,7 @@ class HPUX::V5_20
       as "]L \" \\|(\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty? # attend: append ]L
       if args[4] == 'HP-UX'
         ds ']L HP-UX'
-        ds "]W Version B.1,  #{__unesc_star('\\*(]W')}"
+        ds "]W Version B.1,  #{send '__unesc_*', '\\*(]W'}"
       end
 
       # ]D follows the title (if given), centered on its own line.

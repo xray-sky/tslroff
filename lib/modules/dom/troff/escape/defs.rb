@@ -29,10 +29,11 @@ class Troff
  #  most of these are groff-only (man groff_chars) -- TODO separate
  #
  #  special case for translating special characters, if one is in effect.
+ #  -- I think this is no longer necessary; __unesc performs translations prior to processing escapes
  #
 
   define_method 'esc_(' do |s|
-    translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @character_translations.key? "#{@escape_character}(#{s}"
+    #translate s.tap { |n| warn "translated special char \\(#{n}" } and return '' if @character_translations.key? "#{@escape_character}(#{s}"
     @special_chars[s] || String.new.tap { warn "\\( : undefined special character #{s.inspect}" }
   end
 

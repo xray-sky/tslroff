@@ -27,6 +27,7 @@
 #
 
 require 'forwardable'
+require_relative '../../classes/textformatter'
 
 class HTML < TextFormatter
 

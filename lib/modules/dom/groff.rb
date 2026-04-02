@@ -17,6 +17,7 @@
 #       probably useful reference for getting started on differences from troff, tbl, eqn, etc.
 #
 
+require_relative '../../classes/textformatter'
 require_relative 'troff'
 require_relative 'groff/tokenize'
 

@@ -13,8 +13,8 @@
 # TODO finish making the macro package selectable
 #
 
-#require_relative 'groff'
 require_relative '../../classes/webdriver'
+require_relative '../../classes/textformatter'
 
 class Troff < TextFormatter
 
@@ -128,15 +128,15 @@ class Troff < TextFormatter
   #  @register['.c']&.value || 0
   #end
 
+  # not delegated to super, due to replacing Source @lines with macro @lines during local macro processing
   def next_line
-    l = super.tap { @register['.c'].incr }.chomp # REVIEW do we ever need to perserve the trailing \n ?
-    #l = @lines.tap { @register['.c'].incr }.next.chomp.tap { |n| warn "reading new line #{n.inspect}" }
+    #l = super.tap { @register['.c'].incr }.chomp # REVIEW do we ever need to perserve the trailing \n ?
+    l = @lines.tap { @register['.c'].incr }.next.chomp
 
     # Hidden newlines -- REVIEW does this need to be any more sophisticated?
     # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
     # TODO the new-line at the end of a comment cannot be concealed.
     # Doing it here means I don't have to do it everywhere we are doing local next_lines (.TS, .if, etc.)
-    # But, this will give us "bad" line numbers for warnings. I can probably live with that.
     l.chop! << next_line if escapes? and l.end_with?(@escape_character) and l[-2] != @escape_character
 
     @line = l

@@ -148,6 +148,7 @@ class Troff
             when '=' then val.send('==', rhs) ? 1 : 0
             when ':' then val.send('||', rhs) ? 1 : 0
             when '&' then val.send('&&', rhs) ? 1 : 0
+            when '<', '>', '<=', '>=' then val.send(op, rhs) ? 1 : 0
             else val.send(op, rhs)
             end
     end

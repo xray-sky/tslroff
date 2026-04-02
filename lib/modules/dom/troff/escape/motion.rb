@@ -15,37 +15,35 @@
 
 class Troff
 
-#   \d - forward (down) 1/2 em vertical motion
-#
-
+  #   \d - forward (down) 1/2 em vertical motion
   def esc_d(*)
     esc_v %('0.5m')
   end
 
-#   \h - local horizontal motion
-#
-#   negative values shift carriage toward left margin
-#
-#   The absolute position indicator | may be prepended to a number N to generate the
-#   distance to the vertical or horizontal place N. (§1.3, p.21)
-#
-# TODO
-#   => apparently this applies to all horizontal and vertical requests. (UGH)
-#      .ll, .in, .ti, .ta, .lt, .p, .mc, \h, \l
-#      .pl, .wh, .ch, .dt, .sp, .sv, .ne, .rt, \v, \x, \L
-#
-#
-# TODO   trying to \w a lonely \h fails, as there's no text component and
-#        selenium considers it unrenderable -- spline(1g) [GL2 W2.5]
-#        pathological interactions with .ds and \* ========> so.... now what?
-#
-# TODO need to clear horizontal shift after tab, break, block, etc. once it's
-#      happened, it's stuck on forever. ascii(5) - [GL2-W2.5]
-#       - solve this by differentiating leftward and rightward shifts; making
-#      rightward motion insert an empty span (like a thin space) and a
-#      leftward motion by putting an explicit (narrower) width on the span? - collect examples
-#
-# TODO default unit 'm'
+  #   \h - local horizontal motion
+  #
+  #   negative values shift carriage toward left margin
+  #
+  #   The absolute position indicator | may be prepended to a number N to generate the
+  #   distance to the vertical or horizontal place N. (§1.3, p.21)
+  #
+  # TODO
+  #   => apparently this applies to all horizontal and vertical requests. (UGH)
+  #      .ll, .in, .ti, .ta, .lt, .p, .mc, \h, \l
+  #      .pl, .wh, .ch, .dt, .sp, .sv, .ne, .rt, \v, \x, \L
+  #
+  #
+  # TODO   trying to \w a lonely \h fails, as there's no text component and
+  #        selenium considers it unrenderable -- spline(1g) [GL2 W2.5]
+  #        pathological interactions with .ds and \* ========> so.... now what?
+  #
+  # TODO need to clear horizontal shift after tab, break, block, etc. once it's
+  #      happened, it's stuck on forever. ascii(5) - [GL2-W2.5]
+  #       - solve this by differentiating leftward and rightward shifts; making
+  #      rightward motion insert an empty span (like a thin space) and a
+  #      leftward motion by putting an explicit (narrower) width on the span? - collect examples
+  #
+  # TODO default unit 'm'
 
   def esc_h(s)
     quotechar = Regexp.quote(get_char(s))
@@ -79,8 +77,7 @@ class Troff
     String.new
   end
 
-#   \k - store horizontal position
-
+  #   \k - store horizontal position
   def esc_k(s)
     s.slice!(0) if s.start_with?('(')
     warn "using \\k to store a horizontal position in #{s}..."
@@ -99,40 +96,34 @@ class Troff
     String.new
   end
 
-#   \r - reverse (up) 1 em vertical motion
-#
-
+  #   \r - reverse (up) 1 em vertical motion
   def esc_r(*)
     esc_v %('-1m')
   end
 
-#   \u - reverse (up) 1/2 em vertical motion
-#
-
+  #   \u - reverse (up) 1/2 em vertical motion
   def esc_u(*)
     esc_v %('-0.5m')
   end
 
-#   \v - local vertical motion
-#
-#   negative values shift carriage toward top of page
-#
-#  this takes place at the current font size. since we aren't outputting anything
-#  in html context to represent the current font size, we need to do something to get
-#  the right amount of space when we have set a size for the motion that is different
-#  from the last output.
-#
-#    e.g. gamma(3) puts 8pt bounds on a 10pt integral -- \s10\(is\d\s80\s10\u\u\s8\(if
-#    - because we are applying baseline shift as a text style, you can see how the
-#      10 point size will have changed to 8 by the time output appears in the Text object
-#      and will be rendered in the browser at the smaller size.
-#
-#      maybe the place to "fix" this is in .ps - ugh.
-#
-# REVIEW
-#   what is the default unit?? v? -- yes.
-#
-
+  #   \v - local vertical motion
+  #
+  #   negative values shift carriage toward top of page
+  #
+  #  this takes place at the current font size. since we aren't outputting anything
+  #  in html context to represent the current font size, we need to do something to get
+  #  the right amount of space when we have set a size for the motion that is different
+  #  from the last output.
+  #
+  #    e.g. gamma(3) puts 8pt bounds on a 10pt integral -- \s10\(is\d\s80\s10\u\u\s8\(if
+  #    - because we are applying baseline shift as a text style, you can see how the
+  #      10 point size will have changed to 8 by the time output appears in the Text object
+  #      and will be rendered in the browser at the smaller size.
+  #
+  #      maybe the place to "fix" this is in .ps - ugh.
+  #
+  # REVIEW
+  #   what is the default unit?? v? -- yes.
   def esc_v(s)
     quotechar = Regexp.quote(get_char(s))
     req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')

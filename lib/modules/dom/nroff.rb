@@ -7,6 +7,8 @@
 #
 # REVIEW add anchors menu for detected headings ?
 
+require_relative '../../classes/textformatter'
+
 class Nroff < TextFormatter
 
   Dir.glob("nroff/*.rb", base: File.dirname(__FILE__)).sort.each do |i|

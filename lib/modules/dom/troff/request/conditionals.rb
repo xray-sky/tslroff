@@ -70,13 +70,11 @@ class Troff
     # but there is a crazy interaction if there is a block .if we are not going to execute
     if argstr.sub!(/^#{resc}{/, '') or (argstr.match?(/#{resc}{/) and !@else)
       loop do
-        #warn ".el : looping on #{argstr.inspect} to #{@else ? "run" : "not run"}"
         parse(argstr) if @else
         argstr = next_line
         break if argstr.sub!(/#{resc}}\s*(?:\\".*)?$/, '')
       end
     end
-    #warn ".el : parsing final #{argstr.inspect} to #{@else ? "run" : "not run"}"
     parse(argstr) if @else
   end
 
@@ -84,9 +82,7 @@ class Troff
     resc = Regexp.quote(@escape_character)
 
     # block .if? set aside the command or text
-    #argstr.sub! %r{\s*(?<!#{resc})#{resc}\{\s*(.*)$}, ''
-    #block = Regexp.last_match&.[](1)
-    blockpos = argstr.index %r{\s*(?<!#{resc})#{resc}\{\s*(.*)$}
+    blockpos = argstr.index %r{(?<=(?<!#{resc})#{resc}\{)\s*(.*)$}
 
     strpos = 0
     negate = true and strpos += 1 if argstr.start_with? '!'

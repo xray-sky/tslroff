@@ -47,25 +47,28 @@ class Troff
   #                                     obtained from the .j register. (See section 25 in
   #                                     the "Summary," "Predefined Read-Only Registers.")
 
-    def ad(argstr = '', breaking: nil)
-      init_ad
-      adj = argstr.split.first
-      return unless adj
-      @register['.j'].value = case adj
-                              when /^[0135]$/ then adj
-                              when 'l'        then 0
-                              when 'r'        then 5
-                              when 'c'        then 3
-                              when 'b', 'n'   then 1
-                              else
-                                warn "trying to adjust nonsense #{adj.inspect}"
-                              end
-      if !nofill? and @current_block.immutable?
-        @current_block = blockproto
-        @current_block.style.css[:margin_top] = 0
-        @document << @current_block
-      end
+  def ad(argstr = '', breaking: nil)
+    init_ad
+    adj = argstr.split.first
+    return unless adj
+    @register['.j'].value = case adj
+                            when /^[0135]$/ then adj
+                            when 'l'        then 0
+                            when 'r'        then 5
+                            when 'c'        then 3
+                            when 'b', 'n'   then 1
+                            else
+                              warn "trying to adjust nonsense #{adj.inspect}"
+                            end
+    if !nofill? and @current_block.immutable?
+      # we were losing font changes made immediately prior to an .ad
+      font = @current_block.terminal_font.dup
+      @current_block = blockproto
+      @current_block.style.css[:margin_top] = 0
+      @current_block.text.last.font = font
+      @document << @current_block
     end
+  end
 
   # Request  Initial  If no     Notes   Explanation
   #  form     value   argument
@@ -78,10 +81,10 @@ class Troff
   #
   # it appears that 'br does nothing at all.
 
-    def br(_argstr = '', breaking: true)
-      return if !breaking or nofill? or broke? or nobreak?
-      @current_block << LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
-    end
+  def br(_argstr = '', breaking: true)
+    return if !breaking or nofill? or broke? or nobreak?
+    @current_block << LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
+  end
 
   # Request  Initial  If no     Notes   Explanation
   #  form     value   argument
@@ -97,23 +100,20 @@ class Troff
   #  REVIEW what happens when given not-an-N as first arg (invalid expression)
   #         ignored, I think, which means bad interaction from to_u returning '0' in that case
 
-    def ce(argstr = '', breaking: true)
-      warn ".ce invoked with nobreak - how to?" unless breaking
-      n = argstr.split.first || '1'
+  def ce(argstr = '', breaking: true)
+    warn ".ce invoked with nobreak - how to?" unless breaking
+    n = argstr.split.first || '1'
 
-      if n == '0'
-        @input_traps.delete_if { |k,v| v[0] == ':R' }#:finalize_ce }
-        #send '[C'
-        finalize_ce
-      else
-        n = n.to_i
-        nf
-        @current_block.style.css[:text_align] = 'center'
-        #it(n, :finalize_ce)
-        #it "#{n} [C"
-        it "#{n} finalize_ce"
-      end
+    if n == '0'
+      @input_traps.delete_if { |k,v| v[0] == ':R' }
+      finalize_ce
+    else
+      n = n.to_i
+      nf
+      @current_block.style.css[:text_align] = 'center'
+      it "#{n} finalize_ce"
     end
+  end
 
   # Request  Initial  If no     Notes   Explanation
   #  form     value   argument
@@ -121,17 +121,21 @@ class Troff
   # .fi      on       -         B,‡,E   Fill subsequent output lines. The register .u is 1
   #                                     in fill mode and 0 in no-fill mode.
 
-    def fi(_argstr = '', breaking: true)
-      warn ".fi invoked with nobreak - how to?" unless breaking
-      #warn "received pointless argument #{_args.inspect} to .fi - why??" unless _args.empty?
-      @register['.u'].value = 1
-      # do we need to break? or is this already a brand new block.
-      if @current_block.immutable?
-        @current_block = blockproto
-        @current_block.style.css[:margin_top] = 0
-        @document << @current_block
-      end
+  def fi(_argstr = '', breaking: true)
+    warn ".fi invoked with nobreak - how to?" unless breaking
+    #warn "received pointless argument #{_args.inspect} to .fi - why??" unless _args.empty?
+    @register['.u'].value = 1
+    # do we need to break? or is this already a brand new block.
+    # REVIEW is there a good way to make this reusable ?
+    if @current_block.immutable?
+      # we were losing font changes made immediately prior to an .fi
+      font = @current_block.terminal_font.dup
+      @current_block = blockproto
+      @current_block.style.css[:margin_top] = 0
+      @current_block.text.last.font = font
+      @document << @current_block
     end
+  end
 
   # Request  Initial  If no     Notes   Explanation
   #  form     value   argument
@@ -145,15 +149,18 @@ class Troff
   #
   #  REVIEW proper interaction with fill mode
 
-    def na(_argstr = '', breaking: nil)
-      @adjust = false
-      # REVIEW this should keep .P followed by .na from collapsing margin_top
-      if !nofill? and @current_block.immutable?
-        @current_block = blockproto
-        @current_block.style.css[:margin_top] = 0
-        @document << @current_block
-      end
+  def na(_argstr = '', breaking: nil)
+    @adjust = false
+    # REVIEW this should keep .P followed by .na from collapsing margin_top
+    if !nofill? and @current_block.immutable?
+      # we were losing font changes made immediately prior to an .na
+      font = @current_block.terminal_font.dup
+      @current_block = blockproto
+      @current_block.style.css[:margin_top] = 0
+      @current_block.text.last.font = font
+      @document << @current_block
     end
+  end
 
   # Request  Initial  If no     Notes   Explanation
   #  form     value   argument
@@ -186,8 +193,11 @@ class Troff
     @register['.u'].value = 0
     # do we need to break? or is this already a brand new block.
     if @current_block.immutable?
+      # we were losing font changes made immediately prior to an .nf
+      font = @current_block.terminal_font.dup
       @current_block = blockproto
       @current_block.style.css[:margin_top] = 0
+      @current_block.text.last.font = font
       @document << @current_block
     end
   end
@@ -197,8 +207,6 @@ class Troff
   end
 
   def finalize_ce
-  # REVIEW why did I think this should be [C instead?
-  #define_method "[C" do |argstr = '', breaking: nil|
     fi
     @current_block.style.css.delete(:text_align)
   end

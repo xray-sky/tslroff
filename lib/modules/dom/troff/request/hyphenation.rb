@@ -46,8 +46,8 @@ class Troff
       warn "changing discretionary hyphen to #{chr.inspect}"
       @hyphenation_character = chr
     else
-      warn 'resetting non-default discretionary hyphen'
-      @hyphenation_character = nil
+      warn 'defaulting discretionary hyphen character to \\%'
+      @hyphenation_character = '\\%'
     end
   end
 

@@ -89,6 +89,7 @@ class Troff
   end
 
   def vs(argstr = '', breaking: nil)
+    # TODO would need to treat argstr as expression
     warn "don't know how to .vs #{argstr.inspect}"
   end
 

@@ -145,15 +145,11 @@ class Troff
     # to their meanings to the preprocessor. REVIEW is someone doing this?
     warn ".de wants to change .#{name}!" if %w[CW EN EQ TS].include?(name)
 
-    # termination doesn't appear work like a macro invocation
-    #terminating_method = Troff.quote_method delim"
-    #define_singleton_method(terminating_method) { |*_args| true }
-
     macro = []
     loop do
       next_line
       break if @line == ".#{delim}" # not just .start_with!
-      macro << unescape(@line, copymode: true)#.tap { |n| warn "sketchy use of .if/.ie with args in .de => #{n.inspect}" if n.match?(%r{^.\s*i[e].*\$[1-9]}) } # REVIEW seems fine based on monop(6) [SunOS 1.0]
+      macro << unescape(@line, copymode: true) #.tap { |n| warn ".de read #{n.inspect}" } # REVIEW seems fine based on monop(6) [SunOS 1.0]
     end
 
     # somehow troff is able to determine, given something like
@@ -175,33 +171,38 @@ class Troff
     # (as performed extensively by the osf macros).
 
     define_singleton_method(name) do |*args|
+      opfx = @warn_prefix
+      @warn_prefix = ".#{name} [#{@register['.c']}] => " # TODO this wants a warn_suffix instead - also line numbers are busted
       olines = @lines
       opos = @register['.c'].dup
       odol = @register['.$'].dup
-      ochain = @so_chain.dup
+
       @register['.$'] = Register.new(args.count, nil, :ro => true)
       @register['.c'] = Register.new(0, 1, :ro => true)
-      @so_chain ||= String.new
-      @so_chain << " [#{opos}] => #{__callee__}"  # TODO still awkward, at least functional for now
-      @lines = macro.each
+      @lines = macro.collect do |l|
+        # fix args in full macro before parsing, otherwise block conditionals don't get
+        # args (they do their own next_line parse loop)
+        # TODO REVIEW rcsfile.5:182 [DU 3.2c] does .de with escapes disabled??
+        l.gsub(/(\s*)#{Regexp.quote(@escape_character || '')}\$([1-9])/) do
+            arg = args[$2.to_i - 1]
+            (arg.nil? or arg.empty?) ? '' : $1 + arg
+        end
+      end.each
 
       loop do
         begin
-          parse next_line.gsub(/(\s*)#{Regexp.quote(@escape_character || '')}\$(\d)/) { # TODO REVIEW rcsfile.5:182 [DU 3.2c] does .de with escapes disabled??
-            arg = args[$2.to_i - 1]
-            (arg.nil? or arg.empty?) ? '' : $1+arg
-          }#.tap { |n| warn "parsing #{n.inspect}" }
+          parse next_line
         rescue StopIteration
           break
         end
       end
 
-      @lines = olines
-      @so_chain = ochain
-      @register['.$'] = odol
       @register['.c'] = opos
-
+      @register['.$'] = odol
+      @lines = olines
+      @warn_prefix = opfx
     end
+    #warn ".de defined #{name}"
   end
 
   def ds(argstr = '', breaking: nil)
@@ -215,8 +216,6 @@ class Troff
   def rm(argstr = '', *args, breaking: nil)
     return nil if argstr.empty?
     arg = argstr[0..1].strip
-    #@named_strings.delete(string) or define_singleton_method(string) { |*args| true } # REVIEW instance_eval(':undef foo') instead?
-    #warn arg.inspect
     @named_strings.delete(arg) or instance_eval("undef #{arg.to_sym.inspect}") # REVIEW need to update Requests?
     rescue NameError
       warn "attempt to .rm undefined macro #{arg}"

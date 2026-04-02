@@ -25,6 +25,11 @@ class Troff
 
     return if @current_block.empty? || broke? || @eqn_active #|| continuation? - @current_block.empty covers continuation as RoffControl
 
+    # try to strip out trailing spaces that might've been introduced
+    # from a terminal \* in output. any escaped spaces should have
+    # already been translated to &nbsp;
+    @current_block.terminal_string.rstrip!
+
     # An input text line ending with ., ?, !, .), ?), or !) is taken to be the end
     # of a sentence, and an additional space character is automatically provided during
     # filling.  §4.1

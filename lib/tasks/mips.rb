@@ -3,6 +3,12 @@
 
 collection_namespace 'mips' do
   collection_namespace 'unbundled' do
+    # TODO macro package?
+    manual_namespace 'SysProgPkg_2.1',
+                    #vendor_class: RISC_os,
+                    idir: 'mips/risc-os/unbundled/2.1spp',
+                    odir: 'mips/unbundled/UMIPS:BSD_System_Programmers_Package_2.1',
+                    sources: %w[usr/src/SA/man/man[1-8]]
     manual_namespace 'RISCwindows_4.00',
                     vendor_class: RISC_os,
                     idir: 'mips/risc-os/unbundled/riscwindows/4.00',

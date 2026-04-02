@@ -6,47 +6,36 @@
 # ---------------
 #
 # some escapes are processed before we ever do request parsing?!
-# \* at least - what else?? what order?
 #
 # Multiple inter-word space characters found in the input are retained §4.1
 # unescaped trailing spaces are not. (but not until output, .ds can define
 # a string with as much trailing space as provided)
-#
-# see observations, at bottom
 #
 
 class Troff
 
   private
 
-  def parse(l)
+  def parse(line)
     if escapes?
-      # copy mode expands \* and \n and strips comments.
-      # looks like reading a line in copy mode is the first step of every parse
-      #    .\*(xx  <== causes a macro name stored in xx to be invoked!
-      line = unescape l, copymode: true
-
       # lines starting with \! are read in copy mode and transparently output
       # seemingly, with a break after
       if line.start_with? "#{@escape_character}!"
         warn "transparent throughput? #{line.inspect}"
-        @current_block << line[2..-1]
+        @current_block << unescape(line, copymode: true)[2..-1]
         br
         return true
       end
     end
 
-    line.start_with?(@cc, @c2) ? request(line) : output(line)
+    line.start_with?(@cc, @c2) ? request(unescape line, copymode: true) : output(line)
   end
 
   ###
   ### ordinary text
   ###
 
-  def output(l)
-    # unescaped trailing spaces are stripped
-    line = l.sub(/((?<!#{@resc})#{@resc} )? *$/, '')
-
+  def output(line)
     # A blank text line causes a break and outputs a blank line
     # exactly like '.sp 1' §5.3 - also in nofill mode
     #
@@ -72,9 +61,53 @@ class Troff
       br
     end
 
-    # we actually want to do this in a better order than l->r
-    # because of ar(4) [SunOS 5.5.1] :: [30-31]
-    unescape(__unesc_w(line))
+    # field processing
+    #
+    # TODO lines with escape chars prior to tabs result in that text living outside the tab span!
+    #      csh(1) [GL2-W2.5]
+    # - to this end, fix up the text block if we just broke. we oughtn't need to deal with
+    #   a mid-unesc break.
+    #
+    # there's a special case if we just had a break. we don't want to set the tab width on that.
+    # REVIEW is there a more orderly way of handling this?
+    #
+    # TODO split the output, with tabs and fields and translation, from unescape
+    #      that's going to be hard as long as we are spitting e.g. font changes out
+    #      directly into the document, instead of returning
+    #
+    # something diabolical is happening with empty fields / too many separators
+    #   -- see RISCiX 1.2 rcsfile(5)
+    #
+    # looks like postprocessed tbl involves fields as well.
+
+    # skip entirely if all field markers are preceeded by single escape.
+    if fields? and line.match?(/(?<!(?<!#{@resc})#{@resc})#{Regexp.quote @field_delimiter}/)
+      # don't match a field character preceeded by a single escape.
+      fields = line.split(%r{(?<!(?<!#{@resc})#{@resc})#{Regexp.quote @field_delimiter}})
+      # if the last character is a delimiter, then the last index is a field (otherwise, ordinary text)
+      str = line.end_with?(@field_delimiter) ? '' : fields.pop
+      # the first part is outside the field. if delim is the first character, the string will be empty
+      unescape __unesc_w(fields.shift)
+      fields.each do |field|
+        # this mostly mirrors tab processing
+        warn "empty field - attempting to use for positioning only" and next if field.empty? # no pad REVIEW this is an attempt to cover rcsfile(5) usage
+        warn "don't know how to do field padding except at right! #{@field.inspect}" unless !field.nil? or field.end_with?(@field_pad_character) # empty fields won't have padding
+	    unescape __unesc_w(field.gsub(/#{Regexp.escape(@field_pad_character)}$/, '')) # TODO pad
+   		stop = next_tab # overflow?
+        if stop
+          insert_tab(width: to_em(stop - @current_block.last_tab_position), stop: stop)
+        else
+          # prevent exception on running out of tabs
+          warn "out of fields with tabs=#{@tabstops.inspect}! (field: #{field.inspect})"
+          @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
+        end
+      end
+      unescape(__unesc_w(str)) # final not-a-field
+    else
+      # we actually want to do this in a better order than l->r
+      # because of ar(4) [SunOS 5.5.1] :: [30-31]
+      unescape(__unesc_w(line))
+    end
 
     if nofill?
       # this duplicates .br, but if that is guarded on nofill...
@@ -96,15 +129,15 @@ class Troff
   # TODO named strings can be invoked as macros! and vice versa!
   #   figure out how that works. quoting, breaking, these are odd
 
-  def request(l)
-    breaking = l.slice!(0) != @c2
+  def request(line)
+    breaking = line[0] != @c2
     # one of the few places tabs and spaces are equivalent: between cc & req
-    l.lstrip!
-    req = l[0..1].rstrip
-    argstr = l[2..-1]&.lstrip || ''
+    rpos = line.index(/\S/, 1) || return # may have single @cc or @c2
+    req = line[rpos, 2].rstrip
+    argstr = line[rpos + 2..-1]&.lstrip || ''
 
     # until we bring back comments stripped in parse so .\" can work again:
-    return if req.empty?
+    #return if req.empty?
 
     if request?(req) and respond_to?(req)
       # it's not a macro and we haven't renamed it
@@ -121,88 +154,4 @@ class Troff
     # Control lines with unrecognized names are ignored. §1.1
     warn "Unrecognized request #{breaking ? @cc : @c2 }#{req} #{argstr}"
   end
-
-
 end
-
-=begin
-
-observations:
-
-   .ds yo .ab
-   \*(yo
-   nroff: User Abort; line 26, file <standard input>
-
-   .de 99
-   .ab
-   ..
-   .nr a 99
-   .\na          # yes \n
-   nroff: User Abort; line 15, file <standard input>
-
-   \w'foo'
-   .fl
-   72
-   .de 72
-   .ab
-   ..
-   .\w'foo'      # not \w
-   .nr a 72
-   .ds n \\na
-   .\*n          # so \* then \n
-   nroff: User Abort; line 3, file <standard input>
-
-trailing whitespace apparently stripped on output, not input.
-
-   .ds yo "
-   \*(yo foo.
-   .fl
-           foo.
-   \w' '
-   .fl
-   24
-   \w'\*(yo'
-   .fl
-   168
-   .ds yo "       \" crud
-   \w'\*(yo'
-   .fl
-   168
-
-   \! foooo \" bar
-   .fl
-   foooo         # so comments go before transparent throughput even
-
-\n and \* happen together, you can stack them either way
-
-   .ds aa 99
-   .nr 99 1 1
-   \n+(\*(aa
-   .fl
-   2
-   \n+(\*(aa
-   .fl
-   3
-   .ds 11 foo
-   .nr aa 11
-   \*(\n(aa
-   .fl
-   foo
-   .ds ab \w'foo'
-   \*(ab
-   .fl
-   72
-   .ds ac ab
-   \*(\*(ac
-   .fl
-   72
-
-\w also plays in this space - but is not interpreted in copy mode
-
-   .nr 72 101
-   \n(\w'foo'
-   .fl
-   101
-
-
-=end

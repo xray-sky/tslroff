@@ -14,13 +14,6 @@ class Troff
 
   def unescape(str, copymode: nil, output: nil)
     # REVIEW how does @escape_character interact with copymode?
-    # we might go through some parts of the document twice, and some of
-    # the methods used by unescape are destructive of str. so dup it, to
-    # protect the Source.
-    #
-    # TODO output translations are still in effect even if escapes are disabled
-    #      (including translations to escapes)
-
     if copymode
       return __unesc_cm(str) # no longer destructive of str
     end
@@ -35,20 +28,7 @@ class Troff
     if @eqn_start and str.match?(/(?<!#{@resc})#{@resc}#{@resc}#{Regexp.quote @eqn_start}|(?<!#{@resc})#{Regexp.quote @eqn_start}/)
       parse_eqn str
     else
-      if escapes?
-        __unesc(str.dup)
-      else
-        # escapes disabled; still need to apply translations to str
-        #until str.empty? do
-        #  translate str.slice!(0)
-        #end
-        strpos = 0
-        strlen = str.length
-        until strpos == strlen
-          translate str[strpos]
-          strpos += 1
-        end
-      end
+      __unesc(str.dup)
     end
 
     @current_block = hold_block if output
@@ -106,7 +86,7 @@ class Troff
     return str unless escapes?
     copy = String.new
     strend = str.length
-    while i = str.rindex(/#{@resc}[.tan*"#{@resc}]/, strend) and !(strend < 0)
+    while i = str.rindex(/(?<!#{@resc})#{@resc}[.*"ant]|#{@resc}#{@resc}/, strend) and !(strend < 0)
       esc = get_escape(str, offset: i)
       copy.prepend str[i + esc.length..strend]
       case esc[1]
@@ -116,7 +96,7 @@ class Troff
       when 'a' then copy.prepend "\a" # SOH
       when 'n' then copy.prepend esc_n esc[2..-1]
       when '*' then copy.prepend send 'esc_*', esc[2..-1]
-      when '"' then  # \" comment
+      when '"' then # \" comment
         #@current_block << Comment.new(text: copy) # TODO wrong
         copy = String.new
       end
@@ -127,55 +107,62 @@ class Troff
   end
 
   def __unesc(str)
-    # TODO lines with escape chars prior to tabs result in that text living outside the tab span!
-    #      csh(1) [GL2-W2.5]
-    # - to this end, fix up the text block if we just broke. we oughtn't need to deal with
-    #   a mid-unesc break.
+    # we may have more \* or \n emitted from an \* interpreted in copy mode
+    # but they don't appear to combine the way they are allowed to in copy mode.
+    # ...or at the very least they maybe go berzerk in a way that is enough to suggest
+    # we'll never see it happen? that'll be a relief. REVIEW
     #
-    # there's a special case if we just had a break. we don't want to set the tab width on that.
-    # REVIEW is there a more orderly way of handling this?
+    # TODO unescaped trailing whitespace gets stripped after \* expanded
+    # I think that's the only way we could get "unexpected" trailing whitespace
     #
-    # TODO split the output, with tabs and fields and translation, from unescape
-    #      that's going to be hard as long as we are spitting e.g. font changes out
-    #      directly into the document, instead of returning
+    # TODO if this works, get the hyphenation character into it
+    #      check it works with escapes disabled, too.
 
-    # start by breaking up fields, then re-entering for each field part, if fields are enabled
-    # skip entirely if all field markers are preceeded by single escape.
-    # TODO this is processing fields in too many places - in macro args, etc.
-    if fields? and str.match?(/(?<!(?<!#{@resc})#{@resc})#{Regexp.quote @field_delimiter}/)
-      warn "processing fields - #{str.inspect}"
-      # don't match a field character preceeded by a single escape.
-      fields = str.split(%r{(?<!(?<!#{@resc})#{@resc})#{Regexp.quote @field_delimiter}})
-      # if the last character is a delimiter, then the last index is a field (otherwise, ordinary text)
-      str = str.end_with?(@field_delimiter) ? '' : fields.pop
-      # the first part is outside the field. if delim is the first character, the string will be empty
-      __unesc(fields.shift)
-      stop = @tabstops.index(next_tab)
-      fields.each_with_index do |field, index|
-        # this mostly mirrors tab processing
-        warn "don't know how to do field padding except at right! #{@field.inspect}" unless !field.nil? or field.end_with?(@field_pad_character) # empty fields won't have padding
-	    __unesc(field.sub(/#{Regexp.escape(@field_pad_character)}$/, '')) # TODO try with .tr instead?
-   		fpos = @tabstops[stop + index]
-        if fpos.nil?
-          # prevent exception on running out of tabs
-          warn "out of fields with tabs=#{@tabstops.inspect}! (field: #{field.inspect})"
-          @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
-        else
-          insert_tab(width: to_em(fpos - @current_block.last_tab_position), stop: stop)
+    # start with a copy mode style r-to-l replacement of \* and \n and \w to collect
+    # all the changes to the input text
+
+    if escapes?
+      exp = String.new
+      strend = str.length
+      while i = str.rindex(/(?<!#{@resc})#{@resc}[*"nw]/, strend) and !(strend < 0)
+        esc = get_escape(str, offset: i)
+        exp.prepend str[i + esc.length..strend]
+        case esc[1]
+        when 'n' then exp.prepend esc_n esc[2..-1]
+        when 'w' then exp.prepend esc_w esc[2..-1]
+        when '*' then exp.prepend send 'esc_*', esc[2..-1]
+        when '"' then # \" comment
+          #@current_block << Comment.new(text: copy) # TODO wrong
+          exp = String.new
         end
+        strend = i - 1
       end
+      exp.prepend str[0..strend] unless strend < 0
+      str = exp
     end
 
     strpos = 0
-    strlen = str.length
-    until strpos == strlen
-      c = get_char str[strpos..-1]
-      case c[0]
+    # cut any unescaped trailing whitespace we might've introduced by expanding \*
+    strlen = str.sub!(/((?<!#{@resc})#{@resc} )? *$/, '\1').length
+
+    xlations = @character_translations.keys
+    xlate = if escapes?
+              xlations.empty? ? %r{\t|#{@resc}} : %r{\t|#{@resc}|#{xlations.map { |x| Regexp.escape x }.join('|')}}
+            else
+              xlations.empty? ? %r{\t} : %r{\t|#{xlations.map { |x| Regexp.escape x }.join('|')}}
+            end
+    while i = str.index(xlate, strpos)
+      @current_block << str[strpos..i - 1] unless i == 0
+      c = get_char str[i..-1]
+#                            warn "unesc xlating #{c.inspect}"
+      case c
+      when @hyphenation_character then @current_block << '&shy;'
+
       when "\t"
         # collect however many sequential tabs there might be
-        count = 0
-        while str[strpos] == "\t"
-          strpos += 1
+        count = 1
+        while str[i + 1] == "\t"
+          i += 1
           count += 1
         end
         stop = next_tab(count)
@@ -187,82 +174,86 @@ class Troff
           @current_block << ' '	# REVIEW any space at all is possibly not correct; nroff just runstexttogether when there are no more tabs
                                 # I choose to insert the space because of rogue tabs in e.g. fnattr(1) [SunOS 5.5.1]
         end
-      when @escape_character
-        return '&shy;' if c == @hyphenation_character
-        # we got the full escape back from get_char, as c
-        if respond_to? esc_method = "esc_#{c[1]}"
-          # TODO \* returns insead of outputting - I made this awful complex
-          #       perhaps I should just make all esc_ methods return String, empty or otherwise
-          @current_block << send(esc_method, c[2..-1])
+
+      when *xlations
+        xlc = @character_translations[c].dup
+        if xlc.start_with? "\e"
+          oesc = @escape_character
+          ec "\e"
+          __unesc(xlc)
+          ec oesc
         else
-          @current_block << case c[1] #esc
-                            # TODO \{ and \} separate from .if appears to output nothing printable.
-                            # thus, should break if appearing on a line with only spaces or by itself.
-                            when 'a', 't' then ''                  # always ignored during output mode; "\a" is "non-interpreted leader character"
-                            when '_' then '_'                      # underrule, equivalent to \(ul
-                            when '-' then '&minus;'                # "minus sign in current font"
-                            when ' ' then '&nbsp;'                 # "unpaddable space-sized character"
-                            when '0' then '&ensp;'                 # "digit-width space" - possibly "en space"?
-                            when '%' then '&shy;'                  # discretionary hyphen - TODO this is overrideable, even as something that isn't an escape.
-                            when "'" then '&acute;'                # "typographically equivalent to \(aa" §23.
-                            when '`' then '&#96;'                  # "typographically equivalent to \(ga" §23.
-                            #when '&' then ''                      # "non-printing, zero-width character"
-                            when '&' then @current_block.style[:numeric_align] ? '&zwj;' : '' # more useful as '' except we need &zwj; for numeric align in tbl
-                            when '|' then NarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)          # 1/6 em      narrow space char
-                            when '^' then HalfNarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)      # 1/12em half-narrow space char
-                            when 'c' # apparently everything past the \c is discarded
-                              #str.slice!(0..-1)
-                              strpos = strlen - 2 # we're done, everything past the \c is discarded (leave 2 chars left from end, we'll add \c at the end of the loop)
-                              Continuation.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
-                            when 'e' then @escape_character.dup # printable escape char - don't push a reference, or << may modify it!
-                            when 'p'
-                              if fill?
-                                warn 'uncertain use of \\p (fill break)' # p.29
-                                # TODO this breaks at _end of word_, which might not be where the \p is
-                                # REVIEW should also cause the line to be justified normally
-                                LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
-                              else
-                                ''
-                              end
-                            when 'H'
-                              warn 'uncertain use of \\H (char height)' # p.24 - default unit 'p'
+          @current_block << xlc
+        end
+
+      else # an escape
+        @current_block << case c[1] #esc
+                          # TODO \{ and \} separate from .if appears to output nothing printable.
+                          # thus, should break if appearing on a line with only spaces or by itself. (...maybe?)
+                          when 'n', 'w', '*' then c              # don't interpret \n, \w, or \* again, we already did them above
+                          when 'a', 't' then ''                  # always ignored during output mode; "\a" is "non-interpreted leader character"
+                          when '_' then '_'                      # underrule, equivalent to \(ul
+                          when '-' then '&minus;'                # "minus sign in current font"
+                          when ' ' then '&nbsp;'                 # "unpaddable space-sized character"
+                          when '0' then '&ensp;'                 # "digit-width space" - possibly "en space"?
+                          when '%' then '&shy;'                  # discretionary hyphen - TODO this is overrideable, even as something that isn't an escape.
+                          when "'" then '&acute;'                # "typographically equivalent to \(aa" §23.
+                          when '`' then '&#96;'                  # "typographically equivalent to \(ga" §23.
+                          #when '&' then ''                      # "non-printing, zero-width character"
+                          when 'H' then warn 'uncertain use of \\H (char height)' ; '' # p.24 - default unit 'p' TODO this is wrong, it has an arg we need to advance past
+                          when 'S' then warn 'uncertain use of \\S (char slant)' ; '' # p.26 also wrong
+                          when '&' then @current_block.style[:numeric_align] ? '&zwj;' : '' # more useful as '' except we need &zwj; for numeric align in tbl
+                          when '|' then NarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)          # 1/6 em      narrow space char
+                          when '^' then HalfNarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)      # 1/12em half-narrow space char
+                          when 'e', @escape_character then @escape_character.dup # printable escape char - don't push a reference, or << may modify it!
+                          when 'c' # apparently everything past the \c is discarded
+                            i = strlen - 2 # we're done (leave 2 chars left from end, we'll add \c at the end of the loop)
+                            Continuation.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
+                          when '*' # need to handle \* as a special case
+                            # potentially need to unescape its contents
+                            # REVIEW will we need to deal with \*(\n(.. ??
+                            # REVIEW will this need to go through output, for field processing??
+                            __unesc(send 'esc_*', c[2..-1])
+                            ''
+                          when 'p'
+                            if fill?
+                              warn 'uncertain use of \\p (fill break)' # p.29
+                              # TODO this breaks at _end of word_, which might not be where the \p is
+                              # REVIEW should also cause the line to be justified normally
+                              LineBreak.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)
+                            else
                               ''
-                            when 'S'
-                              warn 'uncertain use of \\S (char slant)' # p.26
-                              ''
-                            when @escape_character then @escape_character
+                            end
+                          else
+                            #warn "unesc elsed #{c.inspect}"
+                            if respond_to? esc_method = "esc_#{c[1]}"
+                              send esc_method, c[2..-1]
                             else
                               warn "pointless escape #{c.inspect}"
-                              c[1..-1] # REVIEW subject this to .tr, or not?
+                              c[1..-1]
                             end
-        end
-        #str.slice! 0, c.length # remove processed esc from str
-        strpos += c.length
-      else
-        #translate str.slice!(0) # remove processed chr from str
-        translate str[strpos]
-        strpos += 1
+                          end
       end
+      strpos = i + c.length
     end
+    @current_block << str[strpos..-1]
   end
 
   # REVIEW does this correctly fail to translate _input_ escapes if escapes
   #        are turned off, or the escape character has changed? I think so,
   #        since it won't be read as an escape by get_char.
+  #
+  # TODO mostly unneeded now, track down remaining uses and rewrite
 
-  def translate(chr = '')
-    return '&shy;' if chr == @hyphenation_character
-    xlc = @character_translations[chr]&.dup or return @current_block << chr
-    #return @current_block << chr unless xlc
-    return @current_block << xlc unless xlc.start_with?("\e")
-    oesc = @escape_character
-    ec "\e"
-    __unesc(xlc)
-    ec oesc
-  end
-
-  def output_translated(str)
-
-  end
+  #def translate(chr = '')
+  #  return '&shy;' if chr == @hyphenation_character
+  #  xlc = @character_translations[chr]&.dup or return @current_block << chr
+  #  #return @current_block << chr unless xlc
+  #  return @current_block << xlc unless xlc.start_with?("\e")
+  #  oesc = @escape_character
+  #  ec "\e"
+  #  __unesc(xlc)
+  #  ec oesc
+  #end
 
 end

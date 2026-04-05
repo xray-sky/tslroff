@@ -3,7 +3,7 @@
 
 collection_namespace 'unbundled' do
   manual_namespace '4.1.1GFX_Rev2',
-                  vendor_class: SunOS::V4_1_1,
+                  vendor_class: SunOS::V4_1,
                   idir: 'sun/sunos/unbundled/4.1.1_gfx_rev2_sun4c',
                   odir: 'Sun/unbundled/4.1.1GFX_Rev2/sun4c',
                   sources: %w[4.1.1-GFX.ENG/_text/man/man[48]*]

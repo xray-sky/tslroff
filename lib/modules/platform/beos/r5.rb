@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/04/22.

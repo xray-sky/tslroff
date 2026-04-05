@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/05/22.
@@ -10,7 +11,7 @@
 #   garbage from extraction in a bunch of the manuals
 #
 
-class NBI_4_2BSD
+module NBI_4_2BSD
   class Troff < Troff
 
     alias :LP :P
@@ -28,7 +29,7 @@ class NBI_4_2BSD
       @named_strings.merge!(
         {
           # tmac.an.new
-          footer: "\\*(]W",
+          footer: "\\*(]W".+@,
           ']D' => 'Unix Programmer\'s Manual', # default set by .TH
           ']W' => '\\f3INTEGRATED SOLUTIONS 4.2 BSD\\f1' # set by .}F
         }

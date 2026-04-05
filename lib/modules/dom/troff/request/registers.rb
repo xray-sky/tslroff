@@ -9,50 +9,25 @@
 #
 #   §8
 #
-# Request  Initial  If no     Notes   Explanation
-#  form     value   argument
-#
-#  .af R c  Arabic   -        -       Assign format c to register R. The available formats are
-#
-#                                       1   0,1,2,3,4,5,...
-#                                     001   000,001,002,003,004,005,...
-#                                       i   0,i,ii,iii,iv,v,...
-#                                       I   0,I,II,III,IV,V,...
-#                                       a   0,a,b,c,...,z,aa,bb,...,zz,aaa,...
-#                                       A   0,A,B,C,...,Z,AA,BB,...,ZZ,AAA,...
-#
-#                                     An Arabic format having N digits specifies a field width
-#                                     of N digits. The read-only registers and the width function
-#                                     are always Arabic.
-#
-#  .nr R ±N M -     -         u       The number register R is assigned the value ±N with
-#                                     respect to the previous value, if any. The increment
-#                                     for auto-incrementing is set to M.
-#
-#  incrementing is done when processing the \n escape, rather than at output, because
-#  it may be a positive or negative increment, or none at all
-#
-#  if we set up an increment, and subsequently .nr without one, is it held? - yes.
-#
-#  enforcement of read_only registers is done in .nr rather than internal to the class,
-#  because the internal registers still need to be updated, just not from document context
-#
-#  what happens when given not-an-N as second arg (invalid expression)
-#  -> ignored. doesn't set anything. same as if no number passed at all.
-#  we set the register = 0, but an unused register in troff has the value 0
-#  so that's probably fine?
-#
-#  Registers are always arabic until changed by .af
-#
-#  .rr R     -      ignored   -       Remove register R. If many registers are being
-#                                     created dynamically, it may become necessary to
-#                                     remove unneeded registers to recapture internal
-#                                     storage space for new registers.
-#
 
 require 'forwardable'
 
 class Troff
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  #  .af R c  Arabic   -        -       Assign format c to register R. The available formats are
+  #
+  #                                       1   0,1,2,3,4,5,...
+  #                                     001   000,001,002,003,004,005,...
+  #                                       i   0,i,ii,iii,iv,v,...
+  #                                       I   0,I,II,III,IV,V,...
+  #                                       a   0,a,b,c,...,z,aa,bb,...,zz,aaa,...
+  #                                       A   0,A,B,C,...,Z,AA,BB,...,ZZ,AAA,...
+  #
+  #                                     An Arabic format having N digits specifies a field width
+  #                                     of N digits. The read-only registers and the width function
+  #                                     are always Arabic.
 
   def af(argstr = '', breaking: nil)
     (reg, fmt) = argstr.split
@@ -61,6 +36,28 @@ class Troff
       @register[reg].format = fmt
     end
   end
+
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  #  .nr R ±N M -     -         u       The number register R is assigned the value ±N with
+  #                                     respect to the previous value, if any. The increment
+  #                                     for auto-incrementing is set to M.
+  #
+  #  incrementing is done when processing the \n escape, rather than at output, because
+  #  it may be a positive or negative increment, or none at all
+  #
+  #  if we set up an increment, and subsequently .nr without one, is it held? - yes.
+  #
+  #  enforcement of read_only registers is done in .nr rather than internal to the class,
+  #  because the internal registers still need to be updated, just not from document context
+  #
+  #  what happens when given not-an-N as second arg (invalid expression)
+  #  -> ignored. doesn't set anything. same as if no number passed at all.
+  #  we set the register = 0, but an unused register in troff has the value 0
+  #  so that's probably fine?
+  #
+  #  Registers are always arabic until changed by .af
 
   def nr(argstr = '', breaking: nil)
     reg = argstr.split(/\s/).first or return
@@ -84,6 +81,14 @@ class Troff
 
     @register[reg].increment = increment.to_i if increment
   end
+
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  #  .rr R     -      ignored   -       Remove register R. If many registers are being
+  #                                     created dynamically, it may become necessary to
+  #                                     remove unneeded registers to recapture internal
+  #                                     storage space for new registers.
 
   def rr(argstr = '', breaking: nil)
     return nil if argstr.empty?
@@ -134,6 +139,10 @@ class Troff
       '.j' => Register.new(1, ro: true),                                  # current adj mode and type. can be saved for use with .ad to restore
       #.k                                                                 # horizontal size of text (minus indent) of current partially collected output line, if any, in current env.
       '.l' => Register.new(to_u('7.5i'), ro: true),                       # current line length. TODO connect this to some future implementation of .ll ??
+      #'.l' => Register.new(7, ro: true),                                 # REVIEW Solaris 2.4 x86 SDK ApplicationShell(3X) suggests this is supposed to be in i already??
+                                                                          #   tbl uses this to determine whether the table is too wide for the page and to calculate table indent
+                                                                          #   - actually it's inconsistent, it treats it as inches once, for determining whether it's too wide to fit,
+                                                                          #     and later, units for calculating table indent. latter matters more, for us.
       #.n                                                                 # length of text portion on previous output line.
       '.o' => Register.new(0, ro: true),                                  # current page offset (left margin). separate from indents. REVIEW: how does changing this interact with css ('0' provides 1in margin)
       #.p                                                                 # current page length.
@@ -159,93 +168,5 @@ class Troff
     @register['c.'] = @register['.c']
 
     true
-  end
-
-  class Register
-    extend Forwardable
-
-    attr_accessor :value, :format, :increment
-    def_delegators :@value, :zero?, :>, :<, :<=, :>=, :==, :-@, :to_f, :to_i, :to_int
-
-    ALPHA_MAP = [ [0], 'a'..'z', 'aa'..'zz', 'aaa'..'zzz' ].map(&:to_a).flatten.freeze
-    ROMAN_MAP = [ [ '', 'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix' ],
-                  [ '', 'x', 'xx', 'xxx', 'xl', 'l', 'lx', 'lxx', 'lxxx', 'xc' ],
-                  [ '', 'c', 'cc', 'ccc', 'cd', 'd', 'dc', 'dcc', 'dccc', 'cm' ],
-                  [ '', 'm', 'mm', 'mmm' ] ].freeze
-
-    def initialize(value = 0, increment = 0, ro: false)
-      self.value = value
-      @format    = '1'
-      @increment = increment
-      @read_only = ro
-    end
-
-    def dup
-      Register.new(value, increment)
-    end
-
-    def incrementing?
-      !@increment.zero?
-    end
-
-    def incr
-      @value += @increment
-    end
-
-    def decr
-      @value -= @increment
-    end
-
-    def read_only?
-      @read_only
-    end
-
-    def value=(x)
-      raise RuntimeError "register sets only Integer value, not #{x.class.name}" unless x.respond_to?(:to_i)
-      @value = x.to_i
-    end
-
-    def coerce(other)
-      [ Register.new(other), self ]
-    end
-
-    def to_str
-      case @format
-      when '1'     then @value.to_s
-      when /(\d+)/ then sprintf("%0#{Regexp.last_match(1).length}d", @value)
-      when /(a)/i
-        Regexp.last_match(1) == 'A' ? ALPHA_MAP[@value].upcase : ALPHA_MAP[@value]
-      when /(i)/i
-        return '0' if @value.zero?
-        ord = 0
-        val = String.new
-        num = @value.to_s
-        while digit = num[-1] do # REVIEW why am I doing this in reverse order??
-          begin
-            val.prepend(ROMAN_MAP[ord][digit.to_i])
-            num.chop!
-            ord += 1
-          rescue NoMethodError => e
-            warn "register out of range for roman format (@value)"
-          end
-        end
-        Regexp.last_match(1) == 'I' ? val.upcase : val
-      end
-    end
-
-    def arithmetic_method(other)
-      case other
-      when Fixnum, Float, Register then other.send(__callee__, @value)
-      when String                  then other.send(__callee__, @value.to_str)
-      else raise TypeError, "Register can't perform #{__callee__} with #{other.class} type"
-      end
-    end
-
-    alias to_s to_str
-    alias + arithmetic_method
-    alias * arithmetic_method
-    alias - arithmetic_method
-    alias / arithmetic_method
-
   end
 end

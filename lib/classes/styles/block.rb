@@ -95,7 +95,7 @@ class Block
 
   class Monospace < Block
     def to_html
-      "<pre#{@style}>#{@text.collect(&:to_html).join}</pre>\n"
+      %(<p class="monospace"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
     end
   end
 
@@ -238,9 +238,9 @@ class Block
 
   private
 
-  def object_exception_class
-    Kernel.const_get("ImmutableBlockError")
-  end
+  #def object_exception_class
+  #  Kernel.const_get("ImmutableBlockError")
+  #end
 
 end
 

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/16/22.
@@ -7,7 +8,9 @@
 # Amiga SVR4 Platform Overrides
 #
 
-class AMIX::V2_01
-  class Nroff < AMIX::Nroff ; end
-  class Troff < AMIX::Troff ; end
+module AMIX
+  module V2_01
+    class Nroff < Nroff ; end
+    class Troff < Troff ; end
+  end
 end

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/31/22.
@@ -9,19 +10,21 @@
 # TODO
 #
 
-class NEWS_os::V3_3_en_US
-  class Troff < NEWS_os::Troff
+module NEWS_os
+  module V3_3_en_US
+    class Troff < Troff
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          footer: "NEWS-OS\t\\s-2Release 3.3\\s+2",
-          ']D' => "UNIX Programmer's Manual",
-          ']W' => "7th Edition"
-        }
-      )
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            footer: "NEWS-OS\t\\s-2Release 3.3\\s+2".+@,
+            ']D' => "UNIX Programmer's Manual",
+            ']W' => "7th Edition"
+          }
+        )
+      end
+
     end
-
   end
 end

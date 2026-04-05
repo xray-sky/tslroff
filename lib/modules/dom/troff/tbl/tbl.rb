@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 #
+# TODO
+#   I wonder if it's reasonable or possible to study the output from tbl and
+#   try to reverse engineer a Table from the troff it generates. We have more
+#   than a few pages where there is only postprocessed tbl. I wonder how
+#   consistent it is, from version to version.
+#
 
 module Troff::Tbl
 
@@ -269,7 +275,6 @@ module Troff::Tbl
   end
 
   def next_line_tbl
-    resc = Regexp.escape @escape_character || '' # escapes might be disabled; in which case we needn't bother matching them
     line = next_line
 
     # we can have gotten one of three things:
@@ -283,21 +288,25 @@ module Troff::Tbl
 
     case line
     when /^ *$/ then '' # treat a line of all whitespace same as an empty line.
-    when /^.\s*T&/       # special case for format change.
+    when /^\.\s*T&/     # special case for format change. (has to be .T& to be picked up by tbl. REVIEW including whitespace?)
       parse line
       @tbl_bottom_rules = @tbl_top_rules.dup
       @tbl_top_rules = nil
       next_line_tbl
-    when /^\./           # is a request. process it. do over.
+    when /^[#{@rcc}#{@rc2}]/           # is a request. process it. do over.
       parse line
-      next_line_tbl
-    when /^(\s*#{resc}\^|\s*#{resc}?_|\s*=)+$/   # TODO allow changed field separator - prtdiag(1m) [SunOS 5.5.1] has \_ \_ \_ that is accepted
+      return
+    when /^(?:#{@resc}\&)?#{@resc}h/   # input lines beginning \&\h or \h resembles tbl output, i.e. is already preprocessed
+      @tbl_preprocessed ||= true.tap { warn "probable preprocessed tbl output?" }
+      parse line
+      return
+    when /^(\s*#{@resc}\^|\s*#{@resc}?_|\s*=)+$/   # TODO allow changed field separator - prtdiag(1m) [SunOS 5.5.1] has \_ \_ \_ that is accepted
       # TODO _ or = followed by a space (before the tab) are literal _ or =, not borders
       rules = Regexp.last_match(0).split(@tbl_cell_delim)
       @tbl_formats.next_row if rules.length > 1 # ditch the format given for this row... _if it has tabs_
       # based on Documenter's Workbench sample table 3 maybe we want bottom borders if there was a row span
       # REVIEW this is arbitrary, and probably we'll find out there's no correct decision.
-      if rules.detect { |r| r.match? /^(\s*#{resc}\^)/ }
+      if rules.detect { |r| r.match? /^(\s*#{@resc}\^)/ }
         @tbl_bottom_rules = rules.tap { |n| warn "bottom border change line #{n.inspect}" }
       else
         @tbl_top_rules = rules.tap { |n| warn "top border change line #{n.inspect}" }

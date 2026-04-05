@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # rake.rb
 #
 # tslroff Rakefile utility methods
@@ -10,8 +12,6 @@
 #   indexing
 #   comments
 #   leverage Pathname class and/or String.pathmap method?
-#
-# frozen_string_literal: true
 #
 
 require 'erb'
@@ -203,6 +203,7 @@ end
 #
 
 def manual_task(source, pubdir, vendor_class: nil, source_args: {})
+  ppid = Process.pid
   srcfile = File.basename(source)
   k = Kernel.const_defined?("#{vendor_class}::Manual") ? Kernel.const_get("#{vendor_class}::Manual") : ::Manual
   man = k.new source, vendor_class: vendor_class, source_args: source_args
@@ -238,6 +239,8 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {})
   File.open("#{odir}/#{title}.html", File::CREAT | File::TRUNC | File::WRONLY, 0o644) do |f|
     f.write ERB.new(TEMPLATE, trim_mode: '-').result(taskcontext)
   end
+
+  exit unless Process.pid == ppid # guard against fork (i.e. VMS Help)
 
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"

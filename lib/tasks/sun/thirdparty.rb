@@ -66,7 +66,7 @@ collection_namespace 'thirdparty' do
                   sources: %w[man/OMNI/man[148]]
 
   manual_namespace 'Illustra/Datablade_1.1',
-                  vendor_class: SunOS::V5_5_1, # ...probably?
+                  vendor_class: SunOS::V5_5, # ...probably?
                   idir: 'sun/sunos/thirdparty/illustra_datablade_1.1',
                   odir: 'Sun/thirdparty/Illustra/Datablade_1.1',
                   sources: %w[dbdk/man/manl]
@@ -177,7 +177,7 @@ collection_namespace 'thirdparty' do
                   ]
 
   manual_namespace 'Pixar/High_Speed_Interface_1.1',
-                  vendor_class: SunOS::V4_1_4,
+                  vendor_class: SunOS::V4_1,#_4,
                   idir: 'pixar/hsi-sun3/1.1',
                   odir: 'Sun/thirdparty/Pixar/High_Speed_Interface_1.1',
                   sources: %w[hsi/man/man[1-8]]
@@ -202,7 +202,7 @@ collection_namespace 'thirdparty' do
 
   # TODO .TH footer (not a revision date)
   manual_namespace 'Transarc/AFS_3.2',
-                  vendor_class: SunOS::V4_1_4,
+                  vendor_class: SunOS::V4_1,
                   idir: 'sun/sunos/thirdparty/transarc_afs_3.2',
                   odir: 'Sun/thirdparty/Transarc/AFS_3.2',
                   sources: %w[man/man1]

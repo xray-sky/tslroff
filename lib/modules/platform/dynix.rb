@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/14/23.
@@ -9,7 +10,7 @@
 # TODO
 #
 
-class DYNIX_ptx
+module DYNIX_ptx
   class Manual < Manual
     def initialize file, vendor_class: nil, source_args: {}
       case File.basename file
@@ -44,7 +45,7 @@ class DYNIX_ptx
       @named_strings.merge!(
         {
           # tmac.an.new
-          footer: "\\*(]W",
+          footer: "\\*(]W".+@,
           ']D' => "UNIX Programmer's Manual", # default set by .TH
           ']W' => '7th Edition', # default set by .TH
           'V)' => ''

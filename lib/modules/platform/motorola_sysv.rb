@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -15,34 +16,11 @@
 #   a few pages want to .rm }C for some reason
 #
 
-class Motorola_SysV
+module Motorola_SysV
   class Nroff < Nroff ; end
 
   # looks like none of this matters much, as the provided pages are all nroff format except for X11.
   class Troff < Troff
-
-    MANUAL_SECTION_NAMES = {
-      '1'  => 'USER COMMANDS ',
-      '1C' => 'BASIC NETWORKING COMMANDS',
-      '1F' => 'FMLI UTILITIES',
-      '1G' => 'GOLD UTILITIES',
-      '1M' => 'ADMINISTRATOR COMMANDS ',
-      '2'  => 'SYSTEM CALLS',
-      '3'  => 'LIBRARY FUNCTIONS',
-      '3C' => 'C LIBRARY FUNCTIONS',
-      '3E' => 'ELF LIBRARY FUNCTIONS',
-      '3G' => 'GENERAL LIBRARY FUNCTIONS',
-      '3M' => 'MATHEMATICAL LIBRARY',
-      '3N' => 'NETWORK FUNCTIONS',
-      '3S' => 'STANDARD I/O FUNCTIONS',
-      '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
-      '4'  => 'FILE FORMATS',
-      '5'  => 'PUBLIC FILES, TABLES, AND TROFF MACROS',
-      '7'  => 'SPECIAL FILES AND DEVICES',
-      'L'  => 'LOCAL COMMANDS'
-    }
-
-    MANUAL_SECTION_NAMES.default = 'MISC. REFERENCE MANUAL PAGES'
 
     alias :LP :P
 
@@ -56,7 +34,7 @@ class Motorola_SysV
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W",
+          footer: "\\*(]W".+@,
           #'Tm' => '&trade;',
           # DocString_MOT
           'sS' => 'UNIX',
@@ -123,4 +101,28 @@ class Motorola_SysV
     end
 
   end
+
+  MANUAL_SECTION_NAMES = {
+    '1'  => 'USER COMMANDS ',
+    '1C' => 'BASIC NETWORKING COMMANDS',
+    '1F' => 'FMLI UTILITIES',
+    '1G' => 'GOLD UTILITIES',
+    '1M' => 'ADMINISTRATOR COMMANDS ',
+    '2'  => 'SYSTEM CALLS',
+    '3'  => 'LIBRARY FUNCTIONS',
+    '3C' => 'C LIBRARY FUNCTIONS',
+    '3E' => 'ELF LIBRARY FUNCTIONS',
+    '3G' => 'GENERAL LIBRARY FUNCTIONS',
+    '3M' => 'MATHEMATICAL LIBRARY',
+    '3N' => 'NETWORK FUNCTIONS',
+    '3S' => 'STANDARD I/O FUNCTIONS',
+    '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
+    '4'  => 'FILE FORMATS',
+    '5'  => 'PUBLIC FILES, TABLES, AND TROFF MACROS',
+    '7'  => 'SPECIAL FILES AND DEVICES',
+    'L'  => 'LOCAL COMMANDS'
+  }
+
+  MANUAL_SECTION_NAMES.default = 'MISC. REFERENCE MANUAL PAGES'
+  MANUAL_SECTION_NAMES.freeze
 end

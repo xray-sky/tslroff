@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -41,7 +42,7 @@ class CX_UX
       super
       @named_strings.merge!(
         {
-          footer:"\\*(]W",
+          footer:"\\*(]W".+@,
           #'Tm' => '&trade;',
           ']W' => File.mtime(@source.path).strftime('%B %d, %Y')
         }
@@ -73,7 +74,7 @@ class CX_UX
       ds "]W #{args[3]}"
       ds "]D #{args[4]}"
 
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)".+@
       heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
       @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
 

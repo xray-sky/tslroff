@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/10/22.
@@ -17,7 +18,7 @@
 #   pic(1) as well!
 #
 
-class Plan9
+module Plan9
 
   # name collision with "Geneva Light"
   #class Font::L < ::Font::C ; end  ### TypeError: superclass mismatch for class L
@@ -44,7 +45,7 @@ class Plan9
           'Tm' => '&trade;',
           ']D' => 'Plan 9',
           ']W' => File.mtime(@source.path).strftime("%B %d, %Y"),
-          footer: "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
+          footer: "\\*(]D\\0\\0\\(em\\0\\0\\*(]W".+@
         }
       )
     end
@@ -69,6 +70,7 @@ class Plan9
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
+    # TODO convert from define_method to def
     %w[B I L].each do |a|
       define_method a do |*args|
         fp = @mounted_fonts.index (a=='B') ? 'L' : a # .B and .L both use \f5
@@ -125,7 +127,7 @@ class Plan9
       ds "]L #{args[2]}" # I choose not to take tmac.an's parens
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)".+@
       heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)

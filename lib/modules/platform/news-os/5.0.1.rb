@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/31/22.
@@ -19,33 +20,34 @@
 require_relative '../sunos'
 require_relative '../sunos/4.0'
 
-class NEWS_os::V5_0_1
-  class Nroff < NEWS_os::Nroff
-    def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
-      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      @heading_detection ||= %r{^(?<section>[A-Z][A-Za-z\s]+)$}
-      @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
-      super(source)
-    end
-  end
-
-  class Troff < SunOS::V4_0::Troff
-
-    def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
-      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+module NEWS_os
+  module V5_0_1
+    class Nroff < Nroff
+      def initialize(source)
+        @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+        @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+        @heading_detection ||= %r{^(?<section>[A-Z][A-Za-z\s]+)$}
+        @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
+        super(source)
+      end
     end
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => File.mtime(@source.path).strftime('%B %d, %Y'),
-        }
-      )
-    end
+    class Troff < SunOS::V4_0::Troff # TODO this gets all the SunOS 4.0 initialize overrides too
 
+      def initialize(source)
+        @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+        @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+        super(source)
+      end
+
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => File.mtime(@source.path).strftime('%B %d, %Y'),
+          }
+        )
+      end
+    end
   end
 end

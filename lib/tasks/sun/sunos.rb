@@ -102,7 +102,7 @@ collection_namespace 'SunOS' do
                   sources: %w[sun4/share/man/man[1-8]]
 
   manual_namespace '4.1.1',
-                  vendor_class: SunOS::V4_1_1,
+                  vendor_class: SunOS::V4_1,
                   idir: 'Sun/SunOS/4.1.1',
                   sources: %w[
                     share/man/man[1-8]
@@ -110,7 +110,7 @@ collection_namespace 'SunOS' do
                   ]
 
   manual_namespace '4.1.2',
-                  vendor_class: SunOS::V4_1_2,
+                  vendor_class: SunOS::V4_1,
                   odir: 'Sun/SunOS/4.1.2',
                   sources: %w[
                     share/man/man[1-8]
@@ -120,7 +120,7 @@ collection_namespace 'SunOS' do
   # 4.1.3 (Solaris 1.1 SunSoft Version B, 704-3545-10) - all other 4.1.3mumble Domestic manuals are identical to 4.1.3_U1
   # TODO reveal the secret of how it's different
   manual_namespace '4.1.3B',
-                  vendor_class: SunOS::V4_1_3,
+                  vendor_class: SunOS::V4_1,
                   idir: 'sun/sunos/4.1.3_sunsoft_revB',
                   odir: 'Sun/SunOS/4.1.3B',
                   sources: %w[
@@ -131,7 +131,7 @@ collection_namespace 'SunOS' do
   # All identical: 4.1.3 SunSoft Ver A, 4.1.3 SunSoft Ver C, 4.1.3_U1, and 4.1.3_U1 SunSoft Ver B (704-3662)
   # TODO 4.1.3_U1 SunSoft Ver B (704-4037) has International/EUC amendments - not identical, though also en_US
   manual_namespace '4.1.3_U1',
-                  vendor_class: SunOS::V4_1_3,
+                  vendor_class: SunOS::V4_1,#_3,
                   idir: 'sun/sunos/4.1.3u1',
                   odir: 'Sun/SunOS/4.1.3_U1',
                   sources: %w[
@@ -140,7 +140,7 @@ collection_namespace 'SunOS' do
                   ]
 
   manual_namespace '4.1.4',
-                  vendor_class: SunOS::V4_1_4,
+                  vendor_class: SunOS::V4_1,
                   odir: 'Sun/SunOS/4.1.4',
                   sources: %w[
                     share/man/man[1-8]
@@ -230,7 +230,7 @@ collection_namespace 'SunOS' do
 
   # TODO re-extract from media
   manual_namespace '5.5.1',
-                  vendor_class: SunOS::V5_5_1,
+                  vendor_class: SunOS::V5_5,
                   odir: 'Sun/SunOS/5.5.1',
                   sources: %w[share/man/man[1-9]*]
 

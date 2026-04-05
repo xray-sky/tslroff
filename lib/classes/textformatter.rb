@@ -30,7 +30,7 @@ class TextFormatter
   end
 
   def warn(msg)
-    super("#{@warn_prefix}#{file} [#{line_number}]: #{msg}")
+    super("#{@warn_prefix}#{file} [#{line_number}]: #{@warn_suffix}#{msg}")
   end
 
   def page_title

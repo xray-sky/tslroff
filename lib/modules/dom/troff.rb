@@ -24,12 +24,18 @@ class Troff < TextFormatter
     end
   end
 
-  require_relative 'troff/tmac/an'
-  include Macros::An
+  # reusable parts of Troff - e.g. for formatting tabs in VMS Help
+  include Tab
+
+  # preprocessor support
   include Eqn
   include Macros::Eqn
   include Tbl
   include Macros::Tbl
+
+  # macro packages
+  require_relative 'troff/tmac/an'
+  include Macros::An
 
   DELIMITERS = %w[\002 \003 \005 \006 \007 " '].freeze # unused. REVIEW necessary? useful?
   REQUESTS = %w[
@@ -67,11 +73,6 @@ class Troff < TextFormatter
 
     super(source)
   end
-
-  # TODO / REVIEW .so ugly
-  #def warn(msg)
-  #  super("#{"#{@so_chain} [#{input_line_number}]: " if @so_chain}#{msg}")
-  #end
 
   def to_html(halt_on: nil)
     @current_block = blockproto
@@ -124,14 +125,8 @@ class Troff < TextFormatter
     block_given? ? yield(msg) : warn("debug: #{msg.collect(&:inspect).join(' ')}")
   end
 
-  #def input_line_number
-  #  @register['.c']&.value || 0
-  #end
-
-  # not delegated to super, due to replacing Source @lines with macro @lines during local macro processing
   def next_line
-    #l = super.tap { @register['.c'].incr }.chomp # REVIEW do we ever need to perserve the trailing \n ?
-    l = @lines.tap { @register['.c'].incr }.next.chomp
+    l = super.tap { @register['.c'].incr }.chomp # REVIEW do we ever need to perserve the trailing \n ?
 
     # Hidden newlines -- REVIEW does this need to be any more sophisticated?
     # REVIEW might be space adjusted? see synopsis, fsck(1m) [GL2-W2.5]
@@ -151,7 +146,7 @@ class Troff < TextFormatter
     break_adj # eat a break at the end of a block; this wouldn't have whitespaced. but html will REVIEW is this working??
               # - no, it's eating the final break in a nofill, when we go to .ig! but we don't need blockproto in .ig
               #   so that is the solution for now. but watch this.
-    type = Block::Monospace if @cs
+    type = Block::Monospace if @cs and type == Block::Paragraph
     block = type.new
     block.style[:section] = @section_heading if @section_heading
     block.style[:linkify] = true if @section_heading =~ @related_info_heading

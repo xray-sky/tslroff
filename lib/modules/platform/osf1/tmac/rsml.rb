@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # /usr/share/lib/tmac/rsml => rsml.rb
 #
 # .\" @(#)$RCSfile: rsml,v $ $Revision: 4.1.2.2 $ (DEC) $Date: 1992/11/23 17:09:40 $

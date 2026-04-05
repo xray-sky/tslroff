@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/2/22.
@@ -7,7 +8,7 @@
 # mips RISC/os Platform Overrides
 #
 
-class RISC_os
+module RISC_os
   class Nroff < Nroff
 
     def initialize(source)

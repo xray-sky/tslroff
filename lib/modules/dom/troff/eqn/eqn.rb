@@ -4,7 +4,7 @@
 #     character such as x, you may use a complicated construction enclosed in braces instead.
 #
 #     when processing between .EQ/.EN it looks like no requests or macros are processed.
-#     no whitespace allowed; must end exactly with /^\.EN$/
+#     no whitespace allowed; must end exactly with /^\.EN$/ (let's go preprocessor, I guess)
 #
 #     Any argument to the .EQ macro will be placed at the right margin as an equation number.
 #
@@ -59,15 +59,15 @@
 # NOTE
 #   Be careful about side effects calling out to other methods --
 #   * unescape str vs. parse str (space adjust, breaks)
-#   * ft and ps vs. parse ".ft" and parse ".ps" (@output_indicator)
 #   * @register['.u'] vs. fi (blockproto)
 #   * etc.
 #
 # TODO "tabs output"
 
-Dir.glob("#{__dir__}/words/*.rb").each do |i|
-  require_relative i
-end
+require_relative 'words/define'
+require_relative 'words/font'
+require_relative 'words/math'
+require_relative 'words/matrix'
 
 class Troff
   module Eqn
@@ -137,7 +137,8 @@ class Troff
             mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rend}|(?<!#{resc})#{rend}/)
             unless mark
               warn "eqn unterminated delim #{@eqn_end.inspect}! -- pulling next line"
-              line << next_line
+              line << next_line # TODO this will miss any input processing on next_line? fix this when we fix destructive processing of line DEC unbundled Open3D glTexImage1D.3gl
+              mark = line.index(/(?<!#{resc})#{resc}#{resc}#{rend}|(?<!#{resc})#{rend}/)
             end
             unescape head
             eqn_setup

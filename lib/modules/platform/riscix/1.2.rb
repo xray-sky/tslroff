@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -24,26 +25,22 @@
 #   sccstorcs(8) SEE ALSO refs with space between name and section
 #
 
-class RISCiX::V1_2
+module RISCiX
+  module V1_2
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'sticky.8' then kwargs[:magic] = :Troff
+        end
 
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'sticky.8' then source_args[:magic] = 'Troff'
+        super file, **kwargs, &block
+
+        case @file
+        when 'sticky.8' then patch_line(1, /^/, '.\"')
+        end
       end
-      super file, vendor_class: vendor_class, source_args: source_args
-    end
-  end
-
-  class Troff < RISCiX::Troff
-
-    def initialize(source)
-      case source.file
-      when 'sticky.8' then source.patch_line(1, /^/, '.\"')
-      end
-      super source
     end
 
+    class Troff < Troff ; end
   end
-
 end

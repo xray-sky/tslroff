@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/08/22.
@@ -7,18 +8,69 @@
 # SunOS 3.5 Platform Overrides
 #
 
-class SunOS::V3_5
+module SunOS
+  module V3_5
 
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'mc68881version.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'mc68881version.8' then kwargs[:magic] = :Troff
+        when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
+          raise ManualIsBlacklisted, 'not a manual entry'
+        when 'eqn.eqn', 'eqnchar.eqn'
+          raise ManualIsBlacklisted, 'eqn preprocessed entries (duplicates)'
+        end
+
+        super(file, **kwargs, &block)
+
+        case @file
+        when 'erf.3m'
+          # troff switches font size to do the baseline shift, and I can't get that in html.
+          # the ouput shift is in em, at the (smaller) size of the outputted text.
+          patch_line 31, /\\s10/, '\s12', global: true
+          patch_line 31, /(\\u)/, '\\v@-0.5v@', global: true
+          patch_line 31, /(\\d)/, '\\v@0.5v@', global: true
+        when 'lgamma.3m' # REVIEW gamma.3m? (doesn't exist, so isn't a problem?)
+          # troff switches font size to do the baseline shift, and I can't get that in html.
+          # the ouput shift is in em, at the (smaller) size of the outputted text.
+          patch_line 27, /\\s10/, '\s12', global: true
+          patch_line 27, /(\\u)/, '\\v@-0.5v@', global: true
+          patch_line 27, /(\\d)/, '\\v@0.5v@', global: true
+        end
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
     end
-  end
 
-  class Troff < SunOS::Troff
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => 'Sun Release 3.5'
+          }
+        )
+      end
+
+      # REVIEW
+      # this is used seemingly to prevent processing the next line
+      # as a request. but, it's not in tmac.an or the DWB manual.
+      # still used in 3.5, but only for binmail(1)
+      def li(*_args)
+        parse("\\&" + next_line)
+      end
+
+      def TH(*args)
+        ds "]L Last change: #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+        ds "]W #{args[3]}" if args[3] and !args[3].empty?
+        ds "]D #{args[4]}" if args[4] and !args[4].empty?
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+    end
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',
@@ -53,57 +105,6 @@ class SunOS::V3_5
     }
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
-
-    def initialize(source)
-      case source.file
-      when 'list', 'Makefile', 'rfiles', 'ufiles', 'vfiles'
-        raise ManualIsBlacklisted, 'not a manual entry'
-      when 'eqn.eqn', 'eqnchar.eqn'
-        raise ManualIsBlacklisted, 'eqn preprocessed entries (duplicates)'
-      when 'erf.3m'
-        # troff switches font size to do the baseline shift, and I can't get that in html.
-        # the ouput shift is in em, at the (smaller) size of the outputted text.
-        source.patch_line 31, /\\s10/, '\s12', global: true
-        source.patch_line 31, /(\\u)/, '\\v@-0.5v@', global: true
-        source.patch_line 31, /(\\d)/, '\\v@0.5v@', global: true
-      when 'lgamma.3m' # REVIEW gamma.3m? (doesn't exist, so isn't a problem?)
-        # troff switches font size to do the baseline shift, and I can't get that in html.
-        # the ouput shift is in em, at the (smaller) size of the outputted text.
-        source.patch_line 27, /\\s10/, '\s12', global: true
-        source.patch_line 27, /(\\u)/, '\\v@-0.5v@', global: true
-        source.patch_line 27, /(\\d)/, '\\v@0.5v@', global: true
-      end
-      super source
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => 'Sun Release 3.5'
-        }
-      )
-    end
-
-    # REVIEW
-    # this is used seemingly to prevent processing the next line
-    # as a request. but, it's not in tmac.an or the DWB manual.
-    # still used in 3.5, but only for binmail(1)
-    def li(*_args)
-      parse("\\&" + next_line)
-    end
-
-    def TH(*args)
-      ds "]L Last change: #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].empty?
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
+    MANUAL_SECTION_NAMES.freeze
   end
 end

@@ -136,10 +136,9 @@ class Troff
   #                                           file (e.g., a macro that is still active) is
   #                                           suspended.
 
-  def so(argstr = '', breaking: nil, basedir: nil)
+  def so(argstr = '', breaking: nil, basedir: nil, source_class: nil)
     return if argstr.strip.empty?
     name = argstr.split.first
-
     # make this relative by trying to find file working backward
     # NOTE this is relative _to the man page directory_ (@source.dir)
     # REVIEW will we ever see a non-absolute path here, that we could maybe use directly?
@@ -160,7 +159,7 @@ class Troff
     opos = @register['.c'].dup
     osrc = @source
 
-    @source = Source.new localfile
+    @source = (source_class || Source).new localfile
     @register['.c'] = Register.new(0, 1, :ro => true)
     @lines = @source.iter
     loop do

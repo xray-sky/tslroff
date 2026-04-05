@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 #
 
+require_relative '../text'
+
 class Tab < Text
   attr_reader :width, :stop
 

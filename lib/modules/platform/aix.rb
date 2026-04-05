@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/07/22.
@@ -7,8 +8,8 @@
 # IBM AIX Platform Overrides
 #
 
-class AIX
-  class Nroff < ::Nroff
+module AIX
+  class Nroff < Nroff
 
     def page_title
       "#{@manual_entry}(#{@manual_section})"

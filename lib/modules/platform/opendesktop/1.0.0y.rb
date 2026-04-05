@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/05/22.
@@ -10,9 +11,51 @@
 # √ binary garbage in several pages?? - they're packed AND compressed.
 #
 
-class OpenDesktop::V1_0_0y
+module OpenDesktop
+  module V1_0_0y
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        if ZEXTRA.include? File.basename(file)
+          kwargs[:magic] = 'Nroff'
+          super(file, **kwargs) { |f| IO.readlines("| gzip_10.6 -dc #{f} | zcat") }
+        else
+          super(file, **kwargs, &block)
+        end
+      end
+    end
 
-  class Manual < OpenDesktop::Manual
+    class Nroff < Nroff
+
+      def initialize(source)
+        case source.file
+        when 'assign.CMD.z', 'attrib.CMD.z', 'break.CMD.z', 'chdir.CMD', 'chkdsk.CMD.z',
+             'cls.CMD', 'command.CMD.z', 'ctty.CMD.z', 'date.CMD.z', 'del.CMD.z'
+          @output_directory = 'man.DOS'
+        when 'bdftosnf.X.z', 'ico.X.z', 'mkfontdir.X.z', 'oclock.X.z', 'showsnf.X.z',
+             'xdpyinfo.X.z', 'xedit.X.z', 'xev.X', 'xeyes.X.z', 'xmodmap.X.z', 'xset.X.z',
+             'xwininfo.X.z', 'Xsight.X.z', 'image.X.z', 'lccdm.X.z', 'resize.X.z', 'xanswer.X.z',
+             'xbiff.X.z', 'xcalc.X.z', 'xclipboard.X.z', 'xcutsel.X.z', 'xfd.X.z', 'xhost.X.z',
+             'xinit.X.z', 'xkill.X.z', 'xload.X.z', 'xlogo.X.z', 'xlsfonts.X.z', 'xlswins.X.z',
+             'xmag.X.z', 'xpr.X.z', 'xprop.X.z', 'xrdb.X.z', 'xrefresh.X.z', 'xsetroot.X.z',
+             'xwd.X.z', 'xwud.X.z'
+          @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\d+)\))\s+}
+          @related_info_heading = 'SEE ALSO'
+          # TODO put back the numeric section linkify methods
+        when 'xclock.X.z', 'xterm.X.z', 'X.X.z', 'xdm.X.z', 'bitmap.X.z', 'dos.X.z', 'xman.X.z'
+          define_singleton_method(:lines) { self }
+          @heading_detection = %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+          @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\d+)\))\s+}
+          @related_info_heading = 'SEE ALSO'
+          # TODO put back the numeric section linkify methods
+        end
+        @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+        @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
+        @related_info_heading ||= 'See Also'
+        super(source)
+      end
+
+    end
+
     # these are the packed+compressed pages
     ZEXTRA = %w[
       Intro.ADM.z accept.ADM.z dial.ADM.z divvy.ADM.z dmesg.ADM.z dparam.ADM.z
@@ -94,48 +137,6 @@ class OpenDesktop::V1_0_0y
       ftp.TC.z
 
       mwm.X.z	xclock.X.z	xterm.X.z	X.X.z	xdm.X.z	bitmap.X.z	dos.X.z	xman.X.z
-    ]
-
-    def initialize(file, vendor_class: nil, source_args: nil)
-      srcargs = source_args.dup || {}
-      if ZEXTRA.include? File.basename(file)
-        srcargs[:magic] = 'Nroff'
-        super(file, vendor_class: vendor_class, source_args: srcargs) { |f| IO.readlines("| gzip_10.6 -dc #{f} | zcat") }
-      else
-        super(file, vendor_class: vendor_class, source_args: srcargs)
-      end
-    end
-  end
-
-  class Nroff < OpenDesktop::Nroff
-
-    def initialize(source)
-      case source.file
-      when 'assign.CMD.z', 'attrib.CMD.z', 'break.CMD.z', 'chdir.CMD', 'chkdsk.CMD.z',
-           'cls.CMD', 'command.CMD.z', 'ctty.CMD.z', 'date.CMD.z', 'del.CMD.z'
-        @output_directory = 'man.DOS'
-      when 'bdftosnf.X.z', 'ico.X.z', 'mkfontdir.X.z', 'oclock.X.z', 'showsnf.X.z',
-           'xdpyinfo.X.z', 'xedit.X.z', 'xev.X', 'xeyes.X.z', 'xmodmap.X.z', 'xset.X.z',
-           'xwininfo.X.z', 'Xsight.X.z', 'image.X.z', 'lccdm.X.z', 'resize.X.z', 'xanswer.X.z',
-           'xbiff.X.z', 'xcalc.X.z', 'xclipboard.X.z', 'xcutsel.X.z', 'xfd.X.z', 'xhost.X.z',
-           'xinit.X.z', 'xkill.X.z', 'xload.X.z', 'xlogo.X.z', 'xlsfonts.X.z', 'xlswins.X.z',
-           'xmag.X.z', 'xpr.X.z', 'xprop.X.z', 'xrdb.X.z', 'xrefresh.X.z', 'xsetroot.X.z',
-           'xwd.X.z', 'xwud.X.z'
-        @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\d+)\))\s+}
-        @related_info_heading = 'SEE ALSO'
-        # TODO put back the numeric section linkify methods
-      when 'xclock.X.z', 'xterm.X.z', 'X.X.z', 'xdm.X.z', 'bitmap.X.z', 'dos.X.z', 'xman.X.z'
-        define_singleton_method(:lines) { self }
-        @heading_detection = %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-        @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\d+)\))\s+}
-        @related_info_heading = 'SEE ALSO'
-        # TODO put back the numeric section linkify methods
-      end
-      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
-      @related_info_heading ||= 'See Also'
-      super(source)
-    end
-
+    ].freeze
   end
 end

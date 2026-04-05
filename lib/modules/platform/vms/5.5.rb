@@ -13,7 +13,12 @@
 #       want to separate appearing on a separate page from being included in the COMMANDS links.
 #
 
-class VMS::V5_5 < VMS
+module VMS
+  module V5_5
+    class Nroff < Nroff ; end
+    class VMSHelpLibrary < VMSHelpLibrary ; end
+    class VMSHelpLibraryModule < VMSHelpLibraryModule ; end
+  end
 end
 
 =begin

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -16,24 +17,26 @@
 #   cdc(1) loses monospaced font in the middle of the last EXAMPLE?
 #
 
-class Ultrix::V2_0_0
-  class Troff < Ultrix::Troff
+module Ultrix
+  module V2_0_0
+    class Troff < Troff
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']D' => 'UNIX Programmer\'s Manual',
-          ']W' => '7th Edition',
-          :footer => '' # just a page number
-        }
-      )
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']D' => 'UNIX Programmer\'s Manual',
+            ']W' => '7th Edition',
+            :footer => '' # just a page number
+          }
+        )
+      end
+
+      def TH(*args)
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)" # tmac.an uses \f(TB
+        super(*args, heading: heading)
+      end
+
     end
-
-    def TH(*args)
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)" # tmac.an uses \f(TB
-      super(*args, heading: heading)
-    end
-
   end
 end

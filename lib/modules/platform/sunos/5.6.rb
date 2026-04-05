@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/11/23.
@@ -10,18 +11,66 @@
 #   ld.so.1(1) section becoming man1.1/ld.so.html somehow
 #
 
-class SunOS::V5_6
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case file
-      when 'xil.macs' then raise ManualIsBlacklisted, 'is XIL manual macro package'
+module SunOS
+  module V5_6
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'xil.macs' then raise ManualIsBlacklisted, 'is XIL manual macro package'
+        end
+        super(file, **kwargs, &block)
       end
-      super file, vendor_class: vendor_class, source_args: source_args
     end
-  end
 
-  class Troff < SunOS::Troff
+    class Troff < Troff
 
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => "SunOS #{@version}",
+            '||' => '/usr/share/lib/tmac'
+          }
+        )
+      end
+
+      def init_fp
+        # Palatino family for postscript output (PA, PI, PB)
+        super
+        @mounted_fonts[4] = 'B'
+        @mounted_fonts[5] = 'R'
+        @mounted_fonts[6] = 'B'
+      end
+
+      def SB(*args)
+        parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+      end
+
+      def TH(*args)
+        ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
+        ds "]L Last change: #{args[2]}"
+        ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+        ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+
+        heading = @named_strings['D'].empty? ? '\\*(]H' : '\\*(]H\\0\\0\\(em\\0\\0\\*(]D'
+        # ]W moved to footer for 5.6, but I already had it there.
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+      def TZ(*args)
+        ds "Tz #{MANUAL_TITLES[args[0]]}"
+        parse "\\fI\\*(Tz\\f1#{args[1]}"
+      end
+
+      def HC(*args)
+        ds "Hc #{HARDCOPY_TITLES[args[0]]}"
+        parse "\\fI\\*(Hc\\f1#{args[1]}"
+      end
+
+    end
     HARDCOPY_TITLES = {
             # Hard Copy Docs Only
       'HC_DRIVERINSTALL' => "Driver Developer Kit Installation Guide",
@@ -294,57 +343,12 @@ class SunOS::V5_6
         '9f'  => 'Kernel Functions for Drivers',
         '9s'  => 'Data Structures for Drivers',
         'l'   => 'Local Commands'
-    }
+    }.freeze
 
     HARDCOPY_TITLES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => "SunOS #{@version}",
-          '||' => '/usr/share/lib/tmac'
-        }
-      )
-    end
-
-    def init_fp
-      # Palatino family for postscript output (PA, PI, PB)
-      super
-      @mounted_fonts[4] = 'B'
-      @mounted_fonts[5] = 'R'
-      @mounted_fonts[6] = 'B'
-    end
-
-    def SB(*args)
-      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-    end
-
-    def TH(*args)
-      ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
-      ds "]L Last change: #{args[2]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
-
-      heading = '\\*(]H'
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
-      # ]W moved to footer for 5.6, but I already had it there.
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
-    def TZ(*args)
-      ds "Tz #{MANUAL_TITLES[args[0]]}"
-      parse "\\fI\\*(Tz\\f1#{args[1]}"
-    end
-
-    def HC(*args)
-      ds "Hc #{HARDCOPY_TITLES[args[0]]}"
-      parse "\\fI\\*(Hc\\f1#{args[1]}"
-    end
-
+    HARDCOPY_TITLES.freeze
+    MANUAL_NAMES.freeze
   end
 end

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/04/22.
@@ -39,7 +40,7 @@
 # types.5 [15]: .so can't read /usr/include/sys/types.h
 # utmp.5 [18]: .so can't read /usr/include/utmp.h
 
-class GDT_UNX
+module GDT_UNX
   class Manual < Manual
     def initialize(file, vendor_class: nil, source_args: {})
       case File.basename file
@@ -77,7 +78,7 @@ class GDT_UNX
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W",
+          footer: "\\*(]W".+@,
           ']D' => "UNIX Programmer's Manual",
           # REVIEW ]W is overridden with '7th Edition' in .TH, but the manuals in cat*/
           # have the date. among other things that don't quite match tmac.an ..?

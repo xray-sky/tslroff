@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -10,8 +11,78 @@
 #   some strange doings in section 3 of the OW3.0 manual
 #
 
-class OS_MP
+module OS_MP
   class Troff < Troff
+
+    alias :LP :P
+
+    def initialize(source)
+      @manual_entry ||= source.file.sub(/\.(\d\S*)$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      super(source)
+    end
+
+    def init_ds
+      super
+      @named_strings.merge!(
+        {
+          #'Tm' => '&trade;',
+          ']W' => 'Solbourne Computer, Inc.',
+          footer: "\\*(]W".+@
+        }
+      )
+    end
+
+    def init_tr
+      super
+      @character_translations['*'] = "\e(**"
+    end
+
+    def init_TH
+      #super
+      @register['IN'] = Troff::Register.new(@base_indent)
+    end
+
+    # index info - what even makes sense to do with this
+    def IX(*_args) ; end
+
+    def SB(*args)
+      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+    end
+
+    def TH(*args)
+      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+      ds "]L #{args[2]}"
+      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+
+      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+
+      super(*args, heading: heading)
+    end
+
+    def TX(*args)
+      ds "Tx #{MANUAL_NAMES[args[0]]}"
+      parse "\\fI\\*(Tx\\f1#{args[1]}"
+    end
+
+    # some pages call this, but the def is commented out all the way back to 0.3
+    # defining it as a no-op suppresses the warning.
+    def UC(*_args) ; end
+
+    def VE(*args)
+      # .if '\\$1'4' .mc \s12\(br\s0
+      # draws a 12pt box rule as right margin character
+      warn "can't yet .VE #{args.inspect}"
+    end
+
+    def VS(*args)
+      # .mc
+      # clears box rule margin character
+      warn "can't yet .VS #{args.inspect}"
+    end
+  end
 
     MANUAL_NAMES = {
       'DOCBOX'   => 'Documentation Set',
@@ -104,73 +175,6 @@ class OS_MP
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
 
-    alias :LP :P
-
-    def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(\d\S*)$/, '')
-      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          #'Tm' => '&trade;',
-          ']W' => 'Solbourne Computer, Inc.',
-          footer: "\\*(]W"
-        }
-      )
-    end
-
-    def init_tr
-      super
-      @character_translations['*'] = "\e(**"
-    end
-
-    def init_TH
-      #super
-      @register['IN'] = Troff::Register.new(@base_indent)
-    end
-
-    # index info - what even makes sense to do with this
-    def IX(*_args) ; end
-
-    def SB(*args)
-      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-    end
-
-    def TH(*args)
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-      ds "]L #{args[2]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
-
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-
-      super(*args, heading: heading)
-    end
-
-    def TX(*args)
-      ds "Tx #{MANUAL_NAMES[args[0]]}"
-      parse "\\fI\\*(Tx\\f1#{args[1]}"
-    end
-
-    # some pages call this, but the def is commented out all the way back to 0.3
-    # defining it as a no-op suppresses the warning.
-    def UC(*_args) ; end
-
-    def VE(*args)
-      # .if '\\$1'4' .mc \s12\(br\s0
-      # draws a 12pt box rule as right margin character
-      warn "can't yet .VE #{args.inspect}"
-    end
-
-    def VS(*args)
-      # .mc
-      # clears box rule margin character
-      warn "can't yet .VS #{args.inspect}"
-    end
-  end
+    MANUAL_NAMES.freeze
+    MANUAL_SECTION_NAMES.freeze
 end

@@ -9,22 +9,21 @@
 #
 #   §20
 #
-#
-# Request       Initial   If no     Notes   Explanation
-#  form          value    argument
-#
-# .ig yy           -       yy=..     -      .ig behaves exactly like .de except that the
-#                                           input is discarded. The input is read in copy
-#                                           mode, and any auto-incremented registers will
-#                                           be affected.
-#
-# Note:
-#  We will get a warning about an unrecognized request terminating an .ig that
-#  did _not_ happen, due to .if -- this does not indicate a problem.
-#  REVIEW ^^ still?
-#
 
 class Troff
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .ig yy           -       yy=..     -      .ig behaves exactly like .de except that the
+  #                                           input is discarded. The input is read in copy
+  #                                           mode, and any auto-incremented registers will
+  #                                           be affected.
+  #
+  # Note:
+  #  We will get a warning about an unrecognized request terminating an .ig that
+  #  did _not_ happen, due to .if -- this does not indicate a problem.
+  #  REVIEW ^^ still?
+
   def ig(argstr = '', breaking: nil)
     delim = argstr.split.first || '.'
     # like .de, it's not actually a method invocation

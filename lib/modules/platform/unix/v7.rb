@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/04/22.
@@ -9,31 +10,33 @@
 # TODO
 #
 
-class UNIX::V7
-  class Troff < UNIX::Troff
+module UNIX
+  module V7
+    class Troff < Troff
 
-    alias :LP :P
+      alias :LP :P
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']D' => "UNIX Programmer's Manual",
-          ']W' => "7th Edition",
-          # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
-          :footer => "\\*(]W"
-        }
-      )
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']D' => "UNIX Programmer's Manual",
+            ']W' => "7th Edition",
+            # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
+            :footer => "\\*(]W"
+          }
+        )
+      end
+
+      def TH(*args)
+        ds "]L #{args[2]}"
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
     end
-
-    def TH(*args)
-      ds "]L #{args[2]}"
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
   end
 end

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/04/22.
@@ -14,30 +15,30 @@
 #   ksh(1) :: wtf
 #
 
-class Interactive::V3_2r4_1
-
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'i596.7' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+module Interactive
+  module V3_2r4_1
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'file' then raise ManualIsBlacklisted, 'is shell script'
+        when 'i596.7'
+          kwargs[:magic] = :Troff
+          patch_line 1, /^/, '.\\"' # misidentified as nroff
+        end
+        super(file, **kwargs, &block)
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
-    end
-  end
-
-  class Troff < Interactive::Troff
-
-    def initialize(source)
-      case source.file
-      when 'file' then raise ManualIsBlacklisted, 'is shell script'
-      when /intro\.nfs\.(\d)/ # easier to just override these than mess with the regex
-        k.instance_variable_set '@manual_entry', 'intro.nfs'
-        k.instance_variable_set '@manual_section', Regexp.last_match[1]
-      when 'i596.7' then @source.patch_line(1, /^/, '.\\"') # misidentified as nroff
-      end
-
-      super(source)
     end
 
+    class Troff < Troff
+      def initialize(source)
+        case source.file
+        when /intro\.nfs\.(\d)/ # easier to just override these than mess with the regex
+          @manual_entry = 'intro.nfs'
+          @manual_section = Regexp.last_match[1]
+        end
+        super(source)
+      end
+
+    end
   end
 end

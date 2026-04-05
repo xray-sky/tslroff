@@ -30,7 +30,6 @@ class Troff
 
       def TS(*args)
         warn "processing tbl -"
-        resc = Regexp.quote @escape_character
         @tbl_cell_delim = "\t"
         tbl = blockproto(Block::Table)
         tbl.text = Array.new
@@ -96,12 +95,10 @@ class Troff
         # initialize array to track column spacing (default, 3n)
         @tbl_column_spacing = Array.new(@tbl_formats.columns, nil)
 
-        resc = Regexp.quote @escape_character
-
         # table data. terminated by .TE macro
         loop do
 
-          line = next_line_tbl
+          line = next_line_tbl or next # need to be able to short this loop in case the table is preprocessed
 
           # apply held rules to either the bottom of the last row, or the top of the next
           if @tbl_bottom_rules
@@ -134,7 +131,7 @@ class Troff
           # row data
           #cells = line.split(@tbl_cell_delim) # we will get [] if we have input a blank line (see history(1) note, below)
           # delims can be hidden by preceeding them with an escape char
-          cells = line.split(/(?<!(?<!#{resc})#{resc})#{@tbl_cell_delim}/) # we will get [] if we have input a blank line (see history(1) note, below)
+          cells = line.split(/(?<!(?<!#{@resc})#{@resc})#{@tbl_cell_delim}/) # we will get [] if we have input a blank line (see history(1) note, below)
           current_row.text.each_with_index do |cell, column|
 
             if cell.is_a? Block::ColSpan
@@ -150,7 +147,6 @@ class Troff
             @register['.f'].value = @mounted_fonts.invert[cell.terminal_font.face] || 0.tap { warn "trouble setting \\n(.f based on table cell style #{cell.terminal_font.face.inspect} -- falling back to position 0" }
             @register['.s'].value = cell.terminal_font.size # TODO this is where size is being reset between cells for sysconf(3c) [SunOS 5.5.1] :: [125]
                                                              # -- what can be done?? perhaps just a rewrite. but then how to detect it's happened on other pages?
-
 
             # fudge the contents of this cell to ensure the row doesn't get collapsed
             @current_block << LineBreak.new and text=String.new if cell.style[:box_rule] or text.nil?

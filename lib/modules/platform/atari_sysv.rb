@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -11,7 +12,7 @@
 #   ue12 cc(1) detects title line in SEE ALSO
 #
 
-class Atari_SysV
+module Atari_SysV
   class Nroff < Nroff
 
     def initialize(source)
@@ -41,7 +42,7 @@ class Atari_SysV
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W",
+          footer: "\\*(]W".+@,
           'U'  => 'Baker',
           #'Tm' => '&trade;',
           # "for UniSoft"
@@ -138,7 +139,7 @@ class Atari_SysV
       ds "]L (\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty?
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
-      heading = "#{args[0]}"
+      heading = "#{args[0]}".+@
       # tmac.an has it without the extra space, but this is an nroff affordance
       #heading << "(#{args[1]})" if args[1] and !args[1].strip.empty? # peculiar
       heading << "\\^(\\^#{args[1]}\\^)" if args[1] and !args[1].strip.empty?

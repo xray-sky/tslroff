@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/21/21.
@@ -12,14 +13,12 @@
 #
 # TODO getting extra section info in filename for e.g. 1csh, 1sccs (not 1m, etc.)
 
-class UTek
+module UTek
   class Nroff < Nroff
-
     def initialize source
       @manual_entry ||= source.file.sub(/\.([\dZz][^.]*)$/, '')
       super source
     end
-
   end
 end
 

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/11/23.
@@ -8,8 +9,55 @@
 #
 #
 
-class SunOS::V5_4
-  class Troff < SunOS::Troff
+module SunOS
+  module V5_4
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => "SunOS #{@version}",
+            '||' => '/usr/share/lib/tmac'
+          }
+        )
+      end
+
+      def init_fp
+        # Palatino family for postscript output (PA, PI, PB)
+        super
+        @mounted_fonts[4] = 'B'
+        @mounted_fonts[5] = 'R'
+        @mounted_fonts[6] = 'B'
+      end
+
+      def SB(*args)
+        parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+      end
+
+      def TH(*args)
+        ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
+        ds "]L Last change: #{args[2]}"
+        ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+        ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+
+        heading = @named_strings['D'].empty? ? '\\*(]H' : '\\*(]H\\0\\0\\(em\\0\\0\\*(]D'
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+      def TZ(*args)
+        ds "Tz #{MANUAL_NAMES[args[0]]}"
+        parse "\\fI\\*(Tz\\f1#{args[1]}"
+      end
+
+      def HC(*args)
+        ds "Hc #{HARDCOPY_TITLES[args[0]]}"
+        parse "\\fI\\*(Hc\\f1#{args[1]}"
+      end
+
+    end
 
     HARDCOPY_TITLES = {
           # Hard Copy Docs Only
@@ -207,56 +255,12 @@ class SunOS::V5_4
       '9f'  => 'DDI and DKI Kernel Functions',
       '9s'  => 'DDI and DKI Data Structures',
       'l'   => 'Local Commands'
-    }
+    }.freeze
 
     HARDCOPY_TITLES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => "SunOS #{@version}",
-          '||' => '/usr/share/lib/tmac'
-        }
-      )
-    end
-
-    def init_fp
-      # Palatino family for postscript output (PA, PI, PB)
-      super
-      @mounted_fonts[4] = 'B'
-      @mounted_fonts[5] = 'R'
-      @mounted_fonts[6] = 'B'
-    end
-
-    def SB(*args)
-      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-    end
-
-    def TH(*args)
-      ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
-      ds "]L Last change: #{args[2]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
-
-      heading = '\\*(]H'
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
-    def TZ(*args)
-      ds "Tz #{MANUAL_NAMES[args[0]]}"
-      parse "\\fI\\*(Tz\\f1#{args[1]}"
-    end
-
-    def HC(*args)
-      ds "Hc #{HARDCOPY_TITLES[args[0]]}"
-      parse "\\fI\\*(Hc\\f1#{args[1]}"
-    end
-
+    HARDCOPY_TITLES.freeze
+    MANUAL_NAMES.freeze
   end
 end

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/17/22.
@@ -19,7 +20,7 @@ class HPUX::V8_05
       super
       @named_strings.merge!(
         {
-          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W",
+          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@,
           'Tm' => '&trade;',
           ')H' => '', # .TH sets this to \&. Some pages define it.
           #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
@@ -44,7 +45,7 @@ class HPUX::V8_05
       end
       #sp('1.5v') if space # probably this is overkill, actually
 
-      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
       heading << '\\0\\|\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)

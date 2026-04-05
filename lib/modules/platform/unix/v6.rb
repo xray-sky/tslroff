@@ -4,6 +4,8 @@
 # Copyright 2022 Typewritten Software. All rights reserved.
 #
 #
+# frozen_string_literal: true
+#
 # Bell UNIX V6 Platform Overrides
 #
 #   from GL2-W2.5 lib/macros/an6
@@ -16,164 +18,166 @@
 #   is everything here ok? what's up with cc(i) ?
 #
 
-class UNIX::V6
-
-  # this is working to avoid killing ::Block::Paragraph (`class Block::Paragraph < ::Block` did this)
-  # but neither was the UNIX::V6 Troff making use of it.
-  # overriding blockproto() was sufficient to fix, but fragile.
-
-  class Block
-    class Paragraph < ::Block
-      def to_html
-        # this used to happen before every block was processed.
-        # TODO something better.
-        #      something not tied to Block::Paragraph.
-        #      something that can be overridden.
-        #        => V6 manual refs are like "syscall (II)"
-        # NOTE Nroff Line class has its own link rewrite
-
-        t = @text.collect(&:to_html).join
-        t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)\s{0,1}(?:<[^<]+?>)*\s{0,1}\((?:<[^<]+?>)*(?<fullsec>(?<section>[IV]*?))(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
-          caps = Regexp.last_match
-          entry = caps[:entry].sub(/&minus;/, '-')  # this was interfering with link generation - ali(1) [AOS 4.3]
-          %(#{caps[:break]}<a href="../man#{caps[:fullsec]}/#{entry}.html">#{caps[:text]}</a>)
-        end if style[:linkify]
-
-        "<p#{@style}>\n#{t}\n</p>\n"
+module UNIX
+  module V6
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        super(file, **kwargs, &block)
+        case @file
+        when 'greek.5' then patch_line 17, /\s([.1])/, ' +\1', global: true
+        end
       end
     end
-  end
 
-  class Troff < UNIX::Troff
+    # this is working to avoid killing ::Block::Paragraph (`class Block::Paragraph < ::Block` did this)
+    # but neither was the UNIX::V6 Troff making use of it.
+    # overriding blockproto() was sufficient to fix, but fragile.
 
-    alias :Bd :bd
-    alias :Dt :dt
-    alias :il :it
-    undef :bd
-    undef :dt
-    undef :it
+    class Block
+      class Paragraph < ::Block
+        def to_html
+          # this used to happen before every block was processed.
+          # TODO something better.
+          #      something not tied to Block::Paragraph.
+          #      something that can be overridden.
+          #        => V6 manual refs are like "syscall (II)"
+          # NOTE Nroff Line class has its own link rewrite
 
-    alias :LP :P
-    alias :dt :DT
-    alias :sh :SH
+          t = @text.collect(&:to_html).join
+          t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)\s{0,1}(?:<[^<]+?>)*\s{0,1}\((?:<[^<]+?>)*(?<fullsec>(?<section>[IV]*?))(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
+            caps = Regexp.last_match
+            entry = caps[:entry].sub(/&minus;/, '-')  # this was interfering with link generation - ali(1) [AOS 4.3]
+            %(#{caps[:break]}<a href="../man#{caps[:fullsec]}/#{entry}.html">#{caps[:text]}</a>)
+          end if style[:linkify]
 
-    def initialize source
-      case source.file
-      when 'greek.5' then source.patch_line 17, /\s([.1])/, ' +\1', global: true
+          "<p#{@style}>\n#{t}\n</p>\n"
+        end
       end
-      super source
     end
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          '_' => '_',
-          '-' => '\\-',
-          '|' => '\\|',
-          "'" => '\\(aa',
-          '>' => '\\(->',
-          'a' => '\\(aa',
-          'b' => '\\(*b',
-          'g' => '\\(ga',
-          'p' => '\\(*p',
-          'r' => '\\(rg',
-          'u' => '\\(*m',
-          'v' => '\\(bv',
-          'G' => '\\(*G',
-          'X' => '\\(mu'
-        }
-      )
-    end
+    class Troff < Troff
 
-    def xinit_nr
-      super
-      @register.merge!({
-        '}I' => Register.new(to_u('5n')),
-        '}P' => Register.new(0, 1)
-      })
-    end
+      alias :Bd :bd
+      alias :Dt :dt
+      alias :il :it
+      undef :bd
+      undef :dt
+      undef :it
 
-    def blockproto(type = Block::Paragraph)
-      super(type)
-    end
+      alias :LP :P
+      alias :dt :DT
+      alias :sh :SH
 
-    def output_directory
-      @manual_section and return "man#{@manual_section}"
-      super
-    end
-
-    def bd(*args)
-      ft '3'
-      if @register['V'] > 1
-        parse "_#{args[0]}_"
-      else
-        parse "\\&#{args[0]}"
+      def blockproto(type = Block::Paragraph)
+        super(type)
       end
-      ft
-    end
 
-    def bn(*args)
-      ft '3'
-      if @register['V'] > 1
-        parse "_#{args[0]}_\t\\&\\c"
-      else
-        parse "\\&#{args[0]}\t\\&\\c"
+      def output_directory
+        @manual_section and return "man#{@manual_section}"
+        super
       end
-      ft
-    end
 
-    def i0(*_args)
-      parse ".in\\n(}Iu" #send 'in', "#{@register['I'].value}u"
-      dt
-    end
-
-    def it(*args)
-      # can't use .ul as it calls .it internally
-      #ul
-      ft '2'
-      if @register['V'] > 1
-        parse "_#{args[0]}_"
-      else
-        parse "\\&#{args[0]}"
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            '_' => '_',
+            '-' => '\\-',
+            '|' => '\\|',
+            "'" => '\\(aa',
+            '>' => '\\(->',
+            'a' => '\\(aa',
+            'b' => '\\(*b',
+            'g' => '\\(ga',
+            'p' => '\\(*p',
+            'r' => '\\(rg',
+            'u' => '\\(*m',
+            'v' => '\\(bv',
+            'G' => '\\(*G',
+            'X' => '\\(mu'
+          }
+        )
       end
-      # since we can't rely on .ul giving us a one-line input trap for .}f
-      ft
-    end
 
-    def lp(*args)
-      tc
-      i0
-      ta "#{args[1]}n"
-      send 'in', "#{args[0]}n"
-      ti "-#{args[1]}n"
-    end
+      def xinit_nr
+        super
+        @register.merge!({
+          '}I' => Register.new(to_u('5n')),
+          '}P' => Register.new(0, 1)
+        })
+      end
 
-    def s1(*_args)
-      sp '1v'
-      #ne '2'
-    end
+      def bd(*args)
+        ft '3'
+        if @register['V'] > 1
+          parse "_#{args[0]}_"
+        else
+          parse "\\&#{args[0]}"
+        end
+        ft
+      end
 
-    def s2(*_args)
-      sp '.5v'
-    end
+      def bn(*args)
+        ft '3'
+        if @register['V'] > 1
+          parse "_#{args[0]}_\t\\&\\c"
+        else
+          parse "\\&#{args[0]}\t\\&\\c"
+        end
+        ft
+      end
 
-    def s3(*_args)
-      sp '.5v'
-      #ne '2'
-    end
+      def i0(*_args)
+        parse ".in\\n(}Iu" #send 'in', "#{@register['I'].value}u"
+        dt
+      end
 
-    def th(*args)
-      send 'TH', args[0], args[1], heading: "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\*-\\0\\0PWB/UNIX\\| #{args[2]}"
-    end
+      def it(*args)
+        # can't use .ul as it calls .it internally
+        #ul
+        ft '2'
+        if @register['V'] > 1
+          parse "_#{args[0]}_"
+        else
+          parse "\\&#{args[0]}"
+        end
+        # since we can't rely on .ul giving us a one-line input trap for .}f
+        ft
+      end
 
-    def li(*_args)
-      warn "V6 manual invoked .li with #{_args.inspect} ? REVIEW"
-    end
+      def lp(*args)
+        tc
+        i0
+        ta "#{args[1]}n"
+        send 'in', "#{args[0]}n"
+        ti "-#{args[1]}n"
+      end
 
-    define_method '..' do |*_args|
-      warn "V6 manual invoked ... with #{_args.inspect} ? REVIEW"
-    end
+      def s1(*_args)
+        sp '1v'
+        #ne '2'
+      end
 
+      def s2(*_args)
+        sp '.5v'
+      end
+
+      def s3(*_args)
+        sp '.5v'
+        #ne '2'
+      end
+
+      def th(*args)
+        send 'TH', args[0], args[1], heading: "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\*-\\0\\0PWB/UNIX\\| #{args[2]}"
+      end
+
+      def li(*_args)
+        warn "V6 manual invoked .li with #{_args.inspect} ? REVIEW"
+      end
+
+      define_method '..' do |*_args|
+        warn "V6 manual invoked ... with #{_args.inspect} ? REVIEW"
+      end
+    end
   end
 end

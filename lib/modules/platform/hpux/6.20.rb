@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/17/22.
@@ -32,7 +33,7 @@ class HPUX::V6_20
       @named_strings.merge!(
         {
           # uses )H but this is defined directly in }F so I don't see how it could ever not be HP Co.
-          footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W",
+          footer: "Hewlett-Packard Company\\0\\0\\(em\\0\\0\\*(]W".+@,
           'Tm' => '&trade;',
           # REVIEW is this what actually goes in the footer in the printed manual?
           ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
@@ -61,7 +62,7 @@ class HPUX::V6_20
         @document << byline
       end
 
-      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
       heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)

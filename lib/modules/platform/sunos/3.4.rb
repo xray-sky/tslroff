@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/06/22.
@@ -7,8 +8,38 @@
 # SunOS 3.4 Platform Overrides
 #
 
-class SunOS::V3_4
-  class Troff < SunOS::Troff
+module SunOS
+  module V3_4
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => 'Sun Release 3.4'
+          }
+        )
+      end
+
+      # REVIEW
+      # this is used seemingly to prevent processing the next line
+      # as a request. but, it's not in tmac.an or the DWB manual.
+      def li(*_args)
+        parse("\\&" + next_line)
+      end
+
+      def TH(*args)
+        ds "]L Last change: #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+        ds "]W #{args[3]}" if args[3] and !args[3].empty?
+        ds "]D #{args[4]}" if args[4] and !args[4].empty?
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+    end
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',
@@ -43,34 +74,6 @@ class SunOS::V3_4
     }
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => 'Sun Release 3.4'
-        }
-      )
-    end
-
-    # REVIEW
-    # this is used seemingly to prevent processing the next line
-    # as a request. but, it's not in tmac.an or the DWB manual.
-    def li(*_args)
-      parse("\\&" + next_line)
-    end
-
-    def TH(*args)
-      ds "]L Last change: #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].empty?
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
+    MANUAL_SECTION_NAMES.freeze
   end
 end

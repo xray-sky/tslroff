@@ -9,59 +9,28 @@
 #
 #   §16
 #
-# In the following, c is a one-character, built-in condition name, ! signifies not,
-# N is a numerical expression, string1 and string2 are strings delimited by any non-blank,
-# non-numeric character not in the strings, and anything represents what is conditionally
-# accepted.
-#
-# Request       Initial   If no     Notes   Explanation
-#  form          value    argument
-#
-# .if c anything   -       -         -      If condition c true, accept anything as input;
-#                                           in multi-line case use \{anything\}.
-#
-# .if !c anything  -       -         -      If condition c false, accept anything.
-#
-# .if N anything   -       -         -      If expression N > 0, accept anything.
-#
-# .if !N anything  -       -         -      If expression N ≤ 0, accept anything.
-#
-# .if 'string1'string2' anything     -      If string1 identical to string2, accept anything.
-#
-# .if !'string1'string2' anything    -      If string1 not identical to string2, accept anything.
-#
-# .ie c anything  -        -         u      If portion of if-else; all above forms (like .if).
-#
-# .el anything    -        -         -      Else portion of if-else.
-#
-#   The built-in condition names are
-#      o      True if current page number is odd
-#      e      True if current page number is even
-#      t      True if formatter is troff
-#      n      True if formatter is nroff
-#
-#   Any spaces between the condition and the beginning of anything are skipped over.
-#   The anything can be either a single input line (text, macro, or whatever) or a number
-#   of input lines. In the multi-line case, the first line must begin with a left delimiter
-#   \{ and the last line must end with a right delimiter \}. The left delimiter must be
-#   followed by either a command or text. Following the left delimiter with a backslash
-#   (\{\), escaping the newline, yields an equivalent arrangement.
-#
-#
 # I guess the string comparison delimiters are less restrictive than I expected.
 # tmac.an gives examples of both ^G (BEL) and " as delimiters (GL2-W2.5, SunOS 5.5)
 # and \(ts is used in mwm(1) [AOS 4.3], so "any" really does mean _any_.
 #
-#
-# remember we came here without our args parsed (split)
 # "the last line must end with a right delimiter" apparently doesn't preclude whitespace/comments.
 #
 
 class Troff
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .ie c anything  -        -         u      If portion of if-else; all above forms (like .if).
+
   def ie(argstr = '', breaking: nil, quiet: true)
     #warn ".ie : sending #{argstr.inspect} to .if"
     @else = !send(:if, argstr, breaking: breaking, quiet: quiet)
   end
+
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .el anything    -        -         -      Else portion of if-else.
 
   def el(argstr = '', breaking: nil)
     #warn ".ie : processing #{argstr.inspect}"
@@ -77,6 +46,40 @@ class Troff
     end
     parse(argstr) if @else
   end
+
+  # In the following, c is a one-character, built-in condition name, ! signifies not,
+  # N is a numerical expression, string1 and string2 are strings delimited by any non-blank,
+  # non-numeric character not in the strings, and anything represents what is conditionally
+  # accepted.
+  #
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .if c anything   -       -         -      If condition c true, accept anything as input;
+  #                                           in multi-line case use \{anything\}.
+  #
+  # .if !c anything  -       -         -      If condition c false, accept anything.
+  #
+  # .if N anything   -       -         -      If expression N > 0, accept anything.
+  #
+  # .if !N anything  -       -         -      If expression N ≤ 0, accept anything.
+  #
+  # .if 'string1'string2' anything     -      If string1 identical to string2, accept anything.
+  #
+  # .if !'string1'string2' anything    -      If string1 not identical to string2, accept anything.
+  #
+  #   The built-in condition names are
+  #      o      True if current page number is odd
+  #      e      True if current page number is even
+  #      t      True if formatter is troff
+  #      n      True if formatter is nroff
+  #
+  #   Any spaces between the condition and the beginning of anything are skipped over.
+  #   The anything can be either a single input line (text, macro, or whatever) or a number
+  #   of input lines. In the multi-line case, the first line must begin with a left delimiter
+  #   \{ and the last line must end with a right delimiter \}. The left delimiter must be
+  #   followed by either a command or text. Following the left delimiter with a backslash
+  #   (\{\), escaping the newline, yields an equivalent arrangement.
 
   define_method 'if' do |argstr = '', breaking: nil, quiet: true|
     resc = Regexp.quote(@escape_character)

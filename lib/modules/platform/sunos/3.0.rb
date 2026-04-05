@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/06/22.
@@ -7,18 +8,46 @@
 # SunOS 3.0 Platform Overrides
 #
 
-class SunOS::V3_0
+module SunOS
+  module V3_0
 
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename file
-      when 'skyversion.8' then source_args[:magic] = 'Troff'
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'skyversion.8' then source_args[:magic] = 'Troff'
+        end
+        super(file, **kwargs, &block)
       end
-      super file, vendor_class: vendor_class, source_args: source_args
     end
-  end
 
-  class Troff < SunOS::Troff
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => 'Sun Release 3.0\(*b' # ß, eh?
+          }
+        )
+      end
+
+      # REVIEW
+      # this is used seemingly to prevent processing the next line
+      # as a request. but, it's not in tmac.an or the DWB manual.
+      def li(*_args)
+        parse("\\&" + next_line)
+      end
+
+      def TH(*args)
+        ds "]L Last change: #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+    end
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',
@@ -51,33 +80,6 @@ class SunOS::V3_0
     }
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => 'Sun Release 3.0\(*b' # ß, eh?
-        }
-      )
-    end
-
-    # REVIEW
-    # this is used seemingly to prevent processing the next line
-    # as a request. but, it's not in tmac.an or the DWB manual.
-    def li(*_args)
-      parse("\\&" + next_line)
-    end
-
-    def TH(*args)
-      ds "]L Last change: #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
+    MANUAL_SECTION_NAMES.freeze
   end
 end
-

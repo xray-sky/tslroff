@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/09/22.
@@ -19,8 +20,36 @@
 #   utmp.5 [16]: .so can't read /usr/include/utmp.h
 #
 
-class SunOS::V1_0
-  class Troff < SunOS::Troff
+module SunOS
+  module V1_0
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => 'Sun System Release 1.0'
+          }
+        )
+      end
+
+      # REVIEW
+      # this is used seemingly to prevent processing the next line
+      # as a request. but, it's not in tmac.an or the DWB manual.
+      def li(*_args)
+        parse("\\&" + next_line)
+      end
+
+      def TH(*args)
+        ds "]L #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+    end
 
     MANUAL_SECTION_NAMES = {
       '1'  => "User's Manual \\(em Commands",
@@ -48,33 +77,8 @@ class SunOS::V1_0
     }
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => 'Sun System Release 1.0'
-        }
-      )
-    end
-
-    # REVIEW
-    # this is used seemingly to prevent processing the next line
-    # as a request. but, it's not in tmac.an or the DWB manual.
-    def li(*_args)
-      parse("\\&" + next_line)
-    end
-
-    def TH(*args)
-      ds "]L #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
+    MANUAL_SECTION_NAMES.freeze
   end
 end
+
 

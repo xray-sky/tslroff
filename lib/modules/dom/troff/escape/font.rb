@@ -13,6 +13,6 @@ class Troff
   # alias :esc_s :ps  <==  q.v. request/fonts.rb
 
   def esc_f(argstr = '')
-    ft argstr.start_with?('(') ? argstr[1..2] : argstr[0]
+    ft argstr.start_with?('(') ? argstr[1..2] : (argstr[0] || (warn "bare \\f" and return))
   end
 end

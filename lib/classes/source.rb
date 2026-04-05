@@ -5,7 +5,9 @@
 #
 #
 # Source file class
-# Just a container to hold input lines & determine where to hand off
+#  - interface providing lines from file (or block), decompressing if necessary
+#  - interpret logical format of file contents
+#  - rewrite file contents in memory, if necessary to address defects in the source material
 #
 
 require_relative '../../ext/file/magic'
@@ -14,10 +16,12 @@ class Source
   attr_reader :dir, :file, :path, :magic, :iter, :line_number #, :lines
 
   def initialize(file, magic: nil, encoding: nil, record_separator: $/, &block)
-    @path = file
-    @file = File.basename(file)
-    @dir = File.dirname(file)
-    @target = File.readlink(file) if File.symlink?(file)
+    if file
+      @path = file
+      @file = File.basename(file)
+      @dir = File.dirname(file)
+      @target = File.readlink(file) if File.symlink?(file)
+    end
 
     @lines = if block_given?
                yield(file, record_separator: record_separator, encoding: encoding)

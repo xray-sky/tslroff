@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 10/07/19.
@@ -41,7 +42,7 @@ class AOS
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W",
+          footer: "\\*(]W".+@,
           # tmac.an.new
           ']D' => 'Unix Programmer\'s Manual', # default set by .TH
           ']W' => '7th Edition' # default set by .TH

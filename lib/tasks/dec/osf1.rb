@@ -22,6 +22,7 @@ collection_namespace 'OSF/1' do
                   sources: %w[usr/share/man/man[1-8]]
   manual_namespace '3.0',
                   vendor_class: OSF1::V3_2c,  # identical apart from (c) date
+                  idir: 'dec/osf1/3.0',
                   odir: 'DEC/OSF:1/3.0',
                   sources: %w[share/man/man[1-8]]
 end

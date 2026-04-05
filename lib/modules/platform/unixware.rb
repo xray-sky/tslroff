@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/23/21.
@@ -16,10 +17,10 @@
 #           59
 #
 
-class UnixWare
+module UnixWare
   class Nroff < Nroff
 
-    def initialize source
+    def initialize(source)
       if source.file =~ /_to_.+\.3/
         @manual_section = '3BSD'
         @output_directory = 'man3bsd'

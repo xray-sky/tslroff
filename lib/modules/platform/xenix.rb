@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/23/21.
@@ -10,9 +11,10 @@
 #   machine(hw) - See Also not detected because of tbl shme
 # √ master.list(C) - blacklist (not a manual page)
 #
-class Xenix
+
+module Xenix
   class Manual < Manual
-    def initialize file, vendor_class: nil, source_args: nil
+    def initialize(file, vendor_class: nil, source_args: nil)
       case File.basename(file)
       when 'master.list.C' then raise ManualIsBlacklisted, "not a manual entry"
       end

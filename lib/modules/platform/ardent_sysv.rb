@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -25,7 +26,7 @@ class Ardent_SysV
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W",
+          footer: "\\*(]W".+@,
           'Dd' => 'Dor&eacute;',
           'Tm' => '&trade;',
           ']W' => File.mtime(@source.path).strftime('%B %d, %Y')
@@ -110,7 +111,7 @@ class Ardent_SysV
       ds "]L (\\^#{args[2]}\\^)" if args[2] and !args[2].strip.empty?
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
-      heading = "#{args[0]}"
+      heading = "#{args[0]}".+@
       # tmac.an has it without the extra space, but this is an nroff affordance
       #heading << "(#{args[1]})" if args[1] and !args[1].strip.empty?
       heading << "\\^(\\^#{args[1]}\\^)" if args[1] and !args[1].strip.empty?

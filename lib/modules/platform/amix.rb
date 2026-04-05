@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/16/22.
@@ -10,7 +11,7 @@
 #   type clashes in openlook entries - can't parse title
 #
 
-class AMIX
+module AMIX
   class Nroff < Nroff
     def initialize source
       @manual_entry ||= source.file.sub(/\.(\d\S*?)?(?:\.?[Zz])?$/, '')
@@ -22,94 +23,6 @@ class AMIX
   # apparently academic; all provided manual entries are nroff output
   class Troff < Troff
 
-    MANUAL_NAMES = {
-      'DOCBOX'   => "Documentation Set",
-      'BGBOX'    => "Beginner's Guides Minibox",
-      'GSBG'     => "Getting Started with Amiga Unix: Beginner's Guide",
-      'SUBG'     => "Setting Up Your Amiga Unix Environment: Beginner's Guide",
-      'SHBG'     => "Self Help with Problems: Beginner's Guide",
-      'SVBG'     => "SunView\\ 1 Beginner's Guide",
-      'MMBG'     => "Mail and Messages: Beginner's Guide",
-      'DMBG'     => "Doing More with Amiga Unix: Beginner's Guide",
-      'UNBG'     => "Using the Network: Beginner's Guide",
-      'GDBG'     => "Games, Demos & Other Pursuits",
-      'SABOX'    => "System Administration Manuals Minibox",
-      'CHANGE'   => "Release 4.0 Change Notes",
-      'INSTALL'  => "Installing Amiga Unix",
-      'ADMIN'    => "System and Network Administration",
-      'SECUR'    => "Security Features Guide",
-      'PROM'     => "PROM User's Manual",
-      'DIAG'     => "Amiga Unix System Diagnostics Manual",
-      'SUNDIAG'  => "Sundiag User's Guide",
-      'REFBOX'   => "Reference Manuals Minibox",
-      'MANPAGES' => "Amiga Unix Reference Manual",
-      'REFMAN'   => "Amiga Unix Reference Manual",
-      'SSI'      => "Amiga Unix System Introduction",
-      'SSO'      => "System Services Overview",
-      'TEXT'     => "Editing Text Files",
-      'DOCS'     => "Formatting Documents",
-      'TROFF'    => "Using \\&\\fLnroff\\fP and \\&\\fLtroff\\fP",
-      'INDEX'    => "Global Index",
-      'PTBOX'    => "Programmer's Tools Manuals Minibox",
-      'CPG'      => "C Programmer's Guide",
-      'CREF'     => "C Reference Manual",
-      'ASSY'     => "Assembly Language Manual",
-      'PUL'      => "Programming Utilities and Libraries",
-      'DEBUG'    => "Debugging Tools",
-      'NETP'     => "Network Programming",
-      'DRIVER'   => "Writing Device Drivers",
-      'FPOINT'   => "Floating Point Programmers Guide",
-      'SVPG'     => "SunView\\ 1 Programmer's Guide",
-      'SVSPG'    => "SunView\\ 1 System Programmer's Guide",
-      'PIXRCT'   => "Pixrect Reference Manual",
-      'CGI'      => "SunCGI Reference Manual",
-      'CORE'     => "Amiga Unix Core Reference Manual",
-      '4ASSY'    => "Sun-4 Assembly Language Reference Manual",
-                          # non-Sun titles
-      'KR'       => "The C Programming Language"
-    }
-
-    MANUAL_SECTION_NAMES = {
-      '1'  => 'USER COMMANDS',
-      '1C' => 'USER COMMANDS',
-      '1G' => 'USER COMMANDS',
-      '1S' => 'USER COMMANDS',
-      '1V' => 'USER COMMANDS',
-      '2'  => 'SYSTEM CALLS',
-      '2V' => 'SYSTEM CALLS',
-      '3'  => 'C LIBRARY FUNCTIONS',
-      '3C' => 'COMPATIBILITY FUNCTIONS',
-      '3F' => 'FORTRAN LIBRARY ROUTINES',
-      '3K' => 'KERNEL VM LIBRARY FUNCTIONS',
-      '3L' => 'LIGHTWEIGHT PROCESSES LIBRARY',
-      '3M' => 'MATHEMATICAL LIBRARY',
-      '3N' => 'NETWORK FUNCTIONS',
-      '3R' => 'RPC SERVICES LIBRARY',
-      '3S' => 'STANDARD I/O FUNCTIONS',
-      '3V' => 'SYSTEM V LIBRARY',
-      '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
-      '4'  => 'DEVICES AND NETWORK INTERFACES',
-      '4F' => 'PROTOCOL FAMILIES',
-      '4I' => 'DEVICES AND NETWORK INTERFACES',
-      '4M' => 'DEVICES AND NETWORK INTERFACES',
-      '4N' => 'DEVICES AND NETWORK INTERFACES',
-      '4P' => 'PROTOCOLS',
-      '4S' => 'DEVICES AND NETWORK INTERFACES',
-      '4V' => 'DEVICES AND NETWORK INTERFACES',
-      '5'  => 'FILE FORMATS',
-      '5V' => 'FILE FORMATS',
-      '6'  => 'GAMES AND DEMOS',
-      '7'  => 'PUBLIC FILES, TABLES, AND TROFF MACROS',
-      '8'  => 'MAINTENANCE COMMANDS',
-      '8C' => 'MAINTENANCE COMMANDS',
-      '8S' => 'MAINTENANCE COMMANDS',
-      '8V' => 'MAINTENANCE COMMANDS',
-      'L'  => 'LOCAL COMMANDS'
-    }
-
-    MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
-    MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
-
     alias :LP :P
 
     def initialize(source)
@@ -120,7 +33,7 @@ class AMIX
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L",
+          footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L".+@,
           #'Tm' => '&trade;',
           ']W' => 'Amiga Unix'
         }
@@ -176,4 +89,95 @@ class AMIX
     end
 
   end
+
+  MANUAL_NAMES = {
+    'DOCBOX'   => "Documentation Set",
+    'BGBOX'    => "Beginner's Guides Minibox",
+    'GSBG'     => "Getting Started with Amiga Unix: Beginner's Guide",
+    'SUBG'     => "Setting Up Your Amiga Unix Environment: Beginner's Guide",
+    'SHBG'     => "Self Help with Problems: Beginner's Guide",
+    'SVBG'     => "SunView\\ 1 Beginner's Guide",
+    'MMBG'     => "Mail and Messages: Beginner's Guide",
+    'DMBG'     => "Doing More with Amiga Unix: Beginner's Guide",
+    'UNBG'     => "Using the Network: Beginner's Guide",
+    'GDBG'     => "Games, Demos & Other Pursuits",
+    'SABOX'    => "System Administration Manuals Minibox",
+    'CHANGE'   => "Release 4.0 Change Notes",
+    'INSTALL'  => "Installing Amiga Unix",
+    'ADMIN'    => "System and Network Administration",
+    'SECUR'    => "Security Features Guide",
+    'PROM'     => "PROM User's Manual",
+    'DIAG'     => "Amiga Unix System Diagnostics Manual",
+    'SUNDIAG'  => "Sundiag User's Guide",
+    'REFBOX'   => "Reference Manuals Minibox",
+    'MANPAGES' => "Amiga Unix Reference Manual",
+    'REFMAN'   => "Amiga Unix Reference Manual",
+    'SSI'      => "Amiga Unix System Introduction",
+    'SSO'      => "System Services Overview",
+    'TEXT'     => "Editing Text Files",
+    'DOCS'     => "Formatting Documents",
+    'TROFF'    => "Using \\&\\fLnroff\\fP and \\&\\fLtroff\\fP",
+    'INDEX'    => "Global Index",
+    'PTBOX'    => "Programmer's Tools Manuals Minibox",
+    'CPG'      => "C Programmer's Guide",
+    'CREF'     => "C Reference Manual",
+    'ASSY'     => "Assembly Language Manual",
+    'PUL'      => "Programming Utilities and Libraries",
+    'DEBUG'    => "Debugging Tools",
+    'NETP'     => "Network Programming",
+    'DRIVER'   => "Writing Device Drivers",
+    'FPOINT'   => "Floating Point Programmers Guide",
+    'SVPG'     => "SunView\\ 1 Programmer's Guide",
+    'SVSPG'    => "SunView\\ 1 System Programmer's Guide",
+    'PIXRCT'   => "Pixrect Reference Manual",
+    'CGI'      => "SunCGI Reference Manual",
+    'CORE'     => "Amiga Unix Core Reference Manual",
+    '4ASSY'    => "Sun-4 Assembly Language Reference Manual",
+                        # non-Sun titles
+    'KR'       => "The C Programming Language"
+  }
+
+  MANUAL_SECTION_NAMES = {
+    '1'  => 'USER COMMANDS',
+    '1C' => 'USER COMMANDS',
+    '1G' => 'USER COMMANDS',
+    '1S' => 'USER COMMANDS',
+    '1V' => 'USER COMMANDS',
+    '2'  => 'SYSTEM CALLS',
+    '2V' => 'SYSTEM CALLS',
+    '3'  => 'C LIBRARY FUNCTIONS',
+    '3C' => 'COMPATIBILITY FUNCTIONS',
+    '3F' => 'FORTRAN LIBRARY ROUTINES',
+    '3K' => 'KERNEL VM LIBRARY FUNCTIONS',
+    '3L' => 'LIGHTWEIGHT PROCESSES LIBRARY',
+    '3M' => 'MATHEMATICAL LIBRARY',
+    '3N' => 'NETWORK FUNCTIONS',
+    '3R' => 'RPC SERVICES LIBRARY',
+    '3S' => 'STANDARD I/O FUNCTIONS',
+    '3V' => 'SYSTEM V LIBRARY',
+    '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
+    '4'  => 'DEVICES AND NETWORK INTERFACES',
+    '4F' => 'PROTOCOL FAMILIES',
+    '4I' => 'DEVICES AND NETWORK INTERFACES',
+    '4M' => 'DEVICES AND NETWORK INTERFACES',
+    '4N' => 'DEVICES AND NETWORK INTERFACES',
+    '4P' => 'PROTOCOLS',
+    '4S' => 'DEVICES AND NETWORK INTERFACES',
+    '4V' => 'DEVICES AND NETWORK INTERFACES',
+    '5'  => 'FILE FORMATS',
+    '5V' => 'FILE FORMATS',
+    '6'  => 'GAMES AND DEMOS',
+    '7'  => 'PUBLIC FILES, TABLES, AND TROFF MACROS',
+    '8'  => 'MAINTENANCE COMMANDS',
+    '8C' => 'MAINTENANCE COMMANDS',
+    '8S' => 'MAINTENANCE COMMANDS',
+    '8V' => 'MAINTENANCE COMMANDS',
+    'L'  => 'LOCAL COMMANDS'
+  }
+
+  MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
+  MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
+
+  MANUAL_NAMES.freeze
+  MANUAL_SECTION_NAMES.freeze
 end

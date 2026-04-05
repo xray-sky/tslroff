@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -68,7 +69,7 @@ class OSF1
       super
       @named_strings.merge!(
         {
-          footer: ''
+          footer: ''.+@
         }
       )
     end
@@ -337,7 +338,7 @@ class OSF1
 
       # sir \*(PR not appearing in tmac.an.repro - does anything define it?
       # is it worth the log warn noise?
-      heading = "#{args[0]}\\|(\\^#{args[1]}\\*(PR\\^)"
+      heading = "#{args[0]}\\|(\\^#{args[1]}\\*(PR\\^)".+@
       heading << "\\0\\0\\(em\\0\\0\\*(]T" unless @named_strings[']T'].empty?
       heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
       # these would go below the top .tl if given. I think I'll put it in <h1> instead.

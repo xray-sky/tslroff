@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/23/22.
@@ -9,7 +10,7 @@
 # TODO
 #
 
-class Interactive
+module Interactive
   class Nroff < Nroff
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.([n\d]\S*)$/, '')
@@ -34,7 +35,7 @@ class Interactive
       super
       @named_strings.merge!(
         {
-          footer: '\\fB\\s-1\\*(]Y\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP',
+          footer: '\\fB\\s-1\\*(]Y\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP'.+@,
           'Tm' => '&trade;',
           'E'  => '\\&.\|.\|.',
           'T'  => "\t",
@@ -134,7 +135,7 @@ class Interactive
       #ds "]T #{args[3]}"
       ds("]L (\\^#{args[4]}\\^)") if args[4] and !args[4].strip.empty?
 
-      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
       heading << "\\0\\0\\(em\\0\\0\\*(]L" if @named_strings[']L']
 
       super(*args, heading: heading)

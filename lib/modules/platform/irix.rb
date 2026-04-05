@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 01/4/26.
@@ -11,7 +12,7 @@
 #   title line incl. in SEE ALSO refs (e.g. admin.1.z)
 #
 
-class IRIX
+module IRIX
   class Nroff < Nroff
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
@@ -22,8 +23,8 @@ class IRIX
     end
   end
 
-  class V6_5
-    class Nroff < IRIX::Nroff
+  module V6_5
+    class Nroff < Nroff
       def initialize(source)
         @manual_entry ||= source.file.sub(/\.z$/, '')
         @heading_detection ||= %r(^\s{0,5}(?<section>[A-Z][A-Za-z\s]+)$)

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/06/22.
@@ -9,18 +10,50 @@
 # TODO processor-specific overrides
 #
 
-class SunOS::V3_2
-
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'mc68881version.8' then @source = Source.new(file, magic: 'Troff', source_args: source_args)
+module SunOS
+  module V3_2
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename(file)
+        when 'mc68881version.8' then kwargs[:magic] = :Troff
+        when 'Makefile'            then raise ManualIsBlacklisted, 'is makefile'
+        when 'configuration.file5' then raise ManualIsBlacklisted, 'is nonsense'  # SYS4 only
+        end
+        super(file, **kwargs, &block)
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
     end
-  end
 
-  class Troff < SunOS::Troff
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            #']W' => 'Sun Release 3.2\(*b' # ß, eh? - 68010 release only TODO
+            ']W' => 'Sun Release 3.2' # 68020/SPARC releases
+          }
+        )
+      end
+
+      # REVIEW
+      # this is used seemingly to prevent processing the next line
+      # as a request. but, it's not in tmac.an or the DWB manual.
+      def li(*_args)
+        parse("\\&" + next_line)
+      end
+
+      def TH(*args)
+        ds "]L Last change: #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        # TODO SYS4-3.2 adds .ds ]W \\$4 ; .ds ]D \\$5
+
+        super(*args, heading: heading)
+      end
+
+    end
 
     MANUAL_SECTION_NAMES = {
       '1'  => 'USER COMMANDS',
@@ -55,43 +88,6 @@ class SunOS::V3_2
     }
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
-
-    def initialize(source)
-      case source.file
-      when 'Makefile'            then raise ManualIsBlacklisted, 'is makefile'
-      when 'configuration.file5' then raise ManualIsBlacklisted, 'is nonsense'  # SYS4 only
-      end
-      super source
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          #']W' => 'Sun Release 3.2\(*b' # ß, eh? - 68010 release only TODO
-          ']W' => 'Sun Release 3.2' # 68020/SPARC releases
-        }
-      )
-    end
-
-    # REVIEW
-    # this is used seemingly to prevent processing the next line
-    # as a request. but, it's not in tmac.an or the DWB manual.
-    def li(*_args)
-      parse("\\&" + next_line)
-    end
-
-    def TH(*args)
-      ds "]L Last change: #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      # TODO SYS4-3.2 adds .ds ]W \\$4 ; .ds ]D \\$5
-
-      super(*args, heading: heading)
-    end
-
+    MANUAL_SECTION_NAMES.freeze
   end
 end

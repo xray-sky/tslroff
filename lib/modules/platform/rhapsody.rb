@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/20/23.
@@ -11,6 +12,6 @@
 #   _actually_ using mdoc/doc-* macros. gadzooks. looks like all versions share the same macros though
 #
 
-class Rhapsody
-  class Groff < ::Groff ; end
+module Rhapsody
+  class Groff < Groff ; end
 end

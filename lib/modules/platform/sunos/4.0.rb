@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/09/22.
@@ -14,8 +15,49 @@
 # √     Overstrike centers within the box. maybe I need a different class for \z
 #       ...same problems as terminfo(4) [SunOS 5.5.1]
 
-class SunOS::V4_0
-  class Troff < SunOS::Troff
+module SunOS
+  module V4_0
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        super(file, **kwargs, &block)
+        case @file
+        when 'disablenumlock.1' then patch_line 1, /dis/, 'en'  # exists in 4.0.2; tries to .so itself
+        end
+      end
+    end
+
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => 'Sun Release 4.0'
+          }
+        )
+      end
+
+      def SB(*args)
+        parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+      end
+
+      def TH(*args)
+        ds "]L Last change: #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+        ds "]W #{args[3]}" if args[3] and !args[3].empty?
+        ds "]D #{args[4]}" if args[4] and !args[4].empty?
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+      def TX(*args)
+        ds "Tx #{MANUAL_NAMES[args[0]]}"
+        parse "\\fI\\*(Tx\\f1#{args[1]}"
+      end
+
+    end
 
     MANUAL_NAMES = {
       'DOCBOX'   => "Documentation Set",
@@ -106,42 +148,7 @@ class SunOS::V4_0
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}"}
     MANUAL_SECTION_NAMES.default = 'MISC. REFERENCE MANUAL PAGES'
 
-    def initialize(source)
-      case source.file
-      when 'disablenumlock.1' then source.patch_line 1, /dis/, 'en'  # exists in 4.0.2; tries to .so itself
-      end
-      super source
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => 'Sun Release 4.0'
-        }
-      )
-    end
-
-    def SB(*args)
-      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-    end
-
-    def TH(*args)
-      ds "]L Last change: #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].empty?
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
-    def TX(*args)
-      ds "Tx #{MANUAL_NAMES[args[0]]}"
-      parse "\\fI\\*(Tx\\f1#{args[1]}"
-    end
-
+    MANUAL_NAMES.freeze
+    MANUAL_SECTION_NAMES.freeze
   end
 end

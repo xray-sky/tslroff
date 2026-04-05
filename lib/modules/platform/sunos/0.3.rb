@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/09/22.
@@ -22,8 +23,46 @@
 #
 #
 
-class SunOS::V0_3
-  class Troff < SunOS::Troff
+module SunOS
+  module V0_3
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'fs.h', 'inode.h' then raise ManualIsBlacklisted, 'apparently detritus'
+        end
+        super(file, **kwargs, &block)
+      end
+    end
+
+    class Troff < Troff
+
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => 'Sun System Release 0.3'
+          }
+        )
+      end
+
+      # REVIEW
+      # this is used seemingly to prevent processing the next line
+      # as a request. but, it's not in tmac.an or the DWB manual.
+      def li(*_args)
+        parse("\\&" + next_line)
+      end
+
+      def TH(*args)
+        ds "]L #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+    end
 
     MANUAL_SECTION_NAMES = {
       '1'  => "User's Manual \\(em Commands",
@@ -51,40 +90,6 @@ class SunOS::V0_3
     }
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
-
-    def initialize(source)
-      case source.file
-      when 'fs.h', 'inode.h'
-        raise ManualIsBlacklisted, 'apparently detritus'
-      end
-      super(source)
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => 'Sun System Release 0.3'
-        }
-      )
-    end
-
-    # REVIEW
-    # this is used seemingly to prevent processing the next line
-    # as a request. but, it's not in tmac.an or the DWB manual.
-    def li(*_args)
-      parse("\\&" + next_line)
-    end
-
-    def TH(*args)
-      ds "]L #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
+    MANUAL_SECTION_NAMES.freeze
   end
 end

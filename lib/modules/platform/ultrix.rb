@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -10,7 +11,7 @@
 #   PL (page length) and SF (save font) registers
 #
 
-class Ultrix
+module Ultrix
 
   # Triumvirate is essentially Helvetica
   class Font::TR < ::Font::H ; end
@@ -33,7 +34,7 @@ class Ultrix
       @named_strings.merge!(
         {
           #'Tm' => '&trade;',
-          footer: '' # just a page number
+          footer: ''.+@ # just a page number
         }
       )
     end

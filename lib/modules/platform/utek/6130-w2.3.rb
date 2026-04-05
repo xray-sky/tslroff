@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/25/21.
@@ -7,17 +8,16 @@
 # UTek W2.3 Platform Overrides
 #
 
-class UTek::W2_3_6130
-  class Nroff < UTek::Nroff
-
-    def initialize source
-      case source.file
-      when 'access.5n'
+module UTek
+  module W2_3_6130
+    class Nroff < Nroff
+      def initialize(source)
+        case source.file
         # malformed title line: ACCESS (dfs)(5N)
-        @manual_section = '5n'
+        when 'access.5n' then @manual_section = '5n'
+        end
+        super source
       end
-      super source
     end
-
   end
 end

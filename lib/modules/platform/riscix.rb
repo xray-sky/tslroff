@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -7,7 +8,7 @@
 # Acorn RISCix Platform Overrides
 #
 
-class RISCiX
+module RISCiX
   class Troff < Troff
 
     alias :LP :P
@@ -24,7 +25,7 @@ class RISCiX
         {
           ']D' => 'UNIX Programmer\'s Manual',
           ']W' => '7th Edition',
-          footer: "\\*(]W"
+          footer: "\\*(]W".+@
         }
       )
     end

@@ -7,72 +7,66 @@
 #
 #   §5.3
 #
-# Request  Initial  If no     Notes   Explanation
-#  form     value   argument
-#
-# .sp N    -        N=1V      B,‡,v   Space vertically in either direction. If 'N' is
-#                                     negative, the motion is backward (upward) and is
-#                                     limited to the distance to the top of the page.
-#                                     Forward (downward) motion is truncated to the
-#                                     distance to the nearest trap. If the no-space mode
-#                                     is on, no spacing occurs (see '.ns' and '.rs').
-#
-# Blank text line   -         B       Causes a break and outputs a blank line exactly
-#                                     like .sp 1.
-#
-# .sp 0 is effectively a .br
-#
-#  REVIEW what happens when given not-an-N as first arg (invalid expression)
-#         ignored, I think, which means bad interaction from to_u returning '0' in that case
-#
-# TODO negative motion, traps, no-space mode, unit scaling, etc.
-# TODO for some reason (probably to reserve page space?) a.out(4) [GL2-W2.5] has
-#           .sp 1i
-#           .sp -1i
-#       html is output "correctly" but it's not _useful_ to have a span with
-#       negative height. now what? might just have to use the rewrite facility.
-#
-# breaks. TODO can be suppressed with '
-#
-# TODO getting extra junk following .sp, messing with the spacing;
-#      either "<p> </p>", or "<br /> <br />" - probably from space adjust?
-#      e.g. eqn(1) [SunOS 5.5.1]
-#
-# Request  Initial  If no     Notes   Explanation
-#  form     value   argument
-#
-# .vs N  1/6in;12pt previous  E,p     Set vertical base-line spacing size V. Transient
-#                                     extra vertical space available with \x'N'.
-#
-# default unit: points
-#
-# TODO: everything.
-#
-#
-# .ne
-#   need vertical space
-#   ignored in HTML context
-#
-#
-# .ns      space    -         D       No-space mode turned on. When on, the no-space
-#                                     mode inhibits .sp requests and .bp requests without
-#                                     a next page number. The no-space mode is turned off
-#                                     when a line of output occurs, or with .rs
-#
-# .rs      space    -         D       Restore spacing. The no-space mode is turned off.
-#
 
 class Troff
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  # .ne
+  #   need vertical space
+  #   ignored in HTML context
 
   def ne(_argstr = '', breaking: nil) ; end
+
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  # .ns      space    -         D       No-space mode turned on. When on, the no-space
+  #                                     mode inhibits .sp requests and .bp requests without
+  #                                     a next page number. The no-space mode is turned off
+  #                                     when a line of output occurs, or with .rs
 
   def ns(_argstr = '', breaking: nil)
     @nospace = true
   end
 
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  # .rs      space    -         D       Restore spacing. The no-space mode is turned off.
+
   def rs(_argstr = '', breaking: nil)
     @nospace = nil
   end
+
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  # .sp N    -        N=1V      B,‡,v   Space vertically in either direction. If 'N' is
+  #                                     negative, the motion is backward (upward) and is
+  #                                     limited to the distance to the top of the page.
+  #                                     Forward (downward) motion is truncated to the
+  #                                     distance to the nearest trap. If the no-space mode
+  #                                     is on, no spacing occurs (see '.ns' and '.rs').
+  #
+  # Blank text line   -         B       Causes a break and outputs a blank line exactly
+  #                                     like .sp 1.
+  #
+  # .sp 0 is effectively a .br
+  #
+  #  REVIEW what happens when given not-an-N as first arg (invalid expression)
+  #         ignored, I think, which means bad interaction from to_u returning '0' in that case
+  #
+  # TODO negative motion, traps, no-space mode, unit scaling, etc.
+  # TODO for some reason (probably to reserve page space?) a.out(4) [GL2-W2.5] has
+  #           .sp 1i
+  #           .sp -1i
+  #       html is output "correctly" but it's not _useful_ to have a span with
+  #       negative height. now what? might just have to use the rewrite facility.
+  #
+  # TODO getting extra junk following .sp, messing with the spacing;
+  #      either "<p> </p>", or "<br /> <br />" - probably from space adjust?
+  #      e.g. eqn(1) [SunOS 5.5.1]
 
   def sp(argstr = '', breaking: true)  # TODO everything is wrong?
     return if nospace?
@@ -87,6 +81,16 @@ class Troff
     #        is it worth special casing to give row (bottom-)padding? I think it might be
     #@current_block.reset_output_indicator
   end
+
+  # Request  Initial  If no     Notes   Explanation
+  #  form     value   argument
+  #
+  # .vs N  1/6in;12pt previous  E,p     Set vertical base-line spacing size V. Transient
+  #                                     extra vertical space available with \x'N'.
+  #
+  # default unit: points
+  #
+  # TODO: everything.
 
   def vs(argstr = '', breaking: nil)
     # TODO would need to treat argstr as expression

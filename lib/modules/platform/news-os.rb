@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/12/22.
@@ -10,7 +11,7 @@
 #   several of the MH pages want to use the T, M, and X fonts (what are they)
 #
 
-class NEWS_os
+module NEWS_os
   class Nroff < Nroff ; end
   class Troff < Troff
 
@@ -27,7 +28,7 @@ class NEWS_os
 
     def init_TH
       #super
-      @register['IN'] = Troff::Register.new(@base_indent)
+      @register['IN'] = Register.new(@base_indent)
     end
 
     # doesn't matter, ]W not used in header or footer
@@ -50,7 +51,7 @@ class NEWS_os
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)".+@
       heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
 
       super(*args, heading: heading)

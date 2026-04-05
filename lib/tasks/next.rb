@@ -21,7 +21,7 @@ collection_namespace 'NeXT' do
 
   collection_namespace 'OPENSTEP' do
     manual_namespace '4.2',
-                    vendor_class: OPENSTEP,
+                    vendor_class: NEXTSTEP,
                     odir: 'NeXT/OPENSTEP/4.2',
                     sources: %w[NextLibrary/Documentation/ManPages/man[1-8]]
   end

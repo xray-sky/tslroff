@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # SGI GL1/GL2 Platform Overrides
 #
 # All versions use basically the same macros.
@@ -50,7 +52,7 @@ class GL2
       @named_strings.merge!(
         {
           #footer: "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W",
-          footer: "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W",
+          footer: "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W".+@,
           'Tm' => '&trade;',
           ']D' => 'Silicon Graphics',
           ']L' => '', # explicitly blanked in .TH before being conditionally redefined
@@ -92,7 +94,7 @@ class GL2
       ds "]L #{args[2]}" if args[2] and !args[2].strip.empty?
       ds "]D #{args[3]}" if args[3] and !args[3].strip.empty?
 
-      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D"
+      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)\\0\\0\\(em\\0\\0\\*(]D".+@
       heading << ' \\|\\*(]L' unless @named_strings[']L'].empty?
 
       super(*args, heading: heading)

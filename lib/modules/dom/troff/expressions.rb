@@ -69,7 +69,6 @@
 #
 
 class Troff
-
   private
 
   @@units_per_inch = 1200 # REVIEW: does this even matter?
@@ -116,7 +115,10 @@ class Troff
     strpos += n.length
     val += if n.start_with? '('
              lhs = to_u n[1..(n.end_with?(')') ? -2 : -3)], default_unit: default_unit
-             to_u(lhs, default_unit: unit).to_i
+             #to_u(lhs, default_unit: unit).to_i
+             # appears that default unit scaling doesn't apply to unscaled parenthesized expressions
+             #  - preprocessed tbl output in Solaris 2.4 x86 SDK ApplicationShell(3X)
+             to_u(lhs).to_i
            else
              case unit
              when 'u'  then n.to_i
@@ -144,15 +146,16 @@ class Troff
       break unless e
       strpos += e.length
       rhs = to_u(e, default_unit: default_unit).to_i
+
       val = case op
             when '=' then val.send('==', rhs) ? 1 : 0
-            when ':' then val.send('||', rhs) ? 1 : 0
-            when '&' then val.send('&&', rhs) ? 1 : 0
+            when ':' then (val > 0 || rhs > 0) ? 1 : 0
+            when '&' then (val > 0 && rhs > 0) ? 1 : 0
             when '<', '>', '<=', '>=' then val.send(op, rhs) ? 1 : 0
             else val.send(op, rhs)
             end
     end
-    val.to_s
+    val.to_s #.tap { |x| warn "expr : returning from #{str} (default unit #{default_unit}) with value #{x}" }
   end
 
 end

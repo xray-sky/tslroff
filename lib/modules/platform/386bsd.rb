@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 07/7/22.
@@ -20,7 +21,7 @@
 #     the former seems to have Troff (Groff?)
 #
 
-class X386BSD
+module X386BSD
   class Troff < Troff  # REVIEW probably actually Groff (e.g. groff_char(7))
     def initialize source
       @manual_entry ||= source.file.sub(/\.(?:[\dZz]\S?)$/, '')

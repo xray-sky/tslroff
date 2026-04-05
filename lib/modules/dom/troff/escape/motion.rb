@@ -66,7 +66,7 @@ class Troff
       if new_shift.zero?
         apply { @current_block.terminal_text_style.delete(:horizontal_shift) }
       elsif nofill?
-        warn ">>> treating it like a tab of #{new_shift}em due to nofill"
+        warn ">>> treating it like a tab of #{new_shift}em due to nofill" # TODO tbl outputs \h for column positioning. we should treat this as a tab _from last \h_ in that case. somehow.
         insert_tab width: new_shift
       else
         apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }

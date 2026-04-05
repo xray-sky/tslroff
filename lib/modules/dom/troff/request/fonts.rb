@@ -42,7 +42,7 @@ class Troff
 
   def cs(argstr = '', breaking: nil)
     (face, width, ptsiz) = argstr.split
-    return nil unless face
+    return unless face
     ptsiz ||= @register['.s'].value
 
     if width
@@ -52,8 +52,8 @@ class Troff
       "disabling .cs #{[face, width, ptsiz].inspect}"
       @cs = nil if @cs
     end
-    @current_block = blockproto
-    @document << @current_block
+    #@current_block = blockproto
+    #@document << @current_block
   end
 
   # Request       Initial   If no     Notes   Explanation

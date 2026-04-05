@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/10/14.
@@ -55,8 +56,69 @@
 #   mtio(7i) :: font size at MTSRSZ and MTGRSZ ? extra space after initial " on MTNBSF/MTFSF ? what happened here
 #
 
-class SunOS::V5_5
-  class Troff < SunOS::Troff
+module SunOS
+  module V5_5
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        super(file, **kwargs, &block)
+        case @file
+        when 'ld.1' then patch_line 768, /\\h/, 'h'
+        when 'a.out.4'
+          # h4x: collapsed tbl cells due to line-height:0 from \u...\d
+          patch_lines [55, 59, 61], /(\\u.+?\\d)/, '\\ \1\\ ', global: true
+        when 'ar.4'
+          # h4x: missing single quote in input; not sure how troff copes - perhaps \(ga matches ' ?? ugh... TODO
+          patch_line 42, /\\h\\\(ga/, "\\h'"
+        end
+      end
+    end
+
+    class Troff < Troff
+
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => "SunOS #{@version}",
+            '||' => '/usr/share/lib/tmac'
+          }
+        )
+      end
+
+      def init_fp
+        super
+        @mounted_fonts[4] = 'BI' # REVIEW is this right? or is it H ...or S???
+        @mounted_fonts[5] = 'CW'
+      end
+
+      def SB(*args)
+        parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+      end
+
+      def TH(*args)
+        ds "]H #{args[0]}\\^(\\^#{args[1]}\\^)"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
+        ds "]L Last change: #{args[2]}"
+        ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
+        ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
+
+        heading = @named_strings['D'].empty? ? '\\*(]H' : '\\*(]H\\0\\0\\(em\\0\\0\\*(]D'
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+      def TZ(*args)
+        ds "Tz #{MANUAL_NAMES[args[0]]}"
+        parse "\\fI\\*(Tz\\f1#{args[1]}"
+      end
+
+      def HC(*args)
+        ds "Hc #{HARDCOPY_TITLES[args[0]]}"
+        parse "\\fI\\*(Hc\\f1#{args[1]}"
+      end
+
+    end
 
     HARDCOPY_TITLES = {
           # Hard Copy Docs Only
@@ -324,67 +386,14 @@ class SunOS::V5_5
       '9f'  => 'Kernel Functions for Drivers',
       '9s'  => 'Data Structures for Drivers',
       'l'   => 'Local Commands'
-    }
+    }.freeze
 
     HARDCOPY_TITLES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
 
-    def initialize(source)
-      case source.file
-      when 'ld.1' then source.patch_line 768, /\\h/, 'h'
-      when 'a.out.4'
-        # h4x: collapsed tbl cells due to line-height:0 from \u...\d
-        source.patch_lines [55, 59, 61], /(\\u.+?\\d)/, '\\ \1\\ ', global: true
-      when 'ar.4'
-        # h4x: missing single quote in input; not sure how troff copes - perhaps \(ga matches ' ?? ugh... TODO
-        source.patch_line 42, /\\h\\\(ga/, "\\h'"
-      end
-      super source
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => "SunOS #{@version}",
-          '||' => '/usr/share/lib/tmac'
-        }
-      )
-    end
-
-    def init_fp
-      super
-      @mounted_fonts[4] = 'BI' # REVIEW is this right? or is it H ...or S???
-      @mounted_fonts[5] = 'CW'
-    end
-
-    def SB(*args)
-      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-    end
-
-    def TH(*args)
-      ds "]D #{MANUAL_SECTION_NAMES[args[1].downcase]}" if args[1]
-      ds "]L Last change: #{args[2]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
-
-      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
-    def TZ(*args)
-      ds "Tz #{MANUAL_NAMES[args[0]]}"
-      parse "\\fI\\*(Tz\\f1#{args[1]}"
-    end
-
-    def HC(*args)
-      ds "Hc #{HARDCOPY_TITLES[args[0]]}"
-      parse "\\fI\\*(Hc\\f1#{args[1]}"
-    end
-
+    HARDCOPY_TITLES.freeze
+    MANUAL_NAMES.freeze
   end
 end
-class SunOS::V5_5_1 < SunOS::V5_5 ; end
+
+#module SunOS::V5_5_1 = SunOS::V5_5

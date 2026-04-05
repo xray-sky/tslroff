@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/10/14.
@@ -10,7 +11,7 @@
 # √ font 'L' is used; /usr/lib/font/fontlist has it as "geneva light"
 #    - separate from G ("geneva regular") so: helvetica light
 
-class SunOS
+module SunOS
   class Nroff < Nroff ; end
   class Troff < Troff
 
@@ -27,7 +28,7 @@ class SunOS
       @named_strings.merge!(
         {
           #'Tm' => '&trade;',
-          footer: "\\*(]W"
+          footer: "\\*(]W".+@
         }
       )
     end

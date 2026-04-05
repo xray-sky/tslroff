@@ -186,6 +186,11 @@
 	margin-bottom: 0;
 }
 
+#man p.monospace {
+	margin-bottom: 0;
+	font-family: "CMU Typewriter", monospace;
+}
+
 #man pre {
 	border: none;
 	background: none;

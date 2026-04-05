@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/10/14.
@@ -16,33 +17,76 @@
 #   tbl(1) - is post-processed (all versions back to 0.3 same issue)
 #
 
-class SunOS::V4_1
+module SunOS
+  module V4_1
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'getgid.3f' then raise ManualIsBlacklisted, '.so infinite loop' # in SC3.0.1_SunFortran Workshop V3N2 unbundled
+        when 'Xt-differences.3' then kwargs[:magic] = :Troff  # #.so macros.x
+        end
 
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: nil)
-      case File.basename(file)
-      when 'Xt-differences.3' then source_args[:magic] = 'Troff'  # #.so macros.x
+        super(file, **kwargs, &block)
+
+        case @file
+        when 'Xt-differences.3' then patch_line 1, /^/, '.\"'
+        end
       end
-      super file, vendor_class: vendor_class, source_args: source_args
-    end
-  end
-
-  class Nroff < SunOS::Nroff
-
-    def initialize(source)
-      case source.file
-      when 'ce_db_build.1', 'ce_db_merge.1' # no title line
-        @manual_section = '1'
-        @manual_entry = (source.file)[0..-3]
-        # TODO also has see also link w/ whitespace (e.g. "ref (section)")
-      end
-      super source
-      @lines_per_page = nil
     end
 
-  end
+    class Nroff < Nroff
+      def initialize(source)
+        case source.file
+        when 'ce_db_build.1', 'ce_db_merge.1' # no title line
+          @manual_section = '1'
+          @manual_entry = (source.file)[0..-3]
+          # TODO also has see also link w/ whitespace (e.g. "ref (section)")
+        end
+        super source
+        @lines_per_page = nil
+      end
+    end
 
-  class Troff < ::SunOS::Troff
+    class Troff < Troff
+      def initialize(source)
+        case source.file
+        when 'colorchooser.1' then @manual_section = '1'  # TODO this is getting smashed by .TH. maybe use .em once that's implemented?
+        end
+        super source
+      end
+
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            ']W' => 'Sun Release 4.1'
+          }
+        )
+      end
+
+      def SB(*args)
+        parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
+      end
+
+      def TH(*args)
+        heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
+        ds "]L Last change: #{args[2]}"
+        ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
+        ds "]W #{args[3]}" if args[3] and !args[3].empty?
+        ds "]D #{args[4]}" if args[4] and !args[4].empty?
+
+        ds "]L Last change: #{args[2]}"
+        @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+      def TX(*args)
+        ds "Tx #{MANUAL_NAMES[args[0]]}"
+        parse "\\fI\\*(Tx\\f1#{args[1]}"
+      end
+
+    end
 
     MANUAL_NAMES = {
       'GSBG'     => 'Getting Started ',
@@ -132,53 +176,15 @@ class SunOS::V4_1
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
 
-    def initialize source
-      case source.file
-        when 'colorchooser.1'   then @manual_section = '1'  # TODO this is getting smashed by .TH. maybe use .em once that's implemented?
-        when 'Xt-differences.3' then patch_line 1, /^/, '.\"'
-      end
-      super source
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          ']W' => 'Sun Release 4.1'
-        }
-      )
-    end
-
-    def SB(*args)
-      parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
-    end
-
-    def TH(*args)
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
-      ds "]L Last change: #{args[2]}"
-      ds "]D #{MANUAL_SECTION_NAMES[args[1]]}"
-      ds "]W #{args[3]}" if args[3] and !args[3].empty?
-      ds "]D #{args[4]}" if args[4] and !args[4].empty?
-
-      ds "]L Last change: #{args[2]}"
-      @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
-    def TX(*args)
-      ds "Tx #{MANUAL_NAMES[args[0]]}"
-      parse "\\fI\\*(Tx\\f1#{args[1]}"
-    end
-
+    MANUAL_NAMES.freeze
+    MANUAL_SECTION_NAMES.freeze
   end
 end
-
 # all literally identical
 
-class SunOS::V4_1_1 < SunOS::V4_1 ; end
-class SunOS::V4_1_2 < SunOS::V4_1 ; end
-class SunOS::V4_1_3 < SunOS::V4_1 ; end
-class SunOS::V4_1_3B < SunOS::V4_1 ; end
-class SunOS::V4_1_3_U1 < SunOS::V4_1 ; end
-class SunOS::V4_1_4 < SunOS::V4_1 ; end
+#module SunOS::V4_1_1 = SunOS::V4_1
+#module SunOS::V4_1_2 = SunOS::V4_1
+#module SunOS::V4_1_3 = SunOS::V4_1
+#module SunOS::V4_1_3B = SunOS::V4_1
+#module SunOS::V4_1_3_U1 = SunOS::V4_1
+#module SunOS::V4_1_4 = SunOS::V4_1

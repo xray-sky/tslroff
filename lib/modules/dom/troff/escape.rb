@@ -14,9 +14,7 @@ class Troff
 
   def unescape(str, copymode: nil, output: nil)
     # REVIEW how does @escape_character interact with copymode?
-    if copymode
-      return __unesc_cm(str) # no longer destructive of str
-    end
+    return __unesc_cm(str) if copymode # no longer destructive of str
 
     if output
       hold_block = @current_block
@@ -24,7 +22,6 @@ class Troff
     end
 
     # eqn delims can be hidden by escaping them
-    resc = Regexp.quote @escape_character || ''
     if @eqn_start and str.match?(/(?<!#{@resc})#{@resc}#{@resc}#{Regexp.quote @eqn_start}|(?<!#{@resc})#{Regexp.quote @eqn_start}/)
       parse_eqn str
     else
@@ -34,76 +31,46 @@ class Troff
     @current_block = hold_block if output
   end
 
-  # Perform a single unescape class on a string. These must always return plain String types
-  # e.g. \w, \n, \* -- nothing that could emit typesetter state or an object, e.g. \f, \h
+  # §7.2
+  #
+  # Copy mode input interpretation
+  #
+  #   During the definition and extension of strings and macros, the input is
+  #   read in copy mode. The input is copied without interpretation except that
+  #
+  #     * the contents of number registers, indicated by '\n', are substituted.
+  #     * Strings, indicated by '\*x' and '\*(xx', are read into the text.
+  #     * Arguments indicated by '\$' are replaced by the appropriate values at
+  #         the current macro level.
+  #     * Concealed new-lines indicated by '\(new-line)' are eliminated.
+  #     * Comments indicated by '\"' are eliminated.
+  #     * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
+  #     * '\\' is interpreted as '\'.
+  #     * '\.' is interpreted as '.'.
+  #
+  #   These interpretations can be suppressed by prepending a \. For example,
+  #   since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
+  #   as a number register indicator when the macro or string is reread.
 
-  def __unesc_single(str)
+  def __unesc_cm(str, offset: 0)
     return str unless escapes?
-    method = __callee__.to_s[-1]
-
-    i = 0
-    out = String.new
-    resc = Regexp.escape @escape_character
-    rmethod = Regexp.escape method # could be '*'
-    loop do
-      break unless e = str.index(/(?<!#{@resc})#{@resc}#{rmethod}/, i)
-      out << str[i..e - 1] unless e.zero?
-      esc = get_char str[e..-1]
-      out << send("esc_#{method}", esc[2..-1])
-      i = e + esc.length
-    end
-    out << str[i..-1]
-  end
-
-  alias :'__unesc_*' :__unesc_single
-  #alias :__unesc_n :__unesc_single
-  alias :__unesc_w :__unesc_single
-
-# §7.2
-#
-# Copy mode input interpretation
-#
-#   During the definition and extension of strings and macros, the input is
-#   read in copy mode. The input is copied without interpretation except that
-#
-#     * the contents of number registers, indicated by '\n', are substituted.
-#     * Strings, indicated by '\*x' and '\*(xx', are read into the text.
-#     * Arguments indicated by '\$' are replaced by the appropriate values at
-#         the current macro level.
-#     * Concealed new-lines indicated by '\(new-line)' are eliminated.
-#     * Comments indicated by '\"' are eliminated.
-#     * '\t' and '\a' are interpreted as ASCII horizontal tab and SOH respectively.
-#     * '\\' is interpreted as '\'.
-#     * '\.' is interpreted as '.'.
-#
-#   These interpretations can be suppressed by prepending a \. For example,
-#   since \\ maps into a \, '\\n' will copy as '\n' which will be interpreted
-#   as a number register indicator when the macro or string is reread.
-#
-# We do it right-to-left, since \*(\n(aa and \*(\*(ab and \n(\*(ac and \n(\n(ad (...etc...) are allowed
-
-  def __unesc_cm(str)
-    return str unless escapes?
-    copy = String.new
-    strend = str.length
-    while i = str.rindex(/(?<!#{@resc})#{@resc}[.*"ant]|#{@resc}#{@resc}/, strend) and !(strend < 0)
-      esc = get_escape(str, offset: i)
-      copy.prepend str[i + esc.length..strend]
-      case esc[1]
-      when @escape_character then copy.prepend @escape_character
-      when '.' then copy.prepend '.'
-      when 't' then copy.prepend "\t" # tab
-      when 'a' then copy.prepend "\a" # SOH
-      when 'n' then copy.prepend esc_n esc[2..-1]
-      when '*' then copy.prepend send 'esc_*', esc[2..-1]
-      when '"' then # \" comment
+    if i = str.index(/#{@resc}[.*"#{@resc}ant]/, offset)
+      repl = __unesc_cm(str, offset: i + 2) # recursive call; we may have constructs e.g. \*(%\n(Ll
+      case e = str[i + 1]
+      when @escape_character then "#{str[offset..i - 1] unless i.zero?}#{@escape_character}#{repl}"
+      when '.' then "#{str[offset..i - 1] unless i.zero?}.#{repl}"
+      when 't' then "#{str[offset..i - 1] unless i.zero?}\t#{repl}" # tab
+      when 'a' then "#{str[offset..i - 1] unless i.zero?}\a#{repl}" # SOH
+      when 'n', '*'
+        esc = get_escape("\\#{e}#{repl}")
+        "#{str[offset..i - 1] unless i.zero?}#{send "esc_#{e}", esc[2..-1]}#{repl[esc.length-2..-1]}"
+      when '"' # \" comment
         #@current_block << Comment.new(text: copy) # TODO wrong
-        copy = String.new
+        "#{str[offset..i - 1] unless i.zero?}"
       end
-      strend = i - 1
+    else
+      str[offset..-1]
     end
-    copy.prepend str[0..strend] unless strend < 0
-    copy
   end
 
   def __unesc(str)
@@ -118,43 +85,24 @@ class Troff
     # TODO if this works, get the hyphenation character into it
     #      check it works with escapes disabled, too.
 
-    # start with a copy mode style r-to-l replacement of \* and \n and \w to collect
+    # start with a copy mode style replacement of \* and \n and \w to collect
     # all the changes to the input text
-
-    if escapes?
-      exp = String.new
-      strend = str.length
-      while i = str.rindex(/(?<!#{@resc})#{@resc}[*"nw]/, strend) and !(strend < 0)
-        esc = get_escape(str, offset: i)
-        exp.prepend str[i + esc.length..strend]
-        case esc[1]
-        when 'n' then exp.prepend esc_n esc[2..-1]
-        when 'w' then exp.prepend esc_w esc[2..-1]
-        when '*' then exp.prepend send 'esc_*', esc[2..-1]
-        when '"' then # \" comment
-          #@current_block << Comment.new(text: copy) # TODO wrong
-          exp = String.new
-        end
-        strend = i - 1
-      end
-      exp.prepend str[0..strend] unless strend < 0
-      str = exp
-    end
+    str = __unesc_pass1(str).+@ if escapes?
 
     strpos = 0
+    # at this point we should not encounter any escape which might alter the input
     # cut any unescaped trailing whitespace we might've introduced by expanding \*
     strlen = str.sub!(/((?<!#{@resc})#{@resc} )? *$/, '\1').length
 
     xlations = @character_translations.keys
-    xlate = if escapes?
-              xlations.empty? ? %r{\t|#{@resc}} : %r{\t|#{@resc}|#{xlations.map { |x| Regexp.escape x }.join('|')}}
-            else
-              xlations.empty? ? %r{\t} : %r{\t|#{xlations.map { |x| Regexp.escape x }.join('|')}}
-            end
+    xlates = ['\t'] # always interpret tabs
+    xlates << @resc if escapes?
+    xlates += xlations.map { |x| Regexp.escape x } unless xlations.empty?
+    xlate = Regexp.new xlates.join('|')
+
     while i = str.index(xlate, strpos)
       @current_block << str[strpos..i - 1] unless i == 0
       c = get_char str[i..-1]
-#                            warn "unesc xlating #{c.inspect}"
       case c
       when @hyphenation_character then @current_block << '&shy;'
 
@@ -196,25 +144,19 @@ class Troff
                           when '-' then '&minus;'                # "minus sign in current font"
                           when ' ' then '&nbsp;'                 # "unpaddable space-sized character"
                           when '0' then '&ensp;'                 # "digit-width space" - possibly "en space"?
-                          when '%' then '&shy;'                  # discretionary hyphen - TODO this is overrideable, even as something that isn't an escape.
+                          when '%' then '&shy;'                  # discretionary hyphen - \% apparently always means this no matter what has happened with .hc
                           when "'" then '&acute;'                # "typographically equivalent to \(aa" §23.
                           when '`' then '&#96;'                  # "typographically equivalent to \(ga" §23.
                           #when '&' then ''                      # "non-printing, zero-width character"
+                          when '&' then @current_block.style[:numeric_align] ? '&zwj;' : '' # more useful as '' except we need &zwj; for numeric align in tbl
                           when 'H' then warn 'uncertain use of \\H (char height)' ; '' # p.24 - default unit 'p' TODO this is wrong, it has an arg we need to advance past
                           when 'S' then warn 'uncertain use of \\S (char slant)' ; '' # p.26 also wrong
-                          when '&' then @current_block.style[:numeric_align] ? '&zwj;' : '' # more useful as '' except we need &zwj; for numeric align in tbl
                           when '|' then NarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)          # 1/6 em      narrow space char
                           when '^' then HalfNarrowSpace.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup)      # 1/12em half-narrow space char
                           when 'e', @escape_character then @escape_character.dup # printable escape char - don't push a reference, or << may modify it!
                           when 'c' # apparently everything past the \c is discarded
                             i = strlen - 2 # we're done (leave 2 chars left from end, we'll add \c at the end of the loop)
                             Continuation.new(font: @current_block.terminal_font.dup, style: @current_block.terminal_text_style.dup) # continuation (shouldn't have been space-adjusted) pdx(1) [SunOS 1.0]
-                          when '*' # need to handle \* as a special case
-                            # potentially need to unescape its contents
-                            # REVIEW will we need to deal with \*(\n(.. ??
-                            # REVIEW will this need to go through output, for field processing??
-                            __unesc(send 'esc_*', c[2..-1])
-                            ''
                           when 'p'
                             if fill?
                               warn 'uncertain use of \\p (fill break)' # p.29
@@ -239,21 +181,44 @@ class Troff
     @current_block << str[strpos..-1]
   end
 
-  # REVIEW does this correctly fail to translate _input_ escapes if escapes
-  #        are turned off, or the escape character has changed? I think so,
-  #        since it won't be read as an escape by get_char.
-  #
-  # TODO mostly unneeded now, track down remaining uses and rewrite
+  # copymode style first pass for __unesc, to strip comments and expand \*, \n, and \w into the input
+  def __unesc_pass1(str, offset: 0)
+    if i = str.index(/(?<!#{@resc})#{@resc}[*"nw]/, offset)
+      repl = __unesc_pass1(str, offset: i + 2)
+      case e = str[i + 1]
+      when 'n', 'w', '*'
+        esc = get_escape("\\#{e}#{repl}")
+        "#{str[offset..i - 1] unless i.zero?}#{send "esc_#{e}", esc[2..-1]}#{repl[esc.length-2..-1]}"
+      when '"' # \" comment
+        #@current_block << Comment.new(text: copy) # TODO wrong
+        "#{str[offset..i - 1] unless i.zero?}"
+      end
+    else
+      str[offset..-1]
+    end
+  end
 
-  #def translate(chr = '')
-  #  return '&shy;' if chr == @hyphenation_character
-  #  xlc = @character_translations[chr]&.dup or return @current_block << chr
-  #  #return @current_block << chr unless xlc
-  #  return @current_block << xlc unless xlc.start_with?("\e")
-  #  oesc = @escape_character
-  #  ec "\e"
-  #  __unesc(xlc)
-  #  ec oesc
-  #end
+  # Perform a single unescape class on a string. These must always return plain String types
+  # e.g. \w, \n, \* -- nothing that could emit typesetter state or an object, e.g. \f, \h
 
+  def __unesc_single(str)
+    return str unless escapes?
+    method = __callee__.to_s[-1]
+
+    i = 0
+    out = String.new
+    resc = Regexp.escape @escape_character
+    rmethod = Regexp.escape method # could be '*'
+    loop do
+      break unless e = str.index(/(?<!#{@resc})#{@resc}#{rmethod}/, i)
+      out << str[i..e - 1] unless e.zero?
+      esc = get_char str[e..-1]
+      out << send("esc_#{method}", esc[2..-1])
+      i = e + esc.length
+    end
+    out << str[i..-1]
+  end
+
+  alias :'__unesc_*' :__unesc_single
+  alias :__unesc_w :__unesc_single
 end

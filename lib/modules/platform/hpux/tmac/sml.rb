@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 # /usr/lib/macros/sml => sml.rb
 #
 # .\" $Header: /vob/dce.doc/src/doc/macros/sml,v /main/1 1995/04/04 17:43 UTC arh Exp $

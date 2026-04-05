@@ -19,6 +19,7 @@ class Troff
 
   def c2(argstr = '', breaking: nil)
     chr = argstr.empty? ? %(') : argstr[0]
+    @rc2 = Regexp.escape chr
     @c2 = chr
     true
   end
@@ -30,6 +31,7 @@ class Troff
 
   def cc(argstr = '', breaking: nil)
     chr = argstr.empty? ? %(.) : argstr[0]
+    @rcc = Regexp.escape chr
     @cc = chr
     true
   end

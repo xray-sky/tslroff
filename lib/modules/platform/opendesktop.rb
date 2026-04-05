@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 06/23/21.
@@ -10,7 +11,7 @@
 #   losing capital letters in command names (e.g. Xsco) from output files
 #
 
-class OpenDesktop
+module OpenDesktop
   class Manual < Manual ; end
   class Nroff < Nroff
 
@@ -48,4 +49,4 @@ class OpenDesktop
   end
 end
 
-class SCO_SysV386 < OpenDesktop ; end
+#class SCO_SysV386 < OpenDesktop ; end

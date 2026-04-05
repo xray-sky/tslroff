@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 09/04/22.
@@ -9,8 +10,7 @@
 # TODO
 #
 
-class UNIX
-  class Manual < Manual ; end
+module UNIX
   class Troff < Troff
 
     alias :LP :P

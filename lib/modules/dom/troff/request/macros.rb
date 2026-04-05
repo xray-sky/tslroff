@@ -9,72 +9,6 @@
 #
 #   §7.5
 #
-# Request       Initial   If no     Notes   Explanation
-#  form          value    argument
-#
-# .am xx yy     -         yy=..     -       Append to macro (append version of .de)
-#
-# .de xx yy     -         yy=..     -       Define or redefine the macro xx. The contents
-#                                           of the macro begin on the next line. Input
-#                                           lines are copied in copy mode until the
-#                                           definition is terminated by a line beginning
-#                                           with .yy, whereupon the macro yy is called.
-#                                           In the absence of yy, the definition is
-#                                           terminated by a line beginning with "..".
-#                                           A macro may contain .de requests provided
-#                                           the terminating macros differ or the contained
-#                                           definition terminator is concealed; ".." can
-#                                           be concealed as "\\.." which will copy as
-#                                           "\.." and be reread as "..".
-#
-# .as xx string  ignored  -         -       Append string to xx (append version of .ds)
-#
-# .ds xx string  ignored  -         -       Define a string 'xx' containing 'string'.
-#                                           Any initial double-quote in 'string' is
-#                                           stripped off to permit initial blanks.
-#
-#
-#  .as can be used on a string that doesn't already exist.
-#  Undefined strings (or ones that have been .rm'ed) output as blank.
-#
-#  groff ignores invalid names (e.g. '.ds xxfoobar crap' will define nothing)
-#  troff just takes the first two characters as the request name (above will define 'xx' as 'foobar crap')
-#  REVIEW will we ever need to accomodate this?
-#
-#   TODO  Request, macro, and string names share the same name list.
-#         Macro and string names may be one or two characters long and may
-#         usurp previously defined request, macro, or string names. Any
-#         of these entities may be renamed with .rn or removed with .rm
-#
-#   Arguments are copied in copy mode onto a stack were they are available for reference.
-#
-#
-# wow. this works. go ruby!
-#
-# NOTE: despite the description, the default macro is a single dot. ('yy=.')
-#       explicitly setting 'yy=..' results in a terminating macro of '...'.
-#       'yy=mm' equates to a terminating macro of '.mm'.
-#
-#       '. (break suppressed) is not a valid termination.
-#
-#    REVIEW does it work correctly with non-default delim?
-#
-# Request  Initial  If no     Notes   Explanation
-#  form     value   argument
-#
-#  .rm xx     -     ignored   u       Remove request, macro, or string. The name xx is
-#                                     removed from the name list and any related storage
-#                                     is freed. Subsequent references will have no effect.
-#
-# We have separate namespaces for requests/macros and strings. In practice probably it
-# doesn't matter, since troff input must assume they're the same namespace. Whatever
-# we find, disable it.
-#
-#
-#  REVIEW fpr.1 [AOS-4.3] what is even going on there?!
-#
-# .rn xx yy     -         ignored   -       Rename request, macro, or string xx to yy.
-#                                           If yy exists, it is first removed.
 #
 #   TODO  Request, macro, and string names share the same name list.
 #         Macro and string names may be one or two characters long and may
@@ -83,6 +17,11 @@
 #
 
 class Troff
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .am xx yy     -         yy=..     -       Append to macro (append version of .de)
+
   def am(argstr = '', breaking: nil)
     return nil if argstr.empty?
     name = argstr[0..1].rstrip
@@ -90,7 +29,8 @@ class Troff
     delim = '.' if delim.empty?
 
     # .EQ/.EN and I think .CW can be defined as macros _in addition_
-    # to their meanings to the preprocessor. REVIEW is someone doing this?
+    # to their meanings to the preprocessor. REVIEW is someone doing this? => yes.
+    # this is more or less working, except for catching the exceptions (e.g. EndOfTbl)
     #warn ".de wants to change .#{name}!" if %w[CW EN EQ TS].include?(name)
 
     begin
@@ -125,6 +65,14 @@ class Troff
     end
   end
 
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .as xx string  ignored  -         -       Append string to xx (append version of .ds)
+  #
+  #  .as can be used on a string that doesn't already exist.
+  #  Undefined strings (or ones that have been .rm'ed) output as blank.
+
   def as(argstr = '', breaking: nil)
     return nil if argstr.empty?
     name = argstr[0..1].rstrip
@@ -134,6 +82,32 @@ class Troff
     @named_strings[name] << defstr
     #warn "appended to named string #{name.inspect}: #{@named_strings[name].inspect}"
   end
+
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .de xx yy     -         yy=..     -       Define or redefine the macro xx. The contents
+  #                                           of the macro begin on the next line. Input
+  #                                           lines are copied in copy mode until the
+  #                                           definition is terminated by a line beginning
+  #                                           with .yy, whereupon the macro yy is called.
+  #                                           In the absence of yy, the definition is
+  #                                           terminated by a line beginning with "..".
+  #                                           A macro may contain .de requests provided
+  #                                           the terminating macros differ or the contained
+  #                                           definition terminator is concealed; ".." can
+  #                                           be concealed as "\\.." which will copy as
+  #                                           "\.." and be reread as "..".
+  #
+  # wow. this works. go ruby!
+  #
+  # NOTE: despite the description, the default macro is a single dot. ('yy=.')
+  #       explicitly setting 'yy=..' results in a terminating macro of '...'.
+  #       'yy=mm' equates to a terminating macro of '.mm'.
+  #
+  #       '. (break suppressed) is not a valid termination.
+  #
+  #    REVIEW does it work correctly with non-default delim?
 
   def de(argstr = '', breaking: nil)
 
@@ -172,22 +146,25 @@ class Troff
 
     define_singleton_method(name) do |*args|
       opfx = @warn_prefix
-      @warn_prefix = ".#{name} [#{@register['.c']}] => " # TODO this wants a warn_suffix instead - also line numbers are busted
-      olines = @lines
+      @warn_prefix = "#{@warn_prefix}#{file} [#{line_number}]: .#{name}"
+
+      osrc = @source
       opos = @register['.c'].dup
       odol = @register['.$'].dup
 
       @register['.$'] = Register.new(args.count, nil, :ro => true)
       @register['.c'] = Register.new(0, 1, :ro => true)
-      @lines = macro.collect do |l|
-        # fix args in full macro before parsing, otherwise block conditionals don't get
-        # args (they do their own next_line parse loop)
-        # TODO REVIEW rcsfile.5:182 [DU 3.2c] does .de with escapes disabled??
-        l.gsub(/(\s*)#{Regexp.quote(@escape_character || '')}\$([1-9])/) do
-            arg = args[$2.to_i - 1]
-            (arg.nil? or arg.empty?) ? '' : $1 + arg
+      @source = Source.new(nil, magic: :Troff) do
+        macro.collect do |l|
+          # fix args in full macro before parsing, otherwise block conditionals don't get
+          # args (they do their own next_line parse loop)
+          # TODO REVIEW rcsfile.5:182 [DU 3.2c] does .de with escapes disabled??
+          l.gsub(/(\s*)#{Regexp.quote(@escape_character || '')}\$([1-9])/) do
+              arg = args[$2.to_i - 1]
+              (arg.nil? or arg.empty?) ? '' : $1 + arg
+          end
         end
-      end.each
+      end
 
       loop do
         begin
@@ -199,11 +176,23 @@ class Troff
 
       @register['.c'] = opos
       @register['.$'] = odol
-      @lines = olines
+      @source = osrc
       @warn_prefix = opfx
     end
     #warn ".de defined #{name}"
   end
+
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .ds xx string  ignored  -         -       Define a string 'xx' containing 'string'.
+  #                                           Any initial double-quote in 'string' is
+  #                                           stripped off to permit initial blanks.
+  #
+  #
+  #  groff ignores invalid names (e.g. '.ds xxfoobar crap' will define nothing)
+  #  troff just takes the first two characters as the request name (above will define 'xx' as 'foobar crap')
+  #  REVIEW will we ever need to accomodate this?
 
   def ds(argstr = '', breaking: nil)
     return nil if argstr.empty?
@@ -213,6 +202,20 @@ class Troff
     @named_strings[name] = defstr
   end
 
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  #  .rm xx     -     ignored   u       Remove request, macro, or string. The name xx is
+  #                                     removed from the name list and any related storage
+  #                                     is freed. Subsequent references will have no effect.
+  #
+  # We have separate namespaces for requests/macros and strings. In practice probably it
+  # doesn't matter, since troff input must assume they're the same namespace. Whatever
+  # we find, disable it.
+  #
+  #
+  #  REVIEW fpr.1 [AOS-4.3] what is even going on there?!
+
   def rm(argstr = '', *args, breaking: nil)
     return nil if argstr.empty?
     arg = argstr[0..1].strip
@@ -221,13 +224,24 @@ class Troff
       warn "attempt to .rm undefined macro #{arg}"
   end
 
+  # Request       Initial   If no     Notes   Explanation
+  #  form          value    argument
+  #
+  # .rn xx yy     -         ignored   -       Rename request, macro, or string xx to yy.
+  #                                           If yy exists, it is first removed.
+  #
+  #   TODO  Request, macro, and string names share the same name list.
+  #         Macro and string names may be one or two characters long and may
+  #         usurp previously defined request, macro, or string names. Any
+  #         of these entities may be renamed with .rn or removed with .rm
+
   def rn(argstr = '', breaking: nil)
     oldname = argstr[0..1].strip
     newname = argstr[2..-1].lstrip[0..1]
     return nil if oldname.empty? or newname.empty?
 
     # since we don't share the same namelist...
-    if @named_strings[oldname]
+    if @named_strings.key? oldname
       warn ".rn renaming string #{oldname.inspect} as #{newname.inspect}"
       @named_strings[newname] = @named_strings[oldname]
       @named_strings.delete oldname
@@ -267,6 +281,7 @@ class Troff
       'rq' => '&rdquo;',
       '.T' => 'html'   # name of output device
     }
+    @named_strings.default_proc = proc { |_h, k| warn "\* : undefined named string #{k.inspect}" ; '' }
     true
   end
 

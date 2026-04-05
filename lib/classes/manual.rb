@@ -29,10 +29,12 @@ class Manual
 
   def initialize(file, vendor_class: nil, source_args: nil, preprocess: nil, &block)
     @input_filename = file
-    @source ||= Source.new file, **source_args, &block
-    document_class = Kernel.const_get "#{vendor_class}::#{magic}"
+
+    source_class = Kernel.const_defined?("#{vendor_class}::Source") ? Kernel.const_get("#{vendor_class}::Source") : Source
+    @source ||= source_class.new file, **source_args, &block
 
     send preprocess if preprocess
+    document_class = Kernel.const_get "#{vendor_class}::#{magic}"
     @document ||= document_class.send :new, @source
 
     #@platform ||= os

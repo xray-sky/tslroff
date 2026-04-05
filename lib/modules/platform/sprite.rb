@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -9,41 +10,8 @@
 # TODO
 #
 
-class Sprite
+module Sprite
   class Troff < Troff
-
-    SPRITE_MANUAL_SECTION_NAMES = {
-      'admin'   => 'Administrative Commands',
-      'cmds'    => 'User Commands',
-      'daemons' => 'Daemons',
-      'dev'     => 'Devices',
-      'files'   => 'File Formats',
-      'lib'     => 'C Library Procedures',
-      'tcl'     => 'Tcl Command Language Library'
-    }
-
-    UNIX_MANUAL_SECTION_NAMES = {
-      '1'  => 'User Commands',
-      '1C' => 'User Commands',
-      '1L' => 'User Commands',
-      '2'  => 'C Library Procedures',
-      '3'  => 'C Library Procedures',
-      '3C' => 'C Library Procedures',
-      '3F' => 'Fortran Library Procedures',
-      '3M' => 'Mathematical Library Procedures',
-      '3N' => 'C Library Procedures',
-      '3R' => 'RPC Services',
-      '3S' => 'C Library Procedures',
-      '3X' => 'C Library Procedures',
-      '4'  => 'Devices',
-      '5'  => 'File Formats',
-      '6'  => 'Games and Demos',
-      '7'  => 'Tables',
-      '8'  => 'User Commands'
-    }
-
-    SPRITE_MANUAL_SECTION_NAMES.default_proc = proc { |_h, k| "UNKNOWN SECTION (#{k})" }
-    UNIX_MANUAL_SECTION_NAMES.default = 'UNKNOWN MANUAL SECTION'
 
     alias :LP :P
 
@@ -60,7 +28,7 @@ class Sprite
           #'Tm' => '&trade;',
           ']l' => '/sprite/lib/ditroff/', # for including tmac.sprite
           ']W' => 'Sprite version 1.0',
-          footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L"
+          footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L".+@
         }
       )
     end
@@ -164,4 +132,40 @@ class Sprite
     end
 
   end
+
+  SPRITE_MANUAL_SECTION_NAMES = {
+    'admin'   => 'Administrative Commands',
+    'cmds'    => 'User Commands',
+    'daemons' => 'Daemons',
+    'dev'     => 'Devices',
+    'files'   => 'File Formats',
+    'lib'     => 'C Library Procedures',
+    'tcl'     => 'Tcl Command Language Library'
+  }
+
+  UNIX_MANUAL_SECTION_NAMES = {
+    '1'  => 'User Commands',
+    '1C' => 'User Commands',
+    '1L' => 'User Commands',
+    '2'  => 'C Library Procedures',
+    '3'  => 'C Library Procedures',
+    '3C' => 'C Library Procedures',
+    '3F' => 'Fortran Library Procedures',
+    '3M' => 'Mathematical Library Procedures',
+    '3N' => 'C Library Procedures',
+    '3R' => 'RPC Services',
+    '3S' => 'C Library Procedures',
+    '3X' => 'C Library Procedures',
+    '4'  => 'Devices',
+    '5'  => 'File Formats',
+    '6'  => 'Games and Demos',
+    '7'  => 'Tables',
+    '8'  => 'User Commands'
+  }
+
+  SPRITE_MANUAL_SECTION_NAMES.default_proc = proc { |_h, k| "UNKNOWN SECTION (#{k})" }
+  UNIX_MANUAL_SECTION_NAMES.default = 'UNKNOWN MANUAL SECTION'
+
+  SPRITE_MANUAL_SECTION_NAMES.freeze
+  UNIX_MANUAL_SECTION_NAMES.freeze
 end

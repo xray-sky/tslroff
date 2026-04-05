@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
@@ -11,7 +12,7 @@
 #   hilarious results with tex(1l), apparently related to baseline shift in TeX logo?
 #
 
-class NEXTSTEP
+module NEXTSTEP
   class Troff < Troff
 
     alias :LP :P
@@ -29,7 +30,7 @@ class NEXTSTEP
           #'Tm' => '&trade;',
           ']D' => 'UNIX Programmer\'s Manual',
           ']W' => '7th Edition',
-          footer: "\\*(]W"
+          footer: "\\*(]W".+@
         }
       )
     end
@@ -71,8 +72,7 @@ class NEXTSTEP
       ds "]D #{args[4]}" if args[4] and !args[4].strip.empty?
 
       @named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)"
-      heading << '\\0\\0\\(em\\0\\0\\*(]D'
+      heading = "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\(em\\0\\0\\*(]D"
 
       super(*args, heading: heading)
     end
@@ -102,4 +102,4 @@ class NEXTSTEP
   end
 end
 
-class OPENSTEP < ::NEXTSTEP ; end
+#class OPENSTEP < ::NEXTSTEP ; end

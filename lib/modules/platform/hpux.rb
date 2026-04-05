@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: UTF-8
 #
 # Created by R. Stricklin <bear@typewritten.org> on 08/16/22.
@@ -21,7 +22,7 @@ class HPUX
       super
       @named_strings.merge!(
         {
-          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W"
+          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@
           #'Tm' => '&trade;',
         }
       )

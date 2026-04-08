@@ -64,6 +64,23 @@ module SunOS
         )
       end
 
+      # short circuit openwindows use of .de, for performance
+      # REVIEW anyone else redefining I, B, R, or TH for some other purpose?
+      def de(argstr = '', breaking: nil)
+        if argstr.start_with?(* %w[Jo Jp Jq JF I B R L LB Lx Ix Bx JL Jx JX JR JS JE TF TN TC FN TH])
+          (name, delim) = argstr.split
+          delim ||= '.'
+          # eat the def
+          loop do
+            next_line
+            break if @line == ".#{delim}" # not just .start_with!
+          end
+          extend Macros::OpenWindows unless @register['"o'] == 1
+        else
+          super(argstr, breaking: breaking)
+        end
+      end
+
       def SB(*args)
         parse "\\&\\fB\\s-1\\&#{args[0..5].join(' ')}\\s0\\fR"
       end
@@ -180,11 +197,11 @@ module SunOS
     MANUAL_SECTION_NAMES.freeze
   end
 end
-# all literally identical
 
-#module SunOS::V4_1_1 = SunOS::V4_1
-#module SunOS::V4_1_2 = SunOS::V4_1
-#module SunOS::V4_1_3 = SunOS::V4_1
-#module SunOS::V4_1_3B = SunOS::V4_1
-#module SunOS::V4_1_3_U1 = SunOS::V4_1
-#module SunOS::V4_1_4 = SunOS::V4_1
+# all literally identical
+SunOS::V4_1_1 = SunOS::V4_1
+SunOS::V4_1_2 = SunOS::V4_1
+SunOS::V4_1_3 = SunOS::V4_1
+SunOS::V4_1_3B = SunOS::V4_1
+SunOS::V4_1_3_U1 = SunOS::V4_1
+SunOS::V4_1_4 = SunOS::V4_1

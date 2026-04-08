@@ -12,16 +12,18 @@
 #   .L* is probably font 'L'; might also be font pos 5
 #
 
-class Inferno::ThirdEd
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'INDEX' then raise ManualIsBlacklisted, 'is nonsense'
+module Inferno
+  module ThirdEd
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'INDEX' then raise ManualIsBlacklisted, 'is nonsense'
+        end
+        super(file, **kwargs, &block)
       end
-      super file, vendor_class: vendor_class, source_args: source_args
     end
-  end
 
-  class Nroff < Inferno::Nroff ; end
-  class Troff < Inferno::Troff ; end
+    class Nroff < Nroff ; end
+    class Troff < Troff ; end
+  end
 end

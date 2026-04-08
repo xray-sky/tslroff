@@ -44,10 +44,8 @@ module VMS
   class Source < Source
     def initialize(file, **kwargs, &block)
       case File.basename file
-      when /\.[ht]lb$/
-        raise ManualIsBlacklisted, 'is packed library'
-      when /\.txt$/, /\.release_notes$/
-        raise ManualIsBlacklisted, 'unpacked text library (TODO)'
+      when /\.[ht]lb$/ then raise ManualIsBlacklisted, 'is packed library'
+      when /\.txt$/, /\.release_notes$/ then raise ManualIsBlacklisted, 'unpacked text library (TODO)'
       when 'dbg$dwhelp.hlp', 'ddif$view.hlp', /^decw\$/, 'macro$dwci.hlp',
            'cms$dw_help.hlp', 'fortran$dwci.hlp', 'lisp$decwindows.hlp', 'pascal$dwci.hlp',
            'keyutil.hlp' #LogiCraft 386ware
@@ -147,7 +145,7 @@ module VMS
         end
         @current_block.empty? ? Block::Bare.new : @current_block
       end.collect(&:to_html).join
-      links.empty? ? '' : heading.to_html + links
+      links.empty? ? '' : "#{heading.to_html}#{links}"
     end
 
     def mod_to_html(mod, h1: false)
@@ -384,6 +382,7 @@ module VMS
   end
 end
 
-#class MicroVMS < ::VMS ; end
-#class OpenVMS < ::VMS ; end
+# module aliases
+MicroVMS = VMS
+OpenVMS = VMS
 

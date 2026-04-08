@@ -35,6 +35,10 @@ class Source
     @magic = magic || infer_magic
   end
 
+  def index(&block)
+    @lines.index &block
+  end
+
   def link?
     !@target.nil?
   end

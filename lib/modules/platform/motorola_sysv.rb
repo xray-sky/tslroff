@@ -21,7 +21,6 @@ module Motorola_SysV
 
   # looks like none of this matters much, as the provided pages are all nroff format except for X11.
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)
@@ -62,8 +61,8 @@ module Motorola_SysV
     def init_fp
       super
       # REVIEW
-      @mounted_fonts[4] = 'BI'
-      @mounted_fonts[5] = 'CW'
+      mount_font 4, 'BI'
+      mount_font 5, 'CW'
     end
 
     def init_tr

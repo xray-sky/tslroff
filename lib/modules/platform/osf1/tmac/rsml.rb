@@ -14,7 +14,7 @@
 # frozen_string_literal: false
 #
 
-class OSF1
+module OSF1
   module RSML
 
     def self.extended(k)

@@ -28,7 +28,6 @@
 
 class AOS
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

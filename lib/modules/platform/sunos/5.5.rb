@@ -87,8 +87,8 @@ module SunOS
 
       def init_fp
         super
-        @mounted_fonts[4] = 'BI' # REVIEW is this right? or is it H ...or S???
-        @mounted_fonts[5] = 'CW'
+        mount_font 4, 'BI' # REVIEW is this right? or is it H ...or S???
+        mount_font 5, 'CW'
       end
 
       def SB(*args)
@@ -396,4 +396,5 @@ module SunOS
   end
 end
 
-#module SunOS::V5_5_1 = SunOS::V5_5
+# module alias
+SunOS::V5_5_1 = SunOS::V5_5

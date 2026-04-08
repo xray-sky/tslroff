@@ -35,6 +35,8 @@ class Troff < TextFormatter
 
   # macro packages
   require_relative 'troff/tmac/an'
+  require_relative 'troff/tmac/an6'
+  require_relative 'troff/tmac/s'
   include Macros::An
 
   DELIMITERS = %w[\002 \003 \005 \006 \007 " '].freeze # unused. REVIEW necessary? useful?
@@ -50,10 +52,7 @@ class Troff < TextFormatter
   def self.requests ; REQUESTS ; end # REVIEW smrtr? - does this need to be a class method??
   def self.use_groff? ; false ; end # REVIEW necessary? (I think no)
 
-  def initialize(source)
-    @source = source
-    @register = {}
-    @state = {} # TODO still in use in osf1 to track sml/rsml inclusion
+  def initialize(source, macros: Macros::An)
     @header ||= Block::Header.new
     @footer ||= Block::Footer.new
     @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
@@ -61,6 +60,8 @@ class Troff < TextFormatter
     #xinit_selenium
     @@webdriver ||= WebDriver.new backing_store: ENV['WEBDRIVER_CACHE']
     @@pixels_per_inch ||= @@webdriver.ppi
+
+    super(source)
 
     xinit_ec
     xinit_nr
@@ -70,8 +71,6 @@ class Troff < TextFormatter
     methods.each do |m|
       send(m) if m.to_s.start_with? 'init_'
     end
-
-    super(source)
   end
 
   def to_html(halt_on: nil)

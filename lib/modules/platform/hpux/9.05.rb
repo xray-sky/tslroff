@@ -24,86 +24,74 @@
 #   some other pages do too, like stlicense(1)
 #
 
-class HPUX::V9_05
-  class Troff < HPUX::Troff
+module HPUX
+  module V9_05
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@,
+            'Tm' => '&trade;',
+            ')H' => '', # .TH sets this to \&. Some pages define it.
+            #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
+            # REVIEW is this what actually goes in the footer in the printed manual?
+            ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
+          }
+        )
+      end
 
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@,
-          'Tm' => '&trade;',
-          ')H' => '', # .TH sets this to \&. Some pages define it.
-          #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
-          # REVIEW is this what actually goes in the footer in the printed manual?
-          ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
-        }
-      )
-    end
+      def init_fp
+        super
+        mount_font 4, 'C'
+      end
 
-    def init_fp
-      super
-      @mounted_fonts[4] = 'C'
-    end
+      alias :C :tmac_an_fontreq1
 
-    # .so with absolute path, headers in /usr/include
-    def so(name, breaking: nil, basedir: nil)
-      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
-      super(name, breaking: breaking, basedir: basedir)
-    end
+      alias :BC :tmac_an_fontreq2
+      alias :CB :tmac_an_fontreq2
+      alias :CI :tmac_an_fontreq2
+      alias :CR :tmac_an_fontreq2
+      alias :IC :tmac_an_fontreq2
+      alias :RC :tmac_an_fontreq2
 
-    # why are these redefined in 9.05?
-    %w[C B I].each do |a|
-      define_method a do |*args|
-        if args.any?
-          ft @mounted_fonts.index(a).to_s
-          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
-          #send '}N'
-          send '}f'
-        else
-          #it '1 }N'
-          it '1 }f'
+      # .so with absolute path, headers in /usr/include
+      def so(name, breaking: nil, basedir: nil)
+        basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+        super(name, breaking: breaking, basedir: basedir)
+      end
+
+      def TH(*args)
+        ds "]W #{send '__unesc_*', '\\*(]V'}"
+        ds "]O #{args[2]}"
+        ds "]L #{args[3]}"
+        ds "]J #{args[4]}"
+
+        # ]J and ]O follow the title (if given), each centered on their own line.
+        # .sp .3v between, .sp 1.5v following.
+        #space = false
+        %w( ]J ]O ).each do |s|
+          next if @named_strings[s].empty?
+          #space = true
+          byline = Block::Footer.new
+          byline.style.css[:margin_top] = '0.5em' # TODO not working?
+          unescape "\\f3\\*(#{s}\\fP", output: byline
+          @document << byline
         end
+        #req_sp('1.5v') if space # probably this is overkill, actually
+
+        heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
+        heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
       end
     end
-
-    %w[C B I R].permutation(2).each do |a, b|
-      define_method(a + b) do |*args|
-        parse %(.}S #{@mounted_fonts.index(a)} #{@mounted_fonts.index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
-      end
-    end
-
-    def TH(*args)
-      ds "]W #{send '__unesc_*', '\\*(]V'}"
-      ds "]O #{args[2]}"
-      ds "]L #{args[3]}"
-      ds "]J #{args[4]}"
-
-      # ]J and ]O follow the title (if given), each centered on their own line.
-      # .sp .3v between, .sp 1.5v following.
-      #space = false
-      %w( ]J ]O ).each do |s|
-        next if @named_strings[s].empty?
-        #space = true
-        byline = Block::Footer.new
-        byline.style.css[:margin_top] = '0.5em' # TODO not working?
-        unescape "\\f3\\*(#{s}\\fP", output: byline
-        @document << byline
-      end
-      #req_sp('1.5v') if space # probably this is overkill, actually
-
-      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
-
-      super(*args, heading: heading)
-    end
-
   end
 end
-# all the same tmac.an
 
-class HPUX::V8_07 < HPUX::V9_05 ; end
-class HPUX::V9_00 < HPUX::V9_05 ; end
-class HPUX::V9_03 < HPUX::V9_05 ; end
-class HPUX::V9_04 < HPUX::V9_05 ; end
-class HPUX::V9_10 < HPUX::V9_05 ; end
+# all the same tmac.an
+HPUX::V8_07 = HPUX::V9_05
+HPUX::V9_00 = HPUX::V9_05
+HPUX::V9_03 = HPUX::V9_05
+HPUX::V9_04 = HPUX::V9_05
+HPUX::V9_10 = HPUX::V9_05

@@ -131,7 +131,7 @@ class Troff
           # row data
           #cells = line.split(@tbl_cell_delim) # we will get [] if we have input a blank line (see history(1) note, below)
           # delims can be hidden by preceeding them with an escape char
-          cells = line.split(/(?<!(?<!#{@resc})#{@resc})#{@tbl_cell_delim}/) # we will get [] if we have input a blank line (see history(1) note, below)
+          cells = line.split(/(?<!(?<!#{@resc})#{@resc})#{Regexp.escape @tbl_cell_delim}/) # we will get [] if we have input a blank line (see history(1) note, below)
           current_row.text.each_with_index do |cell, column|
 
             if cell.is_a? Block::ColSpan

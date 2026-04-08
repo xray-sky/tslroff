@@ -11,17 +11,6 @@
 class Troff
   module Macros
     module An
-
-      def init_RS
-        @register[')R'] = Register.new(0)
-        @register[')p'] = Register.new(0, 1)
-        ('1'..'9').each do |n|
-          [')', ']'].each do |i|
-            @register[i+n] = Register.new
-          end
-        end
-      end
-
       #   .B text			Make text bold.
       #   .I text			Make text italic.
       #   .RI a b			Concatenate roman a with italic b, and alternate these two fonts for
@@ -136,18 +125,6 @@ class Troff
       # REVIEW .IP/.PP/.IP with no further args is giving inconsistent indents, ar(1) Examples [GL2-W2.5]
       #        -- that first .IP is holding over from .TP in previous section; should .SH reset like .PP does? porbly
 
-      def init_IP
-        # called from .RS - TODO maybe find a better way to do it that allows us to merge init_ methods
-        @register[')I'] = Register.new(to_u('0.5i'))
-        # this is effectively a constant. nothing changes it.
-        # @tag_padding = to_u('3p').to_i
-        # CMU font hack; was: 3p (50u)
-        # seems to improve page outcomes
-        # 37u was enough to fix bullets in c89(1) [ OSF/1 3.0 ]
-        # 12u to fix intro(1) [ GL2-W2.5 ] - still gives reasonable gap
-        @tag_padding = 12
-      end
-
       def IP(tag = '', indent = nil, *_args)	# )I reg holds carryover indent
         warn "received extra args to .IP ?? - #{_args.inspect}" if _args.any?
         @register[')I'].value = to_u(indent, :default_unit => 'n') if indent
@@ -207,11 +184,6 @@ class Troff
       #
       #  TODO .PD 0 followed immediately by .TP anything is resulting in extra space
       #       see bfs(1) Description, xbz/xbn [GL2-W2.5]
-
-      def init_PD
-        @default_para_distance = to_u('1m').to_i
-        @register[')P'] = Register.new(@default_para_distance)
-      end
 
       def PD(v = nil, *_args)
         v ? @register[')P'].value = to_u(v, default_unit: 'v') : init_PD
@@ -412,6 +384,33 @@ class Troff
         tagpara(tag)
       end
 
+      def init_IP
+        # called from .RS - TODO maybe find a better way to do it that allows us to merge init_ methods
+        @register[')I'] = Register.new(to_u('0.5i'))
+        # this is effectively a constant. nothing changes it.
+        # @tag_padding = to_u('3p').to_i
+        # CMU font hack; was: 3p (50u)
+        # seems to improve page outcomes
+        # 37u was enough to fix bullets in c89(1) [ OSF/1 3.0 ]
+        # 12u to fix intro(1) [ GL2-W2.5 ] - still gives reasonable gap
+        @tag_padding = 12
+      end
+
+      def init_PD
+        @default_para_distance = to_u('1m').to_i
+        @register[')P'] = Register.new(@default_para_distance)
+      end
+
+      def init_RS
+        @register[')R'] = Register.new(0)
+        @register[')p'] = Register.new(0, 1)
+        ('1'..'9').each do |n|
+          [')', ']'].each do |i|
+            @register[i+n] = Register.new
+          end
+        end
+      end
+
       def tagpara(tag)
         indent(@base_indent + @register[')R'] + @register[')I'])
         unless tag.empty?
@@ -430,7 +429,6 @@ class Troff
             br
           else
             tab_width = to_em("#{@register[')I']}u")
-
             insert_tab(width: tab_width, stop: @register[')I'])
           end
         end

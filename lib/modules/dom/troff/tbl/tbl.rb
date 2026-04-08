@@ -142,7 +142,7 @@ module Troff::Tbl
       cell = case fmt = @tbl_formats.get.dup
              when nil   then break
              when /^s/i then Block::ColSpan.new
-             when /\^/  then fmt = '' and Block::RowSpan.new
+             when /\^/  then fmt = String.new and Block::RowSpan.new
              else Block::TableCell.new
              end
 

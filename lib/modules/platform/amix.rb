@@ -13,20 +13,19 @@
 
 module AMIX
   class Nroff < Nroff
-    def initialize source
+    def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S*?)?(?:\.?[Zz])?$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super source
+      super(source)
     end
   end
 
-  # apparently academic; all provided manual entries are nroff output
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.Z$/, '')
+      super(source)
     end
 
     def init_ds

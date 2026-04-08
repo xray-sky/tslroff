@@ -49,4 +49,5 @@ module OpenDesktop
   end
 end
 
-#class SCO_SysV386 < OpenDesktop ; end
+# module alias
+SCO_SysV386 = OpenDesktop

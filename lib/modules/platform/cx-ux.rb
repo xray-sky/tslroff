@@ -18,8 +18,7 @@
 #   use of \f3 in ar(4), fs(4)
 #
 
-class CX_UX
-
+module CX_UX
   class Nroff < Nroff
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S*?)(?:\.z)?$/, '') # nroff pages are compressed
@@ -29,7 +28,6 @@ class CX_UX
   end
 
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)
@@ -52,8 +50,8 @@ class CX_UX
     def init_fp
       super
       # REVIEW - going with solaris troff assignments:
-      @mounted_fonts[4] = 'BI' # not fully convinced of this one
-      @mounted_fonts[5] = 'CW'
+      mount_font 4, 'BI' # not fully convinced of this one
+      mount_font 5, 'CW'
       # still don't know what \fl is
     end
 

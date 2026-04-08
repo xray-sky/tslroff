@@ -24,21 +24,23 @@
 #    - don't seem to have troff or the fonts, so I guess \fl is a mystery for now
 #
 
-class CX_UX::V6_20
-  class Nroff < CX_UX::Nroff ; end
-  class Troff < CX_UX::Troff
+module CX_UX
+  module V6_20
+    class Nroff < Nroff ; end
+    class Troff < Troff
 
-    def initialize(source)
-      case source.file
-      when 'cxref.1'       then source.patch_line(12, /$/, 'P') # suppress the warning, doesn't need action
-      when 'ftp.1c'
-        source.patch_line(210, /$/, 'P') # suppress the warning, doesn't need action
-        source.patch_line(356, /\\P/, 'P') # suppress the warning, doesn't need action
-      when 'localeconv.3c' then source.patch_lines([38, 42], /\\fp/, '') # suppress the warning, doesn't need action
-      when 'gps.4'         then source.patch_line(17, /$/, 'P') # suppress the warning, doesn't need action
+      def initialize(source)
+        case source.file
+        when 'cxref.1'       then source.patch_line(12, /$/, 'P') # suppress the warning, doesn't need action
+        when 'ftp.1c'
+          source.patch_line(210, /$/, 'P') # suppress the warning, doesn't need action
+          source.patch_line(356, /\\P/, 'P') # suppress the warning, doesn't need action
+        when 'localeconv.3c' then source.patch_lines([38, 42], /\\fp/, '') # suppress the warning, doesn't need action
+        when 'gps.4'         then source.patch_line(17, /$/, 'P') # suppress the warning, doesn't need action
+        end
+        super(source)
       end
-      super(source)
-    end
 
+    end
   end
 end

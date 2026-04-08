@@ -7,11 +7,8 @@
 # very simple translation of HP rsml macro package to ruby, in order to avoid
 # the various painful overheads of define_method
 #
-# frozen_string_literal: false
-#
 
-
-class HPUX
+module HPUX
   module RSML
 
     def self.extended(k)
@@ -25,6 +22,7 @@ class HPUX
       k.send :rn, 'RS rS'
       k.send :rn, 'RE rE'
       k.send :rn, 'PP P#'
+      k.send ']L', 'Open Software Foundation'
       k.define_singleton_method 'PP', k.method(:yoPP)
     end
 

@@ -27,7 +27,6 @@ module Atari_SysV
   end
 
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

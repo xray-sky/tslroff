@@ -39,137 +39,116 @@
 #   pstat(2): no line wrap in Name?
 #
 
-class HPUX::V10_20
-
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'x_open_800.5' then source_args.merge!({magic: 'Nroff'})
-      when 'pam_unix.5',
-           'diag0.7', 'framebuf.7', 'kmem.7', 'mem.7', 'mt.7',
-           'null.7', 'routing.7', 'strlog.7', 'termio.7', 'termios.7',
-           'glossary.9', 'intro.9'
-        source_args.merge!({magic: 'Troff'})
-      end
-
-      super(file, vendor_class: vendor_class, source_args: source_args)
-    end
-  end
-
-  class Nroff < HPUX::Nroff
-    def initialize(source)
-      case source.file
-      when 'x_open_800.5'
-        # is nroff output (with ^H overstriking), despite starting with .\" and .nf
-        source.lines.delete_at(3887)
-        source.lines.delete_at(3886)
-        source.lines.delete_at(3885)
-        source.lines.delete_at(1)
-        source.lines.delete_at(0)
-        # lines per page is not consistent? deleting these extra lines doesn't help
-        @lines_per_page = nil
-        @manual_entry = 'x_open_800'
-        @manual_section = '5'
-      end
-      super(source)
-    end
-  end
-
-  class Troff < HPUX::Troff
-
-    def initialize(source)
-      case source.file
-      when 'dcecp_cdsalias.1m'
-        # REVIEW until we can figure out how to make ourselves resilient to .rn'ing the same macro twice
-        source.patch_lines(8..10, /^/, '.\\"')
-      end
-
-      super(source)
-    end
-
-    # REVIEW why is this defined special in 10.20?
-    %w[C B I].each do |a|
-      define_method a do |*args|
-        if args.any?
-          ft @mounted_fonts.index(a).to_s
-          parse "\\&#{args[0]} #{args[1]} #{args[2]} #{args[3]} #{args[4]} #{args[5]}"
-          #send '}N'
-          send '}f'
-        else
-          #it '1 }N'
-          it '1 }f'
+module HPUX
+  module V10_20
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'x_open_800.5' then kwargs[:magic] = :Nroff
+        when 'pam_unix.5',
+             'diag0.7', 'framebuf.7', 'kmem.7', 'mem.7', 'mt.7',
+             'null.7', 'routing.7', 'strlog.7', 'termio.7', 'termios.7',
+             'glossary.9', 'intro.9'
+          kwargs[:magic] = :Troff
+        end
+        super(file, **kwargs, &block)
+        case @file
+        when 'dcecp_cdsalias.1m'
+          # REVIEW until we can figure out how to make ourselves resilient to .rn'ing the same macro twice
+          patch_lines(8..10, /^/, '.\\"')
         end
       end
     end
 
-    %w[C B I R].permutation(2).each do |a, b|
-      define_method (a + b) do |*args|
-        parse %(.}S #{@mounted_fonts.index(a)} #{@mounted_fonts.index(b)} \\& "#{args[0]}" "#{args[1]}" "#{args[2]}" "#{args[3]}" "#{args[4]}" "#{args[5]}")
-      end
-    end
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@,
-          'Tm' => '&trade;',
-          ')H' => '', # .TH sets this to \&. Some pages define it.
-          #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
-          # REVIEW is this what actually goes in the footer in the printed manual?
-          ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
-        }
-      )
-    end
-
-    def init_fp
-      super
-      @mounted_fonts[4] = 'C'
-    end
-
-    # .so with absolute path, headers in /usr/include
-    def so(name, breaking: nil, basedir: nil)
-      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
-      if %w[sml rsml osfhead.rsml].include? File.basename(name)
-        ds ']L Open Software Foundation'
-        super(name, breaking: breaking, basedir: basedir) do |lines|
-          lines.reject! { |l| l.start_with? '...\\"' }
+    class Nroff < Nroff
+      def initialize(source)
+        case source.file
+        when 'x_open_800.5'
+          # is nroff output (with ^H overstriking), despite starting with .\" and .nf
+          source.lines.delete_at(3887)
+          source.lines.delete_at(3886)
+          source.lines.delete_at(3885)
+          source.lines.delete_at(1)
+          source.lines.delete_at(0)
+          # lines per page is not consistent? deleting these extra lines doesn't help
+          @lines_per_page = nil
+          @manual_entry = 'x_open_800'
+          @manual_section = '5'
         end
-      else
-        super(name, breaking: breaking, basedir: basedir)
+        super(source)
       end
     end
 
-    # undocumented, not in tmac.an
-    # appears to take one arg, matching the first letter of the command the manual entry is for?
-    # (not accounting for .so -- so bg(1) has '.TA s', because of '.so sh.1'
-    # ...seems irrelevant to us. suppress the warning on every page by defining.
-    def TA(*_args) ; end
-
-    def TH(*args)
-      ds "]W #{send '__unesc_*', '\\*(]V'}"
-      ds "]O #{args[2]}"
-      ds "]L #{args[3]}"
-      ds "]J #{args[4]}"
-
-      # ]J and ]O follow the title (if given), each centered on their own line.
-      # .sp .3v between, .sp 1.5v following.
-      #space = false
-      %w( ]J ]O ).each do |s|
-        next if @named_strings[s].empty?
-        #space = true
-        byline = Block::Footer.new
-        byline.style.css[:margin_top] = '0.5em' # TODO not working?
-        unescape "\\f3\\*(#{s}\\fP", output: byline
-        @document << byline
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@,
+            'Tm' => '&trade;',
+            ')H' => '', # .TH sets this to \&. Some pages define it.
+            #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
+            # REVIEW is this what actually goes in the footer in the printed manual?
+            ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
+          }
+        )
       end
-      #req_sp('1.5v') if space # probably this is overkill, actually
 
-      heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
-      heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+      def init_fp
+        super
+        mount_font 4, 'C'
+      end
 
-      super(*args, heading: heading)
+      alias :C :tmac_an_fontreq1
+
+      alias :BC :tmac_an_fontreq2
+      alias :CB :tmac_an_fontreq2
+      alias :CI :tmac_an_fontreq2
+      alias :CR :tmac_an_fontreq2
+      alias :IC :tmac_an_fontreq2
+      alias :RC :tmac_an_fontreq2
+
+      # .so with absolute path, headers in /usr/include
+      def so(name, breaking: nil, basedir: nil)
+        basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+        case File.basename name
+        when 'sml'  then extend HPUX::SML
+        when 'rsml' then extend HPUX::RSML
+        when 'osfhead.rsml' then ds ']L Open Software Foundation'
+        else super name, breaking: breaking, basedir: basedir
+        end
+      end
+
+      # undocumented, not in tmac.an
+      # appears to take one arg, matching the first letter of the command the manual entry is for?
+      # (not accounting for .so -- so bg(1) has '.TA s', because of '.so sh.1'
+      # ...seems irrelevant to us. suppress the warning on every page by defining.
+      def TA(*_args) ; end
+
+      def TH(*args)
+        ds "]W #{send '__unesc_*', '\\*(]V'}"
+        ds "]O #{args[2]}"
+        ds "]L #{args[3]}"
+        ds "]J #{args[4]}"
+
+        # ]J and ]O follow the title (if given), each centered on their own line.
+        # .sp .3v between, .sp 1.5v following.
+        #space = false
+        %w( ]J ]O ).each do |s|
+          next if @named_strings[s].empty?
+          #space = true
+          byline = Block::Footer.new
+          byline.style.css[:margin_top] = '0.5em' # TODO not working?
+          unescape "\\f3\\*(#{s}\\fP", output: byline
+          @document << byline
+        end
+        #req_sp('1.5v') if space # probably this is overkill, actually
+
+        heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
+        heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
     end
-
   end
 end

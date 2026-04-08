@@ -22,7 +22,6 @@ module Interactive
   end
 
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

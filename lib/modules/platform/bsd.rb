@@ -10,9 +10,8 @@
 # TODO
 #
 
-class BSD
+module BSD
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

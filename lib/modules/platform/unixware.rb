@@ -19,7 +19,6 @@
 
 module UnixWare
   class Nroff < Nroff
-
     def initialize(source)
       if source.file =~ /_to_.+\.3/
         @manual_section = '3BSD'
@@ -33,6 +32,5 @@ module UnixWare
       @related_info_heading ||= 'REFERENCES'
       super source
     end
-
   end
 end

@@ -8,8 +8,7 @@
 # HPUX Platform Overrides
 #
 
-class HPUX
-  class Nroff < Nroff ; end
+module HPUX
   class Troff < Troff
 
     def initialize(source)

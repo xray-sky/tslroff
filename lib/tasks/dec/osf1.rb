@@ -29,7 +29,7 @@ end
 
 collection_namespace 'Digital_UNIX' do
   manual_namespace '3.2c',
-                  vendor_class: OSF1::V3_2c,
+                  vendor_class: Digital_UNIX::V3_2c,
                   idir: 'dec/du/3.2c',
                   odir: 'DEC/Digital_UNIX/3.2c',
                   sources: %w[

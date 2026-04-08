@@ -29,60 +29,54 @@
 # REVIEW
 #
 
-class BeOS::R5
+module BeOS
+  module R5
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'gcc.html', 'rcs.html', 'rcsfile.html', 'rcsintro.html', 'uuencode.html'
+          kwargs[:magic] = :HTML
+        end
 
-  class Manual < BeOS::Manual
-    def initialize(file, vendor_class: nil, source_args: nil)
-      srcargs = source_args.dup || {}
-      case File.basename(file)
-      when 'gcc.html', 'rcs.html', 'rcsfile.html', 'rcsintro.html', 'uuencode.html'
-        srcargs[:magic] = :HTML
-      end
-      super(file, vendor_class: vendor_class, source_args: srcargs, preprocess: :preprocessing)
-    end
+        super(file, **kwargs, &block)
 
-  private
+        case @file
+        when 'rcs.html'      then patch_line(1, /^\s+{/, '')
+        when 'uuencode.html' then @lines.slice!(0, 40)
+        when 'gcc.html', 'rcsfile.html', 'rcsintro.html'
+          patch_line(1, /^.*$/, '')
+        when /fm.html/, 'Metrowerks_License.html' # metrowerks
+          # the metrowerks source is too heinous for nokogiri, too much malicious compliance to cope with
+          # maybe the features are regular enough we can just... fudge it.
+          # * none of the pages have titles
+          # * all have navigation content before <body>
 
-    def preprocessing
-      case @source.file
-      when 'rcs.html'      then @source.patch_line(1, /^\s+{/, '')
-      when 'uuencode.html' then @source.lines.slice!(0, 40)
-      when 'gcc.html', 'rcsfile.html', 'rcsintro.html'
-        @source.patch_line(1, /^.*$/, '')
-      when /fm.html/, 'Metrowerks_License.html' # metrowerks
-        # the metrowerks source is too heinous for nokogiri, too much malicious compliance to cope with
-        # maybe the features are regular enough we can just... fudge it.
-        # * none of the pages have titles
-        # * all have navigation content before <body>
-
-        @source.patch(%r{^\s*<body bgcolor=#ffffff BACKGROUND="images/arnoldbg.gif">\s*$}, '')
-        # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
-        @source.patch(%r{(</?)kbd>}, '\1tt>', global: true)
-        # looks like these are the only two external links appearing in the metrowerks manual
-        @source.patch(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1', global: true)
-        @source.patch(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1', global: true)
-      end
-    end
-  end
-
-  class Nroff < BeOS::Nroff ; end
-
-  class HTML < BeOS::HTML
-
-    def initialize source
-      super source
-
-      case @source.dir
-      when /User's Guide/ then xpath('//p[@class="body"]').each { |pp| pp.remove_class('body') }
-      end
-
-      case @source.file
-      when /fm.html/, 'Metrowerks_License.html' # metrowerks
-        @content_start = @source.lines.index { |l| l.match? %r{<a name="Top">} }
-        @content_end   = @source.lines.index { |l| l.match? %r{<a name="Bottom">} }
-        define_singleton_method :to_html, method(:to_html_metrowerks)
+          patch(%r{^\s*<body bgcolor=#ffffff BACKGROUND="images/arnoldbg.gif">\s*$}, '')
+          # they use <kbd> interchangeably with <tt>. we use <kbd> for our own purposes, so don't let them
+          patch(%r{(</?)kbd>}, '\1tt>', global: true)
+          # looks like these are the only two external links appearing in the metrowerks manual
+          patch(%r{<a href="http://www.metrowerks.com">(http://www.metrowerks.com)</a>}, '\1', global: true)
+          patch(%r{<a href="mailto:support@metrowerks.com">(support@metrowerks.com)</a>}, '\1', global: true)
+        end
       end
     end
 
+    class Nroff < Nroff ; end
+    class HTML < HTML
+      def initialize(source)
+        super source
+
+        case @source.dir
+        when /User's Guide/ then xpath('//p[@class="body"]').each { |pp| pp.remove_class('body') }
+        end
+
+        case @source.file
+        when /fm.html/, 'Metrowerks_License.html' # metrowerks
+          @content_start = @source.index { |l| l.match? %r{<a name="Top">} }
+          @content_end   = @source.index { |l| l.match? %r{<a name="Bottom">} }
+          define_singleton_method :to_html, method(:to_html_metrowerks)
+        end
+      end
+    end
   end
 end

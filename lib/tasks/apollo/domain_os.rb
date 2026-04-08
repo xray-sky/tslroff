@@ -29,17 +29,14 @@ collection_namespace 'Domain/OS' do
                     usr/X11/man/cat*
                   ]
 
-  manual_namespace 'SR10.1_PSK4',
+  manual_namespace 'SR10.1_PSK4', # update only
                   vendor_class: DomainOS::SR10_1,
                   idir: 'apollo/domain_os/10.1_psk4',
                   odir: 'Apollo/Domain:OS/SR10.1_PSK4',
                   sources: %w[
-                    sys/help/*
-                    bsd4.3/usr/man/cat[1-8]
-                    sys5/usr/catman/?_man/man[1-8]
-                    usr/apollo/man/mana
-                    usr/new/mann
-                    usr/X11/man/cat*
+                    dex/sau7/help
+                    install/help
+                    install/doc/apollo
                   ]
 
   manual_namespace 'SR10.2',

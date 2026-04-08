@@ -31,6 +31,12 @@ class Block
     end
   end
 
+  class Monospace < Block
+    def to_html
+      %(<p class="monospace"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
+    end
+  end
+
   class Link < Block::Inline
     attr_accessor :href
 
@@ -90,12 +96,6 @@ class Block
   class SubSubHead < Block
     def to_html
       %(<p class="subhead"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
-    end
-  end
-
-  class Monospace < Block
-    def to_html
-      %(<p class="monospace"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
     end
   end
 

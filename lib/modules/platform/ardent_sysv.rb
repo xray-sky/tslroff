@@ -13,7 +13,6 @@
 
 class Ardent_SysV
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

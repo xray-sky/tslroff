@@ -8,16 +8,16 @@
 # Intergraph CLIX 3.1r7.6.22 Platform Overrides
 #
 
-class CLIX::V3_1r7_6_22
-  class Nroff < CLIX::Nroff
-
-    def initialize(source)
-      case source.file
-      when 'convert.Z' then raise ManualIsBlacklisted, 'apparently not a manual entry'
+module CLIX
+  module V3_1r7_6_22
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'convert.Z' then raise ManualIsBlacklisted, 'apparently not a manual entry'
+        end
+        super(file, **kwargs, &block)
       end
-      super(source)
     end
-
   end
 end
 

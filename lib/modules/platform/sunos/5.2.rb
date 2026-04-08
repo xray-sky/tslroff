@@ -40,9 +40,26 @@ module SunOS
       def init_fp
         # Palatino family for postscript output (PA, PI, PB)
         super
-        @mounted_fonts[4] = 'B'
-        @mounted_fonts[5] = 'R'
-        @mounted_fonts[6] = 'B'
+        mount_font 4, 'B'
+        mount_font 5, 'R'
+        mount_font 6, 'B'
+      end
+
+      # short circuit openwindows use of .de, for performance
+      # REVIEW anyone else redefining I, B, R, or TH for some other purpose?
+      def de(argstr = '', breaking: nil)
+        if argstr.start_with?(* %w[Jo Jp Jq JF I B R L LB Lx Ix Bx JL Jx JX JR JS JE TF TN TC FN TH])
+          (name, delim) = argstr.split
+          delim ||= '.'
+          # eat the def
+          loop do
+            next_line
+            break if @line == ".#{delim}" # not just .start_with!
+          end
+          extend Macros::OpenWindows unless @register['"o'] == 1
+        else
+          super(argstr, breaking: breaking)
+        end
       end
 
       def SB(*args)

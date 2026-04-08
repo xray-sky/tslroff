@@ -46,6 +46,7 @@ class Troff
       @value = x.to_i
     end
 
+    # TODO this causes an infinite loop, performing comparisons (e.g. >, <, >=) between two Registers
     def coerce(other)
       [ Register.new(other), self ]
     end
@@ -54,9 +55,9 @@ class Troff
       case @format
       when '1'     then @value.to_s
       when /(\d+)/ then sprintf("%0#{Regexp.last_match(1).length}d", @value)
-      when /(a)/i
-        Regexp.last_match(1) == 'A' ? ALPHA_MAP[@value].upcase : ALPHA_MAP[@value]
-      when /(i)/i
+      when 'a'     then ALPHA_MAP[@value]
+      when 'A'     then ALPHA_MAP[@value].upcase
+      when 'i', 'I'
         return '0' if @value.zero?
         ord = 0
         val = String.new
@@ -70,7 +71,7 @@ class Troff
             warn "register out of range for roman format (@value)"
           end
         end
-        Regexp.last_match(1) == 'I' ? val.upcase : val
+        @format == 'I' ? val.upcase : val
       end
     end
 

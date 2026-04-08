@@ -13,16 +13,12 @@
 module UNIX
   module V7
     class Troff < Troff
-
-      alias :LP :P
-
       def init_ds
         super
         @named_strings.merge!(
           {
             ']D' => "UNIX Programmer's Manual",
             ']W' => "7th Edition",
-            # uses )H but this is defined directly in }F so I don't see how it could ever not be H-P
             :footer => "\\*(]W"
           }
         )
@@ -36,7 +32,6 @@ module UNIX
 
         super(*args, heading: heading)
       end
-
     end
   end
 end

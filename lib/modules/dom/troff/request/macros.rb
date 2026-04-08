@@ -79,7 +79,7 @@ class Troff
     defstr = argstr[2..-1].sub(/^ *"?/, '') # don't lstrip, a leading tab is preserved
 
     @named_strings[name] ||= String.new
-    @named_strings[name] << defstr
+    @named_strings[name] = "#{@named_strings[name]}#{defstr}"
     #warn "appended to named string #{name.inspect}: #{@named_strings[name].inspect}"
   end
 

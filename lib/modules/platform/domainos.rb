@@ -42,8 +42,7 @@
   #   consider allowing related info detection in index.hlp (commands.hlp, dm.hlp... no "SEE ALSO")
   #   unbundled Ada SEE ALSO links to e.g. a.db with no section
 
-class Aegis
-
+module Aegis
   module Utils
     def retarget_symlink
       #link_dir = Pathname.new @source.dir
@@ -123,7 +122,6 @@ class Aegis
     end
 =end
 
-  class Manual < Manual ; end
   class Nroff < Nroff
 
     include Utils
@@ -131,7 +129,7 @@ class Aegis
     def initialize(source)
       @systype = Regexp.last_match[1] if source.dir.match(%r{(bsd|sys5)})
       @manual_entry = source.file if source.dir.end_with? '/doc'  # release notes REVIEW
-      @manual_entry ||= source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '') + (@systype ? ".#{@systype}" : '')
+      @manual_entry ||= "#{source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '')}#{".#{@systype}" if @systype}"
       @title_detection ||= %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
       #@base_indent ||= 5  # REVIEW unimplemented
 
@@ -139,15 +137,15 @@ class Aegis
 
 	  if @source.dir.match %r{^.*(help.*)$}
 	    # TODO subclass these instead
-	    alias :detect_links :detect_links_aegis_helpfile
-	    alias :parse_title :parse_title_aegis_helpfile
+	    define_singleton_method :detect_links, method(:detect_links_aegis_helpfile)
+	    define_singleton_method :parse_title, method(:parse_title_aegis_helpfile)
         @lines_per_page = nil # REVIEW this was everything
 	    @output_directory = Regexp.last_match[1]
 	    @manual_section = 'help'
 	    @help_sections = %w[calls debug dm ed edacct edns edstr em3270 emt fmt login magtape protection prsvr shell syscalls vt100]
 	    @summary_heading = %r{^#{@manual_entry}\s\(\S+?\)\s+-+\s+\S}
 	  elsif @source.file.end_with? '.a'
-	    alias :detect_links :detect_links_syscalls
+	    define_singleton_method :detect_links, method(:detect_links_syscalls)
         @lines_per_page = nil # REVIEW this was everything
 	  end
     end
@@ -294,19 +292,18 @@ class Aegis
 
     def output_directory
       return @source.dir.sub(%r{^.*/(help)}, '\1') if @source.dir.include?('/help')
+      return 'mana' if @source.file.end_with? '.a'
       super
     end
   end
 
   class Troff < Troff
-
     include Utils
-
     alias :LP :P
 
     def initialize(source)
       @systype = Regexp.last_match[1] if source.dir.match(%r{(bsd|sys5)})
-      @manual_entry ||= source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '') + (@systype ? ".#{@systype}" : '')
+      @manual_entry ||= "#{source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '')}#{".#{@systype}" if @systype}"
       super(source)
     end
 
@@ -336,5 +333,5 @@ class Aegis
   end
 end
 
-class DomainIX < ::Aegis ; end
-class DomainOS < ::Aegis ; end
+DomainIX = Aegis
+DomainOS = Aegis

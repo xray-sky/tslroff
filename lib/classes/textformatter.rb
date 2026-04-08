@@ -16,8 +16,6 @@ class TextFormatter
   def_delegators :@source, :magic, :file, :dir, :line_number, :next_line, :patch, :patch_line, :patch_lines
 
   def initialize(source, vendor_class: nil, source_args: nil)
-    #@input_filename = source.file
-    #@input_line_number = 0
     @source ||= source
 
     @language      ||= 'en' # English

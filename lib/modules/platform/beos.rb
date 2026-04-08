@@ -28,14 +28,12 @@
 #         ...but where is it defined in their manual? no css I can see.
 #
 
-class BeOS
+module BeOS
   class Manual < Manual
     def output_directory
       @source.dir.partition(%r{^.*/(?:beos/documentation|develop)/?}).last
     end
   end
-
-  class Nroff < Nroff ; end
 
   class HTML < HTML
     def initialize source
@@ -44,10 +42,10 @@ class BeOS
     end
 
     def to_html(halt_on: nil)
-      return nil if halt_on
+      return if halt_on
       body = xpath('//body')
 
-      body_styles = ''
+      body_styles = String.new
       bgcolor = body.attribute('bgcolor')
       background = body.attribute('background')
       body_styles << %(background-color:#{bgcolor.value};) if bgcolor
@@ -71,14 +69,14 @@ class BeOS
     end
 
     def to_html_metrowerks(halt_on: nil)
-      return nil if halt_on
+      return if halt_on
       title = "CodeWarrior &mdash; #{@platform} #{@version}"
 
       <<~DOC
         <div class="title"><h1>#{title}</h1></div>
         <div class="htbody" style="background-color:white;background-image:url('images/arnoldbg.gif');background-repeat:repeat;">
             <div id="man">
-        #{@source.lines[@content_start..@content_end].join}
+        #{@source.iter.collect(&:to_s)[@content_start..@content_end].join}
             </div>
         </div>
       DOC

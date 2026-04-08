@@ -169,6 +169,8 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
 
+  ix = File.open("#{pubdir}/page.index", 'w') unless limit
+
   if ENV['RUBY_PROFILE']
     prof = RubyProf::Profile.new
     prof.start
@@ -181,7 +183,8 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     warn "symlink #{src} (skipped)" and next if File.symlink?(src)
     puts "<== #{src}" if limit
     pagecount += 1
-    manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args)
+    ixinfo = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args)
+    ix << "#{ixinfo.inspect}\n" unless limit
   end
 
   if ENV['RUBY_PROFILE']
@@ -190,6 +193,8 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     #RubyProf::GraphPrinter.new(profile_results).print($stdout, {})
     #RubyProf::GraphHtmlPrinter.new(profile_results).print(File.open "graph.html", "w")
   end
+
+  ix.close if ix
 
   if Troff.webdriver
     warn Troff.webdriver.cache_stats
@@ -222,12 +227,12 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {})
     html = Nokogiri::HTML(page)
     indexing = html.search('p[@class="name"]').map do |e|
       # how to about??
-      # looks like Nokogiri.text() gives us the UTF-8 character rather than the HTML entity...
+      # looks like Nokogiri.text() gives us the UTF-8 character rather than the HTML entity... &minus;, &nbsp;...
       # REVIEW maybe this should be created during text processing and queryable from the
       #        man object, so we can do something overrideable by vendor class. for now though.
       #        also how regular is this going to be?? catman -w known to have crazy results for
       #        ill formed manual entries so it's not solely an us problem.
-      (names, _sep, descr) = e.text.strip.partition(/\s*(?:-|−)\s*/)
+      (names, _sep, descr) = e.text.strip.partition(/[\s ]*(?:-|−)[\s ]*/)
       [names, descr]
     end
     related = html.search('a[@href]')
@@ -241,13 +246,17 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {})
   end
 
   exit unless Process.pid == ppid # guard against fork (i.e. VMS Help)
+  [ "#{man.output_directory}/#{title}.html", indexing[0]&.[](0), indexing[0]&.[](1) ]# REVIEW experimental
 
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"
+  [ title ]
 rescue StopIteration, FileIsEmptyError, IOError, SystemCallError => e
   warn "#{srcfile}: #{e.message}"
+  [ title ]
 rescue => e
   warn "#{srcfile}: unhandled exception #{e.message}\n#{e.backtrace.join("\n")}"
+  [ title ]
 end
 
 ###

@@ -13,7 +13,9 @@ collection_namespace 'HP' do
   #  • Pascal Compiler 1.0
   collection_namespace 'OSF1' do
     manual_namespace '1.0',
+                    vendor_class: OSF1,
                     idir: 'hp/osf1/a.01.00_bl50',
+                    odir: 'HP/OSF:1/A.01.00_bl50',
                     sources: %w[
                       usr/CC/man/man[13]
                       man-assembler/files/usr/share/man/man1

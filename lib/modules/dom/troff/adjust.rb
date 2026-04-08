@@ -11,6 +11,7 @@ class Troff
   private
 
   def break_adj
+    return unless @current_block # might get here from blockproto with a brand new @document and no @current_block
     # TODO: this - I'm taking this over to erase end-of-block breaks, because I don't
     #              remember what this was originally supposed to be about
     @current_block.text.pop if @current_block.terminal_string.is_a?(LineBreak)

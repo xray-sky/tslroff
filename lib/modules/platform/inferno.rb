@@ -11,7 +11,7 @@
 # 3e has troff format input, but where are the macro files?
 #
 
-class Inferno
+module Inferno
   class HTML < HTML ; end
   class Nroff < Nroff ; end
   class Troff < Troff

@@ -27,7 +27,6 @@ module Plan9
   end
 
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)
@@ -52,7 +51,7 @@ module Plan9
 
     def init_fp
       super
-      @mounted_fonts[5] = 'L'
+      mount_font 5, 'L'
     end
 
     def init_tr

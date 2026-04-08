@@ -30,6 +30,17 @@ module Ultrix
         )
       end
 
+      # .so with absolute path, osf/1 macros in /usr/share/lib/tmac
+      # same sml/rsml v4.1.2.2 macros (used in 4.4 & 4.5 Motif pages) as OSF/1
+      def so(name, breaking: nil)
+        #name = "../../../..#{name}" if name.start_with?('/')
+        case File.basename name
+        when 'sml'  then extend OSF1::SML
+        when 'rsml' then extend OSF1::RSML
+        else super name, breaking: breaking
+        end
+      end
+
       def CW(*_args)
         ft 'CW'
       end
@@ -120,16 +131,15 @@ end
 # all the same tmac.an
 # 4.0 still has NO NOTE in .NT, a couple of indent changes for nroff, and slightly
 #     different page numbering in the footer, but we don't care. otherwise identical.
-
-#class Ultrix::V4_0_0_mips < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_0_0_VAX  < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_1_0_mips < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_1_0_VAX  < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_2_0_mips < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_2_0_VAX  < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_4_0_mips < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_4_0_VAX  < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_5_1_mips < ::Ultrix::V4_2_0 ; end
-#class Ultrix::V4_5_1_VAX  < ::Ultrix::V4_2_0 ; end
+Ultrix::V4_0_0_mips = Ultrix::V4_2_0
+Ultrix::V4_0_0_VAX  = Ultrix::V4_2_0
+Ultrix::V4_1_0_mips = Ultrix::V4_2_0
+Ultrix::V4_1_0_VAX  = Ultrix::V4_2_0
+Ultrix::V4_2_0_mips = Ultrix::V4_2_0
+Ultrix::V4_2_0_VAX  = Ultrix::V4_2_0
+Ultrix::V4_4_0_mips = Ultrix::V4_2_0
+Ultrix::V4_4_0_VAX  = Ultrix::V4_2_0
+Ultrix::V4_5_1_mips = Ultrix::V4_2_0
+Ultrix::V4_5_1_VAX  = Ultrix::V4_2_0
 
 

@@ -36,7 +36,7 @@ class HTML < TextFormatter
 
   def initialize(source)
     super source
-    @structured_source = Nokogiri::HTML @source.lines.join
+    @structured_source = Nokogiri::HTML @source.iter.collect(&:to_s).join
   end
 
   #def input_line_number

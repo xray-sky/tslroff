@@ -16,40 +16,48 @@
 #       ali.n [3]: .so can't read .//usr/new/lib/mh/tmac.h
 #
 
-class DomainOS::SR10_4_1
-  class Nroff < DomainOS::Nroff
+module DomainOS
+  module SR10_4_1
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'cc.hlp', 'clxwedlisp.hlp', 'ftn.hlp', 'lisp.hlp', 'pas.hlp', 'wedlisp.hlp'
+          raise ManualIsBlacklisted, 'is unbundled'
+        when 'Imakefile.3X11', 'Makefile.3X11'
+          raise ManualIsBlacklisted, 'is makefile'
+        end
+        super(file, **kwargs, &block)
+      end
+    end
 
-    def initialize(source)
-      case source.file
-      when 'edacl.hlp'
-        @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
-        @related_info_heading = 'SEE ALS0'
-      when 'coffdump.1'
-        define_singleton_method(:detect_links, method(:detect_links_sysv_coffdump)) if source.dir.include? 'sys5'
-      when 'mkfontdir.1.05.30', 'crypt.1', 'makekey.1' # problem here wanting to do more about mkfontdir filename
-        @base_indent = 6
-        @heading_detection = %r{^\s(?<section>[A-Z][A-Za-z0-9\s]+)$}
-      when 'ali.n', 'anno.n', 'burst.n', 'comp.n', 'dist.n'
-        @systype = 'bsd'
-        @manual_entry = "#{@manual_entry}.bsd"
-      when 'ci.n', 'co.n', 'ident.n', 'merge.n', /^rcs.*\.n$/, 'rlog.n', 'sccstorcs.n'
-        define_singleton_method :detect_links, method(:detect_links_rcs)
-        # TODO: links spanning lines - rcsfile.n "rcsmerge (1)"
-        #                              rcs.n     "rlog (1)"
-        #                              ident.n   "rcsmerge (1)"
-        #                              rlog.n    "rcsintro (1)"
-      when 'cc.hlp', 'clxwedlisp.hlp', 'ftn.hlp', 'lisp.hlp', 'pas.hlp', 'wedlisp.hlp'
-        raise ManualIsBlacklisted, 'is unbundled'
-      when 'Imakefile.3X11', 'Makefile.3X11'
-        raise ManualIsBlacklisted, 'is makefile'
+    class Nroff < Nroff
+      def initialize(source)
+        case source.file
+        when 'edacl.hlp'
+          @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
+          @related_info_heading = 'SEE ALS0'
+        when 'coffdump.1'
+          define_singleton_method(:detect_links, method(:detect_links_sysv_coffdump)) if source.dir.include? 'sys5'
+        when 'mkfontdir.1.05.30', 'crypt.1', 'makekey.1' # problem here wanting to do more about mkfontdir filename
+          @base_indent = 6
+          @heading_detection = %r{^\s(?<section>[A-Z][A-Za-z0-9\s]+)$}
+        when 'ali.n', 'anno.n', 'burst.n', 'comp.n', 'dist.n'
+          @systype = 'bsd'
+          @manual_entry = "#{@manual_entry}.bsd"
+        when 'ci.n', 'co.n', 'ident.n', 'merge.n', /^rcs.*\.n$/, 'rlog.n', 'sccstorcs.n'
+          define_singleton_method :detect_links, method(:detect_links_rcs)
+          # TODO: links spanning lines - rcsfile.n "rcsmerge (1)"
+          #                              rcs.n     "rlog (1)"
+          #                              ident.n   "rcsmerge (1)"
+          #                              rlog.n    "rcsintro (1)"
+        end
+
+        super(source)
       end
 
-      super(source)
+      def page_title
+        super << " Domain/OS SR10.4.1"
+      end
     end
-
-    def page_title
-      super << " Domain/OS SR10.4.1"
-    end
-
   end
 end

@@ -37,17 +37,17 @@ module SunOS
 
       def init_fp
         super
-        @mounted_fonts[4] = 'BI'  # Times-BoldItalic
-        @mounted_fonts[5] = 'CW'  # Courier
-        @mounted_fonts[6] = 'H'   # Helvetica
-        @mounted_fonts[7] = 'HB'  # Helvetica-Bold
-        @mounted_fonts[8] = 'HX'  # Helvetica-BoldOblique
+        mount_font 4, 'BI'  # Times-BoldItalic
+        mount_font 5, 'CW'  # Courier
+        mount_font 6, 'H'   # Helvetica
+        mount_font 7, 'HB'  # Helvetica-Bold
+        mount_font 8, 'HX'  # Helvetica-BoldOblique
 
         # these are set but we don't care.
         # ...probably
 
-        #@mounted_fonts[9] = 'S1'  # Times-Roman
-        #@mounted_fonts[10] = 'S'  # Symbol
+        #mount_font 9,  'S1'  # Times-Roman
+        #mount_font 10, 'S'  # Symbol
       end
 
       def SB(*args)

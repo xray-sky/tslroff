@@ -32,7 +32,7 @@ class Troff
   def af(argstr = '', breaking: nil)
     (reg, fmt) = argstr.split
     return nil unless reg and fmt
-    unless reg.match(/s[tb]/) or @register[reg].read_only?
+    unless @register[reg].read_only? or reg == 'st' or reg == 'sb'
       @register[reg].format = fmt
     end
   end
@@ -92,14 +92,13 @@ class Troff
 
   def rr(argstr = '', breaking: nil)
     return nil if argstr.empty?
-    reg = reqstr.slice(0, 2).strip
+    reg = argstr[0, 2].strip
     @register.delete(reg)
   end
 
   def xinit_nr
     date = Time.new
-    @register.default = Register.new(0)
-    @register.merge!({
+    @register = {
       ############################################
       # §24 Predefined General Number Registers
       ############################################
@@ -160,12 +159,13 @@ class Troff
       ###########################################
       ')L' => Register.new(to_u('11i')),   # page length
       'LL' => Register.new(to_u('6.5i'))   # line length (page width - margins)
-    })
+    }
 
     # c. is supposed to be the same as read-only variable .c
     # REVIEW: but then why isn't it in the list of read-only registers?
 
     @register['c.'] = @register['.c']
+    @register.default = Register.new(0)
 
     true
   end

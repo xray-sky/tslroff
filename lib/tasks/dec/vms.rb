@@ -3,14 +3,14 @@
 
 collection_namespace 'MicroVMS' do
   manual_namespace '4.4',
-                  vendor_class: VMS,
+                  vendor_class: MicroVMS,
                   odir: 'DEC/MicroVMS/4.4',
                   sources: %w[
                     */?
                     sys0/syshlp
                   ]
   manual_namespace '4.5B', # is this the same as 4.4? - yes
-                  vendor_class: VMS,
+                  vendor_class: MicroVMS,
                   idir: 'dec/microvms/4.5B',
                   odir: 'DEC/MicroVMS/4.5B',
                   sources: %w[
@@ -18,7 +18,7 @@ collection_namespace 'MicroVMS' do
                     sys0/syshlp
                   ]
   manual_namespace '4.6', # is THIS the same as 4.4?? - no
-                  vendor_class: VMS,
+                  vendor_class: MicroVMS,
                   odir: 'DEC/MicroVMS/4.6',
                   sources: %w[
                     options/*/?

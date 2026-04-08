@@ -37,9 +37,9 @@ module SunOS
       def init_fp
         # Palatino family for postscript output (PA, PI, PB)
         super
-        @mounted_fonts[4] = 'B'
-        @mounted_fonts[5] = 'R'
-        @mounted_fonts[6] = 'B'
+        mount_font 4, 'B'
+        mount_font 5, 'R'
+        mount_font 6, 'B'
       end
 
       def SB(*args)

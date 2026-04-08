@@ -7,10 +7,8 @@
 # very simple translation of HP sml macro package to ruby, in order to avoid
 # the various painful overheads of define_method
 #
-# frozen_string_literal: false
-#
 
-class HPUX
+module HPUX
   module SML
 
     def self.extended(k)
@@ -18,6 +16,7 @@ class HPUX
       #return if k.instance_variable_get(:@register)['!s'].value == 1
       #k.send :nr, '!s 1'
       k.send :nr, 'Nn 0 1'
+      k.send ']L', 'Open Software Foundation'
     end
 
     def aE(*_args) ; end
@@ -77,17 +76,17 @@ class HPUX
         send :P
         ft
         ps '-2'
-    else ds "yy #{args[0]}:\ \ "
+      else ds "yy #{args[0]}:\ \ "
+      end
+      ft 'B'
+      ll __unesc_w("-\w\007#{@named_strings['yy']}\007u")
+      send :in, __unesc_w("+\w\007#{@named_strings['yy']}\007u")
+      ti __unesc_w("-\w\007#{@named_strings['yy']}\007u")
+      parse "#{@register['yy']}\\c"
+      ft
     end
-    ft 'B'
-    ll __unesc_w("-\w\007#{@named_strings['yy']}\007u")
-    send :in, __unesc_w("+\w\007#{@named_strings['yy']}\007u")
-    ti __unesc_w("-\w\007#{@named_strings['yy']}\007u")
-    parse "#{@register['yy']}\\c"
-    ft
-  end
 
-  def nE(*_args)
+    def nE(*_args)
       nr 'Nn -1'
       send :in, __unesc_w("-\w\007#{@named_strings['yy']}\007u")
       ll __unesc_w("+\w\007#{@named_strings['yy']}\007u")

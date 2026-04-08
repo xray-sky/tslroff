@@ -16,33 +16,33 @@
 #  symlink rewrite (index.html [*]: encountered unsupported link type, /Volumes/Museum/Manual/in/be/beos/r4/beos/documentation/User's Guide/index.html => 00_FrontMatter/index.html)
 #
 
-class BeOS::R4
+module BeOS
+  module R4
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename(file)
+        when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
+          kwargs[:encoding] = Encoding::ISO_8859_1
+        end
 
-  class Manual < BeOS::Manual
-    def initialize(file, vendor_class: nil, source_args: nil)
-      srcargs = source_args.dup || {}
-      case File.basename(file)
-      when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
-        srcargs[:encoding] = Encoding::ISO_8859_1
-      end
-
-      super(file, vendor_class: vendor_class, source_args: srcargs, preprocess: :preprocessing)
-
-      case @source.dir
-      when /The_Be_FAQs/
-        xpath('//body').css('form').each { |form| form['action'] = '' }
-        # this spacer gif is messing up the box model
-        xpath('//img[@src="../graphics/spacer.gif"]').each { |img| img['width'] = '0' }
+        super(file, **kwargs, &block)
+        patch(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;', global: true)
       end
     end
 
-  private
-
-    def preprocessing
-      @source.patch(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;', global: true)
+    class Manual < Manual
+      def initialize(file, vendor_class: nil, source_args: nil)
+        super(file, vendor_class: vendor_class, source_args: source_args)
+        case @source.dir
+        when /The_Be_FAQs/
+          xpath('//body').css('form').each { |form| form['action'] = '' }
+          # this spacer gif is messing up the box model
+          xpath('//img[@src="../graphics/spacer.gif"]').each { |img| img['width'] = '0' }
+        end
+      end
     end
+
+    class HTML < HTML ; end
+
   end
-
-  class HTML < BeOS::HTML ; end
-
 end

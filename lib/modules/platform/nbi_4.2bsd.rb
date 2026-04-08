@@ -13,7 +13,6 @@
 
 module NBI_4_2BSD
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

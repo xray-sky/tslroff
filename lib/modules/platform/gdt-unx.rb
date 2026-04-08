@@ -65,7 +65,6 @@ module GDT_UNX
   end
 
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

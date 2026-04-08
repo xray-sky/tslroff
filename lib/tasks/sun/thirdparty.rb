@@ -177,7 +177,7 @@ collection_namespace 'thirdparty' do
                   ]
 
   manual_namespace 'Pixar/High_Speed_Interface_1.1',
-                  vendor_class: SunOS::V4_1,#_4,
+                  vendor_class: SunOS::V4_1_4,
                   idir: 'pixar/hsi-sun3/1.1',
                   odir: 'Sun/thirdparty/Pixar/High_Speed_Interface_1.1',
                   sources: %w[hsi/man/man[1-8]]

@@ -12,8 +12,20 @@
 #
 
 module OS_MP
-  class Troff < Troff
+  class Nroff < Nroff
+    def initialize(source)
+      case source.file
+      when 'ce_db_build.1', 'ce_db_merge.1' # no title line
+        @manual_section = '1'
+        @manual_entry = (source.file)[0..-3]
+        # TODO also has see also link w/ whitespace (e.g. "ref (section)")
+      end
+      super source
+      @lines_per_page = nil
+    end
+  end
 
+  class Troff < Troff
     alias :LP :P
 
     def initialize(source)
@@ -84,97 +96,97 @@ module OS_MP
     end
   end
 
-    MANUAL_NAMES = {
-      'DOCBOX'   => 'Documentation Set',
-      'BGBOX'    => 'Beginner\'s Guides',
-      'GSBG'     => 'Getting Started with OS/MP: Beginner\'s Guide',
-      'SUBG'     => 'Setting Up Your OS/MP Environment: Beginner\'s Guide',
-      'SHBG'     => 'Self Help with Problems: Beginner\'s Guide',
-      'SVBG'     => 'SunView\ 1 User\'s Guide',
-      'MMBG'     => 'Mail and Messages',
-      'DMBG'     => 'Doing More with OS/MP: Beginner\'s Guide',
-      'UNBG'     => 'Using the Network Beginner\'s Guide',
-      'GDBG'     => 'Games, Demos & Other Pursuits',
-      'SABOX'    => 'Administration Guides',
-      'CHANGE'   => 'OS/MP Release Notes',
-      'INSTALL'  => 'OS/MP Release Notes',
-      'ADMIN'    => 'System and Network Administration',
-      'SECUR'    => 'Security Features Guide',
-      'PROM'     => 'PROM User\'s Manual',
-      'DIAG'     => 'Solbourne System Diagnostics Manual',
-      'SUNDIAG'  => 'Sundiag User\'s Guide',
-      'MANPAGES' => 'UNIX User\'s Reference Manual',
-      'REFMAN'   => 'UNIX Programmer\'s Reference Manual',
-      'SSI'      => 'Series4 and Series5 Hardware Overview',
-      'SSO'      => 'Solbourne System Services Overview',
-      'TEXT'     => 'Editing Text Files',
-      'DOCS'     => 'Formatting Documents',
-      'TROFF'    => 'Using \\&\\fBnroff\\fP and \\&\\fBtroff\\fP',
-      'INDEX'    => 'on-line help \\f3lookup\\f1\\|(1)',
-      'CPG'      => 'C Programmer\'s Guide',
-      'CREF'     => 'C Reference Manual',
-      'ASSY'     => 'Assembly Language Manual',
-      'PUL'      => 'Programming Utilities and Libraries',
-      'DEBUG'    => 'Debugging Tools',
-      'NETP'     => 'Network Programming',
-      'DRIVER'   => 'Solbourne Device Drivers Manual',
-      'STREAMS'  => 'STREAMS Programming',
-      'SBDK'     => 'SBus Developer\'s Kit',
-      'WDDS'     => 'Writing Device Drivers for the SBus',
-      'FPOINT'   => 'Floating-Point Programmer\'s Guide',
-      'SVPG'     => 'SunView\\ 1 Programmer\'s Guide',
-      'SVSPG'    => 'SunView\\ 1 System Programmer\'s Guide',
-      'PIXRCT'   => 'Pixrect Reference Manual',
-      'CGI'      => 'SunCGI Reference Manual',
-      'CORE'     => 'SunCore Reference Manual',
-      '4ASSY'    => 'Assembly Reference Manual',
-      'SARCH'    => '\\s-1SPARC\\s0 Architecture Manual',
-               # non-Sun titles
-      'KR'       => 'The C Programming Language',
-    }
+  MANUAL_NAMES = {
+    'DOCBOX'   => 'Documentation Set',
+    'BGBOX'    => 'Beginner\'s Guides',
+    'GSBG'     => 'Getting Started with OS/MP: Beginner\'s Guide',
+    'SUBG'     => 'Setting Up Your OS/MP Environment: Beginner\'s Guide',
+    'SHBG'     => 'Self Help with Problems: Beginner\'s Guide',
+    'SVBG'     => 'SunView\ 1 User\'s Guide',
+    'MMBG'     => 'Mail and Messages',
+    'DMBG'     => 'Doing More with OS/MP: Beginner\'s Guide',
+    'UNBG'     => 'Using the Network Beginner\'s Guide',
+    'GDBG'     => 'Games, Demos & Other Pursuits',
+    'SABOX'    => 'Administration Guides',
+    'CHANGE'   => 'OS/MP Release Notes',
+    'INSTALL'  => 'OS/MP Release Notes',
+    'ADMIN'    => 'System and Network Administration',
+    'SECUR'    => 'Security Features Guide',
+    'PROM'     => 'PROM User\'s Manual',
+    'DIAG'     => 'Solbourne System Diagnostics Manual',
+    'SUNDIAG'  => 'Sundiag User\'s Guide',
+    'MANPAGES' => 'UNIX User\'s Reference Manual',
+    'REFMAN'   => 'UNIX Programmer\'s Reference Manual',
+    'SSI'      => 'Series4 and Series5 Hardware Overview',
+    'SSO'      => 'Solbourne System Services Overview',
+    'TEXT'     => 'Editing Text Files',
+    'DOCS'     => 'Formatting Documents',
+    'TROFF'    => 'Using \\&\\fBnroff\\fP and \\&\\fBtroff\\fP',
+    'INDEX'    => 'on-line help \\f3lookup\\f1\\|(1)',
+    'CPG'      => 'C Programmer\'s Guide',
+    'CREF'     => 'C Reference Manual',
+    'ASSY'     => 'Assembly Language Manual',
+    'PUL'      => 'Programming Utilities and Libraries',
+    'DEBUG'    => 'Debugging Tools',
+    'NETP'     => 'Network Programming',
+    'DRIVER'   => 'Solbourne Device Drivers Manual',
+    'STREAMS'  => 'STREAMS Programming',
+    'SBDK'     => 'SBus Developer\'s Kit',
+    'WDDS'     => 'Writing Device Drivers for the SBus',
+    'FPOINT'   => 'Floating-Point Programmer\'s Guide',
+    'SVPG'     => 'SunView\\ 1 Programmer\'s Guide',
+    'SVSPG'    => 'SunView\\ 1 System Programmer\'s Guide',
+    'PIXRCT'   => 'Pixrect Reference Manual',
+    'CGI'      => 'SunCGI Reference Manual',
+    'CORE'     => 'SunCore Reference Manual',
+    '4ASSY'    => 'Assembly Reference Manual',
+    'SARCH'    => '\\s-1SPARC\\s0 Architecture Manual',
+             # non-Sun titles
+    'KR'       => 'The C Programming Language',
+  }
 
-    MANUAL_SECTION_NAMES = {
-      '1'  => 'USER COMMANDS',
-      '1C' => 'USER COMMANDS',
-      '1G' => 'USER COMMANDS',
-      '1S' => 'USER COMMANDS',
-      '1V' => 'USER COMMANDS',
-      '2'  => 'SYSTEM CALLS',
-      '2V' => 'SYSTEM CALLS',
-      '3'  => 'C LIBRARY FUNCTIONS',
-      '3C' => 'COMPATIBILITY FUNCTIONS',
-      '3F' => 'FORTRAN LIBRARY ROUTINES',
-      '3K' => 'KERNEL VM LIBRARY FUNCTIONS',
-      '3L' => 'LIGHTWEIGHT PROCESSES LIBRARY',
-      '3M' => 'MATHEMATICAL LIBRARY',
-      '3N' => 'NETWORK FUNCTIONS',
-      '3R' => 'RPC SERVICES LIBRARY',
-      '3S' => 'STANDARD I/O FUNCTIONS',
-      '3V' => 'C LIBRARY FUNCTIONS',
-      '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
-      '4'  => 'DEVICES AND NETWORK INTERFACES',
-      '4F' => 'PROTOCOL FAMILIES',
-      '4I' => 'DEVICES AND NETWORK INTERFACES',
-      '4M' => 'DEVICES AND NETWORK INTERFACES',
-      '4N' => 'DEVICES AND NETWORK INTERFACES',
-      '4P' => 'PROTOCOLS',
-      '4S' => 'DEVICES AND NETWORK INTERFACES',
-      '4V' => 'DEVICES AND NETWORK INTERFACES',
-      '5'  => 'FILE FORMATS',
-      '5V' => 'FILE FORMATS',
-      '6'  => 'GAMES AND DEMOS',
-      '7'  => 'ENVIRONMENTS, TABLES, AND TROFF MACROS',
-      '7V' => 'ENVIRONMENTS, TABLES, AND TROFF MACROS',
-      '8'  => 'MAINTENANCE COMMANDS',
-      '8C' => 'MAINTENANCE COMMANDS',
-      '8S' => 'MAINTENANCE COMMANDS',
-      '8V' => 'MAINTENANCE COMMANDS',
-      'L'  => 'LOCAL COMMANDS'
-    }
+  MANUAL_SECTION_NAMES = {
+    '1'  => 'USER COMMANDS',
+    '1C' => 'USER COMMANDS',
+    '1G' => 'USER COMMANDS',
+    '1S' => 'USER COMMANDS',
+    '1V' => 'USER COMMANDS',
+    '2'  => 'SYSTEM CALLS',
+    '2V' => 'SYSTEM CALLS',
+    '3'  => 'C LIBRARY FUNCTIONS',
+    '3C' => 'COMPATIBILITY FUNCTIONS',
+    '3F' => 'FORTRAN LIBRARY ROUTINES',
+    '3K' => 'KERNEL VM LIBRARY FUNCTIONS',
+    '3L' => 'LIGHTWEIGHT PROCESSES LIBRARY',
+    '3M' => 'MATHEMATICAL LIBRARY',
+    '3N' => 'NETWORK FUNCTIONS',
+    '3R' => 'RPC SERVICES LIBRARY',
+    '3S' => 'STANDARD I/O FUNCTIONS',
+    '3V' => 'C LIBRARY FUNCTIONS',
+    '3X' => 'MISCELLANEOUS LIBRARY FUNCTIONS',
+    '4'  => 'DEVICES AND NETWORK INTERFACES',
+    '4F' => 'PROTOCOL FAMILIES',
+    '4I' => 'DEVICES AND NETWORK INTERFACES',
+    '4M' => 'DEVICES AND NETWORK INTERFACES',
+    '4N' => 'DEVICES AND NETWORK INTERFACES',
+    '4P' => 'PROTOCOLS',
+    '4S' => 'DEVICES AND NETWORK INTERFACES',
+    '4V' => 'DEVICES AND NETWORK INTERFACES',
+    '5'  => 'FILE FORMATS',
+    '5V' => 'FILE FORMATS',
+    '6'  => 'GAMES AND DEMOS',
+    '7'  => 'ENVIRONMENTS, TABLES, AND TROFF MACROS',
+    '7V' => 'ENVIRONMENTS, TABLES, AND TROFF MACROS',
+    '8'  => 'MAINTENANCE COMMANDS',
+    '8C' => 'MAINTENANCE COMMANDS',
+    '8S' => 'MAINTENANCE COMMANDS',
+    '8V' => 'MAINTENANCE COMMANDS',
+    'L'  => 'LOCAL COMMANDS'
+  }
 
-    MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
-    MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
+  MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
+  MANUAL_SECTION_NAMES.default = 'MISC REFERENCE MANUAL PAGES'
 
-    MANUAL_NAMES.freeze
-    MANUAL_SECTION_NAMES.freeze
+  MANUAL_NAMES.freeze
+  MANUAL_SECTION_NAMES.freeze
 end

@@ -16,7 +16,7 @@
 # TODO
 # √ OSF/1 3.0 macros (an, an.repro, rsml, sml) (identical to 3.2c except copyright date)
 #
-#   something's got to be done about the huge volume of warnings from all the comments
+# √ something's got to be done about the huge volume of warnings from all the comments
 #     in the osf macro files. .so of them on every. goddamn. page. is fucking killing us.
 #
 # √ reference links are all bogus
@@ -32,15 +32,22 @@
 # √   - the 1.0 macros do not guard against this like the 3.x macros do
 #
 
-class OSF1
-  class Manual < Manual
-    def initialize file, vendor_class: nil, source_args: {}
+module OSF1
+  class Source < Source
+    def initialize(file, **kwargs, &block)
       case File.dirname file
-      when /SJIS/
-        source_args[:encoding] = Encoding::Shift_JIS
-        @language ||= 'ja'
+      when /SJIS/ then kwargs[:encoding] = Encoding::Shift_JIS
       end
-      super file, vendor_class: vendor_class, source_args: source_args
+      super(file, **kwargs, &block)
+    end
+  end
+
+  class Manual < Manual
+    def initialize(file, vendor_class: nil, source_args: {})
+      case File.dirname file
+      when /SJIS/ then @language ||= 'ja'
+      end
+      super(file, vendor_class: vendor_class, source_args: source_args)
     end
   end
 
@@ -55,7 +62,6 @@ class OSF1
 
   class Nroff < Nroff ; end
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)
@@ -78,17 +84,12 @@ class OSF1
       super
       # Geneva Light changed to Triumvirate Italic for LN01
       # Geneva Regular changed to Triumvirate Regular for LN01
-      #@mounted_fonts[4] = 'BI'
-      #@mounted_fonts[5] = 'CW' # assumes font position 5 is the constant width font
-      #@mounted_fonts[7] = 'H'  # Gothic
-      ##@mounted_fonts[8] = 'L'  # Gothic Light
-      #@mounted_fonts[8] = 'HI' # Gothic Light
-      #@mounted_fonts[9] = 'HB' # Gothic Bold
       mount_font 4, 'BI'
-      mount_font 5, 'CW'
-      mount_font 7, 'H'
-      mount_font 8, 'HI'
-      mount_font 9, 'HB'
+      mount_font 5, 'CW' # assumes font position 5 is the constant width font
+      mount_font 7, 'H' # Gothic
+      #mount_font 8, 'L' # Gothic Light
+      mount_font 8, 'HI' # Gothic Light
+      mount_font 9, 'HB' # Gothic Light
     end
 
     def init_tr
@@ -107,23 +108,9 @@ class OSF1
     end
 
     # .so with absolute path, osf/1 macros in /usr/share/lib/tmac
-    #
-    # sourcing the osf/1 macro files (sml, rsml) on every single page is killing us.
-    # until I figure out how to improve that, reducing the warn load by stripping out
-    # all the "illegal" comments should help immensely as a first draft.
-    # (it does: ~10x improvement in runtime, ~2x improvement in log size)
     def so(name, breaking: nil)
       name = "../../../..#{name}" if name.start_with?('/')
-      file = File.basename(name)
-      #if %w[sml rsml].include? file
-      #  # guard against double-inclusion. e.g. lp(1) :: OSF/1 1.0
-      #  # This feature is present in e.g. >3.0 sml/rsml macro files, but not in earlier OSF/1.
-      #  super(name, breaking: breaking) { |lines| lines.reject! { |l| l.start_with? '...\\"' } } unless @state[file]
-      #  @state[file] = true
-      #else
-      #  super(name, breaking: breaking)
-      #end
-      case file
+      case File.basename name
       when 'sml'  then extend OSF1::SML
       when 'rsml' then extend OSF1::RSML
       else super name, breaking: breaking
@@ -386,6 +373,7 @@ class OSF1
   end
 end
 
-class Digital_UNIX < OSF1 ; end
-class Tru64 < OSF1 ; end
-class Tru64::V4_0f < Tru64 ; end
+# module aliases
+Digital_UNIX = OSF1
+Tru64 = OSF1
+Tru64::V4_0f = Tru64

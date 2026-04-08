@@ -12,61 +12,64 @@
 #    SR9.0 Sys5 pages (many, not all) are not correctly processing title for manual section
 #
 
-class DomainIX::SR9_5
-  class Manual < DomainIX::Manual
-    def initialize file, vendor_class: nil, source_args: nil
-      case File.basename file
-      when 'root.3m' then raise ManualIsBlacklisted, 'not a manual entry'
+module DomainIX
+  module SR9_5
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'root.3m' then raise ManualIsBlacklisted, 'not a manual entry'
+        end
+        super(file, **kwargs, &block)
       end
-      super file, vendor_class: vendor_class, source_args: source_args
-    end
-  end
-
-  class Nroff < DomainIX::Nroff
-
-    def initialize(source)
-      @related_info_heading ||= 'RELATED INFORMATION'
-      super(source)
     end
 
-    def page_title
-      super << " Domain/IX SR9.5"
-    end
+    class Nroff < Nroff
 
-  end
-
-  class Troff < DomainIX::Troff ; end
-
-end
-
-class AUX < DomainIX ; end
-class AUX::SR8_0 < AUX ; end
-
-class AUX::SR8_1
-  class Nroff < DomainIX::Nroff
-    def initialize(source)
-      case source.file
-      when 'aux.release_notes.sr8.1' then @lines_per_page = 63
+      def initialize(source)
+        @related_info_heading ||= 'RELATED INFORMATION'
+        super(source)
       end
-      super(source)
+
+      def page_title
+        super << " Domain/IX SR9.5"
+      end
+
     end
+
+    class Troff < Troff ; end
+
   end
 end
 
-class Aegis::SR7_B < Aegis ; end
-class Aegis::SR8_0 < Aegis ; end
-class Aegis::SR8_1 < Aegis ; end
-class Aegis::SR8_1_update < Aegis ; end
-class Aegis::SR9_0 < Aegis ; end
-class Aegis::SR9_0_020 < Aegis ; end
-class Aegis::SR9_2 < Aegis ; end
-class Aegis::SR9_5 < DomainIX::SR9_5 ; end
-class Aegis::SR9_6 < Aegis ; end
-class Aegis::SR9_7 < Aegis ; end
-class Aegis::SR9_7_1 < Aegis ; end
-class DomainIX::SR9_2_3 < DomainIX ; end
-class DomainOS::SR10_0 < DomainOS ; end
-class DomainOS::SR10_1 < DomainOS ; end
-class DomainOS::SR10_1_PSK4 < DomainOS ; end
-class DomainOS::SR10_2 < DomainOS ; end
-class DomainOS::SR10_3 < DomainOS ; end
+# module aliases
+AUX = DomainIX
+
+module AUX
+  module SR8_1
+    class Nroff < Nroff
+      def initialize(source)
+        case source.file
+        when 'aux.release_notes.sr8.1' then @lines_per_page = 63
+        end
+        super(source)
+      end
+    end
+  end
+end
+
+# module aliases
+Aegis::SR7_B = Aegis
+Aegis::SR8_0 = Aegis
+Aegis::SR8_1_update = Aegis
+Aegis::SR9_0 = Aegis
+Aegis::SR9_0_020 = Aegis
+Aegis::SR9_2 = Aegis
+Aegis::SR9_6 = Aegis
+Aegis::SR9_7 = Aegis
+Aegis::SR9_7_1 = Aegis
+DomainIX::SR9_2_3 = DomainIX
+DomainOS::SR10_0 = DomainOS
+DomainOS::SR10_1 = DomainOS
+DomainOS::SR10_1_PSK4 = DomainOS
+DomainOS::SR10_2 = DomainOS
+DomainOS::SR10_3 = DomainOS

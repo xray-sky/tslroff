@@ -8,7 +8,7 @@
 # Intergraph CLIX Platform Overrides
 #
 
-class CLIX
+module CLIX
   class Nroff < Nroff
 
     def initialize(source)

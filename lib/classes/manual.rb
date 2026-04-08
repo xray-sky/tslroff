@@ -49,7 +49,7 @@ class Manual
     @language      ||= 'en' # English
     @related       ||= []
     @lines         ||= @source.iter
-    @current_block ||= Block.new
+    #@current_block ||= Block.new
 
     #@document.source_init # TODO this is why I have to ||= the init. do better.
     # >>> was just parse_title: (REVIEW check vendor overrides though)

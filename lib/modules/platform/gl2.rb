@@ -34,10 +34,8 @@
 # W2.1 and W2.3 Mail(1) want to use font T (times?)
 #
 
-class GL2
-  class Nroff < Nroff ; end  # This is temporarily supporting 4D1 ThirdParty
+module GL2
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

@@ -131,7 +131,7 @@ collection_namespace 'SunOS' do
   # All identical: 4.1.3 SunSoft Ver A, 4.1.3 SunSoft Ver C, 4.1.3_U1, and 4.1.3_U1 SunSoft Ver B (704-3662)
   # TODO 4.1.3_U1 SunSoft Ver B (704-4037) has International/EUC amendments - not identical, though also en_US
   manual_namespace '4.1.3_U1',
-                  vendor_class: SunOS::V4_1,#_3,
+                  vendor_class: SunOS::V4_1_3,
                   idir: 'sun/sunos/4.1.3u1',
                   odir: 'Sun/SunOS/4.1.3_U1',
                   sources: %w[

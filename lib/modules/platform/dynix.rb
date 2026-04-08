@@ -21,17 +21,14 @@ module DYNIX_ptx
   end
 
   class Nroff < Nroff
-
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       super(source)
     end
-
   end
 
   class Troff < Troff
-
     alias :LP :P
 
     def initialize(source)

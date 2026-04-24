@@ -18,7 +18,7 @@ module Ultrix
   class Font::TB < ::Font::HB ; end
   class Font::TI < ::Font::HI ; end
 
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize source

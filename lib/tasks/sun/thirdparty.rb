@@ -200,10 +200,30 @@ collection_namespace 'thirdparty' do
                   odir: 'Sun/thirdparty/SAS/C_370_5.50.12',
                   sources: %w[man1]
 
+  manual_namespace 'Saber/C_3.0.1',
+                  vendor_class: SunOS::V4_1,
+                  idir: 'sun/sunos/thirdparty/saber_c_sun3_3.0.1',
+                  odir: 'Sun/thirdparty/Saber/C_3.0.1',
+                  sources: %w[saber_dir30/install]
+  manual_namespace 'Saber/C_3.1',
+                  vendor_class: SunOS::V4_1,
+                  idir: 'sun/sunos/thirdparty/saber_c_sun4_3.1',
+                  odir: 'Sun/thirdparty/Saber/C_3.1.0_R1.0',
+                  sources: %w[Saber/c_3.1.0-r1.0/install]
+
   # TODO .TH footer (not a revision date)
   manual_namespace 'Transarc/AFS_3.2',
                   vendor_class: SunOS::V4_1,
                   idir: 'sun/sunos/thirdparty/transarc_afs_3.2',
                   odir: 'Sun/thirdparty/Transarc/AFS_3.2',
                   sources: %w[man/man1]
+
+  manual_namespace 'TriTeal/VUE_3.0',
+                  vendor_class: SunOS::V5_4,
+                  idir: 'sun/sunos/thirdparty/triteal_vue_3.0',
+                  odir: 'Sun/thirdparty/TriTeal/VUE_3.0',
+                  sources: %w[
+                    vue/man/man[14]
+                    softbench/man/man[15]*
+                  ]
 end

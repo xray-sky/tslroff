@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+# encoding: UTF-8
 #
 # tslroff
 #
@@ -26,7 +28,7 @@
 # TODOs
 #   metadata: add sourcefile mtime
 #   unbundleds - REVIEW input collections which may be mixed
-#   cope with pages named 'index' (e.g. DG-UX 5.4R3.00 index(3C))
+# √ cope with pages named 'index' (e.g. DG-UX 5.4R3.00 index(3C))
 #     - possibly by providing top level all-sections index (permuted or otherwise?)
 # √   - done for now by renaming any page named index => _index and default => _default
 #   unlink 404 refs, probably after auditing whether they are really missing
@@ -35,9 +37,7 @@
 #   supplemental (non-man) docs recovered from mit afs
 #   page titles for unbundled pages are messed up
 #   page titles for everything are messed up, due to the lack of
-#      `vendor`, `os`, and `ver`, which used to be supplied into the build
-#
-# frozen_string_literal: true
+#     `vendor`, `os`, and `ver`, which used to be supplied as command line params into build.rb
 #
 
 # under chomedriver control, chrome won't load css from a file??
@@ -46,7 +46,7 @@ $CSS_URL = 'http://dev.online.typewritten.org/Manual/tslroff.css'
 
 SRCROOT = '/Volumes/Museum/Manual/in'
 PUBROOT = '/Volumes/dev.online.typewritten.org/Manual'
-ASSETS = File.realpath("lib/assets")
+ASSETS = File.realpath('lib/assets')
 TEMPLATE = File.read "#{ASSETS}/manual.erb"
 
 require 'ruby-prof' if ENV['RUBY_PROFILE']
@@ -77,7 +77,20 @@ task :gfx do
   #cp_r "#{ASSETS}/logos", gfxdir
 end
 
-# manual collections
+# manual source collections
+
+collection_namespace '_internal' do
+  collection_namespace '_test' do
+    manual_namespace '_pic',
+                    odir: '_internal/_test/_pic',
+                    idir: '_test',
+                    sources: %w[./pic*]
+    manual_namespace '_tbl',
+                    odir: '_internal/_test/_tbl',
+                    idir: '_test',
+                    sources: %w[./stbl*]
+  end
+end
 
 require_relative 'lib/tasks/acorn'
 require_relative 'lib/tasks/alias'
@@ -113,16 +126,3 @@ require_relative 'lib/tasks/sony'
 require_relative 'lib/tasks/sun'
 require_relative 'lib/tasks/tektronix'
 require_relative 'lib/tasks/ucb'
-
-collection_namespace '_internal' do
-  collection_namespace '_test' do
-    manual_namespace '_pic',
-                    odir: '_internal/_test/_pic',
-                    idir: '_test',
-                    sources: %w[./pic*]
-    manual_namespace '_tbl',
-                    odir: '_internal/_test/_tbl',
-                    idir: '_test',
-                    sources: %w[./stbl*]
-  end
-end

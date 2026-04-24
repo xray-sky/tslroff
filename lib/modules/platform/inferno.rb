@@ -14,7 +14,7 @@
 module Inferno
   class HTML < HTML ; end
   class Nroff < Nroff ; end
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
   end
 end

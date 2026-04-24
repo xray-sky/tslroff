@@ -25,7 +25,7 @@ module OS_MP
     end
   end
 
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)

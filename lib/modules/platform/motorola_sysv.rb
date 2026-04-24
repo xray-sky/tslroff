@@ -20,7 +20,7 @@ module Motorola_SysV
   class Nroff < Nroff ; end
 
   # looks like none of this matters much, as the provided pages are all nroff format except for X11.
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)

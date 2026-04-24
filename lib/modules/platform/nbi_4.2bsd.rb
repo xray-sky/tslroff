@@ -12,7 +12,7 @@
 #
 
 module NBI_4_2BSD
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)

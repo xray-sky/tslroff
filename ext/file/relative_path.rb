@@ -1,4 +1,4 @@
-# encoding: US-ASCII
+# frozen_string_literal: true
 #
 # Created by R. Stricklin <bear@typewritten.org> on 05/07/21.
 # Copyright 2021 Typewritten Software. All rights reserved.

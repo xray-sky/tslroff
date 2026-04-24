@@ -17,9 +17,9 @@ module UNIX
         super
         @named_strings.merge!(
           {
-            ']D' => "UNIX Programmer's Manual",
-            ']W' => "7th Edition",
-            :footer => "\\*(]W"
+            ']D' => String.new('UNIX Programmer\'s Manual'),
+            ']W' => String.new('7th Edition'),
+            :footer => String.new('\\*(]W')
           }
         )
       end

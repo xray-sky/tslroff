@@ -22,6 +22,7 @@ module SunOS
         super(file, **kwargs, &block)
         case @file
         when 'disablenumlock.1' then patch_line 1, /dis/, 'en'  # exists in 4.0.2; tries to .so itself
+        when 'rmtblstuff'       then raise ManualIsBlacklisted, 'junk'
         end
       end
     end

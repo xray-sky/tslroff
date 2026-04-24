@@ -33,7 +33,7 @@ module UNIX
     # overriding blockproto() was sufficient to fix, but fragile.
 
     class Block
-      class Paragraph < ::Block
+      class Paragraph < ::Block::Paragraph
         def to_html
           # this used to happen before every block was processed.
           # TODO something better.
@@ -54,19 +54,14 @@ module UNIX
       end
     end
 
-    class Troff < Troff
+    class Troff < ::Troff::Man6
+      def initialize(source)
+        @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+        @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+        super(source)
+      end
 
-      alias :Bd :bd
-      alias :Dt :dt
-      alias :il :it
-      undef :bd
-      undef :dt
-      undef :it
-
-      alias :LP :P
-      alias :dt :DT
-      alias :sh :SH
-
+      # override to get our own Block::Paragraph class as default
       def blockproto(type = Block::Paragraph)
         super(type)
       end
@@ -74,108 +69,6 @@ module UNIX
       def output_directory
         @manual_section and return "man#{@manual_section}"
         super
-      end
-
-      def init_ds
-        super
-        @named_strings.merge!(
-          {
-            '_' => '_',
-            '-' => '\\-',
-            '|' => '\\|',
-            "'" => '\\(aa',
-            '>' => '\\(->',
-            'a' => '\\(aa',
-            'b' => '\\(*b',
-            'g' => '\\(ga',
-            'p' => '\\(*p',
-            'r' => '\\(rg',
-            'u' => '\\(*m',
-            'v' => '\\(bv',
-            'G' => '\\(*G',
-            'X' => '\\(mu'
-          }
-        )
-      end
-
-      def xinit_nr
-        super
-        @register.merge!({
-          '}I' => Register.new(to_u('5n')),
-          '}P' => Register.new(0, 1)
-        })
-      end
-
-      def bd(*args)
-        ft '3'
-        if @register['V'] > 1
-          parse "_#{args[0]}_"
-        else
-          parse "\\&#{args[0]}"
-        end
-        ft
-      end
-
-      def bn(*args)
-        ft '3'
-        if @register['V'] > 1
-          parse "_#{args[0]}_\t\\&\\c"
-        else
-          parse "\\&#{args[0]}\t\\&\\c"
-        end
-        ft
-      end
-
-      def i0(*_args)
-        parse ".in\\n(}Iu" #send 'in', "#{@register['I'].value}u"
-        dt
-      end
-
-      def it(*args)
-        # can't use .ul as it calls .it internally
-        #ul
-        ft '2'
-        if @register['V'] > 1
-          parse "_#{args[0]}_"
-        else
-          parse "\\&#{args[0]}"
-        end
-        # since we can't rely on .ul giving us a one-line input trap for .}f
-        ft
-      end
-
-      def lp(*args)
-        tc
-        i0
-        ta "#{args[1]}n"
-        send 'in', "#{args[0]}n"
-        ti "-#{args[1]}n"
-      end
-
-      def s1(*_args)
-        sp '1v'
-        #ne '2'
-      end
-
-      def s2(*_args)
-        sp '.5v'
-      end
-
-      def s3(*_args)
-        sp '.5v'
-        #ne '2'
-      end
-
-      def th(*args)
-        send 'TH', args[0], args[1], heading: "#{args[0]}\\|(\\|#{args[1]}\\|)\\0\\0\\*-\\0\\0PWB/UNIX\\| #{args[2]}"
-      end
-
-      def li(*_args)
-        warn "V6 manual invoked .li with #{_args.inspect} ? REVIEW"
-      end
-
-      define_method '..' do |*_args|
-        warn "V6 manual invoked ... with #{_args.inspect} ? REVIEW"
       end
     end
   end

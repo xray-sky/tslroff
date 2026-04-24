@@ -23,7 +23,6 @@ module SunOS
     end
 
     class Troff < Troff
-
       def init_ds
         super
         @named_strings.merge!(
@@ -61,7 +60,7 @@ module SunOS
       end
 
       def TZ(*args)
-        ds "Tz #{MANUAL_TITLES[args[0]]}"
+        ds "Tz #{MANUAL_NAMES[args[0]]}"
         parse "\\fI\\*(Tz\\f1#{args[1]}"
       end
 
@@ -71,6 +70,7 @@ module SunOS
       end
 
     end
+
     HARDCOPY_TITLES = {
             # Hard Copy Docs Only
       'HC_DRIVERINSTALL' => "Driver Developer Kit Installation Guide",

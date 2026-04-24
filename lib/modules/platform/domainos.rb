@@ -297,7 +297,7 @@ module Aegis
     end
   end
 
-  class Troff < Troff
+  class Troff < Troff::Man
     include Utils
     alias :LP :P
 

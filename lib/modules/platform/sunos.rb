@@ -13,7 +13,7 @@
 
 module SunOS
   class Nroff < Nroff ; end
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)
@@ -101,7 +101,7 @@ module SunOS
 
         def Jo(*args)
           #mk jo
-          parse " #{args[0]}\\h'2.0i-\\w'#{args[0]}'u'#{args[1]}\\h'1.5i-\\w'#{args[1]}'u'#{args[2]}\\h'1.5i-\\w'#{args[2]}'u'#{args[3]}"
+          parse "\\ #{args[0]}\\h'2.0i-\\w'#{args[0]}'u'#{args[1]}\\h'1.5i-\\w'#{args[1]}'u'#{args[2]}\\h'1.5i-\\w'#{args[2]}'u'#{args[3]}"
           ###
           ### TODO box
           ###
@@ -131,9 +131,9 @@ module SunOS
           br
           #mk 'jq'
           if @register['jw'] > 1300
-            parse " \\fIclass\\fP:\\|\\&\\fL#{args[0]}\\0\\fItype\\fP:\\|\\&\\fL#{args[1]}\\0\\fIdefault\\fP:\\|\\&\\fL#{args[2]}\\fP\\h'|4.9i'\\fIaccess\\fP:\\|\\|\\&\\fL#{args[3]}\\fP\\h'0.8i-\\w'\\fL#{args[3]}\\fP'u'"
+            parse "\\ \\fIclass\\fP:\\|\\&\\fL#{args[0]}\\0\\fItype\\fP:\\|\\&\\fL#{args[1]}\\0\\fIdefault\\fP:\\|\\&\\fL#{args[2]}\\fP\\h'|4.9i'\\fIaccess\\fP:\\|\\|\\&\\fL#{args[3]}\\fP\\h'0.8i-\\w'\\fL#{args[3]}\\fP'u'"
           else
-            parse " \\fIclass\\fP:\\|\\&\\fL#{args[0]}\\fP\\h'1.5i-\\w'\\fL#{args[0]}\\fP'u'\\fItype\\fP:\\|\\&\\fL#{args[1]}\\fP\\h'1.25i-\\w'\\fL#{args[1]}\\fP'u'\\fIdefault\\fP:\\|\\&\\fL#{args[2]}\\fP\\h'1.0i-\\2'\\fL#{args[2]}\\fP'u'\\h'|5i'\\fIaccess\\fP:\\|\\&\\fL#{args[3]}\\fP\\h'0.8i-\\2'\\fL#{args[3]}\\fP'u'"
+            parse "\\ \\fIclass\\fP:\\|\\&\\fL#{args[0]}\\fP\\h'1.5i-\\w'\\fL#{args[0]}\\fP'u'\\fItype\\fP:\\|\\&\\fL#{args[1]}\\fP\\h'1.25i-\\w'\\fL#{args[1]}\\fP'u'\\fIdefault\\fP:\\|\\&\\fL#{args[2]}\\fP\\h'1.0i-\\2'\\fL#{args[2]}\\fP'u'\\h'|5i'\\fIaccess\\fP:\\|\\&\\fL#{args[3]}\\fP\\h'0.8i-\\2'\\fL#{args[3]}\\fP'u'"
           end
           ###
           ### TODO box

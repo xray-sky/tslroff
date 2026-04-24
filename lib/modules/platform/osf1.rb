@@ -61,7 +61,7 @@ module OSF1
   class Font::GL < ::Font::HI ; end
 
   class Nroff < Nroff ; end
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)

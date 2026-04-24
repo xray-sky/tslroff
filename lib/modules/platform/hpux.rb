@@ -9,7 +9,7 @@
 #
 
 module HPUX
-  class Troff < Troff
+  class Troff < Troff::Man
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')

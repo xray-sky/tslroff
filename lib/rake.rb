@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# encoding: UTF-8
 #
 # rake.rb
 #
@@ -9,7 +10,7 @@
 # √ cache stats
 # √ debug operation
 #   symlinks
-#   indexing
+# ~ indexing
 #   comments
 #   leverage Pathname class and/or String.pathmap method?
 #
@@ -80,11 +81,12 @@ end
 #     + all stderr captured in a build log file.
 #     + build statistics to be sent to stdout
 #
-# the generated "all" task can be sent an optional pattern that will limit the build
-# to just those filenames (minus parent directories) matching (regex) the pattern.
+# The generated "all" task can be sent an optional pattern that will limit the build
+# to just those filenames (ignoring parent directories) matching the pattern (regex).
 # If the build is limited in this way, stderr is not redirected to the build log file.
+# This is intended to facilitate debugging.
 #
-# extra build tasks (e.g. copying static assets) can be generated for this collection of manuals
+# Extra build tasks (e.g. copying static assets) can be generated for this collection of manuals
 # by passing a block which receives as arguments idir, odir, and the :all task object.
 #
 # TODO optional ruby profiling of build job
@@ -169,7 +171,8 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
 
-  ix = File.open("#{pubdir}/page.index", 'w') unless limit
+  ixf = File.open("#{pubdir}/page_index.html", 'w') unless limit
+  ix = []
 
   if ENV['RUBY_PROFILE']
     prof = RubyProf::Profile.new
@@ -184,7 +187,8 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     puts "<== #{src}" if limit
     pagecount += 1
     ixinfo = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args)
-    ix << "#{ixinfo.inspect}\n" unless limit
+    #ixf << "#{ixinfo.inspect}\n" unless limit
+    ix << ixinfo unless limit
   end
 
   if ENV['RUBY_PROFILE']
@@ -194,7 +198,10 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     #RubyProf::GraphHtmlPrinter.new(profile_results).print(File.open "graph.html", "w")
   end
 
-  ix.close if ix
+  ix.sort.each do |i|
+    ixf << %(#{i[0]} : <a href="#{i[1]}">#{i[2]} =></a> <= #{i[3]}<br />\n)
+  end
+  ixf.close if ixf
 
   if Troff.webdriver
     warn Troff.webdriver.cache_stats
@@ -232,7 +239,8 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {})
       #        man object, so we can do something overrideable by vendor class. for now though.
       #        also how regular is this going to be?? catman -w known to have crazy results for
       #        ill formed manual entries so it's not solely an us problem.
-      (names, _sep, descr) = e.text.strip.partition(/[\s ]*(?:-|−)[\s ]*/)
+      #(names, _sep, descr) = e.text.strip.partition(/[\s ]*(?:-|−)[\s ]*/) # hyphen &minus; &nbsp;
+      (names, _sep, descr) = e.text.strip.partition(/(?:[\s ]+-[\s ]+|[\s ]*(?:−|—)[\s ]*)/) # hyphen (with spaces only) &minus; &mdash; &nbsp;
       [names, descr]
     end
     related = html.search('a[@href]')
@@ -246,17 +254,18 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {})
   end
 
   exit unless Process.pid == ppid # guard against fork (i.e. VMS Help)
-  [ "#{man.output_directory}/#{title}.html", indexing[0]&.[](0), indexing[0]&.[](1) ]# REVIEW experimental
+  warn "multi-line index info for #{title}.html" if indexing[1]
+  [ "#{man.manual_section}", "#{man.output_directory}/#{title}.html", "#{indexing[0]&.[](0)}", "#{indexing[0]&.[](1)}" ]# REVIEW experimental
 
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"
-  [ title ]
+  [ "---", ".", title, "!! blacklisted #{srcfile}" ]
 rescue StopIteration, FileIsEmptyError, IOError, SystemCallError => e
   warn "#{srcfile}: #{e.message}"
-  [ title ]
+  [ "---", ".", title, "[[empty]] #{srcfile}" ]
 rescue => e
   warn "#{srcfile}: unhandled exception #{e.message}\n#{e.backtrace.join("\n")}"
-  [ title ]
+  [ "---", ".", title, "((exception)) #{srcfile}" ]
 end
 
 ###

@@ -26,7 +26,7 @@ module Plan9
     def css_style ; %(font-family:'CMU Typewriter',monospace;) ; end
   end
 
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)

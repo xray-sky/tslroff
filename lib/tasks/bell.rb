@@ -69,6 +69,7 @@ collection_namespace 'Bell' do
     # where'd I get this manual? need lib/macros/an
     # TODO also contains a lot of papers for as, cc, etc.
     manual_namespace 'SysIII',
+                    vendor_class: UNIX,
                     idir: 'bell/unix/sysiii',
                     odir: 'Bell/UNIX/SystemIII',
                     sources: %w[

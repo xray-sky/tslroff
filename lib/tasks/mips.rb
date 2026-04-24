@@ -28,4 +28,12 @@ collection_namespace 'mips' do
                     odir: 'mips/RISC:os/5.01',
                     sources: %w[share/man/catman/?_man/*man[1-8]]
   end
+
+  collection_namespace 'UMIPS/BSD' do
+    manual_namespace '2.1',
+                    vendor_class: RISC_os,
+                    idir: 'mips/umips/2.1',
+                    #odir: 'mips/UMIPS:BSD/2.1',
+                    sources: %w[man/catman/?_man/*man[1-8]]
+  end
 end

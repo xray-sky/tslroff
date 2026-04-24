@@ -17,6 +17,9 @@ require_relative '../../classes/webdriver'
 require_relative '../../classes/textformatter'
 
 class Troff < TextFormatter
+  class Man  < Troff ; require_relative 'troff/tmac/an'  ; include Macros::An ; end
+  class Man6 < Troff ; require_relative 'troff/tmac/an6' ; include Macros::An6 ; end
+  class Ms   < Troff ; require_relative 'troff/tmac/s'   ; include Macros::S ; end
 
   %w[. request escape eqn tbl].each do |t|
     Dir.glob("troff/#{t}/*.rb", base: File.dirname(__FILE__)).sort.each do |i|
@@ -33,12 +36,6 @@ class Troff < TextFormatter
   include Tbl
   include Macros::Tbl
 
-  # macro packages
-  require_relative 'troff/tmac/an'
-  require_relative 'troff/tmac/an6'
-  require_relative 'troff/tmac/s'
-  include Macros::An
-
   DELIMITERS = %w[\002 \003 \005 \006 \007 " '].freeze # unused. REVIEW necessary? useful?
   REQUESTS = %w[
     ab ad af am as bd bp br c2 cc ce cf ch cs cu da de di ds dt ec el em eo ev ex fc fi
@@ -52,7 +49,7 @@ class Troff < TextFormatter
   def self.requests ; REQUESTS ; end # REVIEW smrtr? - does this need to be a class method??
   def self.use_groff? ; false ; end # REVIEW necessary? (I think no)
 
-  def initialize(source, macros: Macros::An)
+  def initialize(source)
     @header ||= Block::Header.new
     @footer ||= Block::Footer.new
     @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
@@ -94,11 +91,11 @@ class Troff < TextFormatter
       # TODO perform end-of-input trap macros from .em;
       # REVIEW maybe make the closing divs happen that way. or clean up the way the open divs get inserted.
       # TODO this is quite wrong if we are doing halt_on e.g. from parse_title and don't find one (e.g. unix v7 intro.0)
-      if @named_strings[:header]
+      if @named_strings.key? :header
         unescape @named_strings[:header], output: @header
         @document.insert(0, @header)
       end
-      if @named_strings[:footer]
+      if @named_strings.key? :footer
         unescape @named_strings[:footer], output: @footer
         @document << @footer
       end
@@ -158,5 +155,4 @@ class Troff < TextFormatter
     block.style.attributes[:class] = Regexp.last_match[1].downcase if @section_heading&.match(/^(name|synopsis)$/i) and block.is_a? Block::Paragraph
     block
   end
-
 end

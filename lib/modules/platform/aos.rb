@@ -27,11 +27,11 @@
 #
 
 class AOS
-  class Troff < Troff
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)
-      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
+      @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
       @manual_section ||= Regexp.last_match[1]
       @output_directory ||= "man#{@manual_section}"
       super(source)
@@ -41,7 +41,7 @@ class AOS
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W".+@,
+          footer: String.new('\\*(]W'),
           # tmac.an.new
           ']D' => 'Unix Programmer\'s Manual', # default set by .TH
           ']W' => '7th Edition' # default set by .TH

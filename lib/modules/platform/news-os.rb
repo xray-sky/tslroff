@@ -13,7 +13,7 @@
 
 module NEWS_os
   class Nroff < Nroff ; end
-  class Troff < Troff
+  class Troff < Troff::Man
 
     def initialize(source)
       @manual_entry ||= source.file.sub(/\.([\dnop][^.]*)$/, '')

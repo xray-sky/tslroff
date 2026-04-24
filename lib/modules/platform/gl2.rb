@@ -35,13 +35,14 @@
 #
 
 module GL2
-  class Troff < Troff
+  class Nroff < Nroff ; end # This is temporarily supporting 4D1 thirdparty
+  class Troff < Troff::Man
     alias :LP :P
 
     def initialize(source)
       @version ||= "."  # TODO (temporarily supporting 4D1 ThirdParty, but also need to fix os/version for Rake)
       @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
-      @manual_section ||= Regexp.last_match[1]
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match # might not match, e.g. Alias/1 manual
       super(source)
     end
 

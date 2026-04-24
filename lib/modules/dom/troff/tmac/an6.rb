@@ -8,15 +8,13 @@
 class Troff
   module Macros
     module An6
-      def self.included(k)
+      def self.extended(k)
         k.define_singleton_method :Bd, k.method(:bd)
         k.define_singleton_method :Dt, k.method(:dt)
         k.define_singleton_method :il, k.method(:it)
         k.undef :bd
         k.undef :dt
         k.undef :it
-      end
-      def self.extended(k)
         k.xinit_nr
         k.init_ds
       end
@@ -158,6 +156,18 @@ class Troff
       define_method '..' do |*_args|
         warn "V6 manual invoked ... with #{_args.inspect} ? REVIEW"
       end
+
+      def P(*_args)
+        send '}f'   # .PP resets font, by way of .}E (also line length, don't care)
+        init_IP		# .PP resets \n()I to 0.5i
+        @current_block = blockproto
+        @document << @current_block
+        indent(@base_indent + @register[')R'])
+      end
+
+      #alias :PP :P
+      alias :LP :P
+
     end
   end
 end

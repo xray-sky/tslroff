@@ -111,7 +111,10 @@ class Troff
       n = n.to_i
       nf
       @current_block.style.css[:text_align] = 'center'
-      it "#{n} finalize_ce"
+      # the V6 request is .il; an6 defines .it as something else
+      #it "#{n} finalize_ce"
+      @input_traps[n] ||= []
+      @input_traps[n] << [ 'finalize_ce' ]
     end
   end
 

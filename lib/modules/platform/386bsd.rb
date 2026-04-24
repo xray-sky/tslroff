@@ -22,7 +22,7 @@
 #
 
 module X386BSD
-  class Troff < Troff  # REVIEW probably actually Groff (e.g. groff_char(7))
+  class Troff < Troff::Man  # REVIEW probably actually Groff (e.g. groff_char(7))
     def initialize source
       @manual_entry ||= source.file.sub(/\.(?:[\dZz]\S?)$/, '')
       super source

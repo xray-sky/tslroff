@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+#
 # nroff.rb
 # ---------------
 #    nroff source
 # ---------------
 #
-# frozen_string_literal: true
-#
 # REVIEW add anchors menu for detected headings ?
+# TODO we're using this class for general plaintext and a bunch of stuff in it is more or less
+#      specific to the unix manual
 
 require_relative '../../classes/textformatter'
 
@@ -118,6 +120,10 @@ class Nroff < TextFormatter
     @manual_section and return "man#{@manual_section.downcase}"
     warn "reading output directory without section set"
     ''
+  end
+
+  def page_title
+    "#{@manual_entry}(#{@manual_section}) &mdash; #{@platform} #{@version}"
   end
 
   private

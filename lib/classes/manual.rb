@@ -21,24 +21,23 @@ require_relative '../modules/dom/nroff'
 ManualIsBlacklisted = Class.new(RuntimeError)
 
 class Manual
-  attr_reader   :language, :links #, :lines
+  attr_reader :language, :links #, :lines
 
   extend Forwardable
   def_delegators :@source, :link?, :magic, :line_number, :next_line, :patch, :patch_line, :patch_lines
   def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory, :xpath
 
-  def initialize(file, vendor_class: nil, source_args: nil, preprocess: nil, &block)
+  def initialize(file, vendor_class: nil, source_args: nil, os: nil, ver: nil, &block)
     @input_filename = file
 
     source_class = Kernel.const_defined?("#{vendor_class}::Source") ? Kernel.const_get("#{vendor_class}::Source") : Source
     @source ||= source_class.new file, **source_args, &block
 
-    send preprocess if preprocess
     document_class = Kernel.const_get "#{vendor_class}::#{magic}"
-    @document ||= document_class.send :new, @source
+    @document ||= document_class.send :new, @source, os: os, ver: ver
 
-    #@platform ||= os
-    #@version  ||= ver
+    @platform ||= os
+    @version  ||= ver
     # REVIEW why did I stop initializing these? - because I wanted them to happen in parse_title
     #@manual_entry     = String.new
     #@manual_section   = String.new

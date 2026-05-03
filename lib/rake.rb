@@ -92,7 +92,7 @@ end
 # TODO optional ruby profiling of build job
 #
 
-def manual_namespace(name, sources: nil, idir: nil, odir: nil, vendor_class: nil, &block)
+def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil, vendor_class: nil, &block)
   unless odir
     #warn "No output directory given for #{name} (skipped)"
     return nil
@@ -107,7 +107,7 @@ def manual_namespace(name, sources: nil, idir: nil, odir: nil, vendor_class: nil
       start_time = Time.now
       directory(pubdir).invoke
       open_build_log_task pubdir unless args[:limit]
-      pagecount = collection_task sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class
+      pagecount = collection_task sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class, os: (os or n.scope.take(2).last), ver: (ver or name)
       close_build_log_task unless args[:limit]
       puts "       #{scope} => #{pagecount} pages complete in #{Time.now - start_time}s"
       puts "       #{Troff.webdriver.cache_stats}" if Troff.webdriver
@@ -166,7 +166,7 @@ end
 # REVIEW is this working correctly on directory structures more than one level deep?
 #
 
-def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, source_args: {})
+def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, source_args: {}, os: nil, ver: nil)
   pagecount = 0
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
@@ -186,7 +186,7 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     warn "symlink #{src} (skipped)" and next if File.symlink?(src)
     puts "<== #{src}" if limit
     pagecount += 1
-    ixinfo = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args)
+    ixinfo = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver)
     #ixf << "#{ixinfo.inspect}\n" unless limit
     ix << ixinfo unless limit
   end
@@ -214,11 +214,11 @@ end
 # Build an individual manual entry
 #
 
-def manual_task(source, pubdir, vendor_class: nil, source_args: {})
+def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver: nil)
   ppid = Process.pid
   srcfile = File.basename(source)
   k = Kernel.const_defined?("#{vendor_class}::Manual") ? Kernel.const_get("#{vendor_class}::Manual") : ::Manual
-  man = k.new source, vendor_class: vendor_class, source_args: source_args
+  man = k.new source, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver
   page = man.to_html
 
   title = man.manual_entry || srcfile.tap { |x| warn "falling back to src filename #{x.inspect} (no title)" }

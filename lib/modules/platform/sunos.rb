@@ -16,10 +16,10 @@ module SunOS
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, os: nil, ver: nil)
       @manual_entry ||= source.file.sub(/\.(\d\S{0,2})$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super(source, os: os, ver: ver)
     end
 
     def init_ds
@@ -27,7 +27,7 @@ module SunOS
       @named_strings.merge!(
         {
           #'Tm' => '&trade;',
-          footer: "\\*(]W".+@
+          footer: String.new('\\*(]W')
         }
       )
     end

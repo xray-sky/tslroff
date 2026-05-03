@@ -31,13 +31,13 @@ module X386BSD
 
   class Nroff < Nroff
 
-    def initialize source
+    def initialize(source)
       @manual_entry ||= source.file.sub(/\.(?:[\dZz]\S?)$/, '')
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s+(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
       @related_info_heading ||= 'SEE ALSO'
 
-      super source
+      super(source)
 
       @lines_per_page = nil
       case @source.file

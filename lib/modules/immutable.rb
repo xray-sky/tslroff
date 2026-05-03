@@ -10,6 +10,8 @@
 module Immutable
   include Enumerable
 
+  PRIVATE_INSTANCE_VARS = [:@immutable, :@tag, :@css, :@attributes, :@object_exception_class].freeze
+
   def self.included(baseclass)
     # Create an ImmutableObject exception class for the class that's been extended
     Kernel.const_set("Immutable#{baseclass}Error", Class.new(RuntimeError))
@@ -44,13 +46,14 @@ module Immutable
   end
 
   def ==(other)
-    return false unless keys.sort == other.keys.sort
-    keys.each { |k| return false unless self[k] == other[k] }
+    #return false unless keys.sort == other.keys.sort
+    #keys.each { |k| return false unless self[k] == other[k] }
+    each_key { |k| return false unless (other.key?(k) and self[k] == other[k]) }
   end
 
   def each
     return enum_for(__callee__) unless block_given?
-    keys.each { |k| yield [k, self[k]] }
+    each_key { |k| yield [k, self[k]] }
     self
   end
 
@@ -71,8 +74,15 @@ module Immutable
 
   def keys
     instance_variables.collect do |v|
-      v.to_s.sub(/^@/, '').to_sym unless [:@immutable, :@tag, :@css, :@attributes, :@object_exception_class].include?(v)
+      v.to_s.sub(/^@/, '').to_sym unless PRIVATE_INSTANCE_VARS.include?(v)
     end.compact
+  end
+
+  def each_key(&block)
+    instance_variables.each do |v|
+      next if PRIVATE_INSTANCE_VARS.include?(v)
+      yield v.to_s.sub(/^@/, '').to_sym
+    end
   end
 
   def values

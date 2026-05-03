@@ -49,7 +49,7 @@ class Troff
 
   def getargs(s)
     argc = 0
-    args = []
+    argv = []
 
     # we will lose trailing whitespace as a natural consequence of parsing
     sptr = 0
@@ -80,10 +80,10 @@ class Troff
         end
       end
       argc += 1
-      args << arg
+      argv << arg
     end
-    @register['.$'].value = argc
-    args
+    @register['.$'].value = argc # technically 9 is max for troff
+    argv
   end
 
 end

@@ -17,9 +17,16 @@
 #
 
 module Motorola_SysV
-  class Nroff < Nroff ; end
+  class Source < Source
+    def initialize(file, **kwargs)
+      case File.basename(file)
+      when 'Imakefile' then raise ManualIsBlacklisted "Imakefile"
+      end
+      super(file, **kwargs)
+    end
+  end
 
-  # looks like none of this matters much, as the provided pages are all nroff format except for X11.
+  class Nroff < Nroff ; end
   class Troff < Troff::Man
     alias :LP :P
 
@@ -33,7 +40,7 @@ module Motorola_SysV
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W".+@,
+          footer: String.new('\\*(]W'),
           #'Tm' => '&trade;',
           # DocString_MOT
           'sS' => 'UNIX',
@@ -60,8 +67,13 @@ module Motorola_SysV
 
     def init_fp
       super
-      # REVIEW
-      mount_font 4, 'BI'
+      #mount_font 4, 'BI'
+      # REVIEW - 4 might supposed to be CW (q.v. ascii.5, use in example code)
+      #mount_font 4, 'CW'
+      # REVIEW - or H (devpostaps fontmap?)
+      #mount_font 4, 'H'
+      # REVIEW - or HB (printed manuals suggest this)
+      mount_font 4, 'HB'
       mount_font 5, 'CW'
     end
 

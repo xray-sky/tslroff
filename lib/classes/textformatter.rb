@@ -15,9 +15,10 @@ class TextFormatter
   extend Forwardable
   def_delegators :@source, :magic, :file, :dir, :line_number, :next_line, :patch, :patch_line, :patch_lines
 
-  def initialize(source, vendor_class: nil, source_args: nil)
-    @source ||= source
-
+  def initialize(source, vendor_class: nil, source_args: nil, os: nil, ver: nil)
+    @source        ||= source
+    @platform      ||= os
+    @version       ||= ver
     @language      ||= 'en' # English
     @manual_entry  ||= ''
     @related       ||= []
@@ -33,6 +34,7 @@ class TextFormatter
 
   def page_title
     "#{@manual_entry}(#{@manual_section}) &mdash; #{@platform} #{@version}"
+    #@manual_entry
   end
 
   def apply(&block)

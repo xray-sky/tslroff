@@ -61,7 +61,7 @@ module VMS
 
   #class Help < Nroff
   class Nroff < Nroff
-    include Troff::Tab
+    include Troff::Tab # for laying out TOC links
 
     def initialize(source, **kwargs)
       @@webdriver ||= WebDriver.new # backing_store: ENV['WEBDRIVER_CACHE'] # cache doesn't help us
@@ -281,11 +281,14 @@ module VMS
       modtext = []
       while line = source.next_line do
         #warn "tab encountered: #{line.inspect}" if line.include? "\t" # REVIEW if we switch from ::Nroff
-        case line
-        when /^!/ then next # is comment
-        when /^1\s+(\S.*)$/ # new module key
+        #case line
+        #when /^!/ then next # is comment
+        next if line.start_with?('!') # is comment
+        #when /^1\s+(\S.*)$/ # new module key
+        if line.start_with?('1 ', "1\t")
           @modules << VMSHelpLibraryModule.new(1, modname, modtext)
-          modname = Regexp.last_match[1]
+          #modname = Regexp.last_match[1]
+          modname = line.partition(/\s+/).last
           modtext = []
         else modtext << line
         end

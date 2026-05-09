@@ -14,25 +14,23 @@
 
 module Atari_SysV
   class Nroff < Nroff
-
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       @heading_detection ||= %r{^\s{2,3}(?<section>[A-Z][A-Za-z\s]+)$}
       @title_detection ||= %r{^\s{2,3}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
       @lines_per_page ||= 67
-      super(source)
+      super(source, **kwargs)
     end
-
   end
 
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry = source.file.sub(/\.(\d\S?)$/, '')
       @manual_section = Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super(source, **kwargs)
     end
 
   # looks like none of this matters much, as the provided pages are all nroff format except for X11.

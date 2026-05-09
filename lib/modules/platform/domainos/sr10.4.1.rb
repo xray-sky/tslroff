@@ -31,7 +31,7 @@ module DomainOS
     end
 
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'edacl.hlp'
           @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
@@ -52,7 +52,7 @@ module DomainOS
           #                              rlog.n    "rcsintro (1)"
         end
 
-        super(source)
+        super(source, **kwargs)
       end
 
       def page_title

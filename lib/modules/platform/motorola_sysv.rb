@@ -30,10 +30,10 @@ module Motorola_SysV
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds

@@ -18,16 +18,16 @@ module NEWS_os
         case File.basename file
         when 'chgrp.1', 'prof.1' then srcargs[:magic] = 'Troff'
         end
-        super(source, **kwargs, &block)
+        super(file, **kwargs, &block)
         case @file
         # TODO when we resolve the baseline/font issue with \u, \d, and \s
         # current status in un-messed-with state is, ugly but not broken. tried to fix it and achieved broken.
         # also there's the issue of doing rewrites in .so for gamma.3m
         #when 'lgamma.3m' then source.lines[26].gsub!(/\\s10/, "\\s12")
         # incorrectly recognized as nroff source as the first character is ' '
-        when 'chgrp.1' then source.patch_line(1, /^ /, '')
+        when 'chgrp.1' then patch_line(1, /^ /, '')
         # incorrectly recognized as nroff source as the first character is 'p'
-        when 'prof.1' then source.patch_line(1, /^p/, '.')
+        when 'prof.1' then patch_line(1, /^p/, '.')
         end
       end
     end

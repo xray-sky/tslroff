@@ -30,13 +30,13 @@ module Interactive
     end
 
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when /intro\.nfs\.(\d)/ # easier to just override these than mess with the regex
           @manual_entry = 'intro.nfs'
           @manual_section = Regexp.last_match[1]
         end
-        super(source)
+        super(source, **kwargs)
       end
 
     end

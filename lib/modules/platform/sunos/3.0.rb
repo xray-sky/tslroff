@@ -14,7 +14,7 @@ module SunOS
     class Source < Source
       def initialize(file, **kwargs, &block)
         case File.basename file
-        when 'skyversion.8' then source_args[:magic] = 'Troff'
+        when 'skyversion.8' then kwargs[:magic] = 'Troff'
         end
         super(file, **kwargs, &block)
       end

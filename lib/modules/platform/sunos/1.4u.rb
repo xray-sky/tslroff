@@ -10,6 +10,7 @@
 #  doesn't seem to be an updated macro package in this update-only release
 #  fake it with the 1.1 macro package, plus an updated \*(]W
 #  REVIEW update this if we ever find the correct tmac.an
+#  REVIEW acct.h and utmp.h not included in 1.4U; copied from 1.1
 #
 # TODO
 #

@@ -41,48 +41,49 @@
 # utmp.5 [18]: .so can't read /usr/include/utmp.h
 
 module GDT_UNX
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename file
+  class Source < Source
+    def initialize(file, **kwargs, &block)
+      case File.basename(file)
       when 'Script', 'Scrit' then raise ManualIsBlacklisted, 'not a manual entry'
       end
-      super file, vendor_class: vendor_class, source_args: source_args
+
+      super(file, **kwargs, &block)
+
+      case @file
+      # REVIEW there are several pages that exist as 'copy___'. are these all strict duplicates?
+      # cpmcopy.9 is ~66 lines per page but the first page is short. Insert extra lines after the title.
+      when 'cpmcopy.9' then @lines.insert(25, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+      end
     end
   end
 
   class Nroff < Nroff
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1]
-
-      super(source)
-      case @source.file
-      # REVIEW there are several pages that exist as 'copy___'. are these all strict duplicates?
-      # cpmcopy.9 is ~66 lines per page but the first page is short. Insert extra lines after the title.
-      when 'cpmcopy.9' then @source.lines.insert(25, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
-      end
+      super(source, **kwargs)
     end
   end
 
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1]
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W".+@,
           ']D' => "UNIX Programmer's Manual",
           # REVIEW ]W is overridden with '7th Edition' in .TH, but the manuals in cat*/
           # have the date. among other things that don't quite match tmac.an ..?
           #']W' => '7th Edition',
-          ']W' => File.mtime(@source.path).strftime('%B %d, %Y')
+          ']W' => File.mtime(@source.path).strftime('%B %d, %Y'),
+          footer: String.new('\\*(]W')
         }
       )
     end

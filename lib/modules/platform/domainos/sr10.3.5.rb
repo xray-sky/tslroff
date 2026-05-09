@@ -35,8 +35,8 @@ module DomainOS
     end
 
     class Nroff < Nroff
-      def initialize(source)
-        super(source)
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
 
         case @source.file
         when 'coffdump.1'

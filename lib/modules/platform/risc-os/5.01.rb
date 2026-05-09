@@ -27,7 +27,7 @@ module RISC_os
 
     class Nroff < Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when /prom.1m$/ # these are symlinks to the 1prom entries
           @manual_entry = source.file.sub(/\.prom.1m$/, '')
@@ -40,7 +40,7 @@ module RISC_os
         when 'tty.4' # there are two
           @title_detection = %r{^(?<manentry>(?<cmd>\S+?)\((?<section>4(?:spp)?)(?:-(?<systype>\S+?)|" " " ")?\))\s.+?\s\k<manentry>$}
         end
-        super source
+        super(source, **kwargs)
       end
 
       def page_title

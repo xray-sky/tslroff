@@ -10,28 +10,27 @@
 # TODO
 #
 
-class Ardent_SysV::R4_1
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'tdore.sid' then raise ManualIsBlacklisted, 'is metadata'
+module Ardent_SysV
+  module R4_1
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename(file)
+        when 'tdore.sid' then raise ManualIsBlacklisted, 'is metadata'
+        end
+        super(file, **kwargs, &block)
       end
-
-      super file, vendor_class: vendor_class, source_args: source_args
-    end
-  end
-
-  class Troff < Ardent_SysV::Troff
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          'Tt' => 'Titan 1500/3000',
-          ']D' => 'Kubota Pacfic Computer Inc.'
-        }
-      )
     end
 
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            'Tt' => 'Titan 1500/3000',
+            ']D' => 'Kubota Pacfic Computer Inc.'
+          }
+        )
+      end
+    end
   end
 end

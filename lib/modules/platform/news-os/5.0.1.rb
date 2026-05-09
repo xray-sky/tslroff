@@ -23,21 +23,21 @@ require_relative '../sunos/4.0'
 module NEWS_os
   module V5_0_1
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
         @manual_section ||= Regexp.last_match[1] if Regexp.last_match
         @heading_detection ||= %r{^(?<section>[A-Z][A-Za-z\s]+)$}
         @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
-        super(source)
+        super(source, **kwargs)
       end
     end
 
     class Troff < SunOS::V4_0::Troff # TODO this gets all the SunOS 4.0 initialize overrides too
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
         @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-        super(source)
+        super(source, **kwargs)
       end
 
       def init_ds

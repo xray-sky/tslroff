@@ -14,14 +14,14 @@
 class A_UX::V0_7
   class Nroff < A_UX::Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       case source.file
       # title line: 'updater()     updater()'
       when 'updater.1.z'
         @manual_section = '1'
         @output_directory = 'man1'
       end
-      super(source)
+      super(source, **kwargs)
     end
 
   end

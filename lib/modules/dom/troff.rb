@@ -49,7 +49,7 @@ class Troff < TextFormatter
   def self.requests ; REQUESTS ; end # REVIEW smrtr? - does this need to be a class method??
   def self.use_groff? ; false ; end # REVIEW necessary? (I think no)
 
-  def initialize(source, os: nil, ver: nil)
+  def initialize(source, **kwargs)
     @header ||= Block::Header.new
     @footer ||= Block::Footer.new
     @related_info_heading ||= %r{(?:RELATED(?: |&nbsp;)INFORMATION|SEE(?: |&nbsp;)+ALSO|See(?: |&nbsp;)+Also)}
@@ -58,7 +58,7 @@ class Troff < TextFormatter
     @@webdriver ||= WebDriver.new backing_store: ENV['WEBDRIVER_CACHE']
     @@pixels_per_inch ||= @@webdriver.ppi
 
-    super(source, os: os, ver: ver)
+    super(source, **kwargs)
 
     xinit_ec
     xinit_nr

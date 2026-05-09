@@ -49,10 +49,10 @@ module  Inferno
 
     class HTML < Inferno::HTML
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.htm$/, '')
 
-        super(source)
+        super(source, **kwargs)
 
         case @source.file
         when 'index.htm'   then define_singleton_method :page_title, proc { 'Inferno Reference &mdash; Inferno 1.1ed' }
@@ -72,10 +72,10 @@ module  Inferno
 
       def to_html(halt_on: nil)
         return nil if halt_on
-        title = title
+        title = page_title
         body = xpath('//body')
 
-        body_styles = ''
+        body_styles = String.new
         bgcolor = body.attribute('bgcolor')
         background = body.attribute('background')
         body_styles << %(background-color:#{bgcolor.value};) if bgcolor

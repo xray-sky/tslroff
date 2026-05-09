@@ -12,29 +12,29 @@
 
 module DYNIX_ptx
   class Manual < Manual
-    def initialize file, vendor_class: nil, source_args: {}
-      case File.basename file
+    def initialize(source, **kwargs)
+      case File.basename source
       when 'Makefile' then raise ManualIsBlacklisted, 'not a manual entry'
       end
-      super file, vendor_class: vendor_class, source_args: source_args
+      super(source, **kwargs)
     end
   end
 
   class Nroff < Nroff
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super(source, **kwargs)
     end
   end
 
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds

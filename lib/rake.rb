@@ -9,10 +9,11 @@
 # √ logfiles
 # √ cache stats
 # √ debug operation
-#   symlinks
+#   symlinks (REVIEW decision on indexing on filename vs. on manual name; symlinks may not matter?)
 # ~ indexing
 #   comments
 #   leverage Pathname class and/or String.pathmap method?
+#   generic metadata insertion (e.g. contribution credits to TUHS)
 #
 
 require 'erb'
@@ -68,6 +69,8 @@ def collection_namespace(name, &block)
   end
   desc "Build all #{name} manuals"
   task name => "#{nsn.scope_name}:all"
+  # add to top level all: task prerequisites - TODO doesn't work. figure it out, bozo
+  #Rake::Task["#{Rake.application.current_scope.to_a.reverse.join(':')}:all"].enhance [name]
 end
 
 # Automatically generate a namespace and build task for a specific
@@ -170,9 +173,7 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
   pagecount = 0
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
-
-  ixf = File.open("#{pubdir}/page_index.html", 'w') unless limit
-  ix = []
+  ix = {}
 
   if ENV['RUBY_PROFILE']
     prof = RubyProf::Profile.new
@@ -186,9 +187,9 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     warn "symlink #{src} (skipped)" and next if File.symlink?(src)
     puts "<== #{src}" if limit
     pagecount += 1
-    ixinfo = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver)
-    #ixf << "#{ixinfo.inspect}\n" unless limit
-    ix << ixinfo unless limit
+    (sec, fl, nmlst, dsc) = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver)
+    ix[sec] ||= {}
+    ix[sec][fl] = { names: nmlst&.split(/\s*,\s*/), description: dsc }
   end
 
   if ENV['RUBY_PROFILE']
@@ -198,17 +199,20 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     #RubyProf::GraphHtmlPrinter.new(profile_results).print(File.open "graph.html", "w")
   end
 
-  ix.sort.each do |i|
-    ixf << %(#{i[0]} : <a href="#{i[1]}">#{i[2]} =></a> <= #{i[3]}<br />\n)
-  end
-  ixf.close if ixf
-
   if Troff.webdriver
     warn Troff.webdriver.cache_stats
     Troff.webdriver.persist_cache
   end
 
+  index_task(ix, pubdir, os: os, ver: ver) unless limit
   pagecount
+end
+
+def index_task(ixinfo, pubdir, os: nil, ver: nil)
+  ident = "#{os} #{ver}".strip
+  ixf = File.open("#{pubdir}/page_index.html", 'w')
+  ixf.write ERB.new(INDEX_TEMPLATE, trim_mode: '-').result_with_hash(ixinfo: ixinfo, ident: ident, page_title: "Manual &mdash; #{ident}")
+  ixf.close
 end
 
 # Build an individual manual entry
@@ -250,7 +254,7 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver
   directory(odir).invoke
   taskcontext = binding
   File.open("#{odir}/#{title}.html", File::CREAT | File::TRUNC | File::WRONLY, 0o644) do |f|
-    f.write ERB.new(TEMPLATE, trim_mode: '-').result(taskcontext)
+    f.write ERB.new(MANUAL_TEMPLATE, trim_mode: '-').result(taskcontext)
   end
 
   exit unless Process.pid == ppid # guard against fork (i.e. VMS Help)

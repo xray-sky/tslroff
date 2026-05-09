@@ -14,7 +14,7 @@ module RISC_os
   module V4_52
     class Nroff < Nroff
 
-      def initialize source
+      def initialize(source, **kwargs)
         case source.file
         when /1prom$/
           @manual_entry ||= source.file.sub(/\.1prom$/, '')
@@ -24,7 +24,7 @@ module RISC_os
           # have section as 'entry(1 LOCAL)'
           @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:\s(?<systype>\S+?))?\))}
         end
-        super source
+        super(source, **kwargs)
       end
 
       def page_title

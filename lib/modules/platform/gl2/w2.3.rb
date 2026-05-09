@@ -11,22 +11,22 @@
 module GL2
   module W2_3
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'trenter.1'  # is nroff
           @heading_detection = %r{^\s{5}(?<section>[A-Z][A-Za-z0-9\s]+)$}
           @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
         end
-        super(source)
+        super(source, **kwargs)
       end
     end
 
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'regexp.5' then source.patch_line 418, /^\.in/, '.if'
         end
-        super(source)
+        super(source, **kwargs)
         @version = "W2.3"
       end
     end

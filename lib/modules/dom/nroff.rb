@@ -23,7 +23,7 @@ class Nroff < TextFormatter
   TYPEBOX.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
   TYPEBOX.freeze
 
-  def initialize(source)
+  def initialize(source, **kwargs)
     #@input_line_number ||= 0
     @tab_width ||= 8
     @lines_per_page ||= 66
@@ -32,7 +32,7 @@ class Nroff < TextFormatter
     @heading_detection ||= %r{^(?<section>[A-Z][A-Za-z\s]+)$}
     @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
     @summary_heading ||= %r{^NAME$} # REVIEW works for UNIX manual entries.
-    super(source)
+    super(source, **kwargs)
   end
 
   def source_init

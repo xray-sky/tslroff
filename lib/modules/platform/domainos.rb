@@ -126,14 +126,14 @@ module Aegis
 
     include Utils
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @systype = Regexp.last_match[1] if source.dir.match(%r{(bsd|sys5)})
       @manual_entry = source.file if source.dir.end_with? '/doc'  # release notes REVIEW
       @manual_entry ||= "#{source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '')}#{".#{@systype}" if @systype}"
       @title_detection ||= %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
       #@base_indent ||= 5  # REVIEW unimplemented
 
-      super(source)
+      super(source, **kwargs)
 
 	  if @source.dir.match %r{^.*(help.*)$}
 	    # TODO subclass these instead
@@ -301,10 +301,17 @@ module Aegis
     include Utils
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @systype = Regexp.last_match[1] if source.dir.match(%r{(bsd|sys5)})
       @manual_entry ||= "#{source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '')}#{".#{@systype}" if @systype}"
-      super(source)
+      super(source, **kwargs)
+    end
+
+    # .so with absolute path, headers in /usr/include
+    def so(name, breaking: nil, basedir: nil)
+      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+      #basedir = "#{@source.dir}#{"/../../.." if name.start_with?('/usr/man')}"
+      super(name, breaking: breaking, basedir: basedir)
     end
 
     # Troff methods <= tmac.an

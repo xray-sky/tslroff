@@ -36,9 +36,9 @@ module BeOS
   end
 
   class HTML < HTML
-    def initialize source
+    def initialize(source, **kwargs)
       @manual_entry = source.file.sub(/\.html$/, '')
-      super source
+      super(source, **kwargs)
     end
 
     def to_html(halt_on: nil)

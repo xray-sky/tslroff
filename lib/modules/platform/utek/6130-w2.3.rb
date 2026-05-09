@@ -11,12 +11,12 @@
 module UTek
   module W2_3_6130
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         # malformed title line: ACCESS (dfs)(5N)
         when 'access.5n' then @manual_section = '5n'
         end
-        super source
+        super(source, **kwargs)
       end
     end
   end

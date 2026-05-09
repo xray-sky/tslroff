@@ -18,23 +18,23 @@
 module GL2
   module W2_4
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         @version = "W2.4"
-        super(source)
+        super(source, **kwargs)
       end
     end
   end
 
   module W2_5
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'intro.2'  then source.patch_line 189, /4em$/, '4m'
         when 'tz.4'     then source.patch_line  43, /center\./, 'center;'
         when 'regexp.5' then source.patch_line 419, /^\.in/, '.if'
         when 'kmem.7'   then source.patch_line   1, /u_man/, 'a_man'
         end
-        super(source)
+        super(source, **kwargs)
         @version = "W2.5"
       end
     end
@@ -42,8 +42,8 @@ module GL2
 
   module W2_5r1
     class Troff < Troff
-      def initialize(source)
-        super(source)
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
         @version = "W2.5r1"
       end
     end

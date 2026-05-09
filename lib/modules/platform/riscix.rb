@@ -12,10 +12,10 @@ module RISCiX
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S*)$/, '')
       @manual_section ||= Regexp.last_match[1]
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds
@@ -24,7 +24,7 @@ module RISCiX
         {
           ']D' => 'UNIX Programmer\'s Manual',
           ']W' => '7th Edition',
-          footer: "\\*(]W".+@
+          footer: String.new('\\*(]W')
         }
       )
     end
@@ -37,6 +37,12 @@ module RISCiX
     def init_PD
       super
       @register['IN'] = Troff::Register.new(@base_indent)
+    end
+
+    # .so with absolute path, headers in /usr/include
+    def so(name, breaking: nil, basedir: nil)
+      basedir = "#{@source.dir}#{"/../../.." if name.start_with?('/')}"
+      super(name, breaking: breaking, basedir: basedir)
     end
 
     # "some support to get the RCS format date into a more normal text form (dd/mm/yy)"
@@ -55,7 +61,7 @@ module RISCiX
     #  .AH $Revision: 1.5 $ $Date: 88/10/20 11:12:34 $"
     def AH(*args)
       send 'dA', args[4]
-      ds "]L Revision #{args[1]} of \\*(Da"
+      parse ".ds ]L Revision #{args[1]} of \\*(Da"
     end
 
     def AT(*args)

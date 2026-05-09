@@ -18,11 +18,11 @@
 class A_UX
   class Nroff < Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(?:\d\S?)(?:\.[zZ])?$/, '') # REVIEW: would this be better & more generic as a 'scan' call? everything after the section?
       @heading_detction ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
-      super(source)
+      super(source, **kwargs)
     end
 
     def page_title

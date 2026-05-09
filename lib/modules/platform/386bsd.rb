@@ -23,21 +23,21 @@
 
 module X386BSD
   class Troff < Troff::Man  # REVIEW probably actually Groff (e.g. groff_char(7))
-    def initialize source
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(?:[\dZz]\S?)$/, '')
-      super source
+      super(source, **kwargs)
     end
   end
 
   class Nroff < Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(?:[\dZz]\S?)$/, '')
-      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-      @title_detection ||= %r{^\s+(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
+      @heading_detection ||= %r(^\s{5}?(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^\s{0,5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
       @related_info_heading ||= 'SEE ALSO'
 
-      super(source)
+      super(source, **kwargs)
 
       @lines_per_page = nil
       case @source.file

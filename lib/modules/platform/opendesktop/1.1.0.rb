@@ -26,7 +26,7 @@ module OpenDesktop
 
     class Nroff < Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'assign.CMD.z', 'attrib.CMD.z', 'break.CMD.z', 'chdir.CMD', 'chkdsk.CMD.z',
              'cls.CMD', 'command.CMD.z', 'ctty.CMD.z', 'date.CMD.z', 'del.CMD.z'
@@ -39,7 +39,7 @@ module OpenDesktop
         @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
         @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
         @related_info_heading ||= 'See Also'
-        super(source)
+        super(source, **kwargs)
       end
 
     end

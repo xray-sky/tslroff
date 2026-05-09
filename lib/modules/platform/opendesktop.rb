@@ -15,13 +15,13 @@ module OpenDesktop
   class Manual < Manual ; end
   class Nroff < Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       #@manual_entry ||= source.file.sub(/(?:_bsd|_.+fs|_s5|_xnx)?\.(?:[\dZz]\S?)$/, '')
       @manual_entry ||= source.file.sub(/\.(?:[A-Z]+)\.?[zZ]?$/, '')
       @heading_detection ||= %r(^\s(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
       @related_info_heading ||= 'See also'
-      super(source)
+      super(source, **kwargs)
       @lines_per_page = nil
     end
 

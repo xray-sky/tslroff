@@ -14,22 +14,22 @@
 
 module IRIX
   class Nroff < Nroff
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s+(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
-      super(source)
+      super(source, **kwargs)
     end
   end
 
   module V6_5
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.z$/, '')
         @heading_detection ||= %r(^\s{0,5}(?<section>[A-Z][A-Za-z\s]+)$)
         @title_detection ||= %r{^\s{0,5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
-        super(source)
+        super(source, **kwargs)
       end
     end
   end

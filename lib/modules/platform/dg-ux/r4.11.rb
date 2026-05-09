@@ -21,8 +21,8 @@ module DG_UX
     end
 
     class Nroff < Nroff
-      def initialize(source)
-        super(source)
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
         @lines_per_page = nil
       end
     end

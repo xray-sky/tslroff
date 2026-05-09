@@ -11,9 +11,9 @@
 module DG_UX
   module V4_30
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
-        super(source)
+        super(source, **kwargs)
       end
     end
   end

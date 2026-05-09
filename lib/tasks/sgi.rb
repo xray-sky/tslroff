@@ -8,11 +8,11 @@ collection_namespace 'SGI' do
 
   collection_namespace 'libiris' do
     manual_namespace 'R1c',
-                    vendor_class: BSD::V4_3_VAX_MIT,
-                    idir: 'sgi/iris-lib/R1c',
-                    odir: 'SGI/libiris/R1c',
-                    sources: %w[
-                      man/man[13]
-                    ]
+      vendor_class: BSD::V4_3,
+      idir: 'sgi/iris-lib/R1c',
+      odir: 'SGI/libiris/R1c',
+      sources: %w[
+        man/man[13]
+      ]
   end
 end

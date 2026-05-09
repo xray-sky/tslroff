@@ -63,10 +63,10 @@ module Inferno
 
     class HTML < Inferno::HTML
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.htm$/, '')
 
-        super(source)
+        super(source, **kwargs)
 
         case @source.file
         when 'index.htm'
@@ -76,10 +76,10 @@ module Inferno
 
       def to_html(halt_on: nil)
         return nil if halt_on
-        title = title.sub(%r{^(Inferno|Limbo)([^/\s])}, '\1 \2')
+        title = page_title.sub(%r{^(Inferno|Limbo)([^/\s])}, '\1 \2')
         body = xpath('//body')
 
-        body_styles = ''
+        body_styles = String.new
         bgcolor = body.attribute('bgcolor')
         background = body.attribute('background')
         body_styles << %(background-color:#{bgcolor.value};) if bgcolor

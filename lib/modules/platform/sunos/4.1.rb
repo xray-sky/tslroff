@@ -35,24 +35,24 @@ module SunOS
     end
 
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'ce_db_build.1', 'ce_db_merge.1' # no title line
           @manual_section = '1'
           @manual_entry = (source.file)[0..-3]
           # TODO also has see also link w/ whitespace (e.g. "ref (section)")
         end
-        super source
+        super(source, **kwargs)
         @lines_per_page = nil
       end
     end
 
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'colorchooser.1' then @manual_section = '1'  # TODO this is getting smashed by .TH. maybe use .em once that's implemented?
         end
-        super source
+        super(source, **kwargs)
       end
 
       def init_ds

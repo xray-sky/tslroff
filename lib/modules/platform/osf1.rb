@@ -43,11 +43,11 @@ module OSF1
   end
 
   class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.dirname file
+    def initialize(source, **kwargs)
+      case File.dirname source
       when /SJIS/ then @language ||= 'ja'
       end
-      super(file, vendor_class: vendor_class, source_args: source_args)
+      super(source, **kwargs)
     end
   end
 
@@ -60,15 +60,16 @@ module OSF1
   class Font::GB < ::Font::HB ; end
   class Font::GL < ::Font::HI ; end
 
+  class HTML < HTML ; end # TODO to_html for C++ 6.2
   class Nroff < Nroff ; end
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
       @related_info_heading ||= %r{関連項目}u if source.dir.include? 'SJIS'
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds
@@ -110,7 +111,7 @@ module OSF1
     # .so with absolute path, osf/1 macros in /usr/share/lib/tmac
     def so(name, breaking: nil)
       name = "../../../..#{name}" if name.start_with?('/')
-      case File.basename name
+      case File.basename name.strip # BUG: 3.2c dxcaltodtcm.1 ".so /usr/share/lib/tmac/rsml "
       when 'sml'  then extend OSF1::SML
       when 'rsml' then extend OSF1::RSML
       else super name, breaking: breaking

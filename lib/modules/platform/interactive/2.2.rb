@@ -24,13 +24,13 @@ module Interactive
 
     class Nroff < Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.(\d\S?)(?:\.z)?$/, '')
         @heading_detection ||= %r(^\s{10}(?<section>[A-Z][A-Za-z\s]+)$)
         # some of these entries with longish names end up with clashes in the title line
         # so detect just on closing parenthesis, regardless of following whitespace
         @title_detection ||= %r{^\s{10}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:-(?<systype>\S+?))?\))}
-        super(source)
+        super(source, **kwargs)
       end
 
     end

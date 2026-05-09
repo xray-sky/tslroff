@@ -12,34 +12,33 @@
 #   pic - xmon(1) [4.2]
 #
 
-class Ardent_SysV::R4_2
-  class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: {})
-      case File.basename(file)
-      when 'p162.7'    then source_args[:magic] = 'Troff'
-      when 'tdore.sid' then raise ManualIsBlacklisted, 'is metadata'
-      end
+module Ardent_SysV
+  module R4_2
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename(file)
+        when 'p162.7'    then kwargs[:magic] = 'Troff'
+        when 'tdore.sid' then raise ManualIsBlacklisted, 'is metadata'
+        end
 
-      super file, vendor_class: vendor_class, source_args: source_args
+        super(file, **kwargs, &block)
 
-      case File.basename(file)
-      when 'p162.7' then @source.patch_line(1, /^/, '.')
+        case @file
+        when 'p162.7' then patch_line(1, /^/, '.')
+        end
       end
     end
-  end
 
-  class Troff < Ardent_SysV::Troff
-
-    def init_ds
-      super
-      @named_strings.merge!(
-        {
-          'Tt' => 'Titan 1500/3000',
-          ']D' => 'Kubota Pacfic Computer Inc.'
-        }
-      )
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            'Tt' => 'Titan 1500/3000',
+            ']D' => 'Kubota Pacfic Computer Inc.'
+          }
+        )
+      end
     end
-
   end
 end
-

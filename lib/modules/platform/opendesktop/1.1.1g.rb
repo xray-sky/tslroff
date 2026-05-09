@@ -22,7 +22,7 @@ module OpenDesktop
     end
 
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'bdftosnf.X.z', 'ico.X.z', 'mkfontdir.X.z', 'oclock.X.z', 'showsnf.X.z',
              'xdpyinfo.X.z', 'xev.X.z', 'xeyes.X.z', 'xmodmap.X.z', 'xset.X.z', 'xwininfo.X.z'
@@ -32,7 +32,7 @@ module OpenDesktop
         @heading_detection ||= %r(^\s{4,5}(?<section>[A-Z][A-Za-z\s]+)$)
         @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>[A-Z]+)\))\s+}
         @related_info_heading ||= 'See Also'
-        super(source)
+        super(source, **kwargs)
       end
     end
 

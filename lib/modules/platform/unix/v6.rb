@@ -54,11 +54,12 @@ module UNIX
       end
     end
 
+    class Nroff < Nroff ; end
     class Troff < ::Troff::Man6
-      def initialize(source)
+      def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
         @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-        super(source)
+        super(source, **kwargs)
       end
 
       # override to get our own Block::Paragraph class as default

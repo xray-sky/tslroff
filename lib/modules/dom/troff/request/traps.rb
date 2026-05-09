@@ -147,7 +147,7 @@ class Troff
     searchdir = ''
     path_components = File.dirname(name).split('/').reverse
     until File.readable?("#{basedir}/#{searchdir}#{sofile}") do
-      return(nil).tap { warn ".so : can't read #{sofile}" } if path_components.empty?
+      return(nil).tap { warn ".so : can't read #{name}" } if path_components.empty?
       searchdir = "#{path_components.shift}/#{searchdir}"
     end
 

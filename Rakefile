@@ -32,11 +32,12 @@
 #     - possibly by providing top level all-sections index (permuted or otherwise?)
 # √   - done for now by renaming any page named index => _index and default => _default
 #   unlink 404 refs, probably after auditing whether they are really missing
+#   links with leading <br> appear blank in Related menu (e.g. AUX SR8.0 cc(1))
 #   rewrite links in "overlay" versions (e.g. DG-UX 4.31, 5.4.2T, etc.) to base manual
 #   rewrite links in optional products (e.g. Apollo ada 1.0 links to ld(1)) to.. where exactly?
 #   supplemental (non-man) docs recovered from mit afs
 #   page titles for unbundled pages are messed up
-#   page titles for everything are messed up, due to the lack of
+# √ page titles for everything are messed up, due to the lack of
 #     `vendor`, `os`, and `ver`, which used to be supplied as command line params into build.rb
 #
 
@@ -47,16 +48,21 @@ $CSS_URL = 'http://dev.online.typewritten.org/Manual/tslroff.css'
 SRCROOT = '/Volumes/Museum/Manual/in'
 PUBROOT = '/Volumes/dev.online.typewritten.org/Manual'
 ASSETS = File.realpath('lib/assets')
-TEMPLATE = File.read "#{ASSETS}/manual.erb"
+INDEX_TEMPLATE  = File.read "#{ASSETS}/index.erb"
+MANUAL_TEMPLATE = File.read "#{ASSETS}/manual.erb"
 
 require 'ruby-prof' if ENV['RUBY_PROFILE']
 
+require_relative 'ext/string/to_html'
 require_relative 'ext/rake/namespace'
 require_relative 'lib/rake'
 require_relative 'lib/classes/manual'
 
+desc 'Build everything'
+task all: [:assets]
+
 desc 'Copy static file assets'
-task assets: [:fonts, :css, :gfx]
+task assets: [:fonts, :css, :js, :gfx]
 
 task :fonts do
   directory PUBROOT
@@ -65,6 +71,10 @@ end
 
 task :css do
   cp "#{ASSETS}/tslroff.css", PUBROOT
+end
+
+task :js do
+  cp "#{ASSETS}/apropos.js", PUBROOT
 end
 
 task :gfx do

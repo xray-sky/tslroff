@@ -14,21 +14,21 @@
 
 module Xenix
   class Manual < Manual
-    def initialize(file, vendor_class: nil, source_args: nil)
-      case File.basename(file)
+    def initialize(source, **kwargs)
+      case File.basename(source)
       when 'master.list.C' then raise ManualIsBlacklisted, "not a manual entry"
       end
-      super file, vendor_class: vendor_class, source_args: source_args
+      super(source, **kwargs)
     end
   end
 
   class Nroff < Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s+(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
       @related_info_heading ||= 'See Also'
-      super(source)
+      super(source, **kwargs)
     end
 
     def parse_title

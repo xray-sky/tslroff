@@ -21,13 +21,13 @@ module CLIX
 
     class Nroff < Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'browse.1.Z', 'genmenu.1.Z', 'mrgpanel.1.Z' # REVIEW: should this be unbundled (IFORMS/S product)
           @heading_detection = %r(^\s{4}(?<section>[A-Z][A-Za-z\s]+)$)
           @title_detection = %r{^\s{4}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
         end
-        super(source)
+        super(source, **kwargs)
       end
 
     end

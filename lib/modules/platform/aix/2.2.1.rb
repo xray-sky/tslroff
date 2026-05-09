@@ -41,7 +41,7 @@ module AIX
 
     class Nroff < Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         ## this generates the correct translations of CP437 -> UTF-8 (with <meta charset="UTF-8">)
         ## but compare to what actually shows on the RT, both on the console and in aixterm
         ##  - printed doc matches our guesses, but not description of RT CP0 from `data stream`(4)
@@ -71,13 +71,13 @@ module AIX
         @title_detection ||= %r{^(?<manentry>(?<cmd>[-+_., A-Za-z0-9]+))}
         @base_indent ||= 5
 
-        super(source)
+        super(source, **kwargs)
 
         @lines_per_page = nil
       end
 
       def page_title
-        super << " &mdash; AIX/RT 2.2.1"
+        "#{super} &mdash; AIX/RT 2.2.1"
       end
 
       def parse_title

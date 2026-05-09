@@ -25,9 +25,9 @@ module DomainIX
 
     class Nroff < Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         @related_info_heading ||= 'RELATED INFORMATION'
-        super(source)
+        super(source, **kwargs)
       end
 
       def page_title
@@ -45,13 +45,25 @@ end
 AUX = DomainIX
 
 module AUX
+  module SR8_0
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        super(file, **kwargs, &block)
+        case @file
+        when 'chgrp.1' then patch_line(1, /8/, '1', global: true)
+        end
+      end
+    end
+    class Troff < Troff ; end
+  end
+
   module SR8_1
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'aux.release_notes.sr8.1' then @lines_per_page = 63
         end
-        super(source)
+        super(source, **kwargs)
       end
     end
   end
@@ -59,7 +71,7 @@ end
 
 # module aliases
 Aegis::SR7_B = Aegis
-Aegis::SR8_0 = Aegis
+#Aegis::SR8_0 = Aegis
 Aegis::SR8_1_update = Aegis
 Aegis::SR9_0 = Aegis
 Aegis::SR9_0_020 = Aegis

@@ -19,7 +19,7 @@
 
 module UnixWare
   class Nroff < Nroff
-    def initialize(source)
+    def initialize(source, **kwargs)
       if source.file =~ /_to_.+\.3/
         @manual_section = '3BSD'
         @output_directory = 'man3bsd'
@@ -30,7 +30,7 @@ module UnixWare
       @heading_detection ||= %r(^\s{6,7}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^       (?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
       @related_info_heading ||= 'REFERENCES'
-      super source
+      super(source, **kwargs)
     end
   end
 end

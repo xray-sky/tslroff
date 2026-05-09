@@ -29,9 +29,9 @@ module NEWS_os
     end
 
     class Troff < V3_3_en_US::Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         @related_info_heading ||= %r{関連事項}u
-        super(source)
+        super(source, **kwargs)
       end
 
       # isn't there some way of having .so automatically look up the right Source class?

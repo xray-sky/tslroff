@@ -65,20 +65,20 @@ module BeOS
     end
 
     class Manual < Manual
-      def initialize(file, vendor_class: nil, source_args: nil)
-        case File.dirname(file)
+      def initialize(source, **kwargs)
+        case File.dirname(source)
         when /German/ then @language = 'de'
         when /French/ then @language = 'fr'
         when /Japan/  then @language = 'ja'
         end
-        super(file, vendor_class: vendor_class, source_args: source_args)
+        super(source, **kwargs)
       end
     end
 
     class Nroff < Nroff ; end
     class HTML < HTML
-      def initialize(source)
-        super source
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
 
         # unlink the blacklisted Japanese pages
         xpath('//body').css('a').each { |l| l.replace(l.text) if l['href']&.include?('Japan') }

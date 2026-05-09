@@ -12,8 +12,51 @@
 # √ manual section may be e.g. 4f or 4n (currently output directory is just man4/)
 #
 
+require_relative '../unix'
+require_relative '../unix/v6'
+require_relative '../unix/v7'
+
 module BSD
+  module V1
+    class Troff < ::UNIX::V6::Troff ; end
+  end
+
+  module V2_8
+    class Nroff < Nroff ; end
+    class Troff < ::UNIX::V7::Troff
+      def initialize(source, **kwargs)
+        @manual_entry ||= source.file.sub(/\.(?:[u\d]\S?)$/, '')
+        super(source, **kwargs)
+      end
+    end
+  end
+
+  # TODO (maybe) - no AT, DE, DS in 2.9
+  module V2_9
+    class Troff < Troff
+      # TODO this appears in other versions' macros too
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            'R' => '\\(rg'
+          }
+        )
+      end
+
+      def UC(v = nil, *_args)
+        ds(']W ' + case v
+                   when '2' then 'Second Berkeley Distribution'
+                   when '4' then '4th Berkeley Distribution'
+                   else "#{args[1]} #{args[0]} BSD"
+                   end
+          )
+      end
+    end
+  end
+
   module V2_11
+    class Nroff < Nroff ; end
     class Troff < Troff
       # tmac.an.new
       def UC(v = nil, *_args)
@@ -26,6 +69,16 @@ module BSD
                    else '3rd Berkeley Distribution'
                    end
           )
+      end
+    end
+  end
+
+  module V3
+    class Nroff < Nroff ; end
+    class Troff < Troff
+      # tmac.an.new
+      def UC(v = nil, *_args)
+        ds(']W 3rd Berkeley Distribution')
       end
     end
   end

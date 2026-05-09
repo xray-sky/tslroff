@@ -32,6 +32,7 @@
 # GL2 W2.5 same problem, plus man1d/zshadeabstr, man1m/mklost+foun
 # GL1 W2.1 is clean
 # W2.1 and W2.3 Mail(1) want to use font T (times?)
+# REVIEW tmac.an for .tr *\(** and .ds rq/lq ?? what happened to our defs??
 #
 
 module GL2
@@ -39,23 +40,23 @@ module GL2
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @version ||= "."  # TODO (temporarily supporting 4D1 ThirdParty, but also need to fix os/version for Rake)
       @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match # might not match, e.g. Alias/1 manual
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds
       super
       @named_strings.merge!(
         {
-          #footer: "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W",
-          footer: "Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W".+@,
           'Tm' => '&trade;',
           ']D' => 'Silicon Graphics',
           ']L' => '', # explicitly blanked in .TH before being conditionally redefined
-          ']W' => File.mtime(@source.path).strftime("%B %d, %Y")
+          ']W' => File.mtime(@source.path).strftime("%B %d, %Y"),
+          #footer: "Version #{@version.slice(5..-1)}\\0\\0\\(em\\0\\0\\*(]W",
+          footer: String.new("Version #{@version.slice(1..-1)}\\0\\0\\(em\\0\\0\\*(]W")
         }
       )
     end

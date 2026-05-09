@@ -15,9 +15,9 @@
 
 module UTek
   class Nroff < Nroff
-    def initialize source
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.([\dZz][^.]*)$/, '')
-      super source
+      super(source, **kwargs)
     end
   end
 end

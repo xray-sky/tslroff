@@ -61,7 +61,7 @@ module HPUX
     end
 
     class Nroff < Nroff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'x_open_800.5'
           # is nroff output (with ^H overstriking), despite starting with .\" and .nf
@@ -75,7 +75,7 @@ module HPUX
           @manual_entry = 'x_open_800'
           @manual_section = '5'
         end
-        super(source)
+        super(source, **kwargs)
       end
     end
 

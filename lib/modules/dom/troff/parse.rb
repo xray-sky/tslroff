@@ -146,7 +146,7 @@ class Troff
       # macro - unescaped trailing spaces are stripped; getargs sets register .$
       args = getargs __unesc_w(argstr)
       #send req, *args
-      send req, args.take(9) # only 9 args; anything given after $9 is lost
+      send req, *args.take(9) # only 9 args; anything given after $9 is lost
     end
   rescue NoMethodError => e
     # it's some normal screwup; use the standard error reporting

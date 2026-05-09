@@ -17,13 +17,13 @@
 module GL2
   module W3_6
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'intro.2'  then source.patch_line 317, /\\x-1/, '\s-1'
         when 'tz.4'     then source.patch_line  45, /center\./, 'center;'
         when 'regexp.5' then source.patch_line 419, /^\.in/, '.if'
         end
-        super(source)
+        super(source, **kwargs)
         @version = "W3.6"
       end
     end

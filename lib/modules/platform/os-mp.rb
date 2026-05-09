@@ -13,14 +13,14 @@
 
 module OS_MP
   class Nroff < Nroff
-    def initialize(source)
+    def initialize(source, **kwargs)
       case source.file
       when 'ce_db_build.1', 'ce_db_merge.1' # no title line
         @manual_section = '1'
         @manual_entry = (source.file)[0..-3]
         # TODO also has see also link w/ whitespace (e.g. "ref (section)")
       end
-      super source
+      super(source, **kwargs)
       @lines_per_page = nil
     end
   end
@@ -28,10 +28,10 @@ module OS_MP
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S*)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds

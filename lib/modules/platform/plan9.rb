@@ -16,6 +16,8 @@
 #
 #   grap(1) actually includes examples. is it reasonable to add support for this?
 #   pic(1) as well!
+#   3ed file names are jacked, from ISO9660?
+#   4ed dates seem late; REVIEW
 #
 
 module Plan9
@@ -29,12 +31,12 @@ module Plan9
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       case source.file
       when 'INDEX', 'INDEX.html' # REVIEW have a look at the INDEX.html - minimum viable for us probably
         raise ManualIsBlacklisted, 'is nonsense'
       end
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds

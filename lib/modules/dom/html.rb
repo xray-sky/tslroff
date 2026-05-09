@@ -34,8 +34,8 @@ class HTML < TextFormatter
   extend Forwardable
   def_delegators :@structured_source, :title, :xpath
 
-  def initialize(source)
-    super source
+  def initialize(source, **kwargs)
+    super(source, **kwargs)
     @structured_source = Nokogiri::HTML @source.iter.collect(&:to_s).join
   end
 

@@ -11,12 +11,12 @@
 module CLIX
   class Nroff < Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.([\dZz]\S*?)$/, '')
       @heading_detection ||= %r(^\s{2}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s{2}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
       @related_info_heading ||= 'RELATED INFORMATION'
-      super(source)
+      super(source, **kwargs)
     end
 
   end

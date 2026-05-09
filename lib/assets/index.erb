@@ -1,0 +1,94 @@
+<%#
+TODO
+     apropos box style,
+     section descriptions,
+     section anchors maybe
+-%>
+<head>
+  <title><%= page_title %></title>
+  <link rel="stylesheet" type="text/css" media="screen" href="/typewritten.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/Manual/tslroff.css" />
+  <link rel="stylesheet" type="text/css" media="print"  href="/tsl-print.css" />
+  <meta charset="UTF-8">
+  <meta name="generator" content="https://github.com/xray-sky/tslroff">
+  <meta name="generated" content="<%= Time.now.strftime('%Y%m%d %H:%M:%S') %>">
+  <script type="text/javascript" src="/Manual/apropos.js"></script>
+</head>
+<body>
+<div id="left">
+	<div id="menu">
+		<div class="menu_title">
+			<h1>Museum</h1>
+		</div>
+		<div class="menu">
+
+          	<p><a href="/"><item>Home</item></a></p>
+         	<p><a href="/Systems/"><item>Lab Overview</item></a></p>
+         	<p><a href="/Articles/"><item>Retrotechnology Articles</item></a></p>
+			<p class="here"><small>&rArr; <%= ident %></small></p>
+         	<p><a href="/Media/"><item>Media Vault</item></a></p>
+          	<p><a href="/Software/"><item>Software Library</item></a></p>
+          	<p><a href="/Projects/"><item>Restoration Projects</item></a></p>
+          	<p><a href="/wanted.html"><item>Artifacts Sought</item></a></p>
+
+		</div>
+
+		<div class="menu_title">
+			<h1>Anchors</h1>
+		</div>
+		<div class="menu">
+
+         <% ixinfo.keys.sort.each do |sec| -%>
+           <p><a href="#section_<%= sec %>"><item>Section <%= sec %></item></a></p>
+         <% end -%>
+
+		</div>
+	</div>
+</div>
+
+<div id="right">
+<div id="content">
+<div class="title"><h1><%= page_title %></h1></div>
+<div class="body">
+<div id="man">
+
+<form>
+  <label for="apropos" style="margin-left:2.5em;"><strong>apropos:</strong></label>
+  <input name="apropos" id="apropos" type="text" onchange="redraw()"/>
+  <em><span id="matched"></span> <span id="indexed"><%= ixinfo.reduce(0) { |total, h| total + h[1].size } %></span> entries</em>
+</form>
+
+<% ixinfo.keys.sort.each do |sec|
+     intro = ixinfo[sec].keys.detect { |f| f&.end_with? 'intro.html' } -%>
+    <h2 class="section">
+    <a name="section_<%= sec %>">Section <%= sec %><%= %( <small><a href=./#{intro}>(intro)</a></small>) if intro %></a>
+    </h2>
+    <table class="index">
+     <% ixinfo[sec].keys.sort.each do |f|
+          shortname = File.basename(f).delete_suffix('.html')
+          namelist = ixinfo[sec][f][:names]
+          altnames = namelist && (namelist.length > 1 || namelist[0] != shortname) ? '[ ' + namelist.join(', ') + ' ]' : '' -%>
+      <tr><td><a href="./<%= f %>"><%= shortname %></a></td><td><%= ixinfo[sec][f][:description] %></td><td><%= altnames %></td></tr>
+     <% end -%>
+    </table>
+<% end -%>
+
+
+    </div>
+</div>
+
+	<div class="bottom_deco">
+		<table><tr><td class="left"></td><td></td><td class="right"></td></tr></table>
+	</div>
+</div>
+
+	<div id="footer">
+
+		<p>Typewritten Software &bull;
+		<a href="mailto:bear@typewritten.org">bear@typewritten.org</a> &bull;
+		Edmonds, WA 98026</p>
+
+	</div>
+</div>
+</body>
+</html>

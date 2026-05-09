@@ -20,12 +20,12 @@
 module HPUX
   module V6_20
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         # has "upper-\left". how did that _ever_ work. REVIEW how does troff handle that pathological input?
         when 'wmove.3w' then source.patch_line(17, /\\l/, 'l')
         end
-        super source
+        super(source, **kwargs)
       end
 
       def init_ds

@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 #
-
-# TODO ugh avoid
-class String
-  alias_method :to_html, :to_s
-end
-
 # TODO
 # come up with a strict definition for the meanings of empty? and length
 
@@ -77,6 +71,7 @@ end
 #  def inspect ; "<<==al" ; end
 #end
 
+# TODO insert prevailing font size (or REVIEW verify that height:1em has the same effect??)
 class BellLogo < RoffControl
   def to_s ; '<<== Bell logo ==>> ' ; end
   def to_html ; %(<img src="/Manual/bell_logo.svg" style="height:1em;vertical-align:-0.2em;" />) ; end

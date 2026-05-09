@@ -12,6 +12,7 @@
 #
 # TODO
 #   linkify sectionless refs. some with, some without '()'
+#   fix names starting with # in index.
 #
 
 module Coherent
@@ -23,7 +24,7 @@ module Coherent
 
   class Nroff < Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\(\S*?\))\s.+?\s\k<manentry>$}
       @related_info_heading ||= '***** See Also *****'
@@ -36,7 +37,7 @@ module Coherent
         @manual_entry = trname
       end
 
-      super(source)
+      super(source, **kwargs)
     end
 
   end

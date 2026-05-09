@@ -29,7 +29,7 @@ module CX_UX
     class Nroff < Nroff ; end
     class Troff < Troff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'cxref.1'       then source.patch_line(12, /$/, 'P') # suppress the warning, doesn't need action
         when 'ftp.1c'
@@ -38,7 +38,7 @@ module CX_UX
         when 'localeconv.3c' then source.patch_lines([38, 42], /\\fp/, '') # suppress the warning, doesn't need action
         when 'gps.4'         then source.patch_line(17, /$/, 'P') # suppress the warning, doesn't need action
         end
-        super(source)
+        super(source, **kwargs)
       end
 
     end

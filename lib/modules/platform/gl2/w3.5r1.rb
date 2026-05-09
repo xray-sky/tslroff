@@ -11,8 +11,8 @@
 module GL2
   module W3_3_1
     class Troff < Troff
-      def initialize(source)
-        super(source)
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
         @version = "W3.3.1"
       end
     end
@@ -20,8 +20,8 @@ module GL2
 
   module W3_5r1
     class Troff < Troff
-      def initialize(source)
-        super(source)
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
         @version = "W3.5r1"
       end
     end

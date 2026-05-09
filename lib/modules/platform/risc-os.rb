@@ -11,7 +11,7 @@
 module RISC_os
   class Nroff < Nroff
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.([\dZz]\S?)$/, '')
       @heading_detection ||= %r(^(?<section>[A-Z][A-Za-z\s]+)$)
       # some of these entries with longish names end up with clashes in the title line
@@ -19,7 +19,7 @@ module RISC_os
       # - this seems sufficient for 4.52 & RW4.00. Also the case in 5.01.
       @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)(?:-(?<systype>\S+?))?\))}
       @related_info_heading ||= 'SEE ALSO'
-      super(source)
+      super(source, **kwargs)
     end
 
     def page_title

@@ -13,11 +13,11 @@
 module GL2
   module W2_1
     class Troff < Troff
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'regexp.5' then source.patch_line 418, /^\.in/, '.if'
         end
-        super(source)
+        super(source, **kwargs)
         @version = "W2.1"
       end
     end

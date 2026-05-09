@@ -31,7 +31,7 @@ module Aegis
 
     class Nroff < Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         @base_indent = 2
         @related_info_heading = 'RELATED TOPICS'
 
@@ -40,7 +40,7 @@ module Aegis
           @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
         end
 
-        super(source)
+        super(source, **kwargs)
       end
 
       def page_title

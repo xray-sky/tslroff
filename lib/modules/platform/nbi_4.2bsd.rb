@@ -9,18 +9,19 @@
 #
 # TODO
 #   garbage from extraction in a bunch of the manuals
+#   C headers - /usr/include
 #
 
 module NBI_4_2BSD
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1]
       @output_directory ||= "man#{@manual_section}"
       #@state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds
@@ -28,7 +29,7 @@ module NBI_4_2BSD
       @named_strings.merge!(
         {
           # tmac.an.new
-          footer: "\\*(]W".+@,
+          footer: String.new('\\*(]W'),
           ']D' => 'Unix Programmer\'s Manual', # default set by .TH
           ']W' => '\\f3INTEGRATED SOLUTIONS 4.2 BSD\\f1' # set by .}F
         }

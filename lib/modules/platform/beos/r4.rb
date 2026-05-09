@@ -31,8 +31,8 @@ module BeOS
     end
 
     class Manual < Manual
-      def initialize(file, vendor_class: nil, source_args: nil)
-        super(file, vendor_class: vendor_class, source_args: source_args)
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
         case @source.dir
         when /The_Be_FAQs/
           xpath('//body').css('form').each { |form| form['action'] = '' }

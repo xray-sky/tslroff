@@ -42,8 +42,8 @@ module BeOS
     end
 
     class Manual < Manual
-      def initialize(file, vendor_class: nil, source_args: nil)
-        super(file, vendor_class: vendor_class, source_args: source_args)
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
         case @source.file
         when '03_support.html'
           xpath('//body').css('a[@href="custservices@beeurope.com"]').each { |a| a.replace a.text }
@@ -52,8 +52,8 @@ module BeOS
     end
 
     class Nroff < Nroff
-      def initialize(source)
-        super source
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
         case @source.file
         when 'Release Notes' # plain text, detected as nroff
           define_singleton_method :parse_title, proc { 'Release Notes' }

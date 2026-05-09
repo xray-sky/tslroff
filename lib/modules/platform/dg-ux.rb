@@ -26,11 +26,11 @@ module DG_UX
   end
 
   class Nroff < Nroff
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(?:\d\S?)\.g?[zZ]$/, '')
       @heading_detection ||= %r(^(?<section>[A-Z][A-Za-z\s]+)$)
       @title_detection ||= %r{\s(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))$}
-      super(source)
+      super(source, **kwargs)
     end
   end
 end

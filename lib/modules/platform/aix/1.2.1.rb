@@ -29,7 +29,7 @@ module AIX
 
     class Nroff < AIX::Nroff
 
-      def initialize(source)
+      def initialize(source, **kwargs)
         case source.file
         when 'mark.1m', 'pick.1m', 'repl.1m'
           define_singleton_method :detect_links, method(:detect_links_alt)
@@ -45,7 +45,7 @@ module AIX
         @heading_detection ||= %r(^(?<section>[A-Z][A-Z\s]+)$)
         @title_detection ||= %r{^(?<manentry>(?<cmd>[-+_., A-Za-z0-9]+?)\((?<section>\S+?),(?<book>[CLF])\))}
         @related_info_heading ||= 'RELATED INFORMATION'
-        super(source)
+        super(source, **kwargs)
       end
 
       def page_title

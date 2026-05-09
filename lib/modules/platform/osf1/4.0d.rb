@@ -17,11 +17,11 @@ module Digital_UNIX
     class Manual < Manual ; end
     class Nroff < Nroff ; end
     class Troff < Troff
-      def initialize source
+      def initialize(source, **kwargs)
         case source.file
         when 'vrestore.8' then source.patch_line 126, /\\\*\\-/, "\\*L\\-"
         end
-        super source
+        super(source, **kwargs)
       end
     end
   end

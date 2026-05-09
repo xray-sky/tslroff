@@ -11,10 +11,16 @@
 #
 
 module BSD
+  class Nroff < Nroff
+    def initialize(source, **kwargs)
+      @manual_entry ||= source.file.sub(/\.(?:\d\S?)$/, '')
+    end
+  end
+
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(?:\d\S?)$/, '')
       # assigning @manual_section here defeats parse_title and means we get the filename's section for output_dir only
       #@manual_section ||= Regexp.last_match[1]
@@ -24,17 +30,17 @@ module BSD
       when /Makefile/
         raise ManualIsBlacklisted, 'is makefile'
       end
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W".+@,
           # tmac.an.new
           ']D' => 'Unix Programmer\'s Manual', # default set by .TH
-          ']W' => '7th Edition' # default set by .TH
+          ']W' => '7th Edition', # default set by .TH
+          footer: String.new('\\*(]W'),
         }
       )
     end

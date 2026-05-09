@@ -26,15 +26,15 @@
 #   we definitely have to delay header/footer processing until end of processing
 #
 
-class AOS
+module AOS
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize(source)
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?|man)$/, '')
       @manual_section ||= Regexp.last_match[1]
       @output_directory ||= "man#{@manual_section}"
-      super(source)
+      super(source, **kwargs)
     end
 
     def init_ds
@@ -56,8 +56,13 @@ class AOS
 
     # .so with absolute path, headers in /usr/include
     def so(name, breaking: nil, basedir: nil)
-      basedir = "#{@source.dir}#{"/.." if name.start_with?('/')}"
-      super(name, breaking: breaking, basedir: basedir)
+      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+      if name.start_with?('/usr/include/sys')
+        # /usr/include/sys is symlink to /sys/h which we can't resolve
+        super(File.basename(name), breaking: breaking, basedir: "#{@source.dir}/../../sys/h")
+      else
+        super(name, breaking: breaking, basedir: basedir)
+      end
     end
 
     # tmac.an.new

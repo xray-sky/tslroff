@@ -10,6 +10,7 @@
 # HTML format input.
 #
 # TODO
+#   cope with <frameset> use in BinkJet doc
 #   User's Guide has footer (with copyright we should maintain) outside </body>
 # √ Shell Tools/man1/gcc.html, rcsfile.html start with "Content-type: text/html"
 # √                  rcs.html, rcsintro.html, uuencode.html start with garbage
@@ -31,6 +32,7 @@
 
 module BeOS
   module R5
+    class Manual < Manual ; end
     class Source < Source
       def initialize(file, **kwargs, &block)
         case File.basename file
@@ -63,8 +65,8 @@ module BeOS
 
     class Nroff < Nroff ; end
     class HTML < HTML
-      def initialize(source)
-        super source
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
 
         case @source.dir
         when /User's Guide/ then xpath('//p[@class="body"]').each { |pp| pp.remove_class('body') }

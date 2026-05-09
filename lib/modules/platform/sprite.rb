@@ -14,10 +14,10 @@ module Sprite
   class Troff < Troff::Man
     alias :LP :P
 
-    def initialize source
+    def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S*|man)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super source
+      super(source, **kwargs)
     end
 
     def init_ds
@@ -42,6 +42,13 @@ module Sprite
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
+    # .so with absolute path, headers in /src/lib/include
+    def so(name, breaking: nil, basedir: nil)
+      return if name == '/sprite/lib/ditroff/tmac.sprite' # I guess we don't need these since we've translated them to ruby
+      basedir = "#{@source.dir}#{"/../../.." if name.start_with?('/')}"
+      super(name, breaking: breaking, basedir: basedir)
+    end
+
     # tmac.sprite
     def AP(*args)
       warn "REVIEW - use of .AP #{args.inspect}"
@@ -53,7 +60,7 @@ module Sprite
         send 'TP', '15'
       end
       if args[2] and !args[2].strip.empty?
-        ta "#{@register[')A']}u", "#{@register[')B']}u"
+        ta "#{@register[')A']}u #{@register[')B']}u"
         parse "#{args[0]} \\fI#{args[1]}\\fP   (#{args[2]})"
       else
         br
@@ -93,7 +100,7 @@ module Sprite
       send 'TH', *args
       ds "]H #{args[0]}"
       ds "]S #{SPRITE_MANUAL_SECTION_NAMES[args[1]]}"
-      ds ']D \\*(]S'
+      parse '.ds ]D \\*(]S'
       ds "]L #{File.mtime(@source.path).strftime('%B %d, %Y')}"
       ds "]W #{args[3]}" if args[3] and !args[3].strip.empty?
     end

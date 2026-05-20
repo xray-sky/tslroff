@@ -11,20 +11,24 @@
 #    postscript pages have RCSID text?
 #
 
-class A_UX::V0_7
-  class Nroff < A_UX::Nroff
+module A_UX
+  module V0_7
+    class Nroff < Nroff
 
-    def initialize(source, **kwargs)
-      case source.file
-      # title line: 'updater()     updater()'
-      when 'updater.1.z'
-        @manual_section = '1'
-        @output_directory = 'man1'
+      def initialize(source, **kwargs)
+        case source.file
+        # title line: 'updater()     updater()'
+        when 'updater.1.z'
+          @manual_section = '1'
+          @output_directory = 'man1'
+        end
+        super(source, **kwargs)
       end
-      super(source, **kwargs)
+
     end
 
+    def self.name_for_section(sec)
+      A_UX.name_for_section(sec)
+    end
   end
 end
-
-class A_UX::V2_0 < A_UX ; end

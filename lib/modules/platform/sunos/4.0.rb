@@ -151,5 +151,9 @@ module SunOS
 
     MANUAL_NAMES.freeze
     MANUAL_SECTION_NAMES.freeze
+
+    def self.name_for_section(sec)
+      SunOS.name_for_section(sec)
+    end
   end
 end

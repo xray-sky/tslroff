@@ -32,5 +32,9 @@ module RISC_os
       end
 
     end
+
+    def self.name_for_section(sec)
+      RISC_os.name_for_section(sec)
+    end
   end
 end

@@ -33,5 +33,9 @@ module UNIX
         super(*args, heading: heading)
       end
     end
+
+    def self.name_for_section(sec)
+      UNIX.name_for_section(sec)
+    end
   end
 end

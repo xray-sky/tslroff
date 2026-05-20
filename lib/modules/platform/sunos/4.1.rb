@@ -195,6 +195,18 @@ module SunOS
 
     MANUAL_NAMES.freeze
     MANUAL_SECTION_NAMES.freeze
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '1v' then "<strong>#{sec}.</strong> POSIX/System V Commands"
+      when '2v' then "<strong>#{sec}.</strong> POSIX/System V Calls"
+      when '3v' then "<strong>#{sec}.</strong> POSIX/System V Compatibility Routines"
+      when '3w' then "<strong>#{sec}.</strong> Open Look Library"
+      when '7v' then "<strong>#{sec}.</strong> POSIX/System V Miscellaneous Facilities"
+      when '8v' then "<strong>#{sec}.</strong> POSIX/System V Maintenance Commands"
+      else SunOS.name_for_section(sec)
+      end
+    end
   end
 end
 

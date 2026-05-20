@@ -6,6 +6,7 @@ collection_namespace 'Be' do
   collection_namespace 'BeOS' do
     manual_namespace 'PR2',
       vendor_class: BeOS::PR2,
+      entry_page: 'index.html',
       odir: 'Be/BeOS/PR2',
       sources: %w[
         beos/documentation
@@ -24,6 +25,7 @@ collection_namespace 'Be' do
     # the gifs in the R3 ./graphics/ & pressinfo/resources (not belogos/) directories are macbinary encoded
     manual_namespace 'R3',
       vendor_class: BeOS::R3,
+      entry_page: 'index.html',
       odir: 'Be/BeOS/R3',
       sources: %w[
         beos/documentation
@@ -50,6 +52,7 @@ collection_namespace 'Be' do
 
     manual_namespace 'R4',
       vendor_class: BeOS::R4,
+      entry_page: 'index.html',
       odir: 'Be/BeOS/R4',
       sources: %w[
         beos/documentation
@@ -75,6 +78,7 @@ collection_namespace 'Be' do
 
     manual_namespace 'R4.5',
       vendor_class: BeOS::R4_5,
+      entry_page: 'index.html',
       odir: 'Be/BeOS/R4.5',
       sources: %w[
         beos/documentation
@@ -110,6 +114,7 @@ collection_namespace 'Be' do
 
     manual_namespace 'R5',
       vendor_class: BeOS::R5,
+      entry_page: 'Welcome_To_BeOS.html',
       odir: 'Be/BeOS/R5',
       sources: %w[
         beos/documentation

@@ -1,9 +1,20 @@
 # frozen_string_literal: true
 #
 
-collection_namespace 'ThirdParty' do
+collection_namespace 'thirdparty' do
+  collection_namespace 'Alias' do
+    # REVIEW were the math functions moved to man0 to 'disable' them?
+    # there are other BSD title pages etc. in man0, and a Makefile with Acorn (c)
+    manual_namespace '1_2.1',
+      vendor_class: GL2::W3_6,
+      idir: 'alias/1/2.1',
+      odir: 'SGI/thirdparty/Alias/Alias:1_2.1',
+      sources: %w[iris]
+  end
+
   collection_namespace 'C-TAD' do
     manual_namespace 'Look-In',
+      vendor_class: GL2,
       idir: 'sgi/thirdparty/ctad_lookin',
       odir: 'SGI/thirdparty/C-TAD/Look-In',
       sources: %w[lookin.man] # nroff

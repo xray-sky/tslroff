@@ -23,6 +23,10 @@ module GL2
         super(source, **kwargs)
       end
     end
+
+    def self.name_for_section(sec)
+      GL2.name_for_section(sec)
+    end
   end
 
   module W2_5
@@ -38,6 +42,10 @@ module GL2
         @version = "W2.5"
       end
     end
+
+    def self.name_for_section(sec)
+      GL2.name_for_section(sec)
+    end
   end
 
   module W2_5r1
@@ -46,6 +54,10 @@ module GL2
         super(source, **kwargs)
         @version = "W2.5r1"
       end
+    end
+
+    def self.name_for_section(sec)
+      GL2.name_for_section(sec)
     end
   end
 end

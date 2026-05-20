@@ -16,5 +16,9 @@ module DG_UX
         super(source, **kwargs)
       end
     end
+
+    def self.name_for_section(sec)
+      DG_UX.name_for_section(sec)
+    end
   end
 end

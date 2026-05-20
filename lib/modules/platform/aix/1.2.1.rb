@@ -103,5 +103,33 @@ module AIX
       end
 
     end
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '1'  then "<strong>#{sec}.</strong> Commands"
+      when '1c' then "<strong>#{sec}.</strong> Communications Commands"
+      when '1g' then "<strong>#{sec}.</strong> Graphics Commands"
+      when '1m' then "<strong>#{sec}.</strong> Maintenance Commands"
+      when '1s' then "<strong>#{sec}.</strong> SCCS Commands"
+      when '1t' then "<strong>#{sec}.</strong> TCF Cluster Commands"
+      when '2'  then "<strong>#{sec}.</strong> System Calls"
+      when '3'  then "<strong>#{sec}.</strong> C Library"
+      when '3c' then "<strong>#{sec}.</strong> C Library"
+      when '3g' then "<strong>#{sec}.</strong> Graphics Routines"
+      when '3k' then "<strong>#{sec}.</strong> Kernel Routines"
+      when '3m' then "<strong>#{sec}.</strong> Math Library"
+      when '3n' then "<strong>#{sec}.</strong> Network Support Libraries"
+      when '3s' then "<strong>#{sec}.</strong> Standard I/O Library"
+      when '3x' then "<strong>#{sec}.</strong> Miscellaneous Routines"
+      when '4'  then "<strong>#{sec}.</strong> Device Special Files and Headers"
+      when '5'  then "<strong>#{sec}.</strong> File Formats"
+      when '6'  then "<strong>#{sec}.</strong> Games"
+      when '7'  then "<strong>#{sec}.</strong> Miscellaneous Facilities"
+      when '8'  then "<strong>#{sec}.</strong> Maintenance Commands"
+      when '8c' then "<strong>#{sec}.</strong> Communications Maintenance Commands"
+      when '8t' then "<strong>#{sec}.</strong> TCF Cluster Maintenance Commands"
+      else "Section #{sec}"
+      end
+    end
   end
 end

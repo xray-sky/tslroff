@@ -150,5 +150,12 @@ module HPUX
         super(*args, heading: heading)
       end
     end
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '3w' then "<strong>#{sec}.</strong> Font Libraries"
+      else HPUX.name_for_section(sec)
+      end
+    end
   end
 end

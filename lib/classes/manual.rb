@@ -25,15 +25,16 @@ class Manual
 
   extend Forwardable
   def_delegators :@source, :link?, :magic, :line_number, :next_line, :patch, :patch_line, :patch_lines
-  def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory, :xpath
+  def_delegators :@document, :to_html, :page_title, :manual_entry, :manual_section, :output_directory,
+                             :index_name, :index_description, :xpath
 
-  def initialize(file, vendor_class: nil, source_args: nil, os: nil, ver: nil, &block)
+  def initialize(file, vendor_class: nil, document_class: nil, source_args: nil, os: nil, ver: nil, &block)
     @input_filename = file
 
     source_class = Kernel.const_defined?("#{vendor_class}::Source") ? Kernel.const_get("#{vendor_class}::Source") : Source
     @source ||= source_class.new file, **source_args, &block
 
-    document_class = Kernel.const_get "#{vendor_class}::#{magic}"
+    document_class ||= Kernel.const_get "#{vendor_class}::#{magic}"
     @document ||= document_class.send :new, @source, os: os, ver: ver
 
     @platform ||= os

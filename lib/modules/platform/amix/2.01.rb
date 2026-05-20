@@ -12,5 +12,8 @@ module AMIX
   module V2_01
     class Nroff < Nroff ; end
     class Troff < Troff ; end
+    def self.name_for_section(sec)
+      AMIX.name_for_section(sec)
+    end
   end
 end

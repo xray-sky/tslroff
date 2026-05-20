@@ -135,4 +135,16 @@ module Plan9
     end
 
   end
+
+  MANUAL_SECTION_NAMES = {
+    '1'  => 'Commands',
+    '2'  => 'System Calls and Libraries',
+    '3'  => 'Kernel Devices',
+    '4'  => 'File Services',
+    '5'  => 'Plan 9 File Protocol',
+    '6'  => 'File Formats',
+    '7'  => 'Databases and Access Programs',
+    '8'  => 'Maintenance Commands'
+  }.freeze
+
 end

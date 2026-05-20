@@ -41,4 +41,9 @@ module Coherent
     end
 
   end
+
+  def self.name_for_section(sec)
+    # TODO - take sections from dir names?
+    String.new
+  end
 end

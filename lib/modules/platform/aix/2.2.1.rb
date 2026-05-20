@@ -35,18 +35,19 @@ module AIX
         ## but I'm getting nonsense characters out.
         #source_args[:encoding] = Encoding::IBM437
         kwargs[:encoding] ||= Encoding::ASCII_8BIT
+
         super(file, **kwargs, &block)
+
+        ## this generates the correct translations of CP437 -> UTF-8 (with <meta charset="UTF-8">)
+        ## but compare to what actually shows on the RT, both on the console and in aixterm
+        ##  - printed doc matches our guesses, but not description of RT CP0 from `data stream`(4)
+        @lines.each { |l| l.gsub!(%r{[#{EXTENDED_CHARACTERS}]}, EXTENDED_CHARACTER_TRANSLATIONS) }
       end
     end
 
     class Nroff < Nroff
 
       def initialize(source, **kwargs)
-        ## this generates the correct translations of CP437 -> UTF-8 (with <meta charset="UTF-8">)
-        ## but compare to what actually shows on the RT, both on the console and in aixterm
-        ##  - printed doc matches our guesses, but not description of RT CP0 from `data stream`(4)
-        source.lines.each { |l| l.gsub!(%r{[#{EXTENDED_CHARACTERS}]}, EXTENDED_CHARACTER_TRANSLATIONS) }
-
         # 14 char filename length damage
         case source.file
         when 'create_ipc_pro'
@@ -127,5 +128,17 @@ module AIX
     }.freeze
 
     EXTENDED_CHARACTERS = EXTENDED_CHARACTER_TRANSLATIONS.keys.join().freeze
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '1'  then "<strong>#{sec}.</strong> Commands"
+      when '2'  then "<strong>#{sec}.</strong> System Calls"
+      when '3'  then "<strong>#{sec}.</strong> Library Functions and Subroutines"
+      when '4'  then "<strong>#{sec}.</strong> Device Special Files"
+      when '5'  then "<strong>#{sec}.</strong> File Formats"
+      when '7'  then "<strong>#{sec}.</strong> Miscellaneous Facilities"
+      else "Section #{sec}"
+      end
+    end
   end
 end

@@ -106,5 +106,9 @@ module SunOS
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
     MANUAL_SECTION_NAMES.freeze
+
+    def self.name_for_section(sec)
+      SunOS.name_for_section(sec)
+    end
   end
 end

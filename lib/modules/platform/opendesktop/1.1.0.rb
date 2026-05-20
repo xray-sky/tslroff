@@ -44,6 +44,10 @@ module OpenDesktop
 
     end
 
+    def self.name_for_section(sec)
+      OpenDesktop.name_for_section(sec)
+    end
+
     # these are the packed+compressed pages
     ZEXTRA = %w[
       Intro.ADM.z	accept.ADM.z	authsh.ADM.z	brc.ADM.z	clri.ADM.z	cprint.ADM.z

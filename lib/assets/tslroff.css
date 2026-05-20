@@ -145,6 +145,11 @@
 	margin-left: 0;
 }
 
+/* allows the apropos box to be immediately under the window header */
+.body {
+        padding-top: 0;
+}
+
 #man {
 	font-family: "CMU Serif", serif;
 	/* font-size: 10pt; */
@@ -326,6 +331,51 @@
 #man .sup {
 	position: relative;
 	bottom: 0.5em;
+}
+
+#man .tl_left {	/* for troff .tl ("three part titles") */
+    display: inline-block;
+    width: 15%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+#man .tl_center {
+    display: inline-block;
+    width: 55%;
+	text-align: center;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+#man .tl_right {
+    display: inline-block;
+    width: 15%;
+    text-align: right;
+    white-space: nowrap;
+    overflow: visible;
+    direction: rtl;
+}
+
+#man .apropos {
+        margin: auto;
+        margin-bottom: 1em;
+        padding: 1em 0.5em 1em 0.5em;
+        background-color: lightgray;
+        border-top: 1px outset silver;
+        border-bottom: 1px outset silver;
+}
+
+#man .apropos form {
+        margin-left: 2em;
+        margin-right: 2em;
+        margin-bottom: 0;
+}
+
+#man .apropos form input {
+        width: 35em;
+        border: 2px inset silver;
 }
 
 .eqn-column { /* for piles, matrix columns */

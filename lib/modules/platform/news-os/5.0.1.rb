@@ -49,5 +49,12 @@ module NEWS_os
         )
       end
     end
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '4' then "<strong>#{sec}.</strong> File Formats"
+      when '7' then "<strong>#{sec}.</strong> Special Files"
+      else NEWS_os.name_for_section(sec)
+      end
+    end
   end
 end

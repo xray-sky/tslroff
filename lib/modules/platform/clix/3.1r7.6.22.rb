@@ -18,6 +18,12 @@ module CLIX
         super(file, **kwargs, &block)
       end
     end
+
+    class Nroff < Nroff ; end
+
+    def self.name_for_section(sec)
+      CLIX.name_for_section(sec)
+    end
   end
 end
 

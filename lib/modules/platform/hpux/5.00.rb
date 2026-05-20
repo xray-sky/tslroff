@@ -49,5 +49,9 @@ module HPUX
       end
 
     end
+
+    def self.name_for_section(sec)
+      HPUX.name_for_section(sec)
+    end
   end
 end

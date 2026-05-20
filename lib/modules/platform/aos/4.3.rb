@@ -65,6 +65,10 @@ module AOS
     end
 
     class Troff < Troff ; end
+
+    def self.name_for_section(sec)
+      AOS.name_for_section(sec)
+    end
   end
 end
 

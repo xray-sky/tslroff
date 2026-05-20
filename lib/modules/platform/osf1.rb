@@ -370,7 +370,45 @@ module OSF1
       # clears box rule margin character
       warn "can't yet .VS #{args.inspect}"
     end
+  end
 
+  def self.name_for_section(sec)
+    case sec.downcase
+    when '1'     then "<strong>#{sec}.</strong> Commands"
+    when '1b'    then "<strong>#{sec}.</strong> Bourne Shell"
+    when '1cde'  then "<strong>#{sec}.</strong> CDE Commands"
+    when '1g'    then "<strong>#{sec}.</strong> GNU Commands"
+    when '1m'    then "<strong>#{sec}.</strong> Motif Commands"
+    when '1old'  then "<strong>#{sec}.</strong> Obsoleted Commands"
+    when '1p'    then "<strong>#{sec}.</strong> POSIX Commands"
+    when '1ssl'  then "<strong>#{sec}.</strong> OpenSSL Commands"
+    when '1u'    then "<strong>#{sec}.</strong> Compatibility Commands"
+    when '1x'    then "<strong>#{sec}.</strong> X11 Commands"
+    when '1xmit' then "<strong>#{sec}.</strong> X11 Commands (MIT)"
+    when '2'     then "<strong>#{sec}.</strong> System Calls"
+    when '2sv'   then "<strong>#{sec}.</strong> System V Calls"
+    when '3'     then "<strong>#{sec}.</strong> Library Functions"
+    when '3f'    then "<strong>#{sec}.</strong> FORTRAN Library"
+    when '3g'    then "<strong>#{sec}.</strong> OpenGL Library"
+    when '3n'    then "<strong>#{sec}.</strong> Network Support Libraries"
+    when '3x'    then "<strong>#{sec}.</strong> Miscellaneous Libraries"
+    when '3x11'  then "<strong>#{sec}.</strong> X11 Libraries"
+    when '3xt'   then "<strong>#{sec}.</strong> X Toolkit"
+    when '4'     then "<strong>#{sec}.</strong> File Formats"
+    when '4cde'  then "<strong>#{sec}.</strong> CDE File Formats"
+    when '5'     then "<strong>#{sec}.</strong> Miscellaneous Facilities"
+    when '5x'    then "<strong>#{sec}.</strong> Motif File Formats"
+    when '6'     then "<strong>#{sec}.</strong> Games and Demos"
+    when '7'     then "<strong>#{sec}.</strong> Special Files"
+    when '8'     then "<strong>#{sec}.</strong> Maintenance Procedures"
+    when '8x'    then "<strong>#{sec}.</strong> DECwindows Maintenance Tools"
+    when '8cdfs' then "<strong>#{sec}.</strong> ISO 9660 Commands"
+    when '9'     then "<strong>#{sec}.</strong> Kernel Modules"
+    when '9r'    then "<strong>#{sec}.</strong> Kernel Module Routines"
+    when '9s'    then "<strong>#{sec}.</strong> Kernel Module Data Structures"
+    when '9v'    then "<strong>#{sec}.</strong> Kernel Module Global Variables"
+    else "Section #{sec}"
+    end
   end
 end
 

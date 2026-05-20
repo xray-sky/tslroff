@@ -10,7 +10,7 @@ require_relative 'styles/eqntext'
 require_relative 'styles/tab'
 
 class TextFormatter
-  attr_reader :manual_entry, :manual_section
+  attr_reader :manual_entry, :manual_section, :index_name, :index_description
 
   extend Forwardable
   def_delegators :@source, :magic, :file, :dir, :line_number, :next_line, :patch, :patch_line, :patch_lines

@@ -43,6 +43,7 @@ class Nroff < TextFormatter
     # this is paltry
     return (@manual_section || parse_title) if halt_on == '@manual_section'
     @document = to_lp
+    (@index_name, @index_description) = index_entry(name_lines)
     %(<div class="body"><div id="man">#{@document.collect(&:to_html).join}</div></div>)
   end
 
@@ -117,7 +118,7 @@ class Nroff < TextFormatter
   end
 
   def output_directory
-    @manual_section and return "man#{@manual_section.downcase}"
+    @manual_section and return "man#{@manual_section}"
     warn "reading output directory without section set"
     ''
   end
@@ -157,6 +158,16 @@ class Nroff < TextFormatter
     Regexp.last_match
   ensure
     @lines.rewind
+  end
+
+  def name_lines
+    @document[0].text.select { |l| l.section.downcase == 'name' }.compact.drop(1)
+  end
+
+  def index_entry(lines)
+    return if lines.empty?
+    (names, _sep, descr) = lines.collect { |l| l.to_html }.join(' ').strip.partition(/\s+-\s+/)
+    [names, descr]
   end
 
   def parse_title

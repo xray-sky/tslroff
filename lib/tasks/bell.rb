@@ -5,6 +5,7 @@ collection_namespace 'Bell' do
   collection_namespace 'Inferno' do
     manual_namespace '1ed',
       vendor_class: Inferno::FirstEd,
+      entry_page: 'index.html',
       idir: 'bell/inferno/1e0',
       odir: 'Bell/Inferno/1ed',
       sources: %w[man/html/*.htm] do |t|
@@ -12,6 +13,7 @@ collection_namespace 'Bell' do
       end
     manual_namespace '1.1ed',
       vendor_class: Inferno::FirstEd_1,
+      entry_page: 'mpgs.html',
       idir: 'bell/inferno/1e1src',
       odir: 'Bell/Inferno/1.1ed',
       sources: %w[man/html/*.htm] do |t|
@@ -31,7 +33,7 @@ collection_namespace 'Bell' do
 
   collection_namespace 'Plan9' do
     # this is from my Vita Nuova disc - doesn't seem the same as Inferno 3ed, above
-    # TODO macros REVIEW is it plan9 or is it inferno
+    # TODO macros REVIEW is it plan9 or is it inferno - looks like Inferno though??
     manual_namespace '3ed',
       vendor_class: Plan9,
       idir: 'bell/plan9/3e',

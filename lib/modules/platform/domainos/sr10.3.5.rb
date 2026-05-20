@@ -34,6 +34,8 @@ module DomainOS
       end
     end
 
+    class Manual < Manual ; end
+    class Help < Help ; end
     class Nroff < Nroff
       def initialize(source, **kwargs)
         super(source, **kwargs)
@@ -70,6 +72,19 @@ module DomainOS
 
       def page_title
         super << " Domain/OS SR10.3.5"
+      end
+    end
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '1m' then "<strong>#{sec}.</strong> Maintenance Commands (SysV)"
+      when '3'  then "<strong>#{sec}.</strong> C Library"
+      when '3c' then "<strong>#{sec}.</strong> Compatibility Routines"
+      when '5'  then "<strong>#{sec}.</strong> File Formats (4BSD) &amp; Miscellaneous Facilities (SysV)"
+      when '7'  then "<strong>#{sec}.</strong> Miscellaneous Facilities (4BSD) &amp; Special Files (SysV)"
+      when '8'  then "<strong>#{sec}.</strong> Maintenance Procedures (4BSD)"
+      when '8c' then "<strong>#{sec}.</strong> Network Services (4BSD)"
+      else Aegis.name_for_section(sec)
       end
     end
   end

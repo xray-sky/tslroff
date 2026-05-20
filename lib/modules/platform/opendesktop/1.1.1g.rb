@@ -36,6 +36,10 @@ module OpenDesktop
       end
     end
 
+    def self.name_for_section(sec)
+      OpenDesktop.name_for_section(sec)
+    end
+
     ZEXTRA = %w[ ksh.C.z messages.M.z terminfo.M.z X.X.z mwm.X.z scoterm.X.z xdm.X.z xterm.X.z ].freeze
   end
 end

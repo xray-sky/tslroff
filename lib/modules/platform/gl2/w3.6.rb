@@ -27,6 +27,10 @@ module GL2
         @version = "W3.6"
       end
     end
+
+    def self.name_for_section(sec)
+      GL2.name_for_section(sec)
+    end
   end
 end
 

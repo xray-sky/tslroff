@@ -26,5 +26,9 @@ module Ardent_SysV
         )
       end
     end
+
+    def self.name_for_section(sec)
+      Ardent_SysV.name_for_section(sec)
+    end
   end
 end

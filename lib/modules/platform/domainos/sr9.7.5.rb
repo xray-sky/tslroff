@@ -29,23 +29,23 @@ module Aegis
       end
     end
 
-    class Nroff < Nroff
+    class Manual < Manual ; end
+    class Help < Help
 
       def initialize(source, **kwargs)
-        @base_indent = 2
-        @related_info_heading = 'RELATED TOPICS'
-
         case source.file
-        when 'edacl.hlp'
-          @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
+        when 'edacl.hlp' then @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
         end
-
         super(source, **kwargs)
       end
 
       def page_title
         super << " Aegis SR9.7.5"
       end
+    end
+
+    def self.name_for_section(sec)
+      Aegis.name_for_section(sec)
     end
   end
 end

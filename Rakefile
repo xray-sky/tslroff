@@ -32,7 +32,7 @@
 #     - possibly by providing top level all-sections index (permuted or otherwise?)
 # √   - done for now by renaming any page named index => _index and default => _default
 #   unlink 404 refs, probably after auditing whether they are really missing
-#   links with leading <br> appear blank in Related menu (e.g. AUX SR8.0 cc(1))
+#   links with leading <br> (or other tags?) appear blank in Related menu (e.g. AUX SR8.0 cc(1))
 #   rewrite links in "overlay" versions (e.g. DG-UX 4.31, 5.4.2T, etc.) to base manual
 #   rewrite links in optional products (e.g. Apollo ada 1.0 links to ld(1)) to.. where exactly?
 #   supplemental (non-man) docs recovered from mit afs
@@ -46,7 +46,9 @@
 $CSS_URL = 'http://dev.online.typewritten.org/Manual/tslroff.css'
 
 SRCROOT = '/Volumes/Museum/Manual/in'
-PUBROOT = '/Volumes/dev.online.typewritten.org/Manual'
+#PUBROOT = '/Volumes/dev.online.typewritten.org/Manual'
+#PUBROOT = '/Volumes/dev.online.typewritten.org/Manual.new'
+PUBROOT = '/Volumes/Museum/Stuff/Manual.new'
 ASSETS = File.realpath('lib/assets')
 INDEX_TEMPLATE  = File.read "#{ASSETS}/index.erb"
 MANUAL_TEMPLATE = File.read "#{ASSETS}/manual.erb"
@@ -62,11 +64,12 @@ desc 'Build everything'
 task all: [:assets]
 
 desc 'Copy static file assets'
-task assets: [:fonts, :css, :js, :gfx]
+task assets: [PUBROOT, :fonts, :css, :js, :gfx]
+
+directory PUBROOT
 
 task :fonts do
-  directory PUBROOT
-  cp_r 'assets/fonts', PUBROOT
+  cp_r 'assets/fonts/', PUBROOT
 end
 
 task :css do
@@ -78,13 +81,12 @@ task :js do
 end
 
 task :gfx do
-  cp "#{ASSETS}/bell_logo.svg", PUBROOT
+  gfxdir = "#{PUBROOT}/assets"
+  directory(gfxdir).invoke
 
   # Future love paradise
-  #gfxdir = "#{PUBROOT}/assets"
-  #directory gfxdir
-  #cp_r "#{ASSETS}/flags", gfxdir
-  #cp_r "#{ASSETS}/logos", gfxdir
+  cp "#{ASSETS}/bell_logo.svg", PUBROOT
+  cp_r %w[assets/flags assets/logos], gfxdir
 end
 
 # manual source collections
@@ -92,18 +94,19 @@ end
 collection_namespace '_internal' do
   collection_namespace '_test' do
     manual_namespace '_pic',
-                    odir: '_internal/_test/_pic',
-                    idir: '_test',
-                    sources: %w[./pic*]
+      vendor_class: UNIX::V7,
+      odir: '_internal/_test/_pic',
+      idir: '_test',
+      sources: %w[./pic*]
     manual_namespace '_tbl',
-                    odir: '_internal/_test/_tbl',
-                    idir: '_test',
-                    sources: %w[./stbl*]
+      vendor_class: UNIX::V7,
+      odir: '_internal/_test/_tbl',
+      idir: '_test',
+      sources: %w[./stbl*]
   end
 end
 
 require_relative 'lib/tasks/acorn'
-require_relative 'lib/tasks/alias'
 require_relative 'lib/tasks/apollo'
 require_relative 'lib/tasks/apple'
 require_relative 'lib/tasks/ardent'

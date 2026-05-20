@@ -44,5 +44,9 @@ module NEWS_os
         )
       end
     end
+
+    def self.name_for_section(sec)
+      NEWS_os.name_for_section(sec)
+    end
   end
 end

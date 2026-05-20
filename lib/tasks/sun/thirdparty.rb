@@ -59,17 +59,17 @@ collection_namespace 'thirdparty' do
     odir: 'Sun/thirdparty/HP/Network-Peripheral-Interface_A.02.00',
     sources: %w[usr/lib/hpnp/sun-man/man[158]]
 
-  manual_namespace 'Interphase/NC400_1.4.2',
-    vendor_class: SunOS::V4_1,
-    idir: 'sun/sunos/thirdparty/interphase_nc400_1.4.2',
-    odir: 'Sun/thirdparty/Interphase/NC400_1.4.2',
-    sources: %w[man/OMNI/man[148]]
-
   manual_namespace 'Illustra/Datablade_1.1',
     vendor_class: SunOS::V5_5, # ...probably?
     idir: 'sun/sunos/thirdparty/illustra_datablade_1.1',
     odir: 'Sun/thirdparty/Illustra/Datablade_1.1',
     sources: %w[dbdk/man/manl]
+
+  manual_namespace 'Interphase/NC400_1.4.2',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/thirdparty/interphase_nc400_1.4.2',
+    odir: 'Sun/thirdparty/Interphase/NC400_1.4.2',
+    sources: %w[man/OMNI/man[148]]
 
   manual_namespace 'IXI/Motif_1.1_X11R4',
     vendor_class: SunOS::V4_0,
@@ -159,12 +159,6 @@ collection_namespace 'thirdparty' do
     odir: 'Sun/thirdparty/Oracle/6.0.33.1',
     sources: %w[*/man]
 
-  manual_namespace 'Quintus/Prolog_3.2',
-    vendor_class: SunOS::V5_1, # REVIEW correct ver?
-    idir: 'sun/sunos/thirdparty/quintus_prolog_3.2',
-    odir: 'Sun/thirdparty/Quintus/Prolog_3.2',
-    sources: %w[generic/q3.2/man/man1] # TODO helplib?
-
   # TODO local string.defs (see: NeWS_1.1)
   manual_namespace 'Parallax/PNeWS_3.0',
     vendor_class: SunOS::V4_1,
@@ -182,23 +176,11 @@ collection_namespace 'thirdparty' do
     odir: 'Sun/thirdparty/Pixar/High_Speed_Interface_1.1',
     sources: %w[hsi/man/man[1-8]]
 
-  # TODO nroff for terminal (short screen, 24 or 25 line page length)
-  manual_namespace 'Sybase/DB_Library_C_4.0',
-    vendor_class: SunOS::V4_1,
-    idir: 'sun/sunos/thirdparty/sybase_db_library_c_4.0',
-    odir: 'Sun/thirdparty/Sybase/DB_Library_C_4.0',
-    sources: %w[doc]
-  manual_namespace 'Sybase/SQL_Server_4.0',
-    vendor_class: SunOS::V4_1,
-    idir: 'sun/sunos/thirdparty/sybase_sql_server_4.0',
-    odir: 'Sun/thirdparty/Sybase/SQL_Server_4.0',
-    sources: %w[doc]
-
-  manual_namespace 'SAS/C_370_5.50.12',
-    vendor_class: SunOS::V4_1,
-    idir: 'sun/sunos/thirdparty/sas_c_370_5.50.12',
-    odir: 'Sun/thirdparty/SAS/C_370_5.50.12',
-    sources: %w[man1]
+  manual_namespace 'Quintus/Prolog_3.2',
+    vendor_class: SunOS::V5_1, # REVIEW correct ver?
+    idir: 'sun/sunos/thirdparty/quintus_prolog_3.2',
+    odir: 'Sun/thirdparty/Quintus/Prolog_3.2',
+    sources: %w[generic/q3.2/man/man1] # TODO helplib?
 
   manual_namespace 'Saber/C_3.0.1',
     vendor_class: SunOS::V4_1,
@@ -210,6 +192,24 @@ collection_namespace 'thirdparty' do
     idir: 'sun/sunos/thirdparty/saber_c_sun4_3.1',
     odir: 'Sun/thirdparty/Saber/C_3.1.0_R1.0',
     sources: %w[Saber/c_3.1.0-r1.0/install]
+
+  manual_namespace 'SAS/C_370_5.50.07',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/thirdparty/sas_c_370_5.50.07',
+    odir: 'Sun/thirdparty/SAS/C_370_5.50.07',
+    sources: %w[man1]
+
+  # TODO nroff for terminal (short screen, 24 or 25 line page length)
+  manual_namespace 'Sybase/DB_Library_C_4.0',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/thirdparty/sybase_db_library_c_4.0',
+    odir: 'Sun/thirdparty/Sybase/DB_Library_C_4.0',
+    sources: %w[doc]
+  manual_namespace 'Sybase/SQL_Server_4.0',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/thirdparty/sybase_sql_server_4.0',
+    odir: 'Sun/thirdparty/Sybase/SQL_Server_4.0',
+    sources: %w[doc]
 
   # TODO .TH footer (not a revision date)
   manual_namespace 'Transarc/AFS_3.2',

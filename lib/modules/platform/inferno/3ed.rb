@@ -25,5 +25,24 @@ module Inferno
 
     class Nroff < Nroff ; end
     class Troff < Troff ; end
+
+    MANUAL_SECTION_NAMES = {
+      '1'    => 'Commands',
+      #'1e'   => '', ?
+      '2'    => 'Limbo Modules and Inferno System Calls',
+      '3'    => 'Kernel Devices',
+      '4'    => 'File Services',
+      '5'    => 'Styx File Service Protocol',
+      '6'    => 'File Formats and Conventions',
+      '7'    => 'Databases and Database Access Modules',
+      '8'    => 'Administrative Modules and System Services',
+      '9'    => 'Limbo/Tk',
+      '10'   => 'Build Environment and Device Drivers',
+      '10.1' => 'Kernel Build Commands',
+      '10.2' => 'Kernel Functions',
+      '10.6' => 'File Formats',
+      '10.8' => 'Bootstrap Procedures'
+    }.freeze
+
   end
 end

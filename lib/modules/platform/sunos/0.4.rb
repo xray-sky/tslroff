@@ -66,5 +66,12 @@ module SunOS
 
     MANUAL_SECTION_NAMES.default = 'UNKNOWN SECTION OF THE MANUAL'
     MANUAL_SECTION_NAMES.freeze
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '8v' then "<strong>#{sec}.</strong> VAX Maintenance Procedures"
+      else SunOS.name_for_section(sec)
+      end
+    end
   end
 end

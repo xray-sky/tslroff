@@ -19,5 +19,9 @@ module UTek
         super(source, **kwargs)
       end
     end
+
+    def self.name_for_section(sec)
+      UTek.name_for_section(sec)
+    end
   end
 end

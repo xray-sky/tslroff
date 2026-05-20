@@ -118,6 +118,7 @@ class Troff
     warn ".tc wants to change tab fill repetition character to: #{argstr.inspect}"
   end
 
+  # TODO implement this. Use the CSS span classes tl_left, tl_center, and tl_right.
   def tl(argstr = '', breaking: nil)
     warn ".tl wants to output three part title: #{argstr.inspect}"
   end

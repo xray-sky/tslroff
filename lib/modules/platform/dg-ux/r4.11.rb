@@ -26,5 +26,9 @@ module DG_UX
         @lines_per_page = nil
       end
     end
+
+    def self.name_for_section(sec)
+      DG_UX.name_for_section(sec)
+    end
   end
 end

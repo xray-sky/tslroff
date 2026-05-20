@@ -12,8 +12,10 @@ collection_namespace '4D1' do
 end
 
 collection_namespace 'IRIX' do
+  # TODO exclude Phobos GFE (move to thirdparty)
+  # TODO exclude many unbundled (atalk, etc.)
   manual_namespace '6.5.3f',
-    vendor_class: IRIX,
+    vendor_class: IRIX::V6_5,
     odir: 'SGI/IRIX/6.5.3f',
     sources: %w[
       share/catman/?_man/cat[1-8o]/*.z

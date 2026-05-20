@@ -33,6 +33,7 @@
 #      [5m - blink			[7m - reverse	[8m - invisible
 #   box drawing w/typebox? (e.g. tpuhelp.hlb)
 #   translate filenames with % (e.g. debug/$label)
+#   fork overhead becomes extremely high (like 1-2m if run in isolation, becomes 15-20m deep into a world build - webdriver cache size?)
 #
 # REVIEW whether the µVMS 4.6 RUNOFF help refs actually cut out the extra parameter text (/FOO[=bar])
 #

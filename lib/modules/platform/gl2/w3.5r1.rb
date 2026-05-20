@@ -16,6 +16,10 @@ module GL2
         @version = "W3.3.1"
       end
     end
+
+    def self.name_for_section(sec)
+      GL2.name_for_section(sec)
+    end
   end
 
   module W3_5r1
@@ -24,6 +28,10 @@ module GL2
         super(source, **kwargs)
         @version = "W3.5r1"
       end
+    end
+
+    def self.name_for_section(sec)
+      GL2.name_for_section(sec)
     end
   end
 end

@@ -47,17 +47,20 @@ collection_namespace 'Ultrix' do
   # UWS 4.0 unsupported subsets + supported vol2
   manual_namespace '4.0/mips',
     vendor_class: Ultrix::V4_0_0_mips,
-    odir: 'DEC/Ultrix/4.0.0/mips',
+    idir: 'dec/ultrix/4.0.0/mips',
+    odir: 'DEC/Ultrix/4.0/mips',
     sources: %w[usr/man/man[1-8]]
   # UWS 4.0 supported & unsupported subsets
   manual_namespace '4.0/VAX',
     vendor_class: Ultrix::V4_1_0_VAX,
-    odir: 'DEC/Ultrix/4.0.0/VAX',
+    idir: 'dec/ultrix/4.0.0/vax',
+    odir: 'DEC/Ultrix/4.0/VAX',
     sources: %w[usr/man/man[1-8]]
   # UWS 4.1 unsupported subsets + supported vol2
   manual_namespace '4.1/mips',
     vendor_class: Ultrix::V4_1_0_mips, # check macros
-    odir: 'DEC/Ultrix/4.1.0/mips',
+    idir: 'dec/ultrix/4.1.0/mips',
+    odir: 'DEC/Ultrix/4.1/mips',
     sources: %w[usr/man/man[1-8]]
   # from source
   manual_namespace '4.2/VAX',

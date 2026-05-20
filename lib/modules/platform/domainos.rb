@@ -84,134 +84,36 @@ module Aegis
     end
   end
 
-=begin
-    def self.extended(k)
-      k.define_singleton_method(:LP, k.method(:PP)) if k.methods.include?(:PP)
-      systype = Regexp.last_match[1] if k.instance_variable_get('@source.dir').match(%r{(bsd|sys5)})
-      k.instance_variable_set '@systype', systype
-      k.instance_variable_set '@manual_entry', k.instance_variable_get('@input_filename').sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '') + (systype ? ".#{systype}" : '')
-      # spoilsport: "dde(1)(Domain/OS)" => SR10.4 ./bsd4.3/usr/man/cat1/dde.1
-      k.instance_variable_set '@title_detection', %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
-      k.instance_variable_set '@base_indent', 5
-      k.instance_variable_set '@lines_per_page', nil
-
-      # special cases for Aegis help
-      # there's a directory hierarchy in help/ - mirror it in the output directories
-      # use the directory name to identify (a couple help files aren't named *.hlp)
-      #                                    (but these aren't available to 'help'?)
-      #                                    (seems to be in-app help - ^F7 for both - be clever and link it to the in-text helpfile reference?)
-      # use the directory name to identify anyway, since it gets us a Regexp match for output_directory
-      # REVIEW: "help dm commands" is a thing, despite there being no dm/commands.hlp ??
-      #   TODO: - there is. it just isn't present in my extraction. fix that.
-      # REVIEW: "help syscalls foo" is a thing; syscalls/ is a link to calls/;
-      #         everything in calls/ is a link to usr/apollo/man/mana/ (see: mbx.hlp)
-      #         but there's more in mana/ than is linked from calls/ (mana/ adds gpr and cd_*)
-      #         - names are different too, maybe because of $ in bin/sh vs com/sh ? (vec_$abs.hlp => vec_abs.a)
-      # spoilsport: help/index.hlp (=> index.html)
-      if k.instance_variable_get('@source_dir').match(/^.*(help.*)$/)
-        k.define_singleton_method :detect_links, k.method(:detect_links_aegis_helpfile)
-        k.define_singleton_method :parse_title, k.method(:parse_title_aegis_helpfile)
-        k.instance_variable_set '@output_directory', Regexp.last_match[1]
-        k.instance_variable_set '@manual_section', 'help'
-        k.instance_variable_set '@help_sections', %w[calls debug dm ed edacct edns edstr em3270 emt fmt login magtape protection prsvr shell syscalls vt100]
-        # TODO: nope, some of these pages use unix style format, with 'NAME' section heading --- arp has no space following -; bind has no (); cc has no - at all
-        k.instance_variable_set '@summary_heading', %r{^#{k.instance_variable_get '@manual_entry'}\s\(\S+?\)\s+-+\s+\S}
-      elsif k.instance_variable_get('@input_filename').end_with?('.a')
-        k.define_singleton_method :detect_links, k.method(:detect_links_syscalls)
-      end
+  class Manual < Manual
+    def initialize(file, **kwargs, &block)
+      kwargs[:document_class] = Aegis::Help if File.dirname(file).include?('/help')
+      super(file, **kwargs, &block)
     end
-=end
+  end
 
-  class Nroff < Nroff
+  class Help < Nroff
 
     include Utils
 
     def initialize(source, **kwargs)
-      @systype = Regexp.last_match[1] if source.dir.match(%r{(bsd|sys5)})
-      @manual_entry = source.file if source.dir.end_with? '/doc'  # release notes REVIEW
-      @manual_entry ||= "#{source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '')}#{".#{@systype}" if @systype}"
+      @manual_entry ||= source.file.delete_suffix('.hlp')
+      # no.
       @title_detection ||= %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
-      #@base_indent ||= 5  # REVIEW unimplemented
+      # TODO finish implementing @base_indent or get rid of it
+      #      but we have been relying on it in detect_links
+      @base_indent ||= 2  # REVIEW unimplemented
 
       super(source, **kwargs)
 
-	  if @source.dir.match %r{^.*(help.*)$}
-	    # TODO subclass these instead
-	    define_singleton_method :detect_links, method(:detect_links_aegis_helpfile)
-	    define_singleton_method :parse_title, method(:parse_title_aegis_helpfile)
-        @lines_per_page = nil # REVIEW this was everything
-	    @output_directory = Regexp.last_match[1]
-	    @manual_section = 'help'
-	    @help_sections = %w[calls debug dm ed edacct edns edstr em3270 emt fmt login magtape protection prsvr shell syscalls vt100]
-	    @summary_heading = %r{^#{@manual_entry}\s\(\S+?\)\s+-+\s+\S}
-	  elsif @source.file.end_with? '.a'
-	    define_singleton_method :detect_links, method(:detect_links_syscalls)
-        @lines_per_page = nil # REVIEW this was everything
-	  end
+      @lines_per_page = nil # REVIEW this was everything?
+      @output_directory = @source.dir.match(%r{^.*(help.*)$})[1]
+      @manual_section = @output_directory.tr('/', ' ')
+      @help_sections = %w[calls debug dm ed edacct edns edstr em3270 emt fmt login magtape protection prsvr shell syscalls vt100]
+      @summary_heading = %r{^#{@manual_entry}\s\(\S+?\)\s+-+\s+\S}
+      @related_info_heading = 'RELATED TOPICS'
     end
 
-    def page_title
-      t = @manual_entry.sub(/\.#{@systype}$/, '')
-      t << "(#{@manual_section})" unless @manual_section == 'help'
-      t << " &mdash; #{@systype}" if @systype
-      t << " &mdash; Apollo"
-    end
-
-    def parse_title
-      title = super
-      # pages from usr/new/mann won't have a directory-based systype, but we may have
-      # one from the title line (if present).
-      # TODO: multiple sources for X11 pages, systype detection not helpful (see: SR10.4.1 mkfontdir)
-      unless @systype
-        @systype = case title&.[](:systype)
-                   when /bsd/i    then 'bsd'
-                   when /sys.*v/i then 'sysv'
-                   end
-        @manual_entry << ".#{@systype}" if @systype
-      end
-      # use the section from the filename as a default if the title line doesn't
-      # have one (and consequently won't be detected) - also covers the 'mana' section
-      # REVIEW: this regex doesn't catch every section (e.g. .3x11) though in
-      #         practice it catches everything in 10.4 that needs catching.
-      @output_directory ||= @source.file.sub(/^.+\.([an\d][a-z]?)$/, 'man\1')
-    end
-
-    # REVIEW: nothing?
-    #         maybe something with the "metadata", if present?
-    def parse_title_aegis_helpfile
-    end
-
-    # normal unix, with systype inserted before .html
-    # also do something with "cp in the Aegis Command Reference" (SR10.4 pad(4) BSD)
-    # there are a handful of refs like this in the unix manual, all to either 'sh' or 'cp'.
-    # (so probably we don't have to worry about detecting help/ subdirectory refs)
     def detect_links(line)
-      if line.match(/(?<ref>[_$.a-z0-9]+) in the Aegis Command Reference/)
-        return { Regexp.last_match[:ref] => "../help/#{Regexp.last_match[:ref]}.html" }
-      end
-      line.scan(/(?<=[\s,.;])((\S+?)\((\d.*?)\))/).map do |text, ref, section|
-        [text, "../man#{section.downcase}/#{ref}#{'.' + @systype if @systype}.html"]
-      end.to_h
-    end
-
-    # aegis help style detection for refs in mana/ - bare lists of single refs
-    # strip $ for linking into mana/
-    #
-    # looks like I can rely on presence of _$ to aid detection, if necessary;
-    # though they appear totally orderly so maybe unnecessary.
-    def detect_links_syscalls(line)
-      syscall_detect = '([_$a-z0-9]+)'
-      return unless line.match(/^\s{#{@base_indent}}(?:#{syscall_detect}(?:, |,\s*$|\.\s*$|;\s*$))+/)
-
-      line.scan(/#{syscall_detect}/).map do |text, _|
-        [text, "#{text.delete '$'}.html"]
-      end.to_h
-    end
-
-    # Related help references in the Aegis help files are not consistently
-    # formatted. There are two types that are easy to detect and a bunch
-    # of miscellaneous garbage to deal with besides.
-    def detect_links_aegis_helpfile(line)
       # a reference might include a "section" (stored in a subdirectory)
       # e.g. "help calls gpr_$whatever" to give calls/gpr_$whatever.hlp
       # ~or~ "help prsvr/config"
@@ -274,6 +176,113 @@ module Aegis
       end
     end
 
+    # REVIEW: nothing?
+    #         maybe something with the "metadata", if present?
+    def parse_title
+    end
+
+    def page_title
+      String.new "#{@manual_entry} &mdash; Apollo"
+    end
+
+    def output_directory
+      @source.dir.sub(%r{^.*/(help)}, '\1')
+    end
+
+    private
+
+    def name_lines
+      @document[0].text.detect { |l| h = l.to_html.strip ; h.include?(' -- ') or h.include?(' - ') }
+    end
+
+    def index_entry(line)
+      return unless line
+      (names, _sep, descr) = line.to_html.strip.partition(/\s+-+\s+/)
+      [names.sub(/^.*\((\S+)\).*$/, '\1'), descr]
+    end
+
+    # TODO filter names for @manual_entry with UPCASE; add e.g. CC to cc_dm
+    #      suggests having erb defer to man.method for this
+  end
+
+  class Nroff < Nroff
+
+    include Utils
+
+    def initialize(source, **kwargs)
+      @systype = Regexp.last_match[1] if source.dir.match(%r{(bsd|sys5)})
+      @manual_entry = source.file if source.dir.end_with? '/doc'  # release notes REVIEW
+      @manual_entry ||= "#{source.file.sub(/\.(?:[\danZz][A-Za-z]?|hlp)$/, '')}#{".#{@systype}" if @systype}"
+      @title_detection ||= %r{^\s*(?<manentry>(?<title>\S+?)(?:\((?<section>\S+?)\)(?:\(.+?\))?)?)\s+(?<systype>.+?)\s+\k<manentry>}
+      #@base_indent ||= 5  # REVIEW unimplemented
+
+      super(source, **kwargs)
+
+	  if @source.file.end_with? '.a'
+	    define_singleton_method :detect_links, method(:detect_links_syscalls)
+        @lines_per_page = nil # REVIEW this was everything?
+	  end
+    end
+
+    def page_title
+      t = @manual_entry.sub(/\.#{@systype}$/, '')
+      t << "(#{@manual_section})" unless @manual_section == 'help'
+      t << " &mdash; #{@systype}" if @systype
+      t << " &mdash; Apollo"
+    end
+
+    def parse_title
+      title = super
+      # pages from usr/new/mann won't have a directory-based systype, but we may have
+      # one from the title line (if present).
+      # TODO: multiple sources for X11 pages, systype detection not helpful (see: SR10.4.1 mkfontdir)
+      unless @systype
+        @systype = case title&.[](:systype)
+                   when /bsd/i    then 'bsd'
+                   when /sys.*v/i then 'sysv'
+                   end
+        @manual_entry << ".#{@systype}" if @systype
+      end
+      # use the section from the filename as a default if the title line doesn't
+      # have one (and consequently won't be detected) - also covers the 'mana' section
+      # REVIEW: this regex doesn't catch every section (e.g. .3x11) though in
+      #         practice it catches everything in 10.4 that needs catching.
+      @output_directory ||= @source.file.sub(/^.+\.([an\d][a-z]?)$/, 'man\1')
+    end
+
+    # normal unix, with systype inserted before .html
+    # also do something with "cp in the Aegis Command Reference" (SR10.4 pad(4) BSD)
+    # there are a handful of refs like this in the unix manual, all to either 'sh' or 'cp'.
+    # (so probably we don't have to worry about detecting help/ subdirectory refs)
+    def detect_links(line)
+      if line.match(/(?<ref>[_$.a-z0-9]+) in the Aegis Command Reference/)
+        return { Regexp.last_match[:ref] => "../help/#{Regexp.last_match[:ref]}.html" }
+      end
+      line.scan(/(?<=[\s,.;])((\S+?)\((\d.*?)\))/).map do |text, ref, section|
+        [text, "../man#{section.downcase}/#{ref}#{'.' + @systype if @systype}.html"]
+      end.to_h
+    end
+
+    # aegis help style detection for refs in mana/ - bare lists of single refs
+    # strip $ for linking into mana/
+    #
+    # looks like I can rely on presence of _$ to aid detection, if necessary;
+    # though they appear totally orderly so maybe unnecessary.
+    def detect_links_syscalls(line)
+      syscall_detect = '([_$a-z0-9]+)'
+      return unless line.match(/^\s{#{@base_indent}}(?:#{syscall_detect}(?:, |,\s*$|\.\s*$|;\s*$))+/)
+
+      line.scan(/#{syscall_detect}/).map do |text, _|
+        [text, "#{text.delete '$'}.html"]
+      end.to_h
+    end
+
+    # Related help references in the Aegis help files are not consistently
+    # formatted. There are two types that are easy to detect and a bunch
+    # of miscellaneous garbage to deal with besides.
+    #def detect_links_aegis_helpfile(line)
+    #end
+
     # the bloody rcs manual in usr/new/mann (inconsistently) has whitespace
     # between the manual entry and section reference
     def detect_links_rcs(line)
@@ -291,7 +300,6 @@ module Aegis
     end
 
     def output_directory
-      return @source.dir.sub(%r{^.*/(help)}, '\1') if @source.dir.include?('/help')
       return 'mana' if @source.file.end_with? '.a'
       super
     end
@@ -336,6 +344,45 @@ module Aegis
                  else '3rd Berkeley Distribution'
                  end
             )
+    end
+  end
+
+  def self.name_for_section(sec)
+    case sec.downcase
+    when '1'    then "<strong>#{sec}.</strong> Commands"
+    when '1c'   then "<strong>#{sec}.</strong> Communications Commands"
+    when '1g'   then "<strong>#{sec}.</strong> Graphics Commands"
+    when '1m'   then "<strong>#{sec}.</strong> Maintenance Commands"
+    when '1x'   then "<strong>#{sec}.</strong> Motif Commands"
+    when '2'    then "<strong>#{sec}.</strong> System Calls"
+    when '2j'   then "<strong>#{sec}.</strong> Job Control Calls"
+    when '2v'   then "<strong>#{sec}.</strong> System V Compatibility Calls"
+    when '3'    then "<strong>#{sec}.</strong> Subroutines"
+    when '3c'   then "<strong>#{sec}.</strong> Communications Routines"
+    when '3f'   then "<strong>#{sec}.</strong> FORTRAN Library"
+    when '3j'   then "<strong>#{sec}.</strong> Job Control Facilities"
+    when '3m'   then "<strong>#{sec}.</strong> Math Library"
+    when '3n'   then "<strong>#{sec}.</strong> Networking Routines"
+    when '3p'   then "<strong>#{sec}.</strong> POSIX Threads Library"
+    when '3s'   then "<strong>#{sec}.</strong> Standard I/O Library"
+    when '3t'   then "<strong>#{sec}.</strong> Mach Threads Library"
+    when '3x'   then "<strong>#{sec}.</strong> Miscellaneous Routines"
+    when '3x11' then "<strong>#{sec}.</strong> X11 Library"
+    when '3xt'  then "<strong>#{sec}.</strong> X Toolkit"
+    when '4'    then "<strong>#{sec}.</strong> Special Files"
+    when '4f'   then "<strong>#{sec}.</strong> Network Protocol Families"
+    when '4n'   then "<strong>#{sec}.</strong> Networking Facilities"
+    when '4p'   then "<strong>#{sec}.</strong> Network Protocols"
+    when '4x'   then "<strong>#{sec}.</strong> Vue File Formats"
+    when '5'    then "<strong>#{sec}.</strong> File Formats"
+    when '6'    then "<strong>#{sec}.</strong> Games"
+    when '6x'   then "<strong>#{sec}.</strong> X11 Games"
+    when '7'    then "<strong>#{sec}.</strong> Miscellaneous Facilities"
+    when '8'    then "<strong>#{sec}.</strong> Maintenance Procedures"
+    when '8c'   then "<strong>#{sec}.</strong> Network Services"
+    when 'a'    then "Apollo System Calls and Routines"
+    when /^hel/ then sec.upcase # Aegis HELP
+    else "Section #{sec}"
     end
   end
 end

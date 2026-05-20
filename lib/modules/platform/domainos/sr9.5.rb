@@ -23,6 +23,7 @@ module DomainIX
       end
     end
 
+    class Manual < Manual ; end
     class Nroff < Nroff
 
       def initialize(source, **kwargs)
@@ -38,6 +39,9 @@ module DomainIX
 
     class Troff < Troff ; end
 
+    def self.name_for_section(sec)
+      Aegis.name_for_section(sec)
+    end
   end
 end
 
@@ -54,10 +58,19 @@ module AUX
         end
       end
     end
+    class Manual < Manual ; end
+    class Help < Help ; end
+    class Nroff < Nroff ; end
     class Troff < Troff ; end
+
+    def self.name_for_section(sec)
+      Aegis.name_for_section(sec)
+    end
   end
 
   module SR8_1
+    class Manual < Manual ; end
+    class Help < Help ; end
     class Nroff < Nroff
       def initialize(source, **kwargs)
         case source.file
@@ -66,13 +79,15 @@ module AUX
         super(source, **kwargs)
       end
     end
+
+    def self.name_for_section(sec)
+      Aegis.name_for_section(sec)
+    end
   end
 end
 
 # module aliases
 Aegis::SR7_B = Aegis
-#Aegis::SR8_0 = Aegis
-Aegis::SR8_1_update = Aegis
 Aegis::SR9_0 = Aegis
 Aegis::SR9_0_020 = Aegis
 Aegis::SR9_2 = Aegis

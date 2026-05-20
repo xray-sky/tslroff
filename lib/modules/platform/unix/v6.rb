@@ -72,5 +72,19 @@ module UNIX
         super
       end
     end
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when 'i'    then "<strong>#{sec}.</strong> Commands"
+      when 'ii'   then "<strong>#{sec}.</strong> System Calls"
+      when 'iii'  then "<strong>#{sec}.</strong> Subroutines"
+      when 'iv'   then "<strong>#{sec}.</strong> Special Files"
+      when 'v'    then "<strong>#{sec}.</strong> File Formats and Conventions"
+      when 'vi'   then "<strong>#{sec}.</strong> User-maintained Programs"
+      when 'vii'  then "<strong>#{sec}.</strong> User-maintained Subroutines"
+      when 'viii' then "<strong>#{sec}.</strong> Maintenance"
+      else "Section #{sec}"
+      end
+    end
   end
 end

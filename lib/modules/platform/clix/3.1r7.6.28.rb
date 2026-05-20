@@ -31,5 +31,9 @@ module CLIX
       end
 
     end
+
+    def self.name_for_section(sec)
+      CLIX.name_for_section(sec)
+    end
   end
 end

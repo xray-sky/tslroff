@@ -39,5 +39,9 @@ module NEWS_os
         super(name, breaking: breaking, source_class: Source)
       end
     end
+
+    def self.name_for_section(sec)
+      NEWS_os.name_for_section(sec)
+    end
   end
 end

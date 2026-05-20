@@ -32,9 +32,9 @@ module AMIX
       super
       @named_strings.merge!(
         {
-          footer: "\\*(]W\\0\\0\\(em\\0\\0\\*(]L".+@,
           #'Tm' => '&trade;',
-          ']W' => 'Amiga Unix'
+          ']W' => 'Amiga Unix',
+          footer: String.new('\\*(]W\\0\\0\\(em\\0\\0\\*(]L')
         }
       )
     end
@@ -136,6 +136,7 @@ module AMIX
     'KR'       => "The C Programming Language"
   }
 
+  # names from tmac.an .TH - we don't want these for the index though
   MANUAL_SECTION_NAMES = {
     '1'  => 'USER COMMANDS',
     '1C' => 'USER COMMANDS',
@@ -179,4 +180,40 @@ module AMIX
 
   MANUAL_NAMES.freeze
   MANUAL_SECTION_NAMES.freeze
+
+  # these are our display names, used by the indexer
+  def self.name_for_section(sec)
+    case sec.downcase
+    when '1'    then "<strong>#{sec}.</strong> User Commands"
+    when '1a'   then "<strong>#{sec}.</strong> Amiga-specific Commands"
+    when '1c'   then "<strong>#{sec}.</strong> Communications Commands"
+    when '1f'   then "<strong>#{sec}.</strong> FMLI Commands"
+    when '1g'   then "<strong>#{sec}.</strong> Graphics Commands"
+    when '1l'   then "<strong>#{sec}.</strong> Local Commands"
+    when '1m'   then "<strong>#{sec}.</strong> Maintenance Commands"
+    when '2'    then "<strong>#{sec}.</strong> System Calls"
+    when '3'    then "<strong>#{sec}.</strong> C Library Functions"
+    when '3a'   then "<strong>#{sec}.</strong> Amiga-specific Functions"
+    when '3c'   then "<strong>#{sec}.</strong> Compatibility Functions"
+    when '3e'   then "<strong>#{sec}.</strong> ELF Library"
+    when '3g'   then "<strong>#{sec}.</strong> General Purpose Library"
+    when '3m'   then "<strong>#{sec}.</strong> Mathematical Library"
+    when '3n'   then "<strong>#{sec}.</strong> Network Support Library"
+    when '3s'   then "<strong>#{sec}.</strong> Standard I/O Functions"
+    when '3x'   then "<strong>#{sec}.</strong> Miscellaneous Library Functions"
+    when '3x11' then "<strong>#{sec}.</strong> X11 Library"
+    when '3xt'  then "<strong>#{sec}.</strong> X Toolkit"
+    when '4'    then "<strong>#{sec}.</strong> Devices and Network Interfaces"
+    when '5'    then "<strong>#{sec}.</strong> File Formats"
+    when '5a'   then "<strong>#{sec}.</strong> Amiga-specific File Formats"
+    when '6'    then "<strong>#{sec}.</strong> Games and Demos"
+    when '7'    then "<strong>#{sec}.</strong> Public Files, Tables, and Troff Macros"
+    when '7a'   then "<strong>#{sec}.</strong> Amiga-specific Devices"
+    when '8'    then "<strong>#{sec}.</strong> Maintenance Commands"
+    when '8c'   then "<strong>#{sec}.</strong> Communications Maintenance Commands"
+    when '8l'   then "<strong>#{sec}.</strong> Local Maintenance Commands"
+    when 'l'    then 'Local Commands'
+    else "Section #{sec}"
+    end
+  end
 end

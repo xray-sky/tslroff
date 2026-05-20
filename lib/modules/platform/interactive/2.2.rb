@@ -34,5 +34,9 @@ module Interactive
       end
 
     end
+
+    def self.name_for_section(sec)
+      Interactive.name_for_section(sec)
+    end
   end
 end

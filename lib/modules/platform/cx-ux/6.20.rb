@@ -40,7 +40,10 @@ module CX_UX
         end
         super(source, **kwargs)
       end
+    end
 
+    def self.name_for_section(sec)
+      CX_UX.name_for_section(sec)
     end
   end
 end

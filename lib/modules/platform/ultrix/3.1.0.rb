@@ -57,7 +57,7 @@ module Ultrix
       end
 
       def EX(*args)
-        nr "EX #{to_u "#{args[0] || 0}n+#{@state[:base_indent]}u"}"
+        nr "EX #{to_u "#{args[0] || 0}n+#{@base_indent}u"}"
         nf
         sp '.5'
         send 'in', "+#{@register['EX'].value}u"
@@ -90,7 +90,10 @@ module Ultrix
 
         super(*args, heading: heading)
       end
+    end
 
+    def self.name_for_section(sec)
+      Ultrix.name_for_section(sec)
     end
   end
 end

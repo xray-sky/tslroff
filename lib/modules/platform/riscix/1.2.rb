@@ -42,5 +42,9 @@ module RISCiX
     end
 
     class Troff < Troff ; end
+
+    def self.name_for_section(sec)
+      RISCiX.name_for_section(sec)
+    end
   end
 end

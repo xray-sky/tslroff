@@ -36,7 +36,10 @@ module Ultrix
         heading = "#{args[0]}\\|(\\|#{args[1]}\\|)" # tmac.an uses \f(TB
         super(*args, heading: heading)
       end
+    end
 
+    def self.name_for_section(sec)
+      Ultrix.name_for_section(sec)
     end
   end
 end

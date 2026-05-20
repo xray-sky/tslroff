@@ -95,7 +95,7 @@ end
 # TODO optional ruby profiling of build job
 #
 
-def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil, vendor_class: nil, &block)
+def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil, vendor_class: nil, entry_page: nil, &block)
   unless odir
     #warn "No output directory given for #{name} (skipped)"
     return nil
@@ -110,7 +110,7 @@ def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil
       start_time = Time.now
       directory(pubdir).invoke
       open_build_log_task pubdir unless args[:limit]
-      pagecount = collection_task sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class, os: (os or n.scope.take(2).last), ver: (ver or name)
+      pagecount = collection_task sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class, os: (os or n.scope.take(2).last), ver: (ver or name), entry_page: entry_page
       close_build_log_task unless args[:limit]
       puts "       #{scope} => #{pagecount} pages complete in #{Time.now - start_time}s"
       puts "       #{Troff.webdriver.cache_stats}" if Troff.webdriver
@@ -169,7 +169,7 @@ end
 # REVIEW is this working correctly on directory structures more than one level deep?
 #
 
-def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, source_args: {}, os: nil, ver: nil)
+def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, entry_page: nil, source_args: {}, os: nil, ver: nil)
   pagecount = 0
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
@@ -204,14 +204,16 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, sour
     Troff.webdriver.persist_cache
   end
 
-  index_task(ix, pubdir, os: os, ver: ver) unless limit
+  #section_names = Kernel.const_defined?("#{vendor_class}::MANUAL_SECTION_NAMES") ? Kernel.const_get("#{vendor_class}::MANUAL_SECTION_NAMES") : {}
+  section_names = vendor_class&.respond_to?(:name_for_section) ? vendor_class.method(:name_for_section) : proc { |x| x }
+  index_task(ix, "#{pubdir}/#{'_' if entry_page == 'index.html'}index.html", os: os, ver: ver, names: section_names) unless limit
   pagecount
 end
 
-def index_task(ixinfo, pubdir, os: nil, ver: nil)
+def index_task(ixinfo, idxfile, os: nil, ver: nil, names: proc { |x| x })
   ident = "#{os} #{ver}".strip
-  ixf = File.open("#{pubdir}/page_index.html", 'w')
-  ixf.write ERB.new(INDEX_TEMPLATE, trim_mode: '-').result_with_hash(ixinfo: ixinfo, ident: ident, page_title: "Manual &mdash; #{ident}")
+  ixf = File.open(idxfile, 'w')
+  ixf.write ERB.new(INDEX_TEMPLATE, trim_mode: '-').result_with_hash(ixinfo: ixinfo, names: names, ident: ident, page_title: "Manual &mdash; #{ident}")
   ixf.close
 end
 
@@ -228,24 +230,28 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver
   title = man.manual_entry || srcfile.tap { |x| warn "falling back to src filename #{x.inspect} (no title)" }
   title = srcfile and warn "falling back to src filename #{srcfile.inspect} (title empty)" if title.empty?
   # prevent these from masking the apache file index (TODO not necessary once we are building our own indices)
-  title = '_index'   if title == 'index'   and man.magic != :HTML
-  title = '_default' if title == 'default' and man.magic != :HTML
+  #title = '_index'   if title == 'index'   and man.magic != :HTML
+  #title = '_default' if title == 'default' and man.magic != :HTML
 
   # TODO better - indexing
   related = []
   indexing = []
   unless man.magic == :HTML
     html = Nokogiri::HTML(page)
-    indexing = html.search('p[@class="name"]').map do |e|
-      # how to about??
-      # looks like Nokogiri.text() gives us the UTF-8 character rather than the HTML entity... &minus;, &nbsp;...
-      # REVIEW maybe this should be created during text processing and queryable from the
-      #        man object, so we can do something overrideable by vendor class. for now though.
-      #        also how regular is this going to be?? catman -w known to have crazy results for
-      #        ill formed manual entries so it's not solely an us problem.
-      #(names, _sep, descr) = e.text.strip.partition(/[\s ]*(?:-|−)[\s ]*/) # hyphen &minus; &nbsp;
-      (names, _sep, descr) = e.text.strip.partition(/(?:[\s ]+-[\s ]+|[\s ]*(?:−|—)[\s ]*)/) # hyphen (with spaces only) &minus; &mdash; &nbsp;
-      [names, descr]
+    if man.index_name
+      indexing = [[man.index_name, man.index_description]]
+    else
+      indexing = html.search('p[@class="name"]').map do |e|
+        # how to about??
+        # looks like Nokogiri.text() gives us the UTF-8 character rather than the HTML entity... &minus;, &nbsp;...
+        # REVIEW maybe this should be created during text processing and queryable from the
+        #        man object, so we can do something overrideable by vendor class. for now though.
+        #        also how regular is this going to be?? catman -w known to have crazy results for
+        #        ill formed manual entries so it's not solely an us problem.
+        #(names, _sep, descr) = e.text.strip.partition(/[\s ]*(?:-|−)[\s ]*/) # hyphen &minus; &nbsp;
+        (names, _sep, descr) = e.text.strip.partition(/(?:[\s ]+-[\s ]+|[\s ]*(?:−|—)[\s ]*)/) # hyphen (with spaces only) &minus; &mdash; &nbsp;
+        [names, descr]
+      end
     end
     related = html.search('a[@href]')
   end

@@ -254,6 +254,10 @@ module SunOS
 
     MANUAL_NAMES.default_proc = proc { |_h, k| "UNKNOWN TITLE ABBREVIATION: #{k}" }
     MANUAL_NAMES.freeze
+
+    def self.name_for_section(sec)
+      SunOS.name_for_section_sunos5(sec)
+    end
   end
 end
 

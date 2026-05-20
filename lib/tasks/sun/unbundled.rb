@@ -239,6 +239,15 @@ collection_namespace 'unbundled' do
       ]
   end
 
+  manual_namespace 'SunCD_Demo_1.0',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/suncd_demo_1.0',
+    odir: 'Sun/unbundled/SunCD_Demo_1.0',
+    sources: %w[
+      demos_sun_software/xnews/share/man/man[136n]
+      manual_pages/man/man[1-8ln]
+    ] # REVIEW most of manual_pages/ look like ordinary SunOS man pages??
+
   manual_namespace 'SunLink_TRI_SBus_2.1',
     vendor_class: SunOS::V4_1,
     idir: 'sun/sunos/unbundled/sunlink_tri_s_2.1',
@@ -250,6 +259,15 @@ collection_namespace 'unbundled' do
     idir: 'sun/sunos/unbundled/sunlink_tri_s_3.0.1',
     odir: 'Sun/unbundled/SunLink_TRI_SBus_3.0.1',
     sources: %w[sunlink/tr/man/man7]
+
+  manual_namespace 'SunPC_3.0',
+    vendor_class: SunOS::V4_1,
+    idir: 'sun/sunos/unbundled/sunpc_3.0',
+    odir: 'Sun/unbundled/SunPC_3.0',
+    sources: %w[
+      SunNetLicense/man/man1
+      SunPC_3.0/man/man1
+    ]
 
   manual_namespace 'TOPS_2.1',
     vendor_class: SunOS::V4_0,

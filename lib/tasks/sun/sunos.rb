@@ -103,7 +103,7 @@ collection_namespace 'SunOS' do
 
   manual_namespace '4.1.1',
     vendor_class: SunOS::V4_1,
-    idir: 'Sun/SunOS/4.1.1',
+    odir: 'Sun/SunOS/4.1.1',
     sources: %w[
       share/man/man[1-8]
       openwin/share/man/man[136n]

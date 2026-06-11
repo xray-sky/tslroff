@@ -1,0 +1,94 @@
+# frozen_string_literal: true
+# encoding: UTF-8
+#
+# Created by R. Stricklin <bear@typewritten.org> on 06/07/21.
+# Copyright 2021 Typewritten Software. All rights reserved.
+#
+#
+# Domain/OS SR10.4.1 Platform Overrides
+#
+# Mostly identical to SR10.4.
+# Primary differences are in the X11 manual. Couple others.
+# Most (if not all) overrides from SR10.4 should be mirrored here,
+# unless I can find a reasonable way to subsume them directly.
+#
+# TODO: bsd crddf.1 is in help format
+#       ali.n [3]: .so can't read .//usr/new/lib/mh/tmac.h
+#
+
+module DomainOS
+  module SR10_4_1
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'cc.hlp', 'clxwedlisp.hlp', 'ftn.hlp', 'lisp.hlp', 'pas.hlp', 'wedlisp.hlp'
+          raise ManualIsBlacklisted, 'is unbundled'
+        when 'Imakefile.3X11', 'Makefile.3X11'
+          raise ManualIsBlacklisted, 'is makefile'
+        end
+        super(file, **kwargs, &block)
+      end
+    end
+
+    class Manual < ::Manual
+      def initialize(file, **kwargs, &block)
+        kwargs[:document_class] = DomainOS::SR10_4_1::Help if File.dirname(file).include?('/help')
+        super(file, **kwargs, &block)
+      end
+    end
+
+    class Help < Help
+      def initialize(source, **kwargs)
+        @related_info_heading = 'SEE ALSO'
+        super(source, **kwargs)
+      end
+    end
+
+    class Nroff < Nroff
+      def initialize(source, **kwargs)
+        # a bunch of pages have e.g. 'SYNOPSIS (Pascal)' which is causing that text to end up in the index
+        @heading_detection = %r{^(?<section>[A-Z][A-Za-z\s]+(?:\s+\([A-Za-z]+\))?)$}
+
+        case source.file
+        when 'edacl.hlp'
+          @heading_detection = %r{^(?<section>[A-Z][A-Za-z0-9\s]+)$}
+          @related_info_heading = 'SEE ALS0'
+        when 'coffdump.1'
+          define_singleton_method(:detect_links, method(:detect_links_sysv_coffdump)) if source.dir.include? 'sys5'
+        when 'mkfontdir.1.05.30', 'crypt.1', 'makekey.1' # problem here wanting to do more about mkfontdir filename
+          @base_indent = 6
+          @heading_detection = %r{^\s(?<section>[A-Z][A-Za-z0-9\s]+)$}
+        when 'ali.n', 'anno.n', 'burst.n', 'comp.n', 'dist.n'
+          @systype = 'bsd'
+          @manual_entry = "#{@manual_entry}.bsd"
+        when 'ci.n', 'co.n', 'ident.n', 'merge.n', /^rcs.*\.n$/, 'rlog.n', 'sccstorcs.n'
+          define_singleton_method :detect_links, method(:detect_links_rcs)
+          # TODO: links spanning lines - rcsfile.n "rcsmerge (1)"
+          #                              rcs.n     "rlog (1)"
+          #                              ident.n   "rcsmerge (1)"
+          #                              rlog.n    "rcsintro (1)"
+        end
+
+        super(source, **kwargs)
+      end
+
+      def page_title
+        super << " Domain/OS SR10.4.1"
+      end
+    end
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '1m' then "<strong>#{sec}.</strong> Maintenance Commands (SysV)"
+      when '1x' then "<strong>#{sec}.</strong> Vue Commands"
+      when '3'  then "<strong>#{sec}.</strong> C Library"
+      when '3c' then "<strong>#{sec}.</strong> Compatibility Routines"
+      when '5'  then "<strong>#{sec}.</strong> File Formats (4BSD) &amp; Miscellaneous Facilities (SysV)"
+      when '7'  then "<strong>#{sec}.</strong> Miscellaneous Facilities (4BSD) &amp; Special Files (SysV)"
+      when '8'  then "<strong>#{sec}.</strong> Maintenance Procedures (4BSD)"
+      when '8c' then "<strong>#{sec}.</strong> Network Services (4BSD)"
+      else Aegis.name_for_section(sec)
+      end
+    end
+  end
+end

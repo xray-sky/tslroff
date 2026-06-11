@@ -55,4 +55,15 @@ class Troff
     end
     ''
   end
+
+  # V7 roff - literal; treat next n lines as text (default 1 line)
+  def li(argstr = '', breaking: nil)
+    @literal = true
+    it("#{argstr.empty? ? '1': argstr} finalize_li")
+  end
+
+  def finalize_li
+    @literal = false
+  end
+
 end

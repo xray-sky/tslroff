@@ -37,6 +37,22 @@ class Block
     end
   end
 
+  # TODO don't hardcode padding (is correct for OpenWindows .Jq etc.)
+  class Boxed < Block::Inline
+    def initialize(arg = {})
+      arg[:style] ||= Style.new
+      arg[:style][:css].merge!({display: 'inline-block',
+                                border: '1px solid black',
+                                padding: '0.25em 0.5em 0.25em 0.5em',
+                                margin: 0})
+      super(arg)
+    end
+
+    def to_html
+      %(<span#{@style}>#{@text.collect(&:to_html).join}</span>)
+    end
+  end
+
   class Link < Block::Inline
     attr_accessor :href
 

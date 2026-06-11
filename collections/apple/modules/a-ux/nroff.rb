@@ -1,0 +1,33 @@
+# frozen_string_literal: true
+# encoding: UTF-8
+#
+# Created by R. Stricklin <bear@typewritten.org> on 05/28/22.
+# Copyright 2022 Typewritten Software. All rights reserved.
+#
+#
+# Apple A/UX Platform Overrides
+#
+# 0.7 postscript(7), pscatmap(8), transcript(8), etc. is troff source
+# 2.0 some pages got sections in their names - autorecovery.8.html, etc.
+#     - these do not end with .z - this is fixed now but leaving the note to think harder about being more generic
+# 2.0 esch(8) sees-also "Startup-^MShell(8)" (with line break)
+#
+# local .TH for 0.7 transcript, if we have tmac.an
+#
+
+module A_UX
+  class Nroff < Nroff
+
+    def initialize(source, **kwargs)
+      @manual_entry ||= source.file.sub(/\.(?:\d\S?)(?:\.[zZ])?$/, '') # REVIEW: would this be better & more generic as a 'scan' call? everything after the section?
+      @heading_detection ||= %r(^\s{5}(?<section>[A-Z][A-Za-z\s]+)$)
+      @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
+      super(source, **kwargs)
+    end
+
+    def page_title
+      "#{@manual_entry}(#{@manual_section}) &mdash; A/UX #{@version}"
+    end
+
+  end
+end

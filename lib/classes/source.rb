@@ -88,10 +88,10 @@ class Source
     case File.magic @path
     when 'tar'     then raise ArgumentError, "#{@path}: is tape archive (skipped)"
     # OS X 10.6 gzip does it all, even if zlib or OS X gzip won't.
-    when 'lzh_sco' then %(|gzip_10.6 -dc "#{@path}")
+    when 'lzh_sco' then %(|gzip_10.6 -dc '#{@path}')
     # OS X gzip does it all, even if zlib won't.
     when 'compress', 'gzip', 'oldpack', 'pack'
-      %(|gzip -dc "#{@path}")
+      %(|gzip -dc '#{@path}')
     else @path
     end
   end

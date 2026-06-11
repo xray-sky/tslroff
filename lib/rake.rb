@@ -114,7 +114,9 @@ def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil
       close_build_log_task unless args[:limit]
       puts "       #{scope} => #{pagecount} pages complete in #{Time.now - start_time}s"
       puts "       #{Troff.webdriver.cache_stats}" if Troff.webdriver
+      puts "       #{VMS::Help.webdriver.cache_stats}" if VMS::Help.webdriver
       Troff.webdriver&.reset_cache_stats
+      VMS::Help.webdriver&.reset_cache_stats
     end
     yield(task: t, idir: srcdir, odir: pubdir) if block_given?
   end
@@ -184,7 +186,7 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, entr
     next if File.directory?(src)
     next if limit and !File.basename(src).match?(limit)
     # TODO symlinks - checked first to avoid file? from following them
-    warn "symlink #{src} (skipped)" and next if File.symlink?(src)
+    #warn "symlink #{src} (skipped)" and next if File.symlink?(src)
     puts "<== #{src}" if limit
     pagecount += 1
     (sec, fl, nmlst, dsc) = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver)
@@ -204,6 +206,11 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, entr
     Troff.webdriver.persist_cache
   end
 
+  if VMS::Help.webdriver
+    warn VMS::Help.webdriver.cache_stats
+    VMS::Help.webdriver.persist_cache
+  end
+
   #section_names = Kernel.const_defined?("#{vendor_class}::MANUAL_SECTION_NAMES") ? Kernel.const_get("#{vendor_class}::MANUAL_SECTION_NAMES") : {}
   section_names = vendor_class&.respond_to?(:name_for_section) ? vendor_class.method(:name_for_section) : proc { |x| x }
   index_task(ix, "#{pubdir}/#{'_' if entry_page == 'index.html'}index.html", os: os, ver: ver, names: section_names) unless limit
@@ -213,7 +220,7 @@ end
 def index_task(ixinfo, idxfile, os: nil, ver: nil, names: proc { |x| x })
   ident = "#{os} #{ver}".strip
   ixf = File.open(idxfile, 'w')
-  ixf.write ERB.new(INDEX_TEMPLATE, trim_mode: '-').result_with_hash(ixinfo: ixinfo, names: names, ident: ident, page_title: "Manual &mdash; #{ident}")
+  ixf.write ERB.new(INDEX_TEMPLATE, trim_mode: '-').result_with_hash(ixinfo: ixinfo.reject { |k,v| k == '!!!' }, names: names, ident: ident, page_title: "Manual &mdash; #{ident}")
   ixf.close
 end
 
@@ -227,15 +234,42 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver
   man = k.new source, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver
   page = man.to_html
 
-  title = man.manual_entry || srcfile.tap { |x| warn "falling back to src filename #{x.inspect} (no title)" }
-  title = srcfile and warn "falling back to src filename #{srcfile.inspect} (title empty)" if title.empty?
-  # prevent these from masking the apache file index (TODO not necessary once we are building our own indices)
-  #title = '_index'   if title == 'index'   and man.magic != :HTML
-  #title = '_default' if title == 'default' and man.magic != :HTML
-
-  # TODO better - indexing
+  title = String.new
   related = []
   indexing = []
+
+  if page.is_a?(Array) # page bundle (e.g. from VMSHelpLibrary)
+    page.reverse.each do |p|
+      next if p[0].end_with? '/' # h4x - getting an empty file from VMSHelpLibrary somewhere causing "foo.hlb.html" REVIEW TODO
+      page = p[1]
+      title = File.basename p[0]
+      mdir = File.dirname p[0]
+      related = Nokogiri::HTML(page).search('a[@href]') unless man.magic == :HTML
+
+      odir = "#{pubdir}/#{man.output_directory}#{"/#{mdir}" unless mdir == '.'}"
+      directory(odir).invoke
+      taskcontext = binding
+      File.open("#{odir}/#{title}.html", File::CREAT | File::TRUNC | File::WRONLY, 0o644) do |f|
+        f.write ERB.new(MANUAL_TEMPLATE, trim_mode: '-').result(taskcontext)
+      end
+    end # ending loop with page <= page[0][1], for normal indexing of only first entry (correct for VMSHelpLibrary)
+  else # normal String return
+    title = man.manual_entry || srcfile.tap { |x| warn "falling back to src filename #{x.inspect} (no title)" }
+    title = srcfile and warn "falling back to src filename #{srcfile.inspect} (title empty)" if title.empty?
+    # prevent these from masking the apache file index (TODO not necessary once we are building our own indices)
+    #title = '_index'   if title == 'index'   and man.magic != :HTML
+    #title = '_default' if title == 'default' and man.magic != :HTML
+    related = Nokogiri::HTML(page).search('a[@href]') unless man.magic == :HTML
+
+    odir = "#{pubdir}/#{man.output_directory}"
+    directory(odir).invoke
+    taskcontext = binding
+    File.open("#{odir}/#{title}.html", File::CREAT | File::TRUNC | File::WRONLY, 0o644) do |f|
+      f.write ERB.new(MANUAL_TEMPLATE, trim_mode: '-').result(taskcontext)
+    end
+  end
+
+  # TODO better - indexing
   unless man.magic == :HTML
     html = Nokogiri::HTML(page)
     if man.index_name
@@ -253,29 +287,25 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver
         [names, descr]
       end
     end
-    related = html.search('a[@href]')
+    #related = html.search('a[@href]')
+  else
+    # HTML indexing
+    indexing = [[man.index_name, man.index_description]]
   end
 
-  odir = "#{pubdir}/#{man.output_directory}"
-  directory(odir).invoke
-  taskcontext = binding
-  File.open("#{odir}/#{title}.html", File::CREAT | File::TRUNC | File::WRONLY, 0o644) do |f|
-    f.write ERB.new(MANUAL_TEMPLATE, trim_mode: '-').result(taskcontext)
-  end
-
-  exit unless Process.pid == ppid # guard against fork (i.e. VMS Help)
+  #exit unless Process.pid == ppid # guard against fork (i.e. VMS Help)
   warn "multi-line index info for #{title}.html" if indexing[1]
   [ "#{man.manual_section}", "#{man.output_directory}/#{title}.html", "#{indexing[0]&.[](0)}", "#{indexing[0]&.[](1)}" ]# REVIEW experimental
 
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"
-  [ "---", ".", title, "!! blacklisted #{srcfile}" ]
+  [ "!!!", srcfile, title, "!! blacklisted #{srcfile}" ]
 rescue StopIteration, FileIsEmptyError, IOError, SystemCallError => e
   warn "#{srcfile}: #{e.message}"
-  [ "---", ".", title, "[[empty]] #{srcfile}" ]
+  [ "!!!", srcfile, title, "[[empty]] #{srcfile}" ]
 rescue => e
   warn "#{srcfile}: unhandled exception #{e.message}\n#{e.backtrace.join("\n")}"
-  [ "---", ".", title, "((exception)) #{srcfile}" ]
+  [ "!!!", srcfile, title, "((exception)) #{srcfile}" ]
 end
 
 ###

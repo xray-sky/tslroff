@@ -20,6 +20,7 @@ class Nroff < TextFormatter
   #attr_reader :input_line_number, :output_directory, :manual_section
 
   TYPEBOX = Typesetter::ASR37::Symbols
+  #TYPEBOX = Typesetter::VT100::Symbols
   TYPEBOX.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
   TYPEBOX.freeze
 
@@ -50,6 +51,8 @@ class Nroff < TextFormatter
   def to_lp
     alt_typebox_shift  = false
     escape_shift       = false
+    # VT shifts (invented)
+    reverse_shift      = false
     platen_position    = 1      # top of page, with room for one backward half-linefeed
     printhead_position = 0      # leftmost column
     document           = []
@@ -83,18 +86,25 @@ class Nroff < TextFormatter
         # REVIEW I wonder if these control characters ought to be programmable
         #        not if col(1) is involved - VT(\013), SI (\016), SO (\017), and ESC-7, 8, and 9 only
         #   TODO but Aegis makes use of its own escape sequences for pad font selection;
-        #        VMS makes use of ANSI escapes in some pages;
+        #        VMS makes use of VT escapes in some pages;
         #        and presumably we'll have to deal with color codes in VM/ESA online help?
-        # TODO support VT as alternate form of full reverse linefeed
+        # TODO support ASCII VT as alternate form of full reverse linefeed
         case char
-        when ' '   then printhead_position += 1
+        when ' '   then text.print_at(printhead_position, " \c&") if reverse_shift ; printhead_position += 1
+        #when "\r"  then printhead_position = 0 # instrumental hack for VMS \r\n - TODO doesn't actually work. we have \r\n to probable bold overstrike, and \r\n\n to move on. is this ascii ftp damage? what happened??
         when "\n"  then platen_position += 2 and printhead_position = 0
+        when "\f"  then (@lines_per_page - (platen_position / 2) % @lines_per_page).times do
+                          platen_position += 2
+                          document[page].text << Line.new
+                        end if @lines_per_page and platen_position != 1 # don't form feed from the first line (e.g. apollo release notes)
         when "\cH" then printhead_position -= 1 unless printhead_position.zero? # ignore a backspace in leftmost column
         when "\cI" then printhead_position += (@tab_width - printhead_position % @tab_width)
         when "\cM" then printhead_position = 0
         when "\cN" then alt_typebox_shift = true
         when "\cO" then alt_typebox_shift = false
         when "\c[" then escape_shift = true
+        # made up our own escapes for color control
+        when "\c&" then reverse_shift = !reverse_shift
         else
           if escape_shift
             case char
@@ -108,6 +118,7 @@ class Nroff < TextFormatter
             warn "processing unknown control character #{char.inspect}" if char.bytes.detect { |b| b < 32 }
             text.print_at(printhead_position, char)
             text.print_at(printhead_position, "\cN") if alt_typebox_shift
+            text.print_at(printhead_position, "\c&") if reverse_shift
             printhead_position += 1
           end
         end
@@ -118,7 +129,7 @@ class Nroff < TextFormatter
   end
 
   def output_directory
-    @manual_section and return "man#{@manual_section}"
+    @manual_section and return "man#{@manual_section.downcase}"
     warn "reading output directory without section set"
     ''
   end
@@ -167,7 +178,7 @@ class Nroff < TextFormatter
   def index_entry(lines)
     return if lines.empty?
     (names, _sep, descr) = lines.collect { |l| l.to_html }.join(' ').strip.partition(/\s+-\s+/)
-    [names, descr]
+    [strip_tags(names), descr]
   end
 
   def parse_title

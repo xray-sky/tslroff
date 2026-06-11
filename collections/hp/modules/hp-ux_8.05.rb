@@ -1,0 +1,63 @@
+# frozen_string_literal: true
+# encoding: UTF-8
+#
+# Created by R. Stricklin <bear@typewritten.org> on 08/17/22.
+# Copyright 2022 Typewritten Software. All rights reserved.
+#
+#
+# HP-UX 8.05 Platform Overrides
+#
+# TODO
+# √ does )H have a value in the footer? - on some pages
+#   be nice somehow to prevent the extraneous \0\0\(em\0\0 if )H doesn't get defined...
+#    - maybe I can define an end of processing macro to do it
+#
+
+module HPUX
+  module V8_05
+
+    class Troff < Troff
+
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@,
+            'Tm' => '&trade;',
+            ')H' => '', # .TH sets this to \&. Some pages define it.
+            #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
+            # REVIEW is this what actually goes in the footer in the printed manual?
+            ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
+          }
+        )
+      end
+
+      def TH(*args)
+        ds "]W #{send '__unesc_*', '\\*(]V'}"
+        ds "]L #{args[3]}"
+        ds "]O #{args[2]}"
+
+        # ]O follows the title (if given), centered on its own line.
+        unless @named_strings[']O'].empty?
+          #space = true
+          byline = Block::Footer.new
+          byline.style.css[:margin_top] = '0.5em' # TODO not working? getting 4em from css
+          unescape "\\f3\\*(]O\\fP", output: byline
+          @document << byline
+        end
+        #sp('1.5v') if space # probably this is overkill, actually
+
+        heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
+        heading << '\\0\\|\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+
+    end
+
+    def self.name_for_section(sec)
+      HPUX.name_for_section(sec)
+    end
+
+  end
+end

@@ -13,6 +13,7 @@ class Nroff
   end
 
   OVERSTRIKES = {
+    %w[]    => '',           # might get this from \f
     %w[&]   => '&amp;',     %w[<]   => '&lt;',      %w[>]    => '&gt;',
     %w[O c]  => '&copy;',   %w[< a]  => '&alpha;',  %w[, f]  => '&fnof;',
     %w[/ E o] => '&exist;', %w[- C]  => '&isin;',   %w[- n]  => '&pi;',     %w[- V]  => '&forall;',

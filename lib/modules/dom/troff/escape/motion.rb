@@ -38,7 +38,7 @@ class Troff
   #        pathological interactions with .ds and \* ========> so.... now what?
   #
   # TODO need to clear horizontal shift after tab, break, block, etc. once it's
-  #      happened, it's stuck on forever. ascii(5) - [GL2-W2.5]
+  #      happened, it's stuck on forever. ascii(5) - [GL2-W2.5], OpenWindows .JL
   #       - solve this by differentiating leftward and rightward shifts; making
   #      rightward motion insert an empty span (like a thin space) and a
   #      leftward motion by putting an explicit (narrower) width on the span? - collect examples
@@ -46,6 +46,7 @@ class Troff
   # TODO default unit 'm'
 
   def esc_h(s)
+  warn "entered \\h with #{s.inspect}"
     quotechar = Regexp.quote(get_char(s))
     req_str = __unesc_w(s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')) # we may have come here without having getargsed
     if req_str.match?(/^[-\w.]+/)
@@ -65,11 +66,13 @@ class Troff
       new_shift = to_em(req_str.to_s).to_f
       if new_shift.zero?
         apply { @current_block.terminal_text_style.delete(:horizontal_shift) }
-      elsif nofill?
-        warn ">>> treating it like a tab of #{new_shift}em due to nofill" # TODO tbl outputs \h for column positioning. we should treat this as a tab _from last \h_ in that case. somehow.
-        insert_tab width: new_shift
+      #elsif nofill?
+      #  warn ">>> treating it like a tab of #{new_shift}em due to nofill" # TODO tbl outputs \h for column positioning. we should treat this as a tab _from last \h_ in that case. somehow.
+      #  insert_tab width: new_shift
       else
-        apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }
+      #  apply { @current_block.terminal_text_style[:horizontal_shift] = new_shift }
+        warn "REVIEW >>> treating it like a tab of #{new_shift}em" # this strategy works ok in the OpenWindows manual
+        insert_tab width: new_shift
       end
     else
       warn "don't know how to \\h #{req_str.inspect}"

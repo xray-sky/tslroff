@@ -35,8 +35,46 @@ class HTML < TextFormatter
   def_delegators :@structured_source, :title, :xpath
 
   def initialize(source, **kwargs)
+    @manual_entry ||= source.file.sub(/\.html?$/, '')
     super(source, **kwargs)
     @structured_source = Nokogiri::HTML @source.iter.collect(&:to_s).join
+  end
+
+  # REVIEW some kind of default html processing baseline
+  def to_html(halt_on: nil)
+    return if halt_on
+    body = xpath('//body')
+
+    body_styles = String.new
+    bgcolor = body.attribute('bgcolor')
+    background = body.attribute('background')
+    body_styles << %(background-color:#{bgcolor.value};) if bgcolor
+    body_styles << %(background-image:url('#{background.value}');background-repeat:repeat;) if background
+
+    body.css('a').each do |link|
+      # ditch external links (e.g. to www.be.com) -- should cover http://, https://, ftp://, etc.
+      link.replace(link.text) if link['href']&.include?('://') or link['href']&.start_with?('mailto:')
+      # update links to '.htm' pages as '.html'
+      link['href'] &&= link['href']&.sub!(%r{\.htm(#.*)?$}, '.html\1')
+    end
+
+    # also for image map links, e.g. Tru64 C++ 6.2
+    body.css('area').each do |link|
+      link.delete('href') if link['href']&.include?('://') or link['href']&.start_with?('mailto:')
+    end
+
+    <<~DOC
+      <div class="title"><h1>#{page_title}</h1></div>
+      <div class="htbody"#{%( style="#{body_styles}") unless body_styles.empty?}>
+          <div id="man">
+      #{body.children.to_xhtml(encoding: 'UTF-8').gsub(/&#13;/, '')}
+          </div>
+      </div>
+    DOC
+  end
+
+  def page_title
+    xpath('//head/title').text
   end
 
   #def input_line_number
@@ -46,5 +84,13 @@ class HTML < TextFormatter
   # default behavior: flatten, single level
   def output_directory
     ''
+  end
+
+  def index_name
+    @manual_entry
+  end
+
+  def index_description
+    xpath('//head/title').text
   end
 end

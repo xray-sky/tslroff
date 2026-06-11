@@ -4,8 +4,8 @@
 class Nroff
   class Line
     STYLES = {
-      start: { bold: '<em>',  underline: '<span class="ul">' },
-      end:   { bold: '</em>', underline: '</span>' }
+      start: { bold: '<em>',  underline: '<span class="ul">', reverse: '<span style="background-color:black;color:white;">' },
+      end:   { bold: '</em>', underline: '</span>', reverse: '</span>' },
     }.freeze
 
     attr_accessor :section, :links
@@ -79,19 +79,33 @@ class Nroff
         cell.length == 1 and next(clear_styles! +
                                   cell.sub(/([&<>])/) { |_m| Nroff::OVERSTRIKES[[Regexp.last_match[1]]] })
 
+        # the following tasks are destructive of cell; indexing means we'll typeset some lines twice
+        cell = cell.dup
+
         out = String.new
+        # underscores may be combined with other characters to produce underlines
+        # we might get here with a literal underscore, if it was bold - don't turn it into an underline
+        # TODO getting underline on shift-out '_' :: greek(5) [A/UX 3.0.1]
+        #out << (cell.gsub!(%r(_+), '') ? style!(:underline) : end_style!(:underline)) unless cell == '_'
+
         # repeated characters are overstrikes
         # reduce to single instance of each and turn on bold
         # TODO losing characters out of this (rang, eqnchar(5bsd) [Domain/OS SR10.4])
         #      L^H.^H. is coming out as <em>.</em>, probably damage from col. is it worth fixing? an unbold L and a bold . ?
         # TODO losing clashes out of bold too (title, mklost+found(1M-SysV) [RISC/os 4.52]
         # REVIEW is the solution to this (and maybe of underline too?) to sort ahead of OVERSTRIKES?
-        out << (cell.gsub!(%r((\S)+(.*)\1+), '\1\2') ? style!(:bold) : end_style!(:bold))
+        #out << (cell.gsub!(%r((\S)+(.*)\1+), '\1\2') ? style!(:bold) : end_style!(:bold))
 
-        # underscores may be combined with other characters to produce underlines
-        # we might get here with a literal underscore, if it was bold - don't turn it into an underline
-        # TODO getting underline on shift-out '_' :: greek(5) [A/UX 3.0.1]
-        out << (cell.gsub!(%r(_+), '') ? style!(:underline) : end_style!(:underline)) unless cell == '_'
+        out << if cell.sub!(%r(\c&), '')# ? style!(:reverse) : end_style!(:reverse)
+                 style!(:reverse)
+               else
+                 end_style!(:reverse)
+               end
+        out << if cell.gsub!(%r(_+), '')
+                 style!(:underline) + (cell.gsub!(%r((\S)+(.*)\1+), '\1\2') ? style!(:bold) : end_style!(:bold))
+               else
+                 (cell.gsub!(%r((\S)+(.*)\1+), '\1\2') ? style!(:bold) : end_style!(:bold)) + (cell == '_' ? '' : end_style!(:underline))
+               end
 
         # compose overstruck characters (may have been piled up in any order)
         # any typebox shift-outs have to be kept with the preceeding character

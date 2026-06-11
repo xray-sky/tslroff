@@ -15,6 +15,10 @@
 #         usurp previously defined request, macro, or string names. Any
 #         of these entities may be renamed with .rn or removed with .rm
 #
+#         interesting discussion of this topic in groff manual that seems
+#         to be consistent with troff behavior --
+#         https://www.gnu.org/software/groff/manual/groff.html.node/Punning-Names.html
+#
 
 class Troff
   # Request       Initial   If no     Notes   Explanation

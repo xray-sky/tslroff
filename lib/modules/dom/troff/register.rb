@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 #
 
+require 'forwardable'
+
 class Troff
   class Register
     extend Forwardable

@@ -11,6 +11,7 @@
 # TODO .foot => /tsl-print.css (center, n% grey, extra margin-top)
 # TODO tabs and probably other contrivances also need copying to print css. check especially eqn.
 # TODO finish making the macro package selectable
+# TODO ensure we get a page even if we don't find a .TH (e.g. V7 intro, is tmac.an specific anyway)
 #
 
 require_relative '../../classes/webdriver'
@@ -41,7 +42,17 @@ class Troff < TextFormatter
     ab ad af am as bd bp br c2 cc ce cf ch cs cu da de di ds dt ec el em eo ev ex fc fi
     fl fp ft hc hw hy ie if ig in it lc lf lg ll ls lt mc mk na ne nf nh nm nn nr ns nx
     os pc pi pl pm pn po ps rd rm rn rr rs rt so sp ss sv ta tc ti tl tm tr ul vs wh \"
-  ].freeze # REVIEW \" isn't really a request but I want to not parse its args
+  ] + # REVIEW \" isn't really a request but I want to not parse its args
+
+  # V7 roff requests; these aren't all the same as those in DWB troff. Might eventually want
+  # to treat these separately. For now, use of e.g. .li in the manual is not well contained
+  # so we are mixing them
+  # overlap:
+  # %w[ ad bp br cc ce de fi hc hy ig in ll ls na ne nf nn nx po sp ss ta tc ti tr ul ] +
+  # conflicting definitions:
+  # %w[ ds ] +
+  %w[ ar bl ef eh fo he hx ix li m1 m2 m3 m4 n1 n2 ni of oh pa ro sk ]
+  REQUESTS.freeze
 
   @@webdriver = nil
 
@@ -93,8 +104,11 @@ class Troff < TextFormatter
       # TODO this is quite wrong if we are doing halt_on e.g. from parse_title and don't find one (e.g. unix v7 intro.0)
       if @named_strings.key? :header
         unescape @named_strings[:header], output: @header
-        @document.insert(0, @header)
+      else
+        warn "processed without defining a title - applying default document header"
+        unescape '\ ', output: @header
       end
+      @document.insert(0, @header)
       if @named_strings.key? :footer
         unescape @named_strings[:footer], output: @footer
         @document << @footer

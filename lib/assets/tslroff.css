@@ -114,6 +114,14 @@
 
 @font-face {
 	font-family: "CMU Typewriter";
+	font-weight: normal;
+	font-style: oblique;
+	src: url(./fonts/cmu/cmunst.otf) format(opentype),
+	     url(./fonts/cmu/cmunst.ttf) format(truetype);
+}
+
+@font-face {
+	font-family: "CMU Typewriter";
 	font-weight: bold;
 	font-style: normal;
 	src: url(./fonts/cmu/cmuntb.otf) format(opentype),
@@ -138,7 +146,8 @@
 	background: white;
 	padding: 2em 4em;
 	border: 1px solid black;
-	margin-right: 1.2em; /* h4x - odd size to avoid safari/chrome subpixel positioning bug */
+	/* h4x - odd size to avoid safari/chrome subpixel positioning bug */
+	margin-right: 1.2em;
 }
 
 .htbody #man pre {
@@ -321,6 +330,26 @@
 #man table .nalign {	/* tbl numerical column alignment  */
 	width: 50%;
 	display: inline-block;
+}
+
+#man table.index {
+	background: none;
+}
+
+#man table.index td:nth-child(1) {
+	width: 25%;
+	color: gray;
+	font-style: italic;
+	text-align: right;
+}
+
+#man table.index td:nth-child(1) a {
+	font-weight: bold;
+}
+
+#man table.index td:nth-child(2) {
+	width: 75%;
+	vertical-align: bottom;
 }
 
 #man .sub {

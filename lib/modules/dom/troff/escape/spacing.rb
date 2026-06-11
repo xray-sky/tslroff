@@ -76,7 +76,8 @@ class Troff
 
   def esc_w(s)
     quotechar = Regexp.quote(get_char(s))
-    req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1')
+    # trailing spaces need to be protected from unescape
+    req_str = s.sub(/^#{quotechar}(.*)#{quotechar}$/, '\1').sub(/ $/, '\\ ')
 
     # get a manipulable block that can be rendered without leaving anything in the output stream
     selenium = Block::Selenium.new

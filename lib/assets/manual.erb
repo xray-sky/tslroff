@@ -3,7 +3,11 @@
   menu class 'here' could include more information about where in the Online Manual, specifically
   fix overflow on related articles menu
 -%>
-<html lang="<%= man.language %>">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<%= man.language %>" lang="<%= man.language %>">
+
 <head>
   <title><%= man.page_title %></title>
   <link rel="stylesheet" type="text/css" media="screen" href="/typewritten.css" />
@@ -16,9 +20,10 @@
   <meta name="source_format" content="<%= man.magic %>">
 <% unless indexing.empty? -%>
   <meta name="names" content="<%= indexing[0][0] %>">
-  <meta name="description" content="<%= indexing[0][1] %>">
+  <meta name="description" content="<%= indexing[0][1].gsub(%r{</?[a-z].+?>}, '') %>">
 <% end -%>
 </head>
+
 <body>
 <div id="left">
 	<div id="menu">
@@ -30,7 +35,8 @@
           	<p><a href="/"><item>Home</item></a></p>
          	<p><a href="/Systems/"><item>Lab Overview</item></a></p>
          	<p><a href="/Articles/"><item>Retrotechnology Articles</item></a></p>
-			<p class="here"><small>&rArr; Online Manual</small></p>
+         	<p><a href="/Manual/"><item>Online Manuals</item></a></p>
+			<p class="here"><small>&rArr; <%= man.page_title %></small></p>
          	<p><a href="/Media/"><item>Media Vault</item></a></p>
           	<p><a href="/Software/"><item>Software Library</item></a></p>
           	<p><a href="/Projects/"><item>Restoration Projects</item></a></p>

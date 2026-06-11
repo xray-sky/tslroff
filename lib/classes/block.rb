@@ -63,7 +63,7 @@ class Block
         @last_tab_stop = @text.count
       end
       @text << Text.new(font: @text.last&.font.dup || Font::R.new, style: @text.last&.style.dup || Style.new)
-    when Text, Block::TableCell, Block::Inline then @text << obj
+    when Text, Block::TableCell, Block::Inline, Block::Boxed then @text << obj
     when String then @text.last << obj
     when Block # cruft catcher
       raise RuntimeError "appending non-bare block #{t.inspect}" #unless t.class == Block::Bare # bare blocks used by vms for inserting pre-formatted html; TODO probably create a Link text class

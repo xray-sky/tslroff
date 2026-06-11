@@ -44,6 +44,11 @@ class Font
     def css_style ; %(font-family:'CMU Typewriter',monospace;font-weight:bold;) ; end
   end
 
+  class CO < Font
+    def css_class ; nil ; end
+    def css_style ; %(font-family:'CMU Typewriter',monospace;font-style:oblique;) ; end
+  end
+
   # Helvetica
   class H < Font
     def css_class ; nil ; end

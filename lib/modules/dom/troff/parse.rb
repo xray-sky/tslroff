@@ -28,7 +28,7 @@ class Troff
       end
     end
 
-    line.start_with?(@cc, @c2) ? request(unescape line, copymode: true) : output(line)
+    !@literal && line.start_with?(@cc, @c2) ? request(unescape line, copymode: true) : output(line)
   end
 
   ###
@@ -119,7 +119,7 @@ class Troff
 
     # reset no-space mode, which is only in effect for one output line
     rs if nospace?
-    process_input_traps
+    process_input_traps if @diversion_stack.empty? # REVIEW interaction with .di (q.v.) - this gives correct results for V7 roff(1) but is it _actually_ correct
   end
 
   ###

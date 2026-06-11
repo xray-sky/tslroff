@@ -50,5 +50,10 @@ class TextFormatter
     warn "!!! rescuing #{e.class.name} (??)"
   end
 
+  protected
+
+  def strip_tags(str)
+    str.gsub(%r{</?[a-z].+?>}, '')
+  end
 end
 

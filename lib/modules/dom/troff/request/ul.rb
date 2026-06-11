@@ -68,6 +68,6 @@ class Troff
   end
 
   def init_ul
-    @ul_font = 'I'
+    uf
   end
 end

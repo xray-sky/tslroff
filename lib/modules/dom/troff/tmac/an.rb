@@ -263,7 +263,6 @@ class Troff
           @document << @current_block
         end
         indent(@base_indent + @register[')R'])
-
       end
 
       #   .SH text

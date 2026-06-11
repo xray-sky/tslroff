@@ -8,6 +8,17 @@
 #    \ continues input line
 #    internal unit is inches
 #
+# formal grammar def
+#
+#   <line> ::= <input> | <input> "#" <comment>
+#   <input> ::= <statement> | <input> ";" <statement>
+#   <statement> ::= <definition> | <object> | <control> | <conditional>
+#   <definition> ::= <label> ":" <statement>
+#   <block> ::= "[" <input> "]" | "[" <block> "\n" <line> "]"
+#   <group> ::= "{" <input> "}" | "{" <group> "\n" <line> "}"
+#   <object> ::= <primitive> | <block> | <group> | <object> <position> | <object> """ <text> """ |
+#
+#
 # built-in variables:
 #  - movewid, moveht
 #  - ellipsewid, ellipseht

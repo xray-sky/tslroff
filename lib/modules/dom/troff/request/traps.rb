@@ -46,6 +46,7 @@ class Troff
   #                                           appear when nested diversions are being used.
   #
   #   REVIEW is .di the reason we're ending up with short left margins in e.g. the man(5)s ?
+  #   REVIEW are "input lines" that go into a diversion not counted for input traps?  V7 roff(1) .ul
 
   def di(argstr = '', breaking: nil)
     macro = argstr[0, 2].strip

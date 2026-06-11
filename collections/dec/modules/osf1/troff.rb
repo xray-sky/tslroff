@@ -1,0 +1,361 @@
+# frozen_string_literal: true
+# encoding: UTF-8
+#
+# Created by R. Stricklin <bear@typewritten.org> on 08/21/22.
+# Copyright 2022 Typewritten Software. All rights reserved.
+#
+#
+# OSF/1 & Digital UNIX (Tru64) Platform Overrides
+#
+# .\" Basic Font Usage:
+# .\"   For *troff processing, these macros assume the fonts are in the
+# .\"   following order:
+# .\"	  Position: 1  2  3  4  5  6  7  8  9  10 11 12
+# .\"	  Font:     R  I  B  BI CW CB H  HI HB HX S1 S
+#
+# TODO
+# √ OSF/1 3.0 macros (an, an.repro, rsml, sml) (identical to 3.2c except copyright date)
+#
+# √ something's got to be done about the huge volume of warnings from all the comments
+#     in the osf macro files. .so of them on every. goddamn. page. is fucking killing us.
+#
+# √ reference links are all bogus
+# √  - http://dev.online.typewritten.org/Manual/DEC/Tru64/5.1b/man1ssl/%E2%80%8D%3Cstrong%3Egendsa%E2%80%8D.html
+# √  - section 1ssl only? no, I see it in section 1 too. was ok in (the one page in) 3cde.
+# √  - looks like it's full of &zwj; (likely from \*L and \*O) and this is probably the problem.
+#
+# √ some pages have RELATED INFORMATION instead of SEE ALSO
+#   cdoc(1) [3.0] has 'See Also'
+#   CA.pl(1s) no read perms on output??? (because it is named .pl? looks like it)
+#   hier(7) links Functions:‍symlink‍(2) -- lack of whitespace; other pages WITH whitespace still linking this way
+# √ lp(1) [1.0/mips] infinite loop => stack overflow due to double inclusion of sml/rsml macros
+# √   - the 1.0 macros do not guard against this like the 3.x macros do
+#
+
+require_relative 'tmac/rsml'
+require_relative 'tmac/sml'
+
+module OSF1
+
+  # OSF1/Digital UNIX/Tru64 custom fonts
+  # Gothic/Geneva and Triumvirate are all essentially Helvetica
+
+  class Font::TR < ::Font::H ; end
+  class Font::TB < ::Font::HB ; end
+  class Font::TI < ::Font::HI ; end
+  class Font::G  < ::Font::H ; end
+  class Font::GB < ::Font::HB ; end
+  class Font::GL < ::Font::HI ; end
+
+  class Troff < Troff::Man
+
+    alias :LP :P
+
+    def initialize(source, **kwargs)
+      @manual_entry ||= source.file.sub(/\.([n\d][^.\s]*)(?:\.gz)?$/, '')
+      @manual_section ||= Regexp.last_match[1] if Regexp.last_match
+      @related_info_heading ||= %r{関連項目}u if source.dir.include? 'SJIS' # TODO predicate on language arg
+      super(source, **kwargs)
+    end
+
+    def init_ds
+      super
+      @named_strings.merge!(
+        {
+          footer: ''.+@
+        }
+      )
+    end
+
+    def init_fp
+      super
+      # Geneva Light changed to Triumvirate Italic for LN01
+      # Geneva Regular changed to Triumvirate Regular for LN01
+      mount_font 4, 'BI'
+      mount_font 5, 'CW' # assumes font position 5 is the constant width font
+      mount_font 7, 'H' # Gothic
+      #mount_font 8, 'L' # Gothic Light
+      mount_font 8, 'HI' # Gothic Light
+      mount_font 9, 'HB' # Gothic Light
+    end
+
+    def init_tr
+      super
+      @character_translations['*'] = "\e(**"
+    end
+
+    def init_PD
+      super
+      @register['PD'] = @register[')P']  # OSF .PD sets \n(PD instead of \n()P - the OSF macros make extensive use of it
+    end
+
+    def init_TH
+      #super
+      @register['IN'] = Troff::Register.new(@base_indent)
+    end
+
+    # .so with absolute path, osf/1 macros in /usr/share/lib/tmac
+    def so(name, breaking: nil)
+      name = "../../../..#{name}" if name.start_with?('/')
+      case File.basename name.strip # BUG: 3.2c dxcaltodtcm.1 ".so /usr/share/lib/tmac/rsml "
+      when 'sml'  then extend OSF1::SML
+      when 'rsml' then extend OSF1::RSML
+      else super name, breaking: breaking
+      end
+    end
+
+    def AT(*args)
+      ds(']W ' + case args[0]
+                 when '3' then '7th Edition'
+                 when '4' then 'System III'
+                 when '5'
+                   case args[1]
+                   when '' then 'System V'
+                   else "System V Release #{args[1]}"
+                   end
+                 else '7th Edition'
+                 end)
+    end
+
+    def CM(*args)
+      ds(']W ' + case args[0]
+                 when '', '1' then '1st Carnegie-Mellon Update'
+                 when '2'     then '2nd Carnegie-Mellon Update'
+                 when '3'     then '3rd Carnegie-Mellon Update'
+                 else "#{args[0].to_i - 3}th Carnegie-Mellon Update"
+                 end)
+    end
+
+    def CT(*args)
+      parse "\\s-2<\\|CTRL\\|#{args[0]}\\|>\\s+2"
+    end
+
+    def CW(*_args)
+      ft 'CW'
+    end
+
+    def De(*args)
+      warn "REVIEW .De #{args.inspect}"
+      ce '0'
+      fi
+    end
+
+    def Ds(*args)
+      warn "REVIEW .Ds #{args.inspect}"
+      nf
+      send "#{args[0]}D", "#{args[1]} #{args[0]}"
+      ft 'R'
+    end
+
+    def DE(*args)
+      warn "REVIEW .DE #{args.inspect}"
+      fi
+      send 'RE'
+      sp '.5'
+    end
+
+    def EE(*_args)
+      fi
+      ps Font.defaultsize.to_s
+      send :in, "-#{@register['EX'].value}u"
+      sp '.5'
+      ft '1'
+    end
+
+    def EX(*args)
+      nr 'EX ' + to_u("#{args[0] || 0}n+#{@base_indent}u")
+      nf
+      sp '.5'
+      send :in, "+#{@register['EX'].value}u"
+      ft 'CW' # Geneva regular (changed to Constant Width for LN01)
+      ps '-2'
+      #vs '-2' # probably don't need this even once it's implemented; the browser will take care of it based on point size.
+    end
+
+    def G(*args) # Gothic (Sans-Serif) assumes font position 7 is Helvetica
+      ft 'H'
+      if args.any?
+        parse args.join(' ')
+        send '}f'
+      else
+        it '1 }f'
+      end
+    end
+
+    # .GB doesn't actually have an input trap! .HB is different from .GB but also has no .it, so I'll alias them.
+    # TODO this isn't actually how GB (or HB) work.
+    def GB(*args) # Gothic Bold (Sans-Serif Bold) assumes font position 9 is Helvetica Bold
+      warn "REVIEW use of #{__callee__}"
+      ft 'HB'
+      if args.any?
+        parse args.join(' ')
+        send '}f'
+      else
+        it '1 }f'
+      end
+    end
+
+    def GL(*args) # Gothic Light (Sans-Serif Italic) assumes font position 8 is Helvetica Italic
+      #ft 'GL'
+      ft 'HI'
+      if args.any?
+        parse args.join(' ')
+        send '}f'
+      else
+        it '1 }f'
+      end
+    end
+
+    # apparently for indexing; do nothing for now but suppress the warning
+    def iX(*_args) ; end
+
+    def I1(*args)
+      warn "REVIEW .I1 #{args.inspect}"
+      ti "+\\w'#{args[0]}'u"
+    end
+
+    def I2(*args)
+      warn "REVIEW .I2 #{args.inspect}"
+      sp '-1'
+      ti "+\\w'#{args[0]}'u"
+    end
+
+    # uses Courier fonts for 4.0
+    def MS(*args)
+      parse "\\f(CW\\|#{args[0]}\\|\\fP\\fR(#{args[2]})\\fP#{args[2]}"
+    end
+
+    def NE(*_args)
+      ce '0'
+      send :in, '-5n'
+      sp '12p'
+    end
+
+    def NT(*args)
+      ds 'NO Note'
+      ds "NO #{args[1]}" if args[1] and args[1] != 'C'
+      ds "NO #{args[0]}" if args[0] and args[0] != 'C'
+      sp '12p'
+      send 'HB'
+      ce
+      parse "\\*(NO" # not unescape - need to trigger input trap
+      sp '6p'
+      ce '99' if args[0..1].include? 'C'
+      send :in, '+5n'
+      # also bring in right margin by the same.
+      # it'll work as long as there's only one paragraph worth of note
+      @current_block.style.css[:margin_right] = @current_block.style.css[:margin_left]
+      send 'R'
+    end
+
+    # for indexing - don't care. uses \*(BK internally (default value: "Book Title")
+    def HH(*_args) ; end
+    def NX(*_args) ; end
+
+    def Pn(*args)
+      parse "#{args[0]}\\&\\f(CW\\|#{args[1]}\\|\\fP#{args[2]}"
+    end
+
+    # uses Courier fonts for 4.0
+    def PN(*args)
+      parse "\\f(CW\\|#{args[0]}\\|\\fP#{args[1]}"
+    end
+
+    def R(*_args)
+      ft 'R'
+    end
+
+    def RN(*_args)
+      parse "\\s-2<\\|RETURN\\|>\\s+2"
+    end
+
+    def TB(*args)
+      warn "REVIEW .TB #{args.inspect}"
+      @register['PF'] = @register['.f'].dup
+      ft 'HB' # Triumvirate Bold
+      if args.any?
+        parse args.join(' ')
+        send 'R'
+      else
+        nr 'SF 8'
+      end
+    end
+
+    def TH(*args)
+      # these strings are deliberately blanked by .TH if not given in the args.
+      ds "]L #{args[2]}"
+      ds "]W #{args[3]}"
+      ds "]D #{args[4]}"
+      ds "]U #{args[5]}" # product, or product status
+      ds "]A #{args[6]}" # "usually architecture"
+      ds(']T ' + case args[1]&.[](0) # the unbundled OpenGL pages don't have an args[1] (TODO? rewrite)
+                     when '1' then 'Commands'
+                     when '2' then 'System Calls'
+                     when '3' then 'Subroutines'
+                     when '4' then 'File Formats'
+                     when '5' then 'Macro Packages and Conventions'
+                     when '6' then 'Games'
+                     when '7' then 'Special Files'
+                     when '8' then 'Maintenance'
+                     else ''
+                     end)
+
+      # ]U and ]A (if given) follow the title, centered on their own line.
+      unless @named_strings[']U'].empty? and @named_strings[']A'].empty?
+        byline = Block::Footer.new
+        byline.style.css[:margin_top] = '0.5em' # TODO not working?
+        unescape "\\f9\\*(]U\\fP", output: byline
+        unescape "\\0\\0\\(em\\0\\0", output: byline unless @named_strings[']U'].empty? or @named_strings[']A'].empty?
+        unescape "\\f9\\*(]A\\fP", output: byline
+        @document << byline
+      end
+
+      # sir \*(PR not appearing in tmac.an.repro - does anything define it?
+      # is it worth the log warn noise?
+      heading = "#{args[0]}\\|(\\^#{args[1]}\\*(PR\\^)".+@
+      heading << "\\0\\0\\(em\\0\\0\\*(]T" unless @named_strings[']T'].empty?
+      heading << '\\0\\0\\(em\\0\\0\\*(]D' unless @named_strings[']D'].empty?
+      # these would go below the top .tl if given. I think I'll put it in <h1> instead.
+      # REVIEW <h1> could potentially be very busy.
+      #heading << '\\0\\0\\(em\\0\\0\\*(]U' unless @named_strings[']U'].empty?
+      #heading << '\\0\\0\\(em\\0\\0\\*(]A' unless @named_strings[']A'].empty?
+
+      #@named_strings[:footer] << '\\0\\0\\(em\\0\\0\\*(]L' if args[2] and !args[2].strip.empty?
+      # TODO \*(]W and \*([L are empty in most cases, giving us unnecessary \(em
+      # I think I want ]T in the header.
+      #@named_strings[:footer] << "\\*(]T" unless @named_strings[']T'].strip.empty?
+      @named_strings[:footer] << "\\0\\0\\(em\\0\\0\\*(]W" unless @named_strings[']W'].empty?
+      @named_strings[:footer] << "\\0\\0\\(em\\0\\0\\*(]L" unless @named_strings[']L'].empty?
+
+      super(*args, heading: heading)
+    end
+
+    def UC(*args)
+      ds(']W ' + case args[0]
+                     when '3' then '3rd Berkeley Distribution'
+                     when '4' then '4th Berkeley Distribution'
+                     when '5' then '4.2 Berkeley Distribution'
+                     when '6' then '4.3 Berkeley Distribution'
+                     when '7' then '4.4 Berkeley Distribution'
+                     else '3rd Berkeley Distribution'
+                     end)
+    end
+
+    def UF(*args)
+      ds "]T #{args[0]}"
+    end
+
+    def VE(*args)
+      # .if '\\$1'4' .mc \s12\(br\s0
+      # draws a 12pt box rule as right margin character
+      warn "can't yet .VE #{args.inspect}"
+    end
+
+    def VS(*args)
+      # .mc
+      # clears box rule margin character
+      warn "can't yet .VS #{args.inspect}"
+    end
+  end
+
+end

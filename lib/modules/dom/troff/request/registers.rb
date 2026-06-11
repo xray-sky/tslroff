@@ -10,8 +10,6 @@
 #   §8
 #
 
-require 'forwardable'
-
 class Troff
   # Request  Initial  If no     Notes   Explanation
   #  form     value   argument

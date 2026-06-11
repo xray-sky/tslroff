@@ -1,0 +1,170 @@
+# frozen_string_literal: true
+# encoding: UTF-8
+#
+# Created by R. Stricklin <bear@typewritten.org> on 08/16/22.
+# Copyright 2022 Typewritten Software. All rights reserved.
+#
+#
+# HP-UX 10.20 Platform Overrides
+#
+# REVIEWED
+#   lpfilter(1) "E/C", "D/1", etc. are all explicitly typeset, empty tbl column (no tabs in input)
+#
+# TODO
+# √ fts_help.1m [8]: .so can't read /usr/share/lib/macros/osfhead.rsml
+# √ fts_help.1m [9]: .so can't read /usr/share/lib/macros/sml
+# √ fts_help.1m [10]: .so can't read /usr/share/lib/macros/rsml
+#
+#   be nice somehow to prevent the extraneous \0\0\(em\0\0 if )H doesn't get defined...
+#    - maybe I can define an end of processing macro to do it
+#
+#   pages ref font position 4. what is it? REVIEW not mounted in tmac.an. probably C (maybe CB? BI?)
+#   probably move C font to css. the 10.20 manual uses it _extensively_
+#   some pages want to use D, G, other fonts - what are they? acl_edit(1m)
+#    - A D E F G K N O S T U
+#   bos_getrestart(1m) wants to use S font directly
+#   Xserver.1 has no .TH
+#   mwm(1) has a couple examples toward the bottom of the page with apparent negative indents; "RELATED INFORMATION"
+#   book title strings (e.g. \*(Dk, \*(Dr in v5srvtab.5) for OSF pages?
+# √ .ds ]L 'Open Software Foundation' for OSF pages, since we can't .am }C even if we implemented .am
+#   REVIEW osf pages (e.g. sams(1)) for .sS (.SP) example offset spacing -- is it really 0, given no args?
+#   svcdumplog(1) has "RELATED INFORMATION" instead of "SEE ALSO"
+#   dcecp_cdsalias(1m) sources osf macros _twice_, causing a .rn loop (also causes loop in troff)
+#   remove_object(1m) [106]: \*C apparently expands to \&\f (with no following font request) - undef .empty? (nil) in tokenize/get_char
+#     tmac/sml has .ds C \&\\f\\*(!]\" (where is .ds !] ??)
+#     + related information -- detect ' ', translate ' ' to '_' for link
+#   restore(1m) [402]: are we bug compatible now with formatting through .CI (too many quotes: 'blocks' should be C but is I, check if troff does the same)
+#   advertise(1): what happened in .TH??
+#   getsid(2): is in section "(2)"
+#   pstat(2): no line wrap in Name?
+#
+
+module HPUX
+  module V10_20
+
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'x_open_800.5' then kwargs[:magic] = :Nroff
+        when 'pam_unix.5',
+             'diag0.7', 'framebuf.7', 'kmem.7', 'mem.7', 'mt.7',
+             'null.7', 'routing.7', 'strlog.7', 'termio.7', 'termios.7',
+             'glossary.9', 'intro.9'
+          kwargs[:magic] = :Troff
+        end
+
+        if File.dirname(file).include? 'ansi-c' # ANSI C A.10.11 gzip + compress
+          kwargs[:magic] = 'Troff'
+          super(file, **kwargs) { |f| IO.readlines("| gzip -dc #{f} | zcat") }
+        else
+          super(file, **kwargs, &block)
+        end
+
+        case @file
+        when 'dcecp_cdsalias.1m'
+          # REVIEW until we can figure out how to make ourselves resilient to .rn'ing the same macro twice
+          patch_lines(8..10, /^/, '.\\"')
+        end
+      end
+    end
+
+    class Nroff < Nroff
+      def initialize(source, **kwargs)
+        case source.file
+        when 'x_open_800.5'
+          # is nroff output (with ^H overstriking), despite starting with .\" and .nf
+          source.lines.delete_at(3887)
+          source.lines.delete_at(3886)
+          source.lines.delete_at(3885)
+          source.lines.delete_at(1)
+          source.lines.delete_at(0)
+          # lines per page is not consistent? deleting these extra lines doesn't help
+          @lines_per_page = nil
+          @manual_entry = 'x_open_800'
+          @manual_section = '5'
+        end
+        super(source, **kwargs)
+      end
+    end
+
+    class Troff < Troff
+      def init_ds
+        super
+        @named_strings.merge!(
+          {
+            footer: "\\*()H\\0\\0\\(em\\0\\0\\*(]W".+@,
+            'Tm' => '&trade;',
+            ')H' => '', # .TH sets this to \&. Some pages define it.
+            #']V' => "Formatted:\\0\\0#{File.mtime(@source.path).strftime("%B %d, %Y")}",
+            # REVIEW is this what actually goes in the footer in the printed manual?
+            ']V' => File.mtime(@source.path).strftime("%B %d, %Y")
+          }
+        )
+      end
+
+      def init_fp
+        super
+        mount_font 4, 'C'
+      end
+
+      alias :C :tmac_an_fontreq1
+
+      alias :BC :tmac_an_fontreq2
+      alias :CB :tmac_an_fontreq2
+      alias :CI :tmac_an_fontreq2
+      alias :CR :tmac_an_fontreq2
+      alias :IC :tmac_an_fontreq2
+      alias :RC :tmac_an_fontreq2
+
+      # .so with absolute path, headers in /usr/include
+      def so(name, breaking: nil, basedir: nil)
+        basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+        case File.basename name
+        when 'sml'  then extend HPUX::SML
+        when 'rsml' then extend HPUX::RSML
+        when 'osfhead.rsml' then ds ']L Open Software Foundation'
+        else super name, breaking: breaking, basedir: basedir
+        end
+      end
+
+      # undocumented, not in tmac.an
+      # appears to take one arg, matching the first letter of the command the manual entry is for?
+      # (not accounting for .so -- so bg(1) has '.TA s', because of '.so sh.1'
+      # ...seems irrelevant to us. suppress the warning on every page by defining.
+      def TA(*_args) ; end
+
+      def TH(*args)
+        ds "]W #{send '__unesc_*', '\\*(]V'}"
+        ds "]O #{args[2]}"
+        ds "]L #{args[3]}"
+        ds "]J #{args[4]}"
+
+        # ]J and ]O follow the title (if given), each centered on their own line.
+        # .sp .3v between, .sp 1.5v following.
+        #space = false
+        %w( ]J ]O ).each do |s|
+          next if @named_strings[s].empty?
+          #space = true
+          byline = Block::Footer.new
+          byline.style.css[:margin_top] = '0.5em' # TODO not working?
+          unescape "\\f3\\*(#{s}\\fP", output: byline
+          @document << byline
+        end
+        #req_sp('1.5v') if space # probably this is overkill, actually
+
+        heading = "#{args[0]}\\^(\\^#{args[1]}\\^)".+@
+        heading << '\\0\\0\\(em\\0\\0\\*(]L' unless @named_strings[']L'].empty?
+
+        super(*args, heading: heading)
+      end
+    end
+
+    def self.name_for_section(sec)
+      case sec.downcase
+      when '3w' then "<strong>#{sec}.</strong> Font Libraries"
+      else HPUX.name_for_section(sec)
+      end
+    end
+
+  end
+end

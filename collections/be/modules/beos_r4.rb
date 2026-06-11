@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+# encoding: UTF-8
+#
+# Created by R. Stricklin <bear@typewritten.org> on 07/06/22.
+# Copyright 2022 Typewritten Software. All rights reserved.
+#
+#
+# BeOS R4 Platform Overrides
+#
+# HTML format input.
+#
+# TODO:
+#  content too wide faqs/faq-0181.html, several others? (egrep etc. same as r3)
+#  shell tools h1 titles (.css('pre').first)
+#  page titles
+#  symlink rewrite (index.html [*]: encountered unsupported link type, /Volumes/Museum/Manual/in/be/beos/r4/beos/documentation/User's Guide/index.html => 00_FrontMatter/index.html)
+#
+
+module BeOS
+  module R4
+
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename(file)
+        when 'diff.html', 'diff3.html', 'egrep.html', 'fgrep.html', 'sdiff.html'
+          kwargs[:encoding] = Encoding::ISO_8859_1
+        end
+
+        super(file, **kwargs, &block)
+        patch(/&(nbsp|mdash|lt|gt|copy)(?!;)/, '&\1;', global: true)
+      end
+    end
+
+    class Manual < Manual
+      def initialize(source, **kwargs)
+        super(source, **kwargs)
+        case @source.dir
+        when /The_Be_FAQs/
+          xpath('//body').css('form').each { |form| form['action'] = '' }
+          # this spacer gif is messing up the box model
+          xpath('//img[@src="../graphics/spacer.gif"]').each { |img| img['width'] = '0' }
+        end
+      end
+    end
+
+    class HTML < HTML ; end
+
+  end
+end

@@ -8,7 +8,7 @@
 # SCO OpenDesktop Platform Overrides
 #
 # TODO
-#   losing capital letters in command names (e.g. Xsco) from output files
+# √ losing capital letters in command names (e.g. Xsco) from output files
 #
 
 module OpenDesktop

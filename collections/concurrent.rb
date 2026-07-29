@@ -24,7 +24,7 @@ collection_namespace 'Concurrent' do
     manual_namespace '1.2var17',
       vendor_class: CX_UX::V6_20,
       idir: 'concurrent/maxion/1.2v17',
-      odir: 'Concurrent/MaxionOS/Y2k_1.2_variant17',
+      odir: 'Concurrent/MAXION:OS/Y2k_1.2_variant17',
       sources: %w[
         ecc/reloc/usr/share/man/cat1
         edb/reloc/opt/epc/edb/man/man1

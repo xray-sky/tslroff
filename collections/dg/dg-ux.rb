@@ -10,6 +10,7 @@
 
 require_relative 'modules/dg-ux/source'
 require_relative 'modules/dg-ux/nroff'
+require_relative 'modules/dg-ux_4.00'
 require_relative 'modules/dg-ux_4.30'
 require_relative 'modules/dg-ux_4.31'
 require_relative 'modules/dg-ux_r4.11'

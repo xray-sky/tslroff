@@ -8,11 +8,31 @@
 # HP-UX 5.00 Platform Overrides
 #
 # TODO
-#   file modification dates
+# √ file modification dates
+#   kana8 / roman8 mojibaked on tape
 #
 
 module HPUX
   module V5_00
+
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        #case File.basename file
+        #when 'kana8.7'  then kwargs[:encoding] = Encoding::SJIS
+        ##when 'roman8.5' then kwargs[:encoding] = Encoding::ROMAN8 # but, this is not an available encoding
+        #when 'roman8.7'
+        #  define_singleton_method :stream_decompress do
+        #    %(|gzip -dc '#{@path}' | iconv -f HP-ROMAN8 -t UTF-8)
+        #  end
+        #end
+        super
+        case File.basename file
+        when 'block_move.3g'
+          patch_line  1, /"$/, ''
+          patch_line 50, /^\./, '.\\"' # REVIEW temporary until .if with no args can be investigated
+        end
+      end
+    end
 
     class Troff < Troff
 

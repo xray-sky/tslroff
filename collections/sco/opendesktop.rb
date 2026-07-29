@@ -30,6 +30,7 @@ module OpenDesktop
     when 'f'    then "<strong>#{sec}.</strong> File Formats"
     when 'hw'   then "<strong>#{sec}.</strong> Hardware-dependent Features and Files"
     when 'lm'   then "<strong>#{sec}.</strong> LAN Manager Commands and Files"
+    when 'lmx'  then "<strong>#{sec}.</strong> LAN Manager Commands and Files"
     when 'm'    then "<strong>#{sec}.</strong> Miscellaneous Features and File Formats"
     when 'n'    then "<strong>#{sec}.</strong> ONC Operation and Maintenance Commands"
     when 'nadm' then "<strong>#{sec}.</strong> ONC Operation and Maintenance Commands" # ODT
@@ -39,6 +40,7 @@ module OpenDesktop
     when 'sff'  then "<strong>#{sec}.</strong> Network File Formats"
     when 'tc'   then "<strong>#{sec}.</strong> TCP/IP Commands"
     when 'x'    then "<strong>#{sec}.</strong> X11 Commands"
+    when 'z'    then "<strong>#{sec}.</strong> LAN Manager Client Commands"
 # SDS pages - TODO parse correctly!
     when 'k'    then "<strong>#{sec}.</strong> Kernel Routines"
     when 'ns'   then "<strong>#{sec}.</strong> Network Routines"
@@ -50,6 +52,10 @@ module OpenDesktop
     when 'xnx'  then "<strong>#{sec}.</strong> Xenix Compatibility Commands"
     when 'xs'   then "<strong>#{sec}.</strong> X11 Library"
     when 'xt'   then "<strong>#{sec}.</strong> X Toolkit"
+# VxVM
+    when 'vm'   then "<strong>#{sec}.</strong> Volume Management Commands"
+# odt 2.0 w/e
+    when 'local' then 'Local Manual Entries'
     else "Section #{sec}"
     end
   end

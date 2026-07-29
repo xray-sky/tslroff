@@ -7,6 +7,9 @@
 #
 # SCO OpenDesktop Platform Overrides
 #
+# TODO
+#   has Intro (note case); not being picked up by indexer
+#
 
 require_relative 'nroff'
 

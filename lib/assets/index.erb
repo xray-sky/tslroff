@@ -1,16 +1,17 @@
 <%#
 TODO
-     language (de, jp, en)
+ √   language (de, jp, en)
+     language (de, jp, en, ko, zh) on per-document basis (see qnx momentics, e.g. this is allowed: <div lang="fr-CA" xml:lang="fr-CA">)
  √   apropos box style,
  √   section descriptions,
-     section anchors maybe
+ √   section anchors maybe
      section sort is collation order, which puts e.g. 10 between 1 and 2 (e.g. Inferno manual)
      sys5/bsd filter, header intro links (e.g. domain/ix)
 -%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<%= lang %>" lang="<%= lang %>">
 
 <head>
   <title><%= page_title %></title>
@@ -74,10 +75,13 @@ TODO
 
 <% ixinfo.keys.sort.each do |sec|
      # avoid taking e.g. curses_intro if intro exists, but fall back if not (e.g. take Ultrix 2.0 (1P) spmsintro)
+     # TODO pass this off to a collection method, to allow e.g. use of index.html for HTML based manuals, or the SunOS 4 capital-I Intro, or otherwise
      intro = ixinfo[sec].keys.detect { |f| f&.end_with? '/intro.html' } or ixinfo[sec].keys.detect { |f| f&.end_with? 'intro.html' }
+     intro ||= ixinfo[sec].keys.detect { |f| f&.end_with? '/Intro.html' } or ixinfo[sec].keys.detect { |f| f&.end_with? 'Intro.html' }
+     intro ||= ixinfo[sec].keys.detect { |f| f&.end_with? '/index.html' } or ixinfo[sec].keys.detect { |f| f&.end_with? 'index.html' }
      unless sec.nil? or sec.empty? -%>
     <h2 class="section">
-    <a name="section_<%= sec %>"><%= names.call(sec) %><%= %( <small><a href=./#{intro}>(intro)</a></small>) if intro %></a>
+    <a name="section_<%= sec %>"><%= names.call(sec) %><%= %( <small><a href="./#{intro}">(#{File.basename(intro).delete_suffix('.html')})</a></small>) if intro %></a>
     </h2>
      <% end -%>
     <table class="index">
@@ -85,8 +89,13 @@ TODO
           shortname = File.basename(f).delete_suffix('.html')
           namelist = ixinfo[sec][f][:names]
           #altnames = namelist&.any? && (namelist.length > 1 || namelist[0] != shortname) ? namelist.join(', ') : ''
-          altnames = namelist&.any? && (namelist.length > 1 || namelist[0] != shortname) ? namelist.reject { |n| n == shortname } : [] -%>
-      <tr><td><%= "#{altnames.join(', ')}, " if altnames.any? %><a href="./<%= f %>"><%= shortname %></a></td><td><%= ixinfo[sec][f][:description] %></td><!-- td><%#= altnames %></td --></tr>
+          altnames = namelist&.any? && (namelist.length > 1 || namelist[0] != shortname) ? namelist.reject { |n| n == shortname } : []
+          pagelang = ixinfo[sec][f][:language]
+          # URI module too cantankerous to usefully help URL-encode files?
+          # URI.encode "is obsolete", uri.path= expects you to have already done it?
+          url_encodings = { ' ' => '%20', '#' => '%23', '&' => '%26', '?' => '%3F' }
+          -%>
+      <tr><td><%= "#{altnames.join(', ')}, " if altnames.any? %><a href="./<%= f.gsub(/[#&? ]/, url_encodings) %>"><%= shortname %></a></td><td<%= %( lang="#{pagelang}") if pagelang != lang %>><%= ixinfo[sec][f][:description] %></td><!-- td><%#= altnames %></td --></tr>
      <% end -%>
     </table>
 <% end -%>

@@ -9,6 +9,7 @@
 #
 
 require_relative 'modules/risc-os/nroff'
+require_relative 'modules/risc-os/troff'
 require_relative 'modules/risc-os_4.52'
 require_relative 'modules/risc-os_5.01'
 

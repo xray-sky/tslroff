@@ -37,13 +37,13 @@ module BeOS
           raise ManualIsBlacklisted, 'mojibake'
         end
 
-        case File.basename file
+        case File.basename(file)
         when 'doc'      then kwargs[:magic] = :Nroff
         when 'rcs.html' then kwargs[:magic] = :HTML
         when '_SEE_4.1__THINK_4.5' then raise ManualIsBlacklisted, 'not useful'
         end
 
-        super(file, **kwargs, &block)
+        super
 
         case @file
         when 'rcs.html' then patch_line(1, /^\s+{/, '')
@@ -72,13 +72,13 @@ module BeOS
         when /French/ then @language = 'fr'
         when /Japan/  then @language = 'ja'
         end
-        super(source, **kwargs)
+        super
       end
     end
 
     class HTML < HTML
       def initialize(source, **kwargs)
-        super(source, **kwargs)
+        super
 
         # unlink the blacklisted Japanese pages
         xpath('//body').css('a').each { |l| l.replace(l.text) if l['href']&.include?('Japan') }

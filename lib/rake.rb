@@ -95,7 +95,7 @@ end
 # TODO optional ruby profiling of build job
 #
 
-def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil, vendor_class: nil, entry_page: nil, &block)
+def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil, lang: 'en', vendor_class: nil, entry_page: nil, contributor: nil, &block)
   unless odir
     #warn "No output directory given for #{name} (skipped)"
     return nil
@@ -110,7 +110,7 @@ def manual_namespace(name, sources: nil, idir: nil, odir: nil, os: nil, ver: nil
       start_time = Time.now
       directory(pubdir).invoke
       open_build_log_task pubdir unless args[:limit]
-      pagecount = collection_task sources, srcdir, pubdir, limit: args[:limit], vendor_class: vendor_class, os: (os or n.scope.take(2).last), ver: (ver or name), entry_page: entry_page
+      pagecount = collection_task sources, srcdir, pubdir, limit: args[:limit], lang: lang, vendor_class: vendor_class, os: (os or n.scope.take(2).last), ver: (ver or name), entry_page: entry_page, contributor: contributor
       close_build_log_task unless args[:limit]
       puts "       #{scope} => #{pagecount} pages complete in #{Time.now - start_time}s"
       puts "       #{Troff.webdriver.cache_stats}" if Troff.webdriver
@@ -171,7 +171,7 @@ end
 # REVIEW is this working correctly on directory structures more than one level deep?
 #
 
-def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, entry_page: nil, source_args: {}, os: nil, ver: nil)
+def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, entry_page: nil, source_args: {}, os: nil, ver: nil, lang: 'en', contributor: nil)
   pagecount = 0
   # need to cover both file and directory wildcards
   fl = FileList.new(sources.map { |s| [ "#{srcdir}/#{s}", "#{srcdir}/#{s}/*" ] }.flatten)
@@ -189,9 +189,9 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, entr
     #warn "symlink #{src} (skipped)" and next if File.symlink?(src)
     puts "<== #{src}" if limit
     pagecount += 1
-    (sec, fl, nmlst, dsc) = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver)
+    (sec, fl, nmlst, dsc, pagelang) = manual_task(src, pubdir, vendor_class: vendor_class, source_args: source_args, os: os, ver: ver, contributor: contributor)
     ix[sec] ||= {}
-    ix[sec][fl] = { names: nmlst&.split(/\s*,\s*/), description: dsc }
+    ix[sec][fl] = { names: nmlst&.split(/\s*,\s*/), description: dsc, language: pagelang }
   end
 
   if ENV['RUBY_PROFILE']
@@ -213,21 +213,21 @@ def collection_task(sources, srcdir, pubdir, limit: nil, vendor_class: nil, entr
 
   #section_names = Kernel.const_defined?("#{vendor_class}::MANUAL_SECTION_NAMES") ? Kernel.const_get("#{vendor_class}::MANUAL_SECTION_NAMES") : {}
   section_names = vendor_class&.respond_to?(:name_for_section) ? vendor_class.method(:name_for_section) : proc { |x| x }
-  index_task(ix, "#{pubdir}/#{'_' if entry_page == 'index.html'}index.html", os: os, ver: ver, names: section_names) unless limit
+  index_task(ix, "#{pubdir}/#{'_' if entry_page == 'index.html'}index.html", os: os, ver: ver, lang: lang, names: section_names) unless limit
   pagecount
 end
 
-def index_task(ixinfo, idxfile, os: nil, ver: nil, names: proc { |x| x })
+def index_task(ixinfo, idxfile, os: nil, ver: nil, lang: 'en', names: proc { |x| x })
   ident = "#{os} #{ver}".strip
   ixf = File.open(idxfile, 'w')
-  ixf.write ERB.new(INDEX_TEMPLATE, trim_mode: '-').result_with_hash(ixinfo: ixinfo.reject { |k,v| k == '!!!' }, names: names, ident: ident, page_title: "Manual &mdash; #{ident}")
+  ixf.write ERB.new(INDEX_TEMPLATE, trim_mode: '-').result_with_hash(ixinfo: ixinfo.reject { |k,v| k == '!!!' }, names: names, ident: ident, page_title: "Manual &mdash; #{ident}", lang: lang)
   ixf.close
 end
 
 # Build an individual manual entry
 #
 
-def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver: nil)
+def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver: nil, contributor: nil)
   ppid = Process.pid
   srcfile = File.basename(source)
   k = Kernel.const_defined?("#{vendor_class}::Manual") ? Kernel.const_get("#{vendor_class}::Manual") : ::Manual
@@ -275,7 +275,8 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver
     if man.index_name
       indexing = [[man.index_name, man.index_description]]
     else
-      indexing = html.search('p[@class="name"]').map do |e|
+      #indexing = html.search('p[@class="name"]', 'p[@class="名称"]', 'p[@class="名前"]').map do |e|
+      indexing = html.search('p.name', 'p.名称', 'p.名前').map do |e|
         # how to about??
         # looks like Nokogiri.text() gives us the UTF-8 character rather than the HTML entity... &minus;, &nbsp;...
         # REVIEW maybe this should be created during text processing and queryable from the
@@ -283,9 +284,11 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver
         #        also how regular is this going to be?? catman -w known to have crazy results for
         #        ill formed manual entries so it's not solely an us problem.
         #(names, _sep, descr) = e.text.strip.partition(/[\s ]*(?:-|−)[\s ]*/) # hyphen &minus; &nbsp;
-        (names, _sep, descr) = e.text.strip.partition(/(?:[\s ]+-[\s ]+|[\s ]*(?:−|—)[\s ]*)/) # hyphen (with spaces only) &minus; &mdash; &nbsp;
+        (names, _sep, descr) = e.text.strip.partition(/(?:[\s ]+-[\s ]+|[\s  ]*(?:−|—)[\s  ]*)/) # hyphen (with spaces only) &minus; &mdash; &nbsp;
+        # protect against empty <p class="name"> as with Tru64 unbundled DCE 3.1
+        next if names.empty? and descr.empty?
         [names, descr]
-      end
+      end.compact
     end
     #related = html.search('a[@href]')
   else
@@ -293,9 +296,8 @@ def manual_task(source, pubdir, vendor_class: nil, source_args: {}, os: nil, ver
     indexing = [[man.index_name, man.index_description]]
   end
 
-  #exit unless Process.pid == ppid # guard against fork (i.e. VMS Help)
   warn "multi-line index info for #{title}.html" if indexing[1]
-  [ "#{man.manual_section}", "#{man.output_directory}/#{title}.html", "#{indexing[0]&.[](0)}", "#{indexing[0]&.[](1)}" ]# REVIEW experimental
+  [ "#{man.manual_section}", "#{man.output_directory}/#{title}.html", "#{indexing[0]&.[](0)}", "#{indexing[0]&.[](1)}", "#{man.language}" ]# REVIEW experimental
 
 rescue ManualIsBlacklisted => e
   warn "#{srcfile}: skipping (blacklist) -- #{e.message}"

@@ -12,6 +12,7 @@ require_relative 'modules/hp-ux/troff'
 require_relative 'modules/hp-ux_5.00'
 require_relative 'modules/hp-ux_5.20'
 require_relative 'modules/hp-ux_6.20'
+require_relative 'modules/hp-ux_7.01'
 require_relative 'modules/hp-ux_8.05'
 require_relative 'modules/hp-ux_9.05'
 require_relative 'modules/hp-ux_10.20'
@@ -22,6 +23,7 @@ module HPUX
     case sec.downcase
     when '0'     then "<strong>#{sec}.</strong> Preface"
     when '1'     then "<strong>#{sec}.</strong> Commands"
+    when '1c'    then "<strong>#{sec}.</strong> Communication Commands"
     when '1c++'  then "<strong>#{sec}.</strong> C++ Programming Commands"
     when '1g'    then "<strong>#{sec}.</strong> Graphics Commands"
     when '1m'    then "<strong>#{sec}.</strong> Maintenance Commands"
@@ -44,7 +46,10 @@ module HPUX
     when '3x'    then "<strong>#{sec}.</strong> Miscellaneous Libraries"
     when '3x11'  then "<strong>#{sec}.</strong> X11 Library"
     when '4'     then "<strong>#{sec}.</strong> File Formats"
+    when '4f'    then "<strong>#{sec}.</strong> Network Protocol Families"
     when '4g'    then "<strong>#{sec}.</strong> Graphics File Formats"
+    when '4n'    then "<strong>#{sec}.</strong> Networking Facilities"
+    when '4p'    then "<strong>#{sec}.</strong> Network Protocols"
     when '4x'    then "<strong>#{sec}.</strong> Vue File Formats"
     when '5'     then "<strong>#{sec}.</strong> Miscellaneous Facilities"
     when '5x'    then "<strong>#{sec}.</strong> Vue Miscellaneous Facilities"

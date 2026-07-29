@@ -25,7 +25,7 @@ module Motorola_SysV
     def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
       @manual_section ||= Regexp.last_match[1] if Regexp.last_match
-      super(source, **kwargs)
+      super
     end
 
     def init_ds

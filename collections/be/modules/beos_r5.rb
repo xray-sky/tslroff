@@ -47,7 +47,15 @@ module BeOS
         when 'uuencode.html' then @lines.slice!(0, 40)
         when 'gcc.html', 'rcsfile.html', 'rcsintro.html'
           patch_line(1, /^.*$/, '')
-        when /fm.html/, 'Metrowerks_License.html' # metrowerks
+        when 'indexcontent.html'
+          # non-compliant entities in the BinkJet manual
+          patch(/(&[^\s;]+)\s/, '\1;', global: true)
+          # update hrefs for moved binkjet page
+          patch(/((?:href|src)="(?!#|mailto:|http:))/i, '\1supporting-documentation/', global: true) if @dir.include?('supporting')
+        when /content.html$/
+          # non-compliant entities in the BinkJet manual
+          patch(/(&[^\s;]+)\s/, '\1;', global: true)
+        when /fm.html$/, 'Metrowerks_License.html' # metrowerks
           # the metrowerks source is too heinous for nokogiri, too much malicious compliance to cope with
           # maybe the features are regular enough we can just... fudge it.
           # * none of the pages have titles
@@ -63,23 +71,50 @@ module BeOS
       end
     end
 
-    class Manual < Manual ; end
+    class Manual < Manual
+      def output_directory
+        d = super
+        d.sub!(%r{supporting-documentation.*$}, '') if @source.file == 'indexcontent.html' # move this binkjet page to replace /index.html frameset
+        d
+      end
+    end
 
     class HTML < HTML
       def initialize(source, **kwargs)
-        super(source, **kwargs)
+        super
+
+        @manual_section = basedir
+        # TODO use _correct_ index/intro page as entry for each section (multiple Intro/index files present)
+        #      drop "noise" from main index? or do something to give it better structure / clean it up in general
+        #        shell tools non-"toc" pages; man index + ref index only?
 
         case @source.dir
+        when /BinkJet/      then @manual_entry.delete_suffix!('content') # to replace "parent" frameset (others excluded by collection wildcard)
         when /User's Guide/ then xpath('//p[@class="body"]').each { |pp| pp.remove_class('body') }
         end
 
         case @source.file
-        when /fm.html/, 'Metrowerks_License.html' # metrowerks
+        when /fm.html/, 'Metrowerks_License.html' # metrowerks TODO use IDBTOC.fm as entry ("index"/"intro") page
+          @manual_section = 'CodeWarrior'
           @content_start = @source.index { |l| l.match? %r{<a name="Top">} }
           @content_end   = @source.index { |l| l.match? %r{<a name="Bottom">} }
           define_singleton_method :to_html, method(:to_html_metrowerks)
         end
       end
+
+      #def index_description ; super ; end
+      #def index_name ; super ; end
+
+      private
+
+      def docdir
+        @docdir ||= @source.dir.partition(%r{^.*/(?:beos/documentation|develop)/?}).last
+      end
+
+      def basedir
+        @basedir ||= docdir.split('/').first
+      end
+
     end
 
     class Nroff < Nroff ; end

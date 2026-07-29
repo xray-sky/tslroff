@@ -15,5 +15,9 @@ module Coherent
     def output_directory
       @source.dir.split('/').last
     end
+
+    def manual_section
+      super.sub(/files|functions|information|macros/) { |s| s.capitalize }
+    end
   end
 end

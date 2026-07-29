@@ -23,7 +23,8 @@ module Interactive
       super
       @named_strings.merge!(
         {
-          footer: '\\fB\\s-1\\*(]Y\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP'.+@,
+          #footer: '\\fB\\s-1\\*(]Y\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP'.+@,
+          footer: '\\fB\\s-1\\*U\\0\\0\\(em\\0\\0\\*(]Z\\s+1\\fP'.+@,
           'Tm' => '&trade;',
           'E'  => '\\&.\|.\|.',
           'T'  => "\t",

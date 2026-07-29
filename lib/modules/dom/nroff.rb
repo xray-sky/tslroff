@@ -177,7 +177,7 @@ class Nroff < TextFormatter
 
   def index_entry(lines)
     return if lines.empty?
-    (names, _sep, descr) = lines.collect { |l| l.to_html }.join(' ').strip.partition(/\s+-\s+/)
+    (names, _sep, descr) = lines.collect { |l| l.to_html }.join(' ').strip.partition(%r{\s+(?:<.+?>)*-(?:</.+?>)*\s+})
     [strip_tags(names), descr]
   end
 

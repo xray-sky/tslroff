@@ -10,6 +10,17 @@ collection_namespace 'NeXT' do
       odir: 'NeXT/NEXTSTEP/1.0',
       sources: %w[NextLibrary/Documentation/Unix/ManPages/man[1-8]]
 
+    manual_namespace '2.2',
+      vendor_class: NEXTSTEP,
+      contributor: 'winworldpc.com',
+      odir: 'NeXT/NEXTSTEP/2.2',
+      sources: %w[Unix/ManPages/man[1-8]]
+
+    manual_namespace '3.0',
+      vendor_class: NEXTSTEP,
+      odir: 'NeXT/NEXTSTEP/3.0',
+      sources: %w[NextLibrary/Documentation/ManPages/man[1-8]]
+
     manual_namespace '3.3',
       vendor_class: NEXTSTEP,
       odir: 'NeXT/NEXTSTEP/3.3',

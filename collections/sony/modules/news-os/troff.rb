@@ -13,6 +13,8 @@
 
 module NEWS_os
   class Troff < Troff::Man
+    # not in macros, but used?
+    alias :LP :P
 
     def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.([\dnop][^.]*)$/, '')

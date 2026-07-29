@@ -7,7 +7,7 @@ collection_namespace 'mips' do
   collection_namespace 'unbundled' do
     # TODO macro package?
     manual_namespace 'SysProgPkg_2.1',
-      #vendor_class: RISC_os,
+      vendor_class: RISC_os,
       os: 'UMIPS/BSD System Programmer\'s Package',
       ver: '2.1',
       idir: 'mips/risc-os/unbundled/2.1spp',
@@ -30,6 +30,7 @@ collection_namespace 'mips' do
       sources: %w[man/catman/?_man/*man[1-8]]
     manual_namespace '5.01',
       vendor_class: RISC_os::V5_01,
+      contributor: 'pmackinlay',
       idir: 'mips/risc-os/5.01',
       odir: 'mips/RISC:os/5.01',
       sources: %w[share/man/catman/?_man/*man[1-8]]

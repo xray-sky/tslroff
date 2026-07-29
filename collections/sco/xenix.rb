@@ -9,3 +9,11 @@
 #
 
 require_relative 'modules/xenix/manual'
+
+module Xenix
+
+  def self.name_for_section(sec)
+    OpenDesktop.name_for_section(sec)
+  end
+
+end

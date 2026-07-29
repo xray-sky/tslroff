@@ -22,6 +22,10 @@ module OSF1
       end
       super(source, **kwargs)
     end
+
+    def manual_section
+      super.sub(/Cde$|Cds$|[Dd]ce.*$|D[ft]s$|Rpc$|Ssl$|Sv$|Xds$|[Xx]om$/) { |s| s.upcase }
+    end
   end
 
 end

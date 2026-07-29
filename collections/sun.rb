@@ -19,6 +19,7 @@ collection_namespace 'Sun' do
   collection_namespace 'Unisoft' do
     manual_namespace 'V7',
       vendor_class: UNIX::V7, # REVIEW seems to be the same as standard V7
+      contributor: 'bitsavers.org',
       odir: 'Sun/Unisoft/V7',
       sources: %w[man/man[1-8]]
   end # TODO man/as, man/misc release notes

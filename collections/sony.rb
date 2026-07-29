@@ -14,6 +14,7 @@ collection_namespace 'Sony' do
       sources: %w[public/usr/man/man[1-8nops]]
 
     manual_namespace '3.3/ja_JP',
+      lang: 'ja',
       vendor_class: NEWS_os::V3_3_ja_JP,
       ver: '3.3',
       idir: 'sony/news-os/3.3',
@@ -29,6 +30,7 @@ collection_namespace 'Sony' do
       sources: %w[C/man[1-8nop]]
 
     manual_namespace '4.1C/ja_JP',
+      lang: 'ja',
       vendor_class: NEWS_os::V4_1C_ja_JP,
       ver: '4.1C',
       idir: 'sony/news-os/4.1ca/usr/man',
@@ -47,6 +49,7 @@ collection_namespace 'Sony' do
 
     # TODO compare installed man w/ media-extracted (.../4.2.1R/usr/man)
     manual_namespace '4.2.1R/ja_JP',
+      lang: 'ja',
       vendor_class: NEWS_os::V4_2_1R_ja_JP,
       ver: '4.2.1R',
       idir: 'sony/news-os/4.2.1R/man',

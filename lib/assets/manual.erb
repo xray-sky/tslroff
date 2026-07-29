@@ -16,6 +16,9 @@
   <meta charset="UTF-8">
   <meta name="generator" content="https://github.com/xray-sky/tslroff">
   <meta name="generated" content="<%= Time.now.strftime('%Y%m%d %H:%M:%S') %>">
+<% if contributor -%>
+  <meta name="contributor" content="<%= contributor %>">
+<% end -%>
   <meta name="source_file" content="<%= srcfile %>">
   <meta name="source_format" content="<%= man.magic %>">
 <% unless indexing.empty? -%>

@@ -9,6 +9,7 @@ collection_namespace 'Acorn' do
     # there are other BSD title pages etc. in man0, and a Makefile with Acorn (c)
     manual_namespace '1.2',
       vendor_class: RISCiX::V1_2,
+      contributor: 'stardot.org.uk/forums/',
       os: 'RISC iX',
       odir: 'Acorn/RISCiX/1.2',
       sources: %w[

@@ -9,5 +9,32 @@
 #
 
 module Motorola_SysV
-  class Nroff < Nroff ; end
+  class Nroff < Nroff
+
+    def initialize(source, **kwargs)
+      @manual_entry ||= source.file.sub(/(?:\.\dX?\S?)?(?:\.[zZ])?$/, '')
+
+      # TODO subclass properly
+      case kwargs[:ver]
+      when '1.02', 'R32V2' # Commercial Net Ext., MultiPersonal System
+        case @manual_entry
+        when 'bootpd'
+          @heading_detection = %r{^(?<section>[A-Z][A-Za-z\s]+)$}
+          @title_detection = %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
+        when 'sledit'
+          @heading_detection = %r{^\s{3}(?<section>[A-Z][A-Za-z\s]+)$}
+          @title_detection = %r{^\s{3}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
+        else
+          @heading_detection = %r{^\s{5}(?<section>[A-Z][A-Za-z\s]+)$}
+          @title_detection = %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
+        end
+      when 'Release 3.2 Version 1.2C'
+        @heading_detection = %r{^\s{2}(?<section>[A-Z][A-Za-z\s]+)$}
+        @title_detection = %r{^\s{2}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))}
+      end
+
+      super(source, **kwargs)
+    end
+
+  end
 end

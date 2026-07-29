@@ -4,7 +4,7 @@
 collection_namespace 'unbundled' do
   manual_namespace 'ada_1.0',
     vendor_class: DomainOS,
-    os: 'DOMAIN Ada',
+    os: 'Domain/Ada',
     ver: '1.0',
     idir: 'apollo/domain_os/unbundled/ada_1.0',
     odir: 'Apollo/unbundled/ada_1.0',

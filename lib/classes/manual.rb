@@ -79,6 +79,13 @@ class Manual
     manual_entry.tr('/', '_') # for coping with VMS pages e.g. EDIT vs. /EDIT
   end
 
+  # try to enforce some case uniformity where visible, 3m should become 3M
+  # but leave e.g. 3Xt or BinkJet alone
+  # wants e.g. 1ssl -> 1SSL, 4cde -> 4CDE and not 1Ssl and 4Cde (tru64 5.1b)
+  def manual_section
+    @document.manual_section&.sub(/^\d[a-z]/) { |c| c.upcase }
+  end
+
   # Try to establish some simplistic default behavior for
   # re-targeting symlinks which appear in the input
   def retarget_symlink
@@ -111,8 +118,3 @@ class Manual
   end
 
 end
-
-Dir.glob(%w[../modules/platform/*.rb ../modules/platform/**/*.rb], base: File.dirname(__FILE__)).each do |i|
-  require_relative i
-end
-

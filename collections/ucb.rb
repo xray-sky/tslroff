@@ -18,10 +18,10 @@ collection_namespace 'UCB' do
       ] # REVIEW local/man/man8 is a file, will probably cause a problem
   end
 
-  # TUHS (contributor)
   collection_namespace 'UNIX' do
     # no macros?
     manual_namespace '1BSD',
+      contributor: 'tuhs.org',
       vendor_class: BSD::V1,
       idir: 'ucb/bsd/1bsd',
       odir: 'UCB/UNIX/1BSD',
@@ -31,6 +31,7 @@ collection_namespace 'UCB' do
     # REVIEW macros in upgrade/man ?
     manual_namespace '2BSD',
       vendor_class: BSD::V2_8,
+      contributor: 'tuhs.org',
       idir: 'ucb/bsd/2bsd',
       odir: 'UCB/UNIX/2BSD',
       sources: %w[
@@ -42,6 +43,7 @@ collection_namespace 'UCB' do
     # no macros?
     manual_namespace '2.8BSD',
       vendor_class: BSD::V2_8,
+      contributor: 'tuhs.org',
       idir: 'ucb/bsd/2.8bsd',
       odir: 'UCB/UNIX/2.8BSD',
       sources: %w[
@@ -53,6 +55,7 @@ collection_namespace 'UCB' do
 
     manual_namespace '2.9BSD',
       vendor_class: BSD::V2_9,
+      contributor: 'tuhs.org',
       idir: 'ucb/bsd/2.9bsd',
       odir: 'UCB/UNIX/2.9BSD',
       sources: %w[
@@ -66,6 +69,7 @@ collection_namespace 'UCB' do
 
     manual_namespace '2.11BSD',
       vendor_class: BSD::V2_11,
+      contributor: 'tuhs.org',
       idir: 'ucb/bsd/2.11bsd',
       odir: 'UCB/UNIX/2.11BSD',
       sources: %w[
@@ -87,12 +91,14 @@ collection_namespace 'UCB' do
 
     manual_namespace '3BSD',
       vendor_class: BSD::V3,
+      contributor: 'tuhs.org',
       idir: 'ucb/bsd/3bsd',
       odir: 'UCB/UNIX/3BSD',
       sources: %w[usr/man/man[1-8]]
 
     manual_namespace '4.1BSD',
       vendor_class: BSD::V4_1,
+      contributor: 'tuhs.org',
       idir: 'ucb/bsd/4.1bsd',
       odir: 'UCB/UNIX/4.1BSD',
       sources: %w[man/man[1-8]]

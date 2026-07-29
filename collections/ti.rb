@@ -9,6 +9,10 @@ collection_namespace 'TI' do
       ver: '1.3.1',
       idir: 'ti/v6unix-1.3.1/user',
       odir: 'TI/V6/1.3.1',
-      sources: %w[man/man[0-8]]
+      sources: %w[
+        man/man0/basinf.0
+        man/man0/intro.0
+        man/man[1-8]
+      ]
   end
 end

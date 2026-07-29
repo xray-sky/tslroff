@@ -13,13 +13,53 @@
 #             so I guess we keep them separate.
 #
 # TODO
-#   file modification dates
-#   5.20 S300 nroff manuals mixed in; need some nroff methods for that to succeed - title, section detect.. anything else?
+# √ file modification dates
+# √ 5.20 S300 nroff manuals mixed in; need some nroff methods for that to succeed - title, section detect.. anything else?
 #   several pages call .TE without corresponding .TS - causes (apparently harmless?) stack traces to pepper the build logs
+# √ roman(5) - HP ROMAN8 encodings. not available in ruby? https://nellisks.com/ref/charsets/hpRoman.html
 #
 
 module HPUX
   module V5_20
+
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'kana8.5'  then kwargs[:encoding] = Encoding::SJIS
+        #when 'roman8.5' then kwargs[:encoding] = Encoding::ROMAN8 # but, this is not an available encoding
+        when 'roman8.5'
+          define_singleton_method :stream_decompress do
+            %(|gzip -dc '#{@path}' | iconv -f HP-ROMAN8 -t UTF-8)
+          end
+        when 'hidden_surf.3g', 'spline.3g'
+          kwargs[:magic] = :Troff
+        end
+        super
+        case File.basename file
+        when 'block_move.3g' # S500 only; safe for S300
+          patch_line  1, /"$/, ''
+          patch_line 50, /^\./, '.\\"' # REVIEW temporary until .if with no args can be investigated
+        end
+      end
+    end
+
+    class Manual < Manual
+      def initialize(source, **kwargs)
+        case File.basename source
+        when 'kana8.5' then @language = 'jp'
+        end
+        super
+      end
+    end
+
+    class Nroff < Nroff
+      def initialize(source, **kwargs)
+        @manual_entry ||= source.file.sub(/\.([\dZz]\S*?)$/, '')
+        @heading_detection ||= %r(^\s{5}(?<section>[A-Z][-A-Za-z\s]+)$)
+        @title_detection ||= %r{^\s{5}(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))\s.+?\s\k<manentry>$}
+        super(source, **kwargs)
+      end
+    end
 
     class Troff < Troff
 

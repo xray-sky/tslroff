@@ -166,7 +166,7 @@ class Troff < TextFormatter
     block.style.css.delete(:margin_left) if @register['.i'] == @base_indent
     block.style.css[:text_align] = [ 'left', 'justify', nil, 'center', nil, 'right' ][@register['.j']] unless @register['.j'] == 1
     block.style.css[:text_align] = 'left' if noadj? # .na sets left adjust without changing .j
-    block.style.attributes[:class] = Regexp.last_match[1].downcase if @section_heading&.match(/^(name|synopsis)$/i) and block.is_a? Block::Paragraph
+    block.style.attributes[:class] = Regexp.last_match[1].downcase if @section_heading&.match(/^(name|synopsis|名称|形式|名前|構文)$/i) and block.is_a? Block::Paragraph
     block
   end
 end

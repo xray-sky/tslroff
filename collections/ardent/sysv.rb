@@ -38,6 +38,7 @@ module Ardent_SysV
     when '3xt'  then "<strong>#{sec}.</strong> X Toolkit"
     when '4'    then "<strong>#{sec}.</strong> File Formats"
     when '5'    then "<strong>#{sec}.</strong> Miscellaneous Facilities"
+    when '6'    then "<strong>#{sec}.</strong> Games and Demos"
     when '7'    then "<strong>#{sec}.</strong> Special Files"
     when '7p'   then "<strong>#{sec}.</strong> PHIGS PEX-SI"
     when '8'    then "<strong>#{sec}.</strong> Maintenance Procedures"

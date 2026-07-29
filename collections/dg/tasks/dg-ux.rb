@@ -2,8 +2,9 @@
 #
 
 collection_namespace 'DG/UX' do
-  manual_namespace '4.00', # from novasareforever
-    vendor_class: DG_UX::V4_30,
+  manual_namespace '4.00',
+    vendor_class: DG_UX::V4_00,
+    contributor: 'novasareforever.org',
     idir: 'dg/dgux/4.00_mv',
     odir: 'DG/DG:UX/4.00',
     sources: %w[catman/?_man/man[0-8]]

@@ -31,6 +31,7 @@ module DYNIX_ptx
     when '4n' then "<strong>#{sec}.</strong> Network Facilities"
     when '4p' then "<strong>#{sec}.</strong> Network Protocols"
     when '5'  then "<strong>#{sec}.</strong> File Formats"
+    when '6'  then "<strong>#{sec}.</strong> Games and Demos"
     when '7'  then "<strong>#{sec}.</strong> Miscellaneous Facilities"
     when '8'  then "<strong>#{sec}.</strong> Maintenance Commands"
     when '8c' then "<strong>#{sec}.</strong> Network Services"

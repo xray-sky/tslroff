@@ -6,6 +6,7 @@ require_relative 'motorola/sysv'
 collection_namespace 'Motorola' do
   collection_namespace 'SystemV' do
     collection_namespace '88k' do
+      # REVIEW is this complete? appears to only be X11 manual
       manual_namespace 'MultiPersonal_C832.22',
         vendor_class: Motorola_SysV,
         os: 'MultiPersonal System',
@@ -19,7 +20,7 @@ collection_namespace 'Motorola' do
         os: 'Motorola System V 88k',
         ver: 'Release 3.2 Version 1.2C',
         idir: 'motorola/sysv-88k/r3.2v1.2c_bos_obj',
-        odir: 'Motorola/SVR3/88k/R3.1_V2.1C_UZ88.01',
+        odir: 'Motorola/SVR3/88k/R3.2_V1.2C_UZ88.01',
         sources: %w[usr/catman/?_man/man*]
 
       manual_namespace 'FH40.42',

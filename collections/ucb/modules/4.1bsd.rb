@@ -29,11 +29,7 @@ module BSD
       # REVIEW does this appear in other versions' macros too?
       def init_tr
         super
-        @character_translations.merge!(
-          {
-            '*' => '\\(**'
-          }
-        )
+        @character_translations['*'] = "\e(**"
       end
 
       # tmac.an.new

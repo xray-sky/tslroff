@@ -36,7 +36,7 @@ class HTML < TextFormatter
 
   def initialize(source, **kwargs)
     @manual_entry ||= source.file.sub(/\.html?$/, '')
-    super(source, **kwargs)
+    super
     @structured_source = Nokogiri::HTML @source.iter.collect(&:to_s).join
   end
 
@@ -52,15 +52,17 @@ class HTML < TextFormatter
     body_styles << %(background-image:url('#{background.value}');background-repeat:repeat;) if background
 
     body.css('a').each do |link|
-      # ditch external links (e.g. to www.be.com) -- should cover http://, https://, ftp://, etc.
-      link.replace(link.text) if link['href']&.include?('://') or link['href']&.start_with?('mailto:')
+      next unless link['href']
       # update links to '.htm' pages as '.html'
-      link['href'] &&= link['href']&.sub!(%r{\.htm(#.*)?$}, '.html\1')
+      link['href'].sub!(%r{\.htm(#.*)?$}, '.html\1')
+      # ditch external links (e.g. to www.be.com) -- should cover http://, https://, ftp://, etc.
+      link.replace(link.text) if link['href'].include?('://') or link['href'].start_with?('mailto:')
     end
 
     # also for image map links, e.g. Tru64 C++ 6.2
     body.css('area').each do |link|
-      link.delete('href') if link['href']&.include?('://') or link['href']&.start_with?('mailto:')
+      next unless link['href']
+      link.delete('href') if link['href'].include?('://') or link['href'].start_with?('mailto:')
     end
 
     <<~DOC
@@ -74,7 +76,7 @@ class HTML < TextFormatter
   end
 
   def page_title
-    xpath('//head/title').text
+    xpath('//head/title').text.gsub(/([<>])/, { '>' => '&gt;', '<' => '&lt;' })
   end
 
   #def input_line_number
@@ -91,6 +93,6 @@ class HTML < TextFormatter
   end
 
   def index_description
-    xpath('//head/title').text
+    xpath('//head/title').text.gsub(/([<>])/, { '>' => '&gt;', '<' => '&lt;' })
   end
 end

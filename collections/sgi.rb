@@ -8,6 +8,7 @@ collection_namespace 'SGI' do
   collection_namespace 'libiris' do
     manual_namespace 'R1c',
       vendor_class: BSD::V4_3,
+      contributor: 'afs.mit.edu',
       idir: 'sgi/iris-lib/R1c',
       odir: 'SGI/libiris/R1c',
       sources: %w[

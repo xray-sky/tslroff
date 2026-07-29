@@ -59,6 +59,7 @@ collection_namespace 'Bell' do
   collection_namespace 'UNIX' do
     manual_namespace 'V6',
       vendor_class: UNIX::V6,
+      contributor: 'tuhs.org',
       ver: '6th Edition',
       odir: 'Bell/UNIX/V6',
       sources: %w[
@@ -67,6 +68,7 @@ collection_namespace 'Bell' do
       ]
     manual_namespace 'V7',
       vendor_class: UNIX::V7,
+      contributor: 'tuhs.org',
       ver: '7th Edition',
       odir: 'Bell/UNIX/V7',
       sources: %w[
@@ -75,6 +77,7 @@ collection_namespace 'Bell' do
       ]
     manual_namespace '32V',
       vendor_class: UNIX::V7,
+      contributor: 'tuhs.org',
       odir: 'Bell/UNIX/32V',
       sources: %w[
         usr/man/man[1-8]
@@ -83,6 +86,7 @@ collection_namespace 'Bell' do
     # TODO also contains a lot of papers for as, cc, etc.
     manual_namespace 'SysIII',
       vendor_class: UNIX::SysIII,
+      contributor: 'tuhs.org',
       ver: 'System III',
       idir: 'bell/unix/sysiii',
       odir: 'Bell/UNIX/SystemIII',

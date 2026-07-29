@@ -446,6 +446,7 @@ collection_namespace 'unbundled' do
 
     manual_namespace 'PrintServer_Japanese_5.1',
       vendor_class: Digital_UNIX::V4_0d,
+      lang: 'ja',
       os: 'PrintServer Japanese',
       ver: '5.1',
       idir: 'dec/du/unbundled/jls510',
@@ -534,6 +535,7 @@ collection_namespace 'unbundled' do
       sources: %w[usr/opt/LPS/man/*.[18]]
 
     manual_namespace 'SNA_3270_Datastream_Programming_Japanese_1.0',
+      lang: 'ja',
       vendor_class: OSF1::V3_2c,
       os: 'SNA 3270 Datastream Japanese',
       ver: '1.0',
@@ -544,6 +546,7 @@ collection_namespace 'unbundled' do
       sources: %w[xlated/usr/opt/*/usr/i18n/usr/share/ja_JP.SJIS/man/man[138]]
 
     manual_namespace 'SNA_Printer_Emulator_Japanese_1.0',
+      lang: 'ja',
       vendor_class: OSF1::V3_2c,
       os: 'SNA Printer Emulator Japanese',
       ver: '1.0',
@@ -554,6 +557,7 @@ collection_namespace 'unbundled' do
       sources: %w[xlated/usr/opt/*/usr/i18n/usr/share/ja_JP.SJIS/man/man[18]]
 
     manual_namespace 'SNA_RJE_1.0',
+      lang: 'ja',
       vendor_class: OSF1::V3_2c,
       os: 'SNA RJE',
       ver: '1.0',
@@ -564,6 +568,7 @@ collection_namespace 'unbundled' do
       sources: %w[xlated/usr/opt/*/usr/i18n/usr/share/ja_JP.SJIS/man/man[138]]
 
     manual_namespace 'SNA_DECwindows_3270_Emulator_Japanese_2.1A',
+      lang: 'ja',
       vendor_class: OSF1::V3_2c,
       os: 'SNA DECwindows 3270 Emulator Japanese',
       ver: '2.1A',
@@ -678,6 +683,7 @@ collection_namespace 'unbundled' do
       sources: %w[usr/opt/FUS420/man/man1]
 
     manual_namespace 'FUSE_4.2/ja_JP', # ja_JP pages also
+      lang: 'ja',
       vendor_class: Tru64::V4_0f,
       os: 'FUSE',
       ver: '4.2',

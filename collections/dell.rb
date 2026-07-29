@@ -8,6 +8,7 @@ collection_namespace 'Dell' do
   collection_namespace 'SVR4' do
     manual_namespace 'Issue2.2',
       vendor_class: Dell_SVR4::Issue_2_2,
+      contributor: 'winworldpc.com',
       os: 'Dell System V Release 4',
       ver: 'Issue 2.2',
       idir: 'dell/svr4_iss2.2',

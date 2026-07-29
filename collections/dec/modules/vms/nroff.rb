@@ -26,9 +26,26 @@ module VMS
   class Nroff < Nroff
 
     # constant lookup - this doesn't work because parent method does the lookup TODO
-    #TYPEBOX = Typesetter::VT100::Symbols
-    #TYPEBOX.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
-    #TYPEBOX.freeze
+    TYPEBOX = Typesetter::VT100::Symbols
+    TYPEBOX.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
+    TYPEBOX.freeze
+
+    OVERSTRIKES = Nroff::OVERSTRIKES.dup
+
+    OVERSTRIKES.default_proc = proc do |_hash, key|
+      key.collect! { |c| c.sub(/(.)\cN/) { TYPEBOX[Regexp.last_match[1]] } }
+      key.length == 1 and next key[0]
+      raise TypeClashError.new(key), 'unresolved overstrike'
+    end
+
+    OVERSTRIKES.freeze # REVIEW do I really want to freeze this, or make it platform overrideable somehow
+
+    class Line < Nroff::Line
+      def initialize(file: '', line: 0)
+        @overstrikes ||= Nroff::OVERSTRIKES
+        super(file: file, line: line)
+      end
+    end
 
     def initialize(source, **kwargs)
       # TODO @lines_per_page not entirely satisfactory; kinda want to only break on lf,

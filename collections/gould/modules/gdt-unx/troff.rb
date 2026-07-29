@@ -65,7 +65,7 @@ module GDT_UNX
 
     def init_tr
       super
-      @character_translations['*'] = "\\(**"
+      @character_translations['*'] = "\e(**"
     end
 
     def init_PD

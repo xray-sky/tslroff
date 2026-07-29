@@ -114,6 +114,7 @@ collection_namespace 'Be' do
         task all: [:assets]
       end
 
+    # beware framesets in the binkjet manual
     manual_namespace 'R5',
       vendor_class: BeOS::R5,
       entry_page: 'Welcome_To_BeOS.html',
@@ -124,8 +125,8 @@ collection_namespace 'Be' do
         beos/documentation/AlertInfo/ATCommands
         beos/documentation/Be?Book
         beos/documentation/Be?Book/[A-Z]*
-        beos/documentation/BinkJet?2.0
-        beos/documentation/BinkJet?2.0/[ds]*/*.html
+        beos/documentation/BinkJet?2.0/[ds]*/*content.html
+        beos/documentation/BinkJet?2.0/s*/faq.html
         beos/documentation/Shell?Tools
         beos/documentation/Shell?Tools/man1
         beos/documentation/Shell?Tools/ref/*

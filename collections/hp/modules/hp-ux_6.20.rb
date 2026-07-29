@@ -8,7 +8,7 @@
 # HP-UX 6.20 Platform Overrides
 #
 # TODO
-#   file modification dates
+# √ file modification dates
 #   rcsfile.4 actually expects to use \(LL
 #   looped in sccsfile.4 ??
 #
@@ -19,6 +19,29 @@
 
 module HPUX
   module V6_20
+
+    class Source < Source
+      def initialize(file, **kwargs, &block)
+        case File.basename file
+        when 'kana8.5'  then kwargs[:encoding] = Encoding::SJIS
+        #when 'roman8.5' then kwargs[:encoding] = Encoding::ROMAN8 # but, this is not an available encoding
+        when 'roman8.5'
+          define_singleton_method :stream_decompress do
+            %(|gzip -dc '#{@path}' | iconv -f HP-ROMAN8 -t UTF-8)
+          end
+        end
+        super
+      end
+    end
+
+    class Manual < Manual
+      def initialize(source, **kwargs)
+        case File.basename source
+        when 'kana8.5' then @language = 'jp'
+        end
+        super
+      end
+    end
 
     class Troff < Troff
 

@@ -18,12 +18,21 @@ class Nroff
       @baseline = []
       @line = :@baseline
       @section = ''
+      @overstrikes ||= Nroff::OVERSTRIKES
     end
 
     def print_at(x, char)
       line = instance_variable_get(@line)
       line[x] ||= String.new
       line[x] << char
+    end
+
+    def any?
+      @baseline.any? or @superscript.any?
+    end
+
+    def empty?
+      @baseline.empty? and @superscript.empty?
     end
 
     def superscripts?
@@ -77,7 +86,7 @@ class Nroff
         # a single character is just output (entitizing &, <, and >)
         # any bold or underlining is turned off.
         cell.length == 1 and next(clear_styles! +
-                                  cell.sub(/([&<>])/) { |_m| Nroff::OVERSTRIKES[[Regexp.last_match[1]]] })
+                                  cell.sub(/([&<>])/) { |_m| @overstrikes[[Regexp.last_match[1]]] })
 
         # the following tasks are destructive of cell; indexing means we'll typeset some lines twice
         cell = cell.dup
@@ -110,7 +119,7 @@ class Nroff
         # compose overstruck characters (may have been piled up in any order)
         # any typebox shift-outs have to be kept with the preceeding character
         begin
-          out << Nroff::OVERSTRIKES[cell.scan(/.\cN?/).sort]
+          out << @overstrikes[cell.scan(/.\cN?/).sort]
         rescue Nroff::TypeClashError => e
           key = e.pile
           warn "#{@input_filename} [#{@input_linenumber}]:  #{e.message} #{key.inspect}"

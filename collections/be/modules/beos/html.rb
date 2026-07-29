@@ -31,11 +31,6 @@
 module BeOS
   class HTML < HTML
 
-    def initialize(source, **kwargs)
-      @manual_entry = source.file.sub(/\.html$/, '')
-      super(source, **kwargs)
-    end
-
     def to_html(halt_on: nil)
       return if halt_on
       body = xpath('//body')

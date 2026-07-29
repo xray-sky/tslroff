@@ -8,6 +8,30 @@ class Block
     end
   end
 
+  class Paragraph < Block
+    def to_html
+      # this used to happen before every block was processed.
+      # TODO something better.
+      #      something not tied to Block::Paragraph.
+      #      something that can be overridden.
+      #        => REVIEW THIS CLASS CLONED IN UNIX V6 for "syscall (II)" style refs
+      # NOTE Nroff Line class has its own link rewrite
+
+      t = @text.collect(&:to_html).join
+      return t if t.empty? # REVIEW side effects?
+
+      if style[:linkify]
+        t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
+          caps = Regexp.last_match
+          entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
+          %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
+        end
+      end
+
+      "<p#{@style}>\n#{t}\n</p>\n"
+    end
+  end
+
   # classification, to allow useful <<
   class Inline < Block
   end
@@ -31,9 +55,11 @@ class Block
     end
   end
 
-  class Monospace < Block
+  class Monospace < Block::Paragraph
     def to_html
-      %(<p class="monospace"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
+      css_class = String.new 'monospace'
+      css_class << " #{@style.attributes.delete(:class)}" if @style.attributes[:class]
+      %(<p class="#{css_class}"#{@style}>#{@text.collect(&:to_html).join}</p>\n)
     end
   end
 
@@ -205,30 +231,6 @@ class Block
   # Same thing, just detectably different for the purpose of skipping/not skipping tabs
   # input tabs skip column spanned cells. row spanned cells must be tabbed past
   class ColSpan < Block::RowSpan
-  end
-
-  class Paragraph < Block
-    def to_html
-      # this used to happen before every block was processed.
-      # TODO something better.
-      #      something not tied to Block::Paragraph.
-      #      something that can be overridden.
-      #        => REVIEW THIS CLASS CLONED IN UNIX V6 for "syscall (II)" style refs
-      # NOTE Nroff Line class has its own link rewrite
-
-      t = @text.collect(&:to_html).join
-      return t if t.empty? # REVIEW side effects?
-
-      if style[:linkify]
-        t.gsub!(%r{(?<break>(?:<br />)*)(?<text>(?:<[^<]+?>)*(?<entry>\S+?)(?:<[^<]+?>)*\((?:<[^<]+?>)*(?<fullsec>(?<section>\d.*?)(?:-.*?)*)(?:<[^<]+?>)*\)(?:<[^<]+?>)*)}) do |_m|
-          caps = Regexp.last_match
-          entry = caps[:entry].sub(/&minus;/, '-')	# this was interfering with link generation - ali(1) [AOS 4.3]
-          %(#{caps[:break]}<a href="../man#{caps[:fullsec].downcase}/#{entry}.html">#{caps[:text]}</a>)
-        end
-      end
-
-      "<p#{@style}>\n#{t}\n</p>\n"
-    end
   end
 
   # svg standard display type is block

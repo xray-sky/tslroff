@@ -8,6 +8,7 @@ collection_namespace 'Apple' do
   collection_namespace 'A/UX' do
     manual_namespace '0.7',
       vendor_class: A_UX::V0_7,
+      contributor: '*',
       idir: 'apple/aux/0.7',
       odir: 'Apple/A:UX/0.7',
       sources: %w[catman/?_man/man[1-8]]

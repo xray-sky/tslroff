@@ -94,6 +94,9 @@ module OSF1
       @register['IN'] = Troff::Register.new(@base_indent)
     end
 
+    # quiet down the logs
+    define_method '..' do ; end
+
     # .so with absolute path, osf/1 macros in /usr/share/lib/tmac
     def so(name, breaking: nil)
       name = "../../../..#{name}" if name.start_with?('/')

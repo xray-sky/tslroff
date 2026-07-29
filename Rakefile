@@ -40,6 +40,10 @@
 # √ page titles for unbundled pages are messed up
 # √ page titles for everything are messed up, due to the lack of
 #     `vendor`, `os`, and `ver`, which used to be supplied as command line params into build.rb
+# √ connect language metadata to the index pages
+#   turns out, the CMU fonts don't actually give Asian language glyphs; some other font is being used
+#     for the lang='ja' pages. this defeats our webfont strategy for making tabs work predictably: our
+#     carefully handcrafted tabs are going to be goofy depending on the user agent's local fonts.
 #
 
 # under chomedriver control, chrome won't load css from a file??
@@ -123,6 +127,7 @@ require_relative 'collections/mwc'
 require_relative 'collections/nbi'
 require_relative 'collections/next'
 require_relative 'collections/novell'
+require_relative 'collections/qnx'
 require_relative 'collections/sco'
 require_relative 'collections/sequent'
 require_relative 'collections/sgi'

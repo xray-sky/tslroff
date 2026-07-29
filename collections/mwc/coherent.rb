@@ -16,8 +16,7 @@ require_relative 'modules/coherent/manual'
 module Coherent
 
   def self.name_for_section(sec)
-    # TODO - take sections from dir names?
-    String.new
+    sec
   end
 
 end

@@ -8,7 +8,9 @@
 # ISI/NBI 4.2BSD Platform Overrides (tmac.an.new)
 #
 
+require_relative 'modules/4.2bsd/source'
 require_relative 'modules/4.2bsd/troff'
+require_relative 'modules/duplix_5.0'
 
 module NBI_4_2BSD
 

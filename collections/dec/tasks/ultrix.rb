@@ -38,6 +38,17 @@ collection_namespace 'Ultrix' do
     odir: 'DEC/Ultrix-11/3.1',
     sources: %w[man/man[1-8]]
 
+  # REVIEW tmac.an.repro no different from 2.0.0? (pdp-11.ru)
+  manual_namespace '1.1',
+    vendor_class: Ultrix::V2_0_0,
+    os: 'Ultrix-32',
+    ver: '1.1',
+    odir: 'DEC/Ultrix/1.1',
+    sources: %w[
+      usr/man/man[1-8]
+      usr/new/man/man[1-8]
+    ]
+
   # tmac.an.repro no different from 2.0.0
   manual_namespace 'WS-1.1',
     vendor_class: Ultrix::V2_0_0,

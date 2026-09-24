@@ -49,6 +49,18 @@ collection_namespace 'thirdparty' do
       aviator.1.8/man/*.[56]
     ]
 
+  # TODO doc/usrman - which macro package is that? makefile generates index/etc.
+  manual_namespace 'BellCore/MGR',
+    vendor_class: SunOS::V3_5,
+    os: 'MGR',
+    ver: '',
+    idir: 'bell/mgr',
+    odir: 'Sun/thirdparty/BellCore/MGR',
+    sources: %w[
+      doc/*.1
+      doc/usrman/croff/*.1
+    ]
+
   # TODO nroff plain text; non-standard manual format
   manual_namespace 'Cadre/Teamwork_4.0.1',
     vendor_class: SunOS::V5_1,

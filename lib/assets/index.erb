@@ -93,9 +93,9 @@ TODO
           pagelang = ixinfo[sec][f][:language]
           # URI module too cantankerous to usefully help URL-encode files?
           # URI.encode "is obsolete", uri.path= expects you to have already done it?
-          url_encodings = { ' ' => '%20', '#' => '%23', '&' => '%26', '?' => '%3F' }
+          url_encodings = { ' ' => '%20', '#' => '%23', '&' => '%26', '?' => '%3F', '%' => '%25' }
           -%>
-      <tr><td><%= "#{altnames.join(', ')}, " if altnames.any? %><a href="./<%= f.gsub(/[#&? ]/, url_encodings) %>"><%= shortname %></a></td><td<%= %( lang="#{pagelang}") if pagelang != lang %>><%= ixinfo[sec][f][:description] %></td><!-- td><%#= altnames %></td --></tr>
+      <tr><td><%= "#{altnames.join(', ')}, " if altnames.any? %><a href="./<%= f.gsub(/[#&?% ]/, url_encodings) %>"><%= shortname %></a></td><td<%= %( lang="#{pagelang}") if pagelang != lang %>><%= ixinfo[sec][f][:description] %></td><!-- td><%#= altnames %></td --></tr>
      <% end -%>
     </table>
 <% end -%>

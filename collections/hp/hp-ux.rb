@@ -8,7 +8,7 @@
 # HP-UX Platform Overrides
 #
 
-require_relative 'modules/hp-ux/troff'
+require_relative 'modules/hp-ux/manual'
 require_relative 'modules/hp-ux_5.00'
 require_relative 'modules/hp-ux_5.20'
 require_relative 'modules/hp-ux_6.20'

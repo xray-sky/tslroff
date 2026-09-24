@@ -20,8 +20,7 @@ class Nroff < TextFormatter
   #attr_reader :input_line_number, :output_directory, :manual_section
 
   TYPEBOX = Typesetter::ASR37::Symbols
-  #TYPEBOX = Typesetter::VT100::Symbols
-  TYPEBOX.default_proc = proc { |_hash, key| %(<span class="u">typebox (#{key})</span>) }
+  TYPEBOX.default_proc = proc { |_hash, key| %(<span class="u">typebox (ASR37 #{key})</span>) }
   TYPEBOX.freeze
 
   def initialize(source, **kwargs)
@@ -33,7 +32,7 @@ class Nroff < TextFormatter
     @heading_detection ||= %r{^(?<section>[A-Z][A-Za-z\s]+)$}
     @title_detection ||= %r{^(?<manentry>(?<cmd>\S+?)\((?<section>\S+?)\))} # REVIEW now what?
     @summary_heading ||= %r{^NAME$} # REVIEW works for UNIX manual entries.
-    super(source, **kwargs)
+    super
   end
 
   def source_init
@@ -63,7 +62,9 @@ class Nroff < TextFormatter
       #@input_line_number += 1
 
       plaintext = unformat(input_line.chomp)
-      #@summary << plaintext.strip if section =~ (@summary_heading) # REVIEW too simple? - yes. unix style find NAME section & use text from following lines; aegis style no section to detect, use first line to match pattern directly
+      # REVIEW too simple? - yes. unix style find NAME section & use text from following lines;
+      # aegis style no section to detect, use first line to match pattern directly
+      #@summary << plaintext.strip if section =~ (@summary_heading)
       section = plaintext.match(@heading_detection) { |head| head[:section] } || section unless input_line == @title_line
 
       input_line.each_char do |char|
@@ -71,7 +72,7 @@ class Nroff < TextFormatter
         document[page] ||= Block::Nroff.new(text: [])
 
         line = (platen_position - 2 * (@lines_per_page || 0) * page) / 2
-        document[page].text[line] ||= Line.new(file: @source.file, line: @source.line_number) # file name, for formatting error messages
+        document[page].text[line] ||= self.class::Line.new(file: @source.file, line: @source.line_number) # file name, for formatting error messages
 
         text = document[page].text[line]
         text.section = section
@@ -111,7 +112,7 @@ class Nroff < TextFormatter
             when '7' then platen_position -= 2 unless (platen_position < 2).tap { |q| warn "tried to backfeed off the document?" if q }
             when '8' then platen_position -= 1 unless (platen_position < 1).tap { |q| warn "tried to half-backfeed off the document?" if q }
             when '9' then platen_position += 1
-            else warn "processing unknown escape sequence [#{char}"
+            else warn "processing unknown escape sequence #{char.inspect} on #{input_line.inspect}"
             end
             escape_shift = false
           else

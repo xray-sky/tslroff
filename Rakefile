@@ -27,7 +27,7 @@
 #
 # TODOs
 #   metadata: add sourcefile mtime
-#   metadata: add acknowledgements for archive contributions
+# √ metadata: add acknowledgements for archive contributions
 #   unbundleds - REVIEW input collections which may be mixed
 # √ cope with pages named 'index' (e.g. DG-UX 5.4R3.00 index(3C))
 # √   - possibly by providing top level all-sections index (permuted or otherwise?)

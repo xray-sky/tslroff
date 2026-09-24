@@ -9,6 +9,7 @@
 #
 
 require_relative 'modules/xenix/manual'
+require_relative 'modules/xenix_2.2'
 
 module Xenix
 

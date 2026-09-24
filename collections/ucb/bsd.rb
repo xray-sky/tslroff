@@ -13,6 +13,7 @@ require_relative 'modules/2.9bsd'
 require_relative 'modules/2.11bsd'
 require_relative 'modules/3bsd'
 require_relative 'modules/4.1bsd'
+require_relative 'modules/4.2bsd'
 require_relative 'modules/4.3bsd-vax-mit'
 
 module BSD

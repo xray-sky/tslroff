@@ -2,6 +2,24 @@
 #
 
 collection_namespace 'unbundled' do
+  # TODO separate these into products
+  manual_namespace 'Apps/10.20',
+    vendor_class: HPUX::V10_20,
+    os: 'HP-UX 10.20 Workstations Applications',
+    ver: 'Sep. 2001',
+    idir: 'hp/hpux/unbundled/24998-12804_10.20_apps_unsecured',
+    odir: 'HP/unbundled/S700/Apps/10.20',
+    sources: %w[
+      */*/usr/share/man/man[1-8]*
+      */*/opt/*/man/man[1-8]*
+      */*/opt/*/*/man/man[1-8]*
+      */*/opt/hpxt/*/*/man/man[1-8]*
+      */*/opt/graphics/*/*/man/man[1-8]*
+      */*/opt/*/man/ja_JP.SJIS/man[1-8]*
+      */*/opt/*/*/man/ja_JP.SJIS/man[1-8]*
+      */MCSE-HELP-GEN/opt/mcse/help/c/man
+    ]
+
   manual_namespace 'ANSI-C_A09.00/S300', # TODO has links to base HPUX pages
     vendor_class: HPUX::V9_05,
     os: 'HP-UX ANSI C',

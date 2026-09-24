@@ -38,7 +38,7 @@ collection_namespace 'UCB' do
         man
         misc
         tar.1
-      ]
+      ] # ./install.ms TODO
 
     # no macros?
     manual_namespace '2.8BSD',
@@ -47,6 +47,7 @@ collection_namespace 'UCB' do
       idir: 'ucb/bsd/2.8bsd',
       odir: 'UCB/UNIX/2.8BSD',
       sources: %w[
+        Intro
         usr/man
         usr/kernel/man/man[1234]
         usr/job.control/man
@@ -101,6 +102,22 @@ collection_namespace 'UCB' do
       contributor: 'tuhs.org',
       idir: 'ucb/bsd/4.1bsd',
       odir: 'UCB/UNIX/4.1BSD',
+      sources: %w[man/man[1-8]]
+
+    # TODO macros
+    manual_namespace '4.2BSD',
+      vendor_class: BSD::V4_2,
+      contributor: 'tuhs.org',
+      idir: 'ucb/bsd/4.2bsd',
+      odir: 'UCB/UNIX/4.2BSD',
+      sources: %w[man/man[1-8]]
+
+    # TODO macros
+    manual_namespace '4.3BSD',
+      vendor_class: BSD::V4_3,
+      contributor: 'tuhs.org',
+      idir: 'ucb/bsd/4.3bsd',
+      odir: 'UCB/UNIX/4.3BSD',
       sources: %w[man/man[1-8]]
 
     # and where'd this come from?? needs headers copied in

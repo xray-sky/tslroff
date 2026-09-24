@@ -15,6 +15,7 @@ module BSD
 
     def initialize(source, **kwargs)
       @manual_entry ||= source.file.sub(/\.(?:\d\S?)$/, '')
+      super
     end
 
   end

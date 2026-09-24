@@ -2,6 +2,13 @@
 #
 
 collection_namespace 'Xenix' do
+  manual_namespace '2.2.0c',
+    vendor_class: Xenix,#::V2_2,
+    ver: '2.2.0c', # from product data. "printed 8/7/87"
+    idir: 'sco/xenix/man_1.0',
+    odir: 'SCO/Xenix/2.2.0c',
+    sources: %w[usr/man/cat.*]
+
   manual_namespace '2.3.4',
     vendor_class: Xenix,
     odir: 'SCO/Xenix/2.3.4',

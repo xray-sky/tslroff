@@ -27,8 +27,8 @@ class Nroff
     %w[- : = o] => '&bull;', #       see syslogd(8n), others. [UTek 6130-W2.3]
     %w[- / C] => '&notin;',  #       (etc.)
     %w[- h]  => '&#8463;',   # U210F
+    %w[= >]  => '&#8807;',   # U2267
     %w[< =]  => '&#8806;',   # U2266
-    %w[> =]  => '&#8807;',   # U2267
     %w[< ~]  => '&#8818;',   # U2272
     %w[> ~]  => '&#8819;',   # U2273
     %w[= ~]  => '&#8773;',   # U2245
@@ -42,7 +42,7 @@ class Nroff
   }
 
   OVERSTRIKES.default_proc = proc do |_hash, key|
-    key.collect! { |c| c.sub(/(.)\cN/) { TYPEBOX[Regexp.last_match[1]] } }
+    key.collect! { |c| c.sub(/(.)\cN/) { self::TYPEBOX[Regexp.last_match[1]] } }
     key.length == 1 and next key[0]
     raise TypeClashError.new(key), 'unresolved overstrike'
   end

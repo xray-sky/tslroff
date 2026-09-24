@@ -18,7 +18,7 @@ module BSD
     class Troff < ::UNIX::V7::Troff
       def initialize(source, **kwargs)
         @manual_entry ||= source.file.sub(/\.(?:[u\d]\S?)$/, '')
-        super(source, **kwargs)
+        super
       end
     end
 

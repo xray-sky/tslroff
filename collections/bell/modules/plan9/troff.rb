@@ -16,8 +16,9 @@
 #
 #   grap(1) actually includes examples. is it reasonable to add support for this?
 #   pic(1) as well!
+#   1ed .so /sys/lib/tmac/tmac.uni
 #   3ed file names are jacked, from ISO9660?
-#   4ed dates seem late; REVIEW
+#
 #
 
 module Plan9

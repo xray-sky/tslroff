@@ -8,8 +8,8 @@
 # ISI/NBI 4.2BSD Platform Overrides (tmac.an.new)
 #
 # TODO
-#   garbage from extraction in a bunch of the manuals
-#   C headers - /usr/include
+# √ garbage from extraction in a bunch of the manuals (tar files are encapsulated in some other format)
+# √ C headers - /usr/include
 #
 
 module NBI_4_2BSD
@@ -17,9 +17,9 @@ module NBI_4_2BSD
     alias :LP :P
 
     def initialize(source, **kwargs)
-      @manual_entry ||= source.file.sub(/\.(\d\S?)$/, '')
-      @manual_section ||= Regexp.last_match[1]
-      @output_directory ||= "man#{@manual_section}"
+      @manual_entry ||= source.file.sub(/\.(\d\S?)(?:\.Z)?$/, '') # truncated filenames (14-char limit)
+      @manual_section ||= Regexp.last_match&.[](1)
+      @output_directory ||= "man#{@manual_section}" if @manual_section
       #@state[:footer] = "\\*(]D\\0\\0\\(em\\0\\0\\*(]W"
       super(source, **kwargs)
     end
@@ -41,7 +41,14 @@ module NBI_4_2BSD
       @character_translations['*'] = "\e(**"
     end
 
+    # .so with absolute path, headers in /usr/include
+    def so(name, breaking: nil, basedir: nil)
+      basedir = "#{@source.dir}#{"/../.." if name.start_with?('/')}"
+      super(name, breaking: breaking, basedir: basedir)
+    end
+
     def TH(*args)
+      @manual_section = args[1]
       ds "]L #{args[2]}"
       #ds "]W #{args[3]}" # set in .TH but always overridden by .}F
       ds "]D #{args[4]}" if args[4] and !args[4].empty?

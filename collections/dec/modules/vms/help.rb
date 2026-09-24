@@ -7,6 +7,10 @@
 #
 # VMS Platform Overrides
 #
+# TODO
+#   too many menu levels for some libraries? e.g. PASCAL
+#   maybe too few levels for some libraries? e.g. EDT KEYPAD (VT100 & VT52)
+#
 
 require_relative 'helplib'
 require_relative 'helplibmod'
@@ -136,6 +140,7 @@ module VMS
       #            maybe only do this if we are children of a section named "Qualifiers"?
       # TODO get qualifier alts in heading (all lines starting with / until first that doesn't);
       #      can separate with <br /> for intended effect -- see µVMS 4.6 helplib e.g. /LIBRARY/HELP
+      # TODO multiple subsections in single doc with same names - edthelp keypad has both VT100/127 & VT52/127
       depth = mod.depth
       pagelinks = {}
       modulehead = ''

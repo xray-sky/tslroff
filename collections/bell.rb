@@ -40,20 +40,49 @@ collection_namespace 'Bell' do
   end
 
   collection_namespace 'Plan9' do
-    # this is from my Vita Nuova disc - doesn't seem the same as Inferno 3ed, above
-    # TODO macros REVIEW is it plan9 or is it inferno - looks like Inferno though??
+    # TODO macros
+    # TODO sys/doc release notes etc.
+    manual_namespace '1ed',
+      vendor_class: Plan9,
+      ver: '1st Edition',
+      idir: 'bell/plan9/1e',
+      odir: 'Bell/Plan9/1ed',
+      sources: %w[sys/man/[1-8]]
+    manual_namespace '2ed',
+      vendor_class: Plan9,
+      ver: '1st Edition',
+      idir: 'bell/plan9/2e',
+      odir: 'Bell/Plan9/2ed',
+      sources: %w[sys/man/[1-8]]
+    # this is from my Vita Nuova disc; filenames jacked from ISO? also includes some inferno stuff
+    manual_namespace '3ed_vn',
+      vendor_class: Plan9,
+      ver: '3rd Edition (Vita Nuova)',
+      idir: 'bell/plan9/3e_vita-nuova',
+      odir: 'Bell/Plan9/3ed_Vita_Nuova',
+      sources: %w[
+        sys/man/[1-8]
+        usr/inferno/man/[1-9]*
+      ]
+    # archive.org tar file
     manual_namespace '3ed',
       vendor_class: Plan9,
       ver: '3rd Edition',
       idir: 'bell/plan9/3e',
-      #odir: 'Bell/Plan9/3ed',
-      sources: %w[usr/inferno/man/[1-9]*]
+      odir: 'Bell/Plan9/3ed',
+      sources: %w[sys/man/[1-8]]
     manual_namespace '4ed',
       vendor_class: Plan9,
       ver: '4th Edition',
       idir: 'bell/plan9/4e',
       odir: 'Bell/Plan9/4ed',
       sources: %w[man/[1-8]]
+    manual_namespace '4ed15',
+      vendor_class: Plan9,
+      ver: '4th Edition',
+      idir: 'bell/plan9/4e_20150110',
+      odir: 'Bell/Plan9/4ed_20150110',
+      sources: %w[sys/man/[1-8]]
   end
 
   collection_namespace 'UNIX' do

@@ -148,6 +148,22 @@ collection_namespace 'unbundled' do
     odir: 'Sun/unbundled/ODBC_2.11',
     sources: %w[man/man4]
 
+  manual_namespace 'OPENSTEP_1.0',
+    vendor_class: SunOS::V5_5,
+    os: 'OPENSTEP for Solaris',
+    ver: '1.0',
+    idir: 'sun/sunos/unbundled/openstep_1.0',
+    odir: 'Sun/unbundled/OPENSTEP_1.0',
+    sources: %w[SUNWOosUs/reloc/SUNWdoe/openstep/man/man1]
+
+  manual_namespace 'OPENSTEP_1.1',
+    vendor_class: SunOS::V5_5,
+    os: 'OPENSTEP for Solaris',
+    ver: '1.1',
+    idir: 'sun/sunos/unbundled/openstep_1.1',
+    odir: 'Sun/unbundled/OPENSTEP_1.1',
+    sources: %w[SUNWOosUs/reloc/SUNWdoe/openstep/man/man1]
+
   manual_namespace 'OpenWindows_1.0_PreFCS',
     vendor_class: SunOS::V4_0,
     os: 'OpenWindows',

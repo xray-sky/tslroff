@@ -123,5 +123,16 @@ collection_namespace 'Bell' do
         usr/src/man/man[1-8]
         usr/src/man/man0/intro
       ]
+    # TODO macros
+    #manual_namespace 'SVR1/m68k',
+    #  vendor_class: UNIX::SVR1,
+    #  contributor: 'bitsavers.org',
+    #  ver: 'System V Release 1.0',
+    #  idir: 'bell/svr1m68k',
+    #  odir: 'Bell/UNIX/SystemV/R1/m68k',
+    #  sources: %w[
+    #    man/?_man/man[1-8]
+    #    man/local/man[1-8]
+    #  ]
   end
 end
